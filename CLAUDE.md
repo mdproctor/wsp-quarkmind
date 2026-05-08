@@ -51,4 +51,9 @@ Per-artifact routing destinations.
 
 Valid destinations: `project` · `workspace` · `alternative ~/path/to/repo/`
 
+## Context Management
+
+If the conversation is getting very long or you notice context pressure,
+proactively suggest writing a handover before continuing.
+
 @/Users/mdproctor/claude/quarkmind/CLAUDE.md
