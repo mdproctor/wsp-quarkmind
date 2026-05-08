@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>3D vs 2D Sprites — QuarkMind</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0e0e1e; color: #ccc; font-family: monospace; overflow: hidden; }
+  canvas { display: block; }
+  #ui {
+    position: absolute; top: 16px; left: 16px;
+    background: rgba(10,10,30,0.88);
+    border: 1px solid #2a2a5e;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px; line-height: 1.8;
+    max-width: 210px;
+  }
+  #ui h3 { color: #88bbff; margin-bottom: 8px; font-size: 13px; }
+  #ui .key { color: #ffcc44; }
+  #controls {
+    position: absolute; top: 16px; right: 16px;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+  }
+  .btn-group { display: flex; gap: 0; }
+  .btn {
+    background: rgba(10,10,30,0.88);
+    border: 1px solid #2a2a5e;
+    color: #aaaacc; font-family: monospace; font-size: 12px;
+    padding: 8px 16px; cursor: pointer; transition: all 0.15s;
+  }
+  .btn:first-child { border-radius: 6px 0 0 6px; }
+  .btn:last-child  { border-radius: 0 6px 6px 0; }
+  .btn.active { background: rgba(40,80,160,0.6); border-color: #88bbff; color: #88bbff; }
+  .btn:hover:not(.active) { border-color: #556688; color: #ccddff; }
+  .angle-btn {
+    background: rgba(10,10,30,0.88);
+    border: 1px solid #2a2a5e; border-radius: 6px;
+    color: #aaaacc; font-family: monospace; font-size: 11px;
+    padding: 7px 14px; cursor: pointer; transition: all 0.15s; width: 100%;
+  }
+  .angle-btn:hover { border-color: #88bbff; color: #88bbff; }
+  .angle-btn.active { border-color: #88bbff; color: #88bbff; background: rgba(40,60,120,0.5); }
+  #mode-label {
+    font-size: 13px; color: #ffcc44; letter-spacing: 1px;
+    text-align: center; padding: 6px 0;
+  }
+  #hud {
+    position: absolute; bottom: 16px; left: 16px;
+    background: rgba(10,10,30,0.75); border: 1px solid #2a2a5e;
+    border-radius: 6px; padding: 8px 14px; font-size: 11px; color: #88bbff;
+  }
+</style>
+</head>
+<body>
+<div id="ui">
+  <h3>QuarkMind 3D</h3>
+  <div><span class="key">Drag</span> — orbit</div>
+  <div><span class="key">Scroll</span> — zoom</div>
+  <div><span class="key">Right-drag</span> — pan</div>
+  <br>
+  <div style="color:#555;font-size:11px;">Blue=friendly &nbsp; Red=enemy<br>Toggle unit style →</div>
+</div>
+<div id="controls">
+  <div id="mode-label">3D MODELS</div>
+  <div class="btn-group">
+    <button class="btn active" id="btn3d" onclick="setMode('3d')">3D Models</button>
+    <button class="btn" id="btn2d" onclick="setMode('2d')">2D Sprites</button>
+  </div>
+  <button class="angle-btn" onclick="setAngle('top')">Top-down</button>
+  <button class="angle-btn active" id="angIso" onclick="setAngle('iso')">Isometric</button>
+  <button class="angle-btn" onclick="setAngle('low')">Low angle</button>
+</div>
+<div id="hud">Minerals: 450 &nbsp;|&nbsp; Gas: 100 &nbsp;|&nbsp; Supply: 16/22 &nbsp;|&nbsp; Frame: 312</div>
+
+<script src="three.min.js"></script>
+<script>
+// ── Scene ─────────────────────────────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+scene.fog = new THREE.FogExp2(0x0a0a1a, 0.02);
+
+const W = window.innerWidth, H = window.innerHeight;
+const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// ── Lighting ──────────────────────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x223355, 0.9));
+const sun = new THREE.DirectionalLight(0xaabbff, 1.3);
+sun.position.set(20, 40, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near   = 1;
+sun.shadow.camera.far    = 200;
+sun.shadow.camera.left   = -40;
+sun.shadow.camera.right  = 40;
+sun.shadow.camera.top    = 40;
+sun.shadow.camera.bottom = -40;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x334466, 0.4);
+fill.position.set(-10, 20, -10);
+scene.add(fill);
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+const GRID=20, TILE=1.4, HALF=(GRID*TILE)/2;
+const grid = Array.from({length:GRID}, (_,z) =>
+  Array.from({length:GRID}, (_,x) => {
+    if (x===0||x===GRID-1||z===0||z===GRID-1) return 1;
+    if (x>=13&&x<=15&&z>=13&&z<=17) return 1;
+    if (x>=16&&x<=17&&z>=14&&z<=16) return 1;
+    if (x===12&&z===13) return 2;
+    return 0;
+  })
+);
+const mGround = new THREE.MeshLambertMaterial({color:0x1a2233});
+const mWall   = new THREE.MeshLambertMaterial({color:0x334455});
+const mRamp   = new THREE.MeshLambertMaterial({color:0x2a3a44});
+
+for (let z=0;z<GRID;z++) for (let x=0;x<GRID;x++) {
+  const t=grid[z][x], cx=x*TILE-HALF+TILE/2, cz=z*TILE-HALF+TILE/2;
+  if (t===1) {
+    const m=new THREE.Mesh(new THREE.BoxGeometry(TILE*.98,TILE*1.2,TILE*.98),mWall);
+    m.position.set(cx,TILE*.6,cz); m.castShadow=m.receiveShadow=true; scene.add(m);
+  } else {
+    const h=t===2?0.3:0.1, mat=t===2?mRamp:mGround;
+    const m=new THREE.Mesh(new THREE.BoxGeometry(TILE*.98,h,TILE*.98),mat);
+    m.position.set(cx,h/2,cz); m.receiveShadow=true; scene.add(m);
+  }
+  const el=new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(TILE,0.01,TILE)),
+    new THREE.LineBasicMaterial({color:0x1e2a3a,transparent:true,opacity:0.5})
+  );
+  el.position.set(cx,0.06,cz); scene.add(el);
+}
+
+// Minerals
+const minMat=new THREE.MeshLambertMaterial({color:0x44aaff,emissive:0x112244});
+[[-4,2],[-3,2],[-2,2],[-4,3],[-3,3]].forEach(([dx,dz])=>{
+  const m=new THREE.Mesh(new THREE.BoxGeometry(.5,.4,.5),minMat);
+  m.position.set(dx*TILE-HALF+TILE/2,.25,dz*TILE-HALF+TILE/2);
+  m.castShadow=true; scene.add(m);
+});
+
+// ── Canvas texture helper ──────────────────────────────────────────────────────
+function makeCanvas(size, drawFn) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  drawFn(c.getContext('2d'), size);
+  return c;
+}
+
+// ── 2D Sprite textures ────────────────────────────────────────────────────────
+function drawProbe(ctx, S) {
+  const cx=S/2, cy=S/2+4;
+  // glow
+  const grd=ctx.createRadialGradient(cx,cy,S*.08,cx,cy,S*.44);
+  grd.addColorStop(0,'rgba(100,180,255,0.35)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,S*.44,S*.44,0,0,Math.PI*2); ctx.fill();
+  // body
+  const b=ctx.createRadialGradient(cx-S*.08,cy-S*.1,S*.04,cx,cy,S*.3);
+  b.addColorStop(0,'#88ccff'); b.addColorStop(.6,'#4488dd'); b.addColorStop(1,'#224499');
+  ctx.fillStyle=b; ctx.beginPath(); ctx.ellipse(cx,cy,S*.3,S*.28,0,0,Math.PI*2); ctx.fill();
+  // highlight
+  ctx.fillStyle='rgba(255,255,255,0.18)';
+  ctx.beginPath(); ctx.ellipse(cx-S*.06,cy-S*.1,S*.12,S*.08,-.4,0,Math.PI*2); ctx.fill();
+  // eyes
+  [[-.1,-.06],[.1,-.06]].forEach(([ex,ey])=>{
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(cx+ex*S,cy+ey*S,S*.07,S*.07,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#112244'; ctx.beginPath(); ctx.ellipse(cx+ex*S+1,cy+ey*S+1,S*.04,S*.04,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(cx+ex*S-1,cy+ey*S-2,S*.02,S*.02,0,0,Math.PI*2); ctx.fill();
+  });
+  // energy ball
+  ctx.strokeStyle='#6699bb'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx+S*.22,cy-S*.04); ctx.lineTo(cx+S*.35,cy-S*.16); ctx.stroke();
+  const eg=ctx.createRadialGradient(cx+S*.38,cy-S*.19,0,cx+S*.38,cy-S*.19,S*.09);
+  eg.addColorStop(0,'#ffff88'); eg.addColorStop(.5,'#ffcc00'); eg.addColorStop(1,'rgba(255,180,0,0)');
+  ctx.fillStyle=eg; ctx.beginPath(); ctx.ellipse(cx+S*.38,cy-S*.19,S*.09,S*.09,0,0,Math.PI*2); ctx.fill();
+  // feet
+  ctx.fillStyle='#336699';
+  ctx.beginPath(); ctx.ellipse(cx-S*.1,cy+S*.26,S*.08,S*.05,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.1,cy+S*.26,S*.08,S*.05,0,0,Math.PI*2); ctx.fill();
+}
+
+function drawZealot(ctx, S) {
+  const cx=S/2, cy=S/2+2;
+  // glow
+  const grd=ctx.createRadialGradient(cx,cy,S*.1,cx,cy,S*.48);
+  grd.addColorStop(0,'rgba(160,100,255,0.3)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,S*.48,S*.48,0,0,Math.PI*2); ctx.fill();
+  // blades
+  function blade(bx) {
+    const bg=ctx.createLinearGradient(bx-8,cy-S*.2,bx+8,cy+S*.2);
+    bg.addColorStop(0,'#88ffff'); bg.addColorStop(.5,'#44ccff'); bg.addColorStop(1,'rgba(0,180,255,0.3)');
+    ctx.fillStyle=bg; ctx.beginPath(); ctx.ellipse(bx,cy,S*.07,S*.2,0,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(100,240,255,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.ellipse(bx,cy,S*.1,S*.23,0,0,Math.PI*2); ctx.stroke();
+  }
+  blade(cx-S*.36); blade(cx+S*.36);
+  // body
+  const b=ctx.createRadialGradient(cx-S*.08,cy-S*.1,S*.04,cx,cy,S*.32);
+  b.addColorStop(0,'#ccaaff'); b.addColorStop(.5,'#7755cc'); b.addColorStop(1,'#441199');
+  ctx.fillStyle=b; ctx.beginPath(); ctx.ellipse(cx,cy,S*.32,S*.28,0,0,Math.PI*2); ctx.fill();
+  // chest
+  const ch=ctx.createLinearGradient(cx,cy-S*.1,cx,cy+S*.1);
+  ch.addColorStop(0,'#aa88ee'); ch.addColorStop(1,'#664499');
+  ctx.fillStyle=ch; ctx.beginPath(); ctx.ellipse(cx,cy+S*.02,S*.16,S*.14,0,0,Math.PI*2); ctx.fill();
+  // highlight
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx-S*.07,cy-S*.1,S*.12,S*.08,-.4,0,Math.PI*2); ctx.fill();
+  // eyes
+  [[-.11,-.07],[.11,-.07]].forEach(([ex,ey])=>{
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(cx+ex*S,cy+ey*S,S*.075,S*.075,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#221144'; ctx.beginPath(); ctx.ellipse(cx+ex*S+1,cy+ey*S+1,S*.042,S*.042,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(cx+ex*S-1,cy+ey*S-2,S*.018,S*.018,0,0,Math.PI*2); ctx.fill();
+  });
+  // feet
+  ctx.fillStyle='#5533aa';
+  ctx.beginPath(); ctx.ellipse(cx-S*.1,cy+S*.26,S*.09,S*.055,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.1,cy+S*.26,S*.09,S*.055,0,0,Math.PI*2); ctx.fill();
+}
+
+function drawEnemy(ctx, S) {
+  const cx=S/2, cy=S/2+2;
+  // glow
+  const grd=ctx.createRadialGradient(cx,cy,S*.08,cx,cy,S*.44);
+  grd.addColorStop(0,'rgba(255,80,50,0.3)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,S*.44,S*.44,0,0,Math.PI*2); ctx.fill();
+  // body - red/orange enemy
+  const b=ctx.createRadialGradient(cx-S*.08,cy-S*.1,S*.04,cx,cy,S*.32);
+  b.addColorStop(0,'#ff9966'); b.addColorStop(.5,'#cc3322'); b.addColorStop(1,'#881111');
+  ctx.fillStyle=b; ctx.beginPath(); ctx.ellipse(cx,cy+S*.02,S*.3,S*.26,0,0,Math.PI*2); ctx.fill();
+  // spiky crest
+  ctx.fillStyle='#dd2211';
+  for(let i=0;i<5;i++){
+    const a=-Math.PI*.6+i*Math.PI*.3;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*S*.28,cy+Math.sin(a)*S*.28);
+    ctx.lineTo(cx+Math.cos(a-.1)*S*.22,cy+Math.sin(a-.1)*S*.22);
+    ctx.lineTo(cx+Math.cos(a+.1)*S*.22,cy+Math.sin(a+.1)*S*.22);
+    ctx.fill();
+  }
+  // highlight
+  ctx.fillStyle='rgba(255,200,180,0.18)';
+  ctx.beginPath(); ctx.ellipse(cx-S*.06,cy-S*.08,S*.12,S*.08,-.4,0,Math.PI*2); ctx.fill();
+  // angry eyes (slanted)
+  [[-.1,-.05],[.1,-.05]].forEach(([ex,ey],i)=>{
+    ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.ellipse(cx+ex*S,cy+ey*S,S*.075,S*.065,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#220000'; ctx.beginPath(); ctx.ellipse(cx+ex*S,cy+ey*S+1,S*.04,S*.05,0,0,Math.PI*2); ctx.fill();
+    // angry brow
+    ctx.strokeStyle='#881111'; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    if(i===0) { ctx.moveTo(cx+ex*S-S*.07,cy+ey*S-S*.07); ctx.lineTo(cx+ex*S+S*.04,cy+ey*S-S*.04); }
+    else       { ctx.moveTo(cx+ex*S-S*.04,cy+ey*S-S*.04); ctx.lineTo(cx+ex*S+S*.07,cy+ey*S-S*.07); }
+    ctx.stroke();
+  });
+  // claws
+  ctx.strokeStyle='#cc2200'; ctx.lineWidth=2;
+  [[-S*.28,S*.12],[-S*.32,S*.2],[-S*.22,S*.22]].forEach(([dx,dy])=>{
+    ctx.beginPath(); ctx.moveTo(cx+dx+8,cy+dy); ctx.lineTo(cx+dx,cy+dy+6); ctx.stroke();
+  });
+  [[ S*.28,S*.12],[ S*.32,S*.2],[ S*.22,S*.22]].forEach(([dx,dy])=>{
+    ctx.beginPath(); ctx.moveTo(cx+dx-8,cy+dy); ctx.lineTo(cx+dx,cy+dy+6); ctx.stroke();
+  });
+}
+
+function makeSpriteMat(drawFn, size=128) {
+  const c = makeCanvas(size, drawFn);
+  const tex = new THREE.CanvasTexture(c);
+  tex.premultiplyAlpha = true;
+  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+}
+
+const matProbe2d  = makeSpriteMat(drawProbe);
+const matZealot2d = makeSpriteMat(drawZealot);
+const matEnemy2d  = makeSpriteMat(drawEnemy);
+
+// ── 3D Model helper ───────────────────────────────────────────────────────────
+function make3dUnit(color, emissive, x, z, sc=1) {
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(
+    new THREE.SphereGeometry(.38*sc,20,14),
+    new THREE.MeshLambertMaterial({color,emissive})
+  );
+  body.position.y=.42*sc; body.castShadow=true; g.add(body);
+  const eyeM=new THREE.MeshLambertMaterial({color:0xffffff});
+  const pupM=new THREE.MeshLambertMaterial({color:0x111122});
+  [-.14,.14].forEach(ex=>{
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.1*sc,10,8),eyeM);
+    eye.position.set(ex*sc,.52*sc,.32*sc); g.add(eye);
+    const pup=new THREE.Mesh(new THREE.SphereGeometry(.055*sc,8,8),pupM);
+    pup.position.set(ex*sc,.52*sc,.37*sc); g.add(pup);
+    // shine
+    const sh=new THREE.Mesh(new THREE.SphereGeometry(.025*sc,6,6),new THREE.MeshBasicMaterial({color:0xffffff}));
+    sh.position.set((ex-.04)*sc,.55*sc,.39*sc); g.add(sh);
+  });
+  // shadow
+  const disc=new THREE.Mesh(
+    new THREE.CircleGeometry(.32*sc,16),
+    new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,side:THREE.DoubleSide})
+  );
+  disc.rotation.x=-Math.PI/2; disc.position.y=.07; g.add(disc);
+  g.position.set(x*TILE-HALF+TILE/2, 0, z*TILE-HALF+TILE/2);
+  return g;
+}
+
+function make3dEnemy(x, z) {
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(
+    new THREE.SphereGeometry(.38,20,14),
+    new THREE.MeshLambertMaterial({color:0xcc3322,emissive:0x330000})
+  );
+  body.position.y=.42; body.castShadow=true; g.add(body);
+  // spikes
+  for(let i=0;i<5;i++){
+    const a=i/5*Math.PI*2;
+    const sp=new THREE.Mesh(
+      new THREE.ConeGeometry(.06,.22,6),
+      new THREE.MeshLambertMaterial({color:0xdd1100})
+    );
+    sp.position.set(Math.cos(a)*.32,.58,Math.sin(a)*.32);
+    sp.rotation.z=Math.cos(a)*.8; sp.rotation.x=Math.sin(a)*.8;
+    g.add(sp);
+  }
+  const eyeM=new THREE.MeshLambertMaterial({color:0xffcc00});
+  const pupM=new THREE.MeshLambertMaterial({color:0x110000});
+  [-.14,.14].forEach(ex=>{
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.09,10,8),eyeM);
+    eye.position.set(ex,.52,.33); g.add(eye);
+    const pup=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),pupM);
+    pup.position.set(ex,.52,.38); g.add(pup);
+  });
+  const disc=new THREE.Mesh(
+    new THREE.CircleGeometry(.32,16),
+    new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,side:THREE.DoubleSide})
+  );
+  disc.rotation.x=-Math.PI/2; disc.position.y=.07; g.add(disc);
+  g.position.set(x*TILE-HALF+TILE/2, 0, z*TILE-HALF+TILE/2);
+  return g;
+}
+
+// Buildings (3D — same in both modes)
+function makeBuilding(color, emissive, x, z, w, h, d) {
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(w*TILE*.7,h,d*TILE*.7),new THREE.MeshLambertMaterial({color,emissive}));
+  body.position.y=h/2; body.castShadow=body.receiveShadow=true; g.add(body);
+  g.position.set(x*TILE-HALF+TILE/2,0,z*TILE-HALF+TILE/2);
+  scene.add(g); return g;
+}
+makeBuilding(0x2255aa,0x112244,4,4,2.5,1.4,2.5);
+makeBuilding(0x553399,0x221144,7,4,.8,1.7,.8);
+makeBuilding(0x336688,0x112233,6,8,1.8,1.1,1.8);
+
+// ── Unit positions ────────────────────────────────────────────────────────────
+const unitDefs = [
+  {x:5,z:5,type:'probe',sc:1.0},
+  {x:6,z:5,type:'probe',sc:1.0},
+  {x:5,z:6,type:'probe',sc:1.0},
+  {x:8,z:7,type:'zealot',sc:1.2},
+];
+const enemyDefs = [
+  {x:10,z:10,sc:1.1},
+  {x:11,z:10,sc:1.0},
+  {x:10,z:11,sc:0.9},
+];
+
+// Create 3D groups
+const group3d = new THREE.Group(); scene.add(group3d);
+const group2d = new THREE.Group(); scene.add(group2d);
+group2d.visible = false;
+
+const units3d=[], units2d=[];
+
+unitDefs.forEach(({x,z,type,sc})=>{
+  const u3 = type==='probe'
+    ? make3dUnit(0x4488dd,0x112244,x,z,sc)
+    : make3dUnit(0x7755cc,0x221144,x,z,sc);
+  group3d.add(u3); units3d.push({g:u3,x,z,phase:Math.random()*Math.PI*2});
+
+  const mat = type==='probe' ? matProbe2d : matZealot2d;
+  const sp = new THREE.Sprite(mat);
+  const cx=x*TILE-HALF+TILE/2, cz=z*TILE-HALF+TILE/2;
+  sp.position.set(cx,.65*sc,cz); sp.scale.set(sc*1.6,sc*1.6,1);
+  group2d.add(sp); units2d.push({sp,x,z,phase:Math.random()*Math.PI*2,sc});
+});
+
+enemyDefs.forEach(({x,z,sc})=>{
+  const u3 = make3dEnemy(x,z);
+  group3d.add(u3); units3d.push({g:u3,x,z,phase:Math.random()*Math.PI*2});
+
+  const sp = new THREE.Sprite(matEnemy2d);
+  const cx=x*TILE-HALF+TILE/2, cz=z*TILE-HALF+TILE/2;
+  sp.position.set(cx,.6,cz); sp.scale.set(sc*1.6,sc*1.6,1);
+  group2d.add(sp); units2d.push({sp,x,z,phase:Math.random()*Math.PI*2,sc});
+});
+
+// ── Attack line ───────────────────────────────────────────────────────────────
+const atkGeo = new THREE.BufferGeometry();
+const atkMat = new THREE.LineBasicMaterial({color:0xff4444,transparent:true,opacity:0});
+const atkLine = new THREE.Line(atkGeo, atkMat);
+scene.add(atkLine);
+let atkAge=0;
+function refreshAttackLine() {
+  const f=units3d[3], e=units3d[4];
+  const pts=[
+    new THREE.Vector3(f.g.position.x,.55,f.g.position.z),
+    new THREE.Vector3(e.g.position.x,.55,e.g.position.z),
+  ];
+  atkGeo.setFromPoints(pts);
+}
+refreshAttackLine();
+
+// ── Camera ────────────────────────────────────────────────────────────────────
+let camTheta=Math.PI*.25, camPhi=Math.PI/3.5, camDist=28;
+const camTarget=new THREE.Vector3(0,0,0);
+let tPhi=camPhi, tTheta=camTheta, tDist=camDist;
+
+function updateCam() {
+  camera.position.set(
+    camTarget.x+camDist*Math.sin(camPhi)*Math.sin(camTheta),
+    camTarget.y+camDist*Math.cos(camPhi),
+    camTarget.z+camDist*Math.sin(camPhi)*Math.cos(camTheta)
+  );
+  camera.lookAt(camTarget);
+}
+updateCam();
+
+function setAngle(p) {
+  document.querySelectorAll('.angle-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  if(p==='top') { tPhi=.12; tDist=34; }
+  if(p==='iso') { tPhi=Math.PI/3.5; tDist=28; }
+  if(p==='low') { tPhi=Math.PI/2.3; tDist=22; }
+}
+
+// ── Mode toggle ───────────────────────────────────────────────────────────────
+function setMode(m) {
+  document.getElementById('btn3d').classList.toggle('active', m==='3d');
+  document.getElementById('btn2d').classList.toggle('active', m==='2d');
+  document.getElementById('mode-label').textContent = m==='3d' ? '3D MODELS' : '2D SPRITES';
+  group3d.visible = m==='3d';
+  group2d.visible = m==='2d';
+}
+
+// ── Mouse ─────────────────────────────────────────────────────────────────────
+let drag=false, lastX=0, lastY=0, rDrag=false;
+renderer.domElement.addEventListener('mousedown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;rDrag=e.button===2;e.preventDefault();});
+renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+  if(rDrag){
+    const r=new THREE.Vector3(); camera.getWorldDirection(r); r.cross(camera.up).normalize();
+    camTarget.addScaledVector(r,-dx*.04); camTarget.y+=dy*.04; tPhi=camPhi; tTheta=camTheta;
+  } else { tTheta-=dx*.012; tPhi=Math.max(.08,Math.min(Math.PI/2.05,tPhi-dy*.012)); }
+});
+window.addEventListener('mouseup',()=>drag=false);
+renderer.domElement.addEventListener('wheel',e=>{tDist=Math.max(8,Math.min(60,tDist+e.deltaY*.04));e.preventDefault();},{passive:false});
+
+// ── Animate ───────────────────────────────────────────────────────────────────
+const clock=new THREE.Clock(); let t=0;
+function animate() {
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta(); t+=dt;
+
+  camPhi+=(tPhi-camPhi)*.1; camTheta+=(tTheta-camTheta)*.1; camDist+=(tDist-camDist)*.1;
+  updateCam();
+
+  // bob + drift
+  units3d.forEach((u,i)=>{
+    u.g.position.y=Math.sin(t*2+u.phase)*.06;
+    if(i===0){ u.g.position.x=(5*TILE-HALF+TILE/2)+Math.sin(t*.6)*.15; u.g.position.z=(5*TILE-HALF+TILE/2)+Math.cos(t*.4)*.1; }
+  });
+  units2d.forEach((u,i)=>{
+    u.sp.position.y=(.52*u.sc)+Math.sin(t*2+u.phase)*.06;
+    if(i===0){ u.sp.position.x=(5*TILE-HALF+TILE/2)+Math.sin(t*.6)*.15; u.sp.position.z=(5*TILE-HALF+TILE/2)+Math.cos(t*.4)*.1; }
+  });
+
+  // attack flash
+  atkAge+=dt;
+  if(atkAge<.25) atkMat.opacity=.9*(1-atkAge/.25);
+  else { atkMat.opacity=0; if(atkAge>1.3){atkAge=0; refreshAttackLine();} }
+
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
+</body>
+</html>

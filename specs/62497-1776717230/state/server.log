@@ -1,0 +1,5 @@
+{"type":"server-started","port":65156,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:65156","screen_dir":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/62497-1776717230/content","state_dir":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/62497-1776717230/state"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/62497-1776717230/content/unit-style.html"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/62497-1776717230/content/buildings-style.html"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/62497-1776717230/content/waiting-scope.html"}
+{"type":"server-stopped","reason":"idle timeout"}

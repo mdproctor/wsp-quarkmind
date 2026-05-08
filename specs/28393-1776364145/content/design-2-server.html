@@ -1,0 +1,74 @@
+<h2>E9 Fog of War — Design (2/3): Server-Side Filtering & Broadcast</h2>
+<p class="subtitle">How visibility flows from EmulatedGame to the agent and the visualizer</p>
+
+<div class="section">
+  <h3>EmulatedGame changes</h3>
+  <div style="font-family:monospace;font-size:0.82em;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:6px;line-height:1.9;color:#ccc;">
+    <span style="color:#666;">// New field — persists across ticks</span><br>
+    private final VisibilityGrid visibility = new VisibilityGrid();<br><br>
+    <span style="color:#666;">// Called inside tick(), after friendly units move</span><br>
+    visibility.recompute(myUnits, myBuildings, terrainGrid);<br><br>
+    <span style="color:#666;">// observe() filters before returning</span><br>
+    List&lt;Unit&gt; visibleEnemies = enemyUnits.stream()<br>
+    &nbsp;&nbsp;.filter(u -&gt; visibility.isVisible(u.position()))<br>
+    &nbsp;&nbsp;.toList();<br><br>
+    <span style="color:#666;">// New accessor for broadcaster</span><br>
+    VisibilityGrid observeVisibility() { return visibility; }
+  </div>
+  <p style="font-size:0.85em;color:#aaa;margin-top:0.5rem;">
+    <code>enemyStagingArea</code> is also filtered — staging units sit at HIGH ground, so they're invisible from LOW until scouted.
+    The agent's <code>GameState</code> becomes genuinely limited.
+  </p>
+</div>
+
+<div class="section">
+  <h3>Routing visibility to the broadcaster</h3>
+  <p style="font-size:0.9em;color:#ccc;">The <code>SC2Engine</code> interface stays clean — no visibility concept leaks in. Instead, <code>EmulatedEngine</code> (the CDI bean wrapping EmulatedGame) exposes visibility as a CDI <code>@ApplicationScoped</code> holder updated each tick. The broadcaster injects it optionally.</p>
+  <div style="font-family:monospace;font-size:0.82em;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:6px;line-height:1.9;color:#ccc;">
+    <span style="color:#666;">// EmulatedEngine — updates after each tick</span><br>
+    visibilityHolder.set(game.observeVisibility());<br><br>
+    <span style="color:#666;">// VisibilityHolder — CDI bean, null in mock/replay/SC2 modes</span><br>
+    @ApplicationScoped class VisibilityHolder {<br>
+    &nbsp;&nbsp;private volatile VisibilityGrid current;<br>
+    &nbsp;&nbsp;void set(VisibilityGrid g) { current = g; }<br>
+    &nbsp;&nbsp;VisibilityGrid get() { return current; } <span style="color:#666;">// null if not emulated</span><br>
+    }<br><br>
+    <span style="color:#666;">// GameStateBroadcaster — injects holder, sends visibility if present</span><br>
+    @Inject VisibilityHolder visibilityHolder;<br>
+    broadcast({ gameState, visibility: visibilityHolder.get() });
+  </div>
+</div>
+
+<div class="section">
+  <h3>WebSocket payload</h3>
+  <p style="font-size:0.9em;color:#ccc;">The broadcaster wraps <code>GameState</code> + visibility grid into a new broadcast record. Existing fields unchanged — visibility is additive and nullable.</p>
+  <div style="font-family:monospace;font-size:0.82em;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:6px;line-height:1.9;color:#ccc;">
+    record GameStateBroadcast(<br>
+    &nbsp;&nbsp;GameState state,<br>
+    &nbsp;&nbsp;int[][] visibility <span style="color:#666;">// [x][y]: 0=UNSEEN 1=MEMORY 2=VISIBLE; null if not emulated</span><br>
+    )
+  </div>
+  <p style="font-size:0.85em;color:#aaa;margin-top:0.5rem;">
+    64×64 ints = 4096 values per frame. Compact, fast to serialize. Visualizer checks for null and skips fog rendering in non-emulated modes.
+  </p>
+</div>
+
+<div class="section">
+  <h3>Other engine modes — unaffected</h3>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;font-size:0.82em;color:#ccc;">
+    <div style="padding:0.5rem;background:rgba(255,255,255,0.04);border-radius:6px;">
+      <strong>Mock</strong><br>
+      No VisibilityHolder update. broadcast.visibility = null. Visualizer shows all enemies as before.
+    </div>
+    <div style="padding:0.5rem;background:rgba(255,255,255,0.04);border-radius:6px;">
+      <strong>Replay</strong><br>
+      Same — no visibility. Full enemy state visible (observe-only mode anyway).
+    </div>
+    <div style="padding:0.5rem;background:rgba(255,255,255,0.04);border-radius:6px;">
+      <strong>Real SC2</strong><br>
+      SC2 engine handles fog natively — GameState already contains only visible units.
+    </div>
+  </div>
+</div>
+
+<p class="subtitle">Does this data flow look right?</p>

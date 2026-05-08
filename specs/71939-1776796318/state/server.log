@@ -1,0 +1,11 @@
+{"type":"server-started","port":60957,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:60957","screen_dir":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/71939-1776796318/content","state_dir":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/71939-1776796318/state"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/71939-1776796318/content/unit-selection.html"}
+{"source":"user-event","type":"click","text":"Marine\n      Already in the config dropdown as a wave type. Iconic infantry — CMC suit, rifle, visor. The minimum viable E15.","choice":"marine","id":null,"timestamp":1776796442684}
+{"source":"user-event","type":"click","text":"Marauder\n      Armored bio companion to the Marine. Bigger suit, concussive shells. Natural bio-ball pair.","choice":"marauder","id":null,"timestamp":1776796443358}
+{"source":"user-event","type":"click","text":"Medivac\n      Flying healer/transport. Would need a distinct flying look — floats above the ground plane. More complex to draw and integrate.","choice":"medivac","id":null,"timestamp":1776796445098}
+{"source":"user-event","type":"click","text":"Marauder\n      Armored bio companion to the Marine. Bigger suit, concussive shells. Natural bio-ball pair.","choice":"marauder","id":null,"timestamp":1776796446731}
+{"source":"user-event","type":"click","text":"Marauder\n      Armored bio companion to the Marine. Bigger suit, concussive shells. Natural bio-ball pair.","choice":"marauder","id":null,"timestamp":1776796447584}
+{"source":"user-event","type":"click","text":"Marine\n      Already in the config dropdown as a wave type. Iconic infantry — CMC suit, rifle, visor. The minimum viable E15.","choice":"marine","id":null,"timestamp":1776796576876}
+{"source":"user-event","type":"click","text":"Marauder\n      Armored bio companion to the Marine. Bigger suit, concussive shells. Natural bio-ball pair.","choice":"marauder","id":null,"timestamp":1776796577531}
+{"source":"user-event","type":"click","text":"Medivac\n      Flying healer/transport. Would need a distinct flying look — floats above the ground plane. More complex to draw and integrate.","choice":"medivac","id":null,"timestamp":1776796578011}
+{"type":"server-stopped","reason":"idle timeout"}

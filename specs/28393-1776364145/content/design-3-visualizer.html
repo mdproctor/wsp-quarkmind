@@ -1,0 +1,145 @@
+<h2>E9 Fog of War — Design (3/3): Visualizer</h2>
+<p class="subtitle">One decision: how opaque is the MEMORY state?</p>
+
+<div style="margin-bottom:1rem;font-size:0.9em;color:#ccc;">
+  UNSEEN (never seen) is always solid black. VISIBLE is always clear. The question is MEMORY — terrain you've visited but can't currently see. Two valid readings:
+</div>
+
+<div class="cards">
+
+  <div class="card" data-choice="heavy-memory" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="position:relative;width:100%;height:180px;background:#1a1a2e;border-radius:6px;overflow:hidden;padding:6px;">
+        <div style="display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(6,1fr);gap:1px;height:100%;">
+          <!-- Row 1: LOW visible -->
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#4488ff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:bold;">N</div>
+          <div style="background:#e8dcc8;border-radius:1px;display:flex;align-items:center;justify-content:center;"><div style="width:7px;height:7px;background:#44ff88;border-radius:50%;"></div></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <!-- UNSEEN — solid black -->
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+
+          <!-- Row 2 -->
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+
+          <!-- Row 3: RAMP visible + MEMORY high -->
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#9b7c5a;border-radius:1px;"></div>
+          <div style="background:#9b7c5a;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <!-- MEMORY — heavy 75% black -->
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+
+          <!-- Row 4: HIGH memory -->
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.75;"></div></div>
+
+          <!-- Row 5-6: all unseen -->
+          <div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div>
+        </div>
+        <div style="position:absolute;bottom:4px;left:6px;font-size:8px;color:#aaa;">A — Memory at 75% black. Clear boundary between visited and not.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Heavy memory (75% black)</h3>
+      <p>Strong distinction between UNSEEN and MEMORY. Terrain shape is barely readable. Feels closer to SC2's darker fog. You know you've been there — that's about it.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="light-memory" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="position:relative;width:100%;height:180px;background:#1a1a2e;border-radius:6px;overflow:hidden;padding:6px;">
+        <div style="display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(6,1fr);gap:1px;height:100%;">
+          <!-- Row 1: LOW visible -->
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#4488ff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:bold;">N</div>
+          <div style="background:#e8dcc8;border-radius:1px;display:flex;align-items:center;justify-content:center;"><div style="width:7px;height:7px;background:#44ff88;border-radius:50%;"></div></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+
+          <!-- Row 2 -->
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+
+          <!-- Row 3: RAMP + MEMORY high — light -->
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <div style="background:#9b7c5a;border-radius:1px;"></div>
+          <div style="background:#9b7c5a;border-radius:1px;"></div>
+          <div style="background:#e8dcc8;border-radius:1px;"></div>
+          <!-- MEMORY — light 45% black -->
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+
+          <!-- Row 4: HIGH memory light -->
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+          <div style="position:relative;border-radius:1px;overflow:hidden;"><div style="position:absolute;inset:0;background:#c8b87e;"></div><div style="position:absolute;inset:0;background:#000;opacity:0.45;"></div></div>
+
+          <!-- Row 5-6: all unseen -->
+          <div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div>
+          <div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div><div style="background:#050508;border-radius:1px;"></div>
+        </div>
+        <div style="position:absolute;bottom:4px;left:6px;font-size:8px;color:#aaa;">B — Memory at 45% black. Terrain clearly readable in visited areas.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Light memory (45% black)</h3>
+      <p>Visited terrain is clearly readable — terrain type, height, and map layout stay legible. More useful for an R&D tool where you want to understand what the agent has explored.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:1rem;">Both render with a single PixiJS Graphics pass. This is purely aesthetic — pick whichever feels right.</p>

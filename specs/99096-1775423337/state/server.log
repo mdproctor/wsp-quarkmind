@@ -1,0 +1,5 @@
+{"type":"server-started","port":57225,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:57225","screen_dir":"/Users/mdproctor/claude/starcraft/.superpowers/brainstorm/99096-1775423337/content","state_dir":"/Users/mdproctor/claude/starcraft/.superpowers/brainstorm/99096-1775423337/state"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/starcraft/.superpowers/brainstorm/99096-1775423337/content/architecture-overview.html"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/starcraft/.superpowers/brainstorm/99096-1775423337/content/crosscutting.html"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/starcraft/.superpowers/brainstorm/99096-1775423337/content/architecture-v2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

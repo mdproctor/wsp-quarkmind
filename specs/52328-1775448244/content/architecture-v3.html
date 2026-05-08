@@ -1,0 +1,126 @@
+<h2>Architecture — Four Plugin Levels</h2>
+<p class="subtitle">Plugins participate at different levels depending on what they need to observe, direct, or interact with</p>
+
+<div style="font-family: monospace; font-size: 12px; margin-top: 20px; position: relative;">
+
+  <!-- Shared state legend -->
+  <div style="display: flex; gap: 16px; margin-bottom: 20px; font-size: 11px;">
+    <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(232,168,56,0.3);border:1px solid #e8a838;"></div><span style="color:#e8a838;">Shared state (passive)</span></div>
+    <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(74,158,255,0.3);border:1px solid #4a9eff;"></div><span style="color:#4a9eff;">SC2 infrastructure</span></div>
+    <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(76,175,130,0.3);border:1px solid #4caf82;"></div><span style="color:#4caf82;">Plugin seam / hook point</span></div>
+    <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px;height:14px;border-radius:3px;background:rgba(124,92,191,0.3);border:1px solid #7c5cbf;"></div><span style="color:#7c5cbf;">CaseHub engine</span></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 220px 1fr; gap: 16px;">
+
+    <!-- LEFT: Flow column -->
+    <div style="display: flex; flex-direction: column; gap: 0;">
+
+      <!-- SC2 -->
+      <div style="background:rgba(74,158,255,0.08); border:2px solid #4a9eff; border-radius:8px; padding:12px; margin-bottom:8px;">
+        <div style="color:#4a9eff; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">📡 SC2 (ocraft-s2client)</div>
+        <div style="background:rgba(74,158,255,0.15); border:1px solid #4a9eff; border-radius:4px; padding:6px 10px; margin-bottom:4px;">StarCraftClient</div>
+        <div style="text-align:center; color:#555; font-size:11px;">▼ raw frame</div>
+        <div style="background:rgba(74,158,255,0.15); border:1px solid #4a9eff; border-radius:4px; padding:6px 10px; margin-bottom:4px;">GameObserver</div>
+        <div style="text-align:center; color:#555; font-size:11px;">▼ GameState</div>
+        <div style="background:rgba(74,158,255,0.15); border:1px solid #4a9eff; border-radius:4px; padding:6px 10px;">CommandDispatcher<br><span style="color:#888;font-size:10px;">drains IntentQueue</span></div>
+      </div>
+
+      <!-- Shared state -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+        <div style="background:rgba(232,168,56,0.12); border:2px solid #e8a838; border-radius:8px; padding:10px; text-align:center;">
+          <div style="color:#e8a838; font-size:10px; text-transform:uppercase; margin-bottom:4px;">CaseFile</div>
+          <div style="color:#888; font-size:10px;">shared<br>blackboard</div>
+        </div>
+        <div style="background:rgba(232,84,84,0.12); border:2px solid #e85454; border-radius:8px; padding:10px; text-align:center;">
+          <div style="color:#e85454; font-size:10px; text-transform:uppercase; margin-bottom:4px;">IntentQueue</div>
+          <div style="color:#888; font-size:10px;">action<br>buffer</div>
+        </div>
+      </div>
+
+      <!-- CaseHub Engine -->
+      <div style="background:rgba(124,92,191,0.08); border:2px solid #7c5cbf; border-radius:8px; padding:12px;">
+        <div style="color:#7c5cbf; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">🧠 CaseEngine (CaseHub)</div>
+        <div style="background:rgba(124,92,191,0.15); border:1px solid #7c5cbf; border-radius:4px; padding:6px 10px; margin-bottom:4px;">GameStateTranslator</div>
+        <div style="background:rgba(124,92,191,0.15); border:1px solid #7c5cbf; border-radius:4px; padding:6px 10px; margin-bottom:4px;">ListenerEvaluator</div>
+        <div style="background:rgba(124,92,191,0.15); border:1px solid #7c5cbf; border-radius:4px; padding:6px 10px;">PlanItem scheduler</div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Four plugin levels -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+
+      <div style="color:#aaa; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Plugin levels — from fastest to highest-level</div>
+
+      <!-- Level 1: Frame -->
+      <div style="background:rgba(76,175,130,0.06); border:2px solid #4caf82; border-radius:8px; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div>
+            <span style="color:#4caf82; font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:bold;">Level 1 — Frame Observer</span>
+            <div style="color:#888; font-size:10px; margin-top:2px;">Hook: registered listener on GameObserver · runs every SC2 frame</div>
+          </div>
+          <span style="color:#4caf82; font-size:10px; background:rgba(76,175,130,0.15); padding:2px 8px; border-radius:10px;">~22fps</span>
+        </div>
+        <div style="color:#ccc; font-size:12px; margin-bottom:6px;">Sees raw <code>GameState</code> before it reaches CaseFile. Can write directly to IntentQueue for frame-accurate responses.</div>
+        <div style="color:#888; font-size:11px; border-left:2px solid #4caf82; padding-left:8px;">
+          <strong style="color:#aaa;">Suited for:</strong> raw ML inference on frame data, emergency interrupt handlers, frame-accurate unit micromanagement
+        </div>
+      </div>
+
+      <!-- Level 2: CaseFile Observer -->
+      <div style="background:rgba(76,175,130,0.06); border:2px solid #4caf82; border-radius:8px; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div>
+            <span style="color:#4caf82; font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:bold;">Level 2 — CaseFile Reactor</span>
+            <div style="color:#888; font-size:10px; margin-top:2px;">Hook: <code>CaseFile.onChange()</code> listener · fires on any CaseFile write</div>
+          </div>
+          <span style="color:#4caf82; font-size:10px; background:rgba(76,175,130,0.15); padding:2px 8px; border-radius:10px;">reactive</span>
+        </div>
+        <div style="color:#ccc; font-size:12px; margin-bottom:6px;">Observes the full blackboard. Can react to changes made by other TaskDefinitions, not just SC2 observations. Can write back to CaseFile or IntentQueue.</div>
+        <div style="color:#888; font-size:11px; border-left:2px solid #4caf82; padding-left:8px;">
+          <strong style="color:#aaa;">Suited for:</strong> Drools watching the whole CaseFile, discrepancy detectors, cross-concern coordination rules
+        </div>
+      </div>
+
+      <!-- Level 3: PlanningStrategy -->
+      <div style="background:rgba(76,175,130,0.06); border:2px solid #4caf82; border-radius:8px; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div>
+            <span style="color:#4caf82; font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:bold;">Level 3 — Planning Strategy</span>
+            <div style="color:#888; font-size:10px; margin-top:2px;">Hook: CaseHub <code>PlanningStrategy</code> · runs between CaseEngine cycles</div>
+          </div>
+          <span style="color:#4caf82; font-size:10px; background:rgba(76,175,130,0.15); padding:2px 8px; border-radius:10px;">control plane</span>
+        </div>
+        <div style="color:#ccc; font-size:12px; margin-bottom:6px;">Directs <em>what the CaseEngine does next</em> — which TaskDefinitions are prioritised, suspended, or cancelled. Sees all PlanItems and CasePlanModel state.</div>
+        <div style="color:#888; font-size:11px; border-left:2px solid #4caf82; padding-left:8px;">
+          <strong style="color:#aaa;">Suited for:</strong> high-level strategy selection, crisis response (incoming attack → suspend economics → elevate tactics), CMMN case plan manipulation
+        </div>
+      </div>
+
+      <!-- Level 4: TaskDefinition / Worker -->
+      <div style="background:rgba(76,175,130,0.06); border:2px solid #4caf82; border-radius:8px; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div>
+            <span style="color:#4caf82; font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:bold;">Level 4 — TaskDefinition / Worker</span>
+            <div style="color:#888; font-size:10px; margin-top:2px;">Hook: CaseHub <code>TaskDefinition</code> (called) or <code>Worker</code> (autonomous) · data-driven activation</div>
+          </div>
+          <span style="color:#4caf82; font-size:10px; background:rgba(76,175,130,0.15); padding:2px 8px; border-radius:10px;">data plane</span>
+        </div>
+        <div style="color:#ccc; font-size:12px; margin-bottom:6px;">Called when entry criteria are met (reads specific CaseFile keys). Writes results back to CaseFile or intents to IntentQueue. Worker variant runs autonomously on its own thread.</div>
+        <div style="color:#888; font-size:11px; border-left:2px solid #4caf82; padding-left:8px;">
+          <strong style="color:#aaa;">Suited for:</strong> StrategyTask, EconomicsTask, TacticsTask, ScoutingTask — and their Drools/Flow/CaseHub replacements
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Shared state access note -->
+  <div style="margin-top:14px; padding:12px 16px; background:rgba(232,168,56,0.06); border:1px solid #e8a838; border-radius:6px; font-size:12px; color:#aaa;">
+    <strong style="color:#e8a838;">Shared state access:</strong> Any plugin at any level can read/write <strong style="color:#e8a838;">CaseFile</strong> and write to <strong style="color:#e85454;">IntentQueue</strong>.
+    These are not controlled by a single layer — they are the common substrate all plugins share.
+    Conflict resolution for IntentQueue is handled by <code>PlanningStrategy</code> (Level 3) or by typed intent ownership per unit.
+  </div>
+
+</div>

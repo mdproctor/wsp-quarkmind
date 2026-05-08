@@ -1,0 +1,118 @@
+<h2>Architecture — Refined</h2>
+<p class="subtitle">Two decoupled loops joined by CaseFile and IntentQueue</p>
+
+<div style="display: grid; grid-template-columns: 1fr 40px 1fr; gap: 0; margin-top: 20px; font-family: monospace; font-size: 12px;">
+
+  <!-- LEFT COLUMN: SC2 Frame Loop -->
+  <div>
+    <div style="text-align:center; color:#4a9eff; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:bold;">SC2 Frame Loop (~22fps)</div>
+
+    <div style="border: 2px solid #4a9eff; border-radius: 8px; padding: 14px; background: rgba(74,158,255,0.08); margin-bottom:10px;">
+      <div style="color:#4a9eff; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">📡 sc2 package</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="background:rgba(74,158,255,0.15); border:1px solid #4a9eff; border-radius:4px; padding:6px 10px;">
+          StarCraftClient<br><span style="color:#888;font-size:10px;">ocraft-s2client connection</span>
+        </div>
+        <div style="text-align:center; color:#555;">▼ raw observation each frame</div>
+        <div style="background:rgba(74,158,255,0.15); border:1px solid #4a9eff; border-radius:4px; padding:6px 10px;">
+          GameObserver<br><span style="color:#888;font-size:10px;">receives SC2 frame data</span>
+        </div>
+        <div style="text-align:center; color:#555;">▼ translates to GameState</div>
+        <div style="background:rgba(74,158,255,0.15); border:1px solid #4a9eff; border-radius:4px; padding:6px 10px;">
+          CommandDispatcher<br><span style="color:#888;font-size:10px;">drains IntentQueue → SC2 cmds</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="border: 2px solid #7c5cbf; border-radius: 8px; padding: 14px; background: rgba(124,92,191,0.08);">
+      <div style="color:#7c5cbf; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">🗺 domain package</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="background:rgba(124,92,191,0.15); border:1px solid #7c5cbf; border-radius:4px; padding:6px 10px;">
+          GameState<br><span style="color:#888;font-size:10px;">structured snapshot</span>
+        </div>
+        <div style="background:rgba(124,92,191,0.15); border:1px solid #7c5cbf; border-radius:4px; padding:6px 10px;">
+          Unit · Building · Resource<br><span style="color:#888;font-size:10px;">plain Java, no framework deps</span>
+        </div>
+        <div style="background:rgba(124,92,191,0.15); border:1px solid #7c5cbf; border-radius:4px; padding:6px 10px;">
+          GameMap · PlayerInfo<br><span style="color:#888;font-size:10px;">terrain, fog of war, enemy intel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE COLUMN: Bridges -->
+  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding-top: 80px;">
+
+    <!-- CaseFile bridge (down from domain, up from agent) -->
+    <div style="display:flex; flex-direction:column; align-items:center; margin-bottom: 8px;">
+      <div style="color:#e8a838; font-size:9px; writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg); letter-spacing:1px; margin-bottom:4px;">GameState→CaseFile</div>
+      <div style="color:#555; font-size:16px;">⇄</div>
+    </div>
+
+    <!-- The two bridges as explicit boxes -->
+    <div style="border: 2px solid #e8a838; border-radius:6px; padding:8px 4px; background:rgba(232,168,56,0.12); text-align:center; margin-bottom:8px; min-width:36px;">
+      <div style="color:#e8a838; font-size:9px; font-weight:bold; writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg);">CaseFile</div>
+    </div>
+
+    <div style="color:#555; font-size:16px; margin-bottom:8px;">⇄</div>
+
+    <div style="border: 2px solid #e85454; border-radius:6px; padding:8px 4px; background:rgba(232,84,84,0.12); text-align:center; margin-bottom:8px; min-width:36px;">
+      <div style="color:#e85454; font-size:9px; font-weight:bold; writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg);">IntentQueue</div>
+    </div>
+
+    <div style="color:#555; font-size:16px;">⇄</div>
+    <div style="color:#e85454; font-size:9px; writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg); letter-spacing:1px; margin-top:4px;">typed intents</div>
+  </div>
+
+  <!-- RIGHT COLUMN: CaseEngine Reasoning Loop -->
+  <div>
+    <div style="text-align:center; color:#e8a838; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:bold;">CaseEngine Reasoning Loop (event-driven)</div>
+
+    <div style="border: 2px solid #e8a838; border-radius: 8px; padding: 14px; background: rgba(232,168,56,0.08); margin-bottom:10px;">
+      <div style="color:#e8a838; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">🧠 agent package</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="background:rgba(232,168,56,0.15); border:1px solid #e8a838; border-radius:4px; padding:6px 10px;">
+          GameStateTranslator<br><span style="color:#888;font-size:10px;">GameState → CaseFile writes</span>
+        </div>
+        <div style="text-align:center; color:#555;">▼ triggers CaseEngine</div>
+        <div style="background:rgba(232,168,56,0.15); border:1px solid #e8a838; border-radius:4px; padding:6px 10px;">
+          CaseEngine (CaseHub)<br><span style="color:#888;font-size:10px;">evaluates eligible TaskDefinitions</span>
+        </div>
+        <div style="text-align:center; color:#555;">▼ activates plugin seams</div>
+
+        <!-- Plugin seams -->
+        <div style="border:1px dashed #e8a838; border-radius:6px; padding:8px; background:rgba(232,168,56,0.05);">
+          <div style="color:#e8a838; font-size:9px; text-transform:uppercase; margin-bottom:6px;">🔌 AgentTask plugin seams</div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="background:rgba(255,255,255,0.04); border:1px solid #444; border-radius:3px; padding:4px 8px;">StrategyTask</div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid #444; border-radius:3px; padding:4px 8px;">EconomicsTask</div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid #444; border-radius:3px; padding:4px 8px;">TacticsTask</div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid #444; border-radius:3px; padding:4px 8px;">ScoutingTask</div>
+          </div>
+        </div>
+
+        <div style="text-align:center; color:#555;">▼ writes intents to IntentQueue</div>
+      </div>
+    </div>
+
+    <div style="border: 2px solid #4caf82; border-radius: 8px; padding: 14px; background: rgba(76,175,130,0.08);">
+      <div style="color:#4caf82; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">🧩 plugin package (Phase 1 dummies)</div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <div style="background:rgba(76,175,130,0.1); border:1px solid #4caf82; border-radius:3px; padding:4px 8px;">PassThroughStrategyTask</div>
+        <div style="background:rgba(76,175,130,0.1); border:1px solid #4caf82; border-radius:3px; padding:4px 8px;">BasicEconomicsTask</div>
+        <div style="background:rgba(76,175,130,0.1); border:1px solid #4caf82; border-radius:3px; padding:4px 8px;">PassThroughTacticsTask</div>
+        <div style="background:rgba(76,175,130,0.1); border:1px solid #4caf82; border-radius:3px; padding:4px 8px;">PassThroughScoutingTask</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+  <div style="padding:10px 14px; background:rgba(232,84,84,0.08); border:1px solid #e85454; border-radius:6px; font-size:12px; color:#aaa;">
+    <strong style="color:#e85454;">IntentQueue</strong> — thread-safe buffer. SC2 frame loop <em>writes</em> to CaseFile; CaseEngine <em>reads</em> CaseFile and <em>writes</em> intents; CommandDispatcher <em>drains</em> intents each frame. Neither loop ever blocks the other.
+  </div>
+  <div style="padding:10px 14px; background:rgba(232,168,56,0.08); border:1px solid #e8a838; border-radius:6px; font-size:12px; color:#aaa;">
+    <strong style="color:#e8a838;">CaseFile</strong> — the shared blackboard. GameStateTranslator pushes SC2 observations in; TaskDefinitions read and write reasoning state; changes trigger CaseEngine's next reasoning cycle.
+  </div>
+</div>

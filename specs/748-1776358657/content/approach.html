@@ -1,0 +1,76 @@
+<h2>Fog of War — Architecture Approaches</h2>
+<p class="subtitle">Where does visibility computation live?</p>
+
+<div class="options">
+
+  <div class="option" data-choice="inside-emulated-game" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>VisibilityGrid inside EmulatedGame <span style="font-size:0.75em;color:#88cc88;">(recommended)</span></h3>
+      <p><code>EmulatedGame</code> owns a <code>VisibilityGrid</code> (64×64 tile states: UNSEEN / MEMORY / VISIBLE). It recomputes the grid each tick from friendly unit positions + terrain heights. <code>observe()</code> filters <code>enemyUnits</code> before returning. A new <code>observeVisibility()</code> method exposes the grid for broadcast.</p>
+      <div class="pros-cons" style="margin-top:0.5rem;">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>All data in one place — terrain + units + visibility</li>
+          <li>MEMORY state naturally persists across ticks</li>
+          <li>Enemy filter is authoritative (same place enemies are created)</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>EmulatedGame grows slightly larger</li>
+          <li>Tight coupling between physics and perception</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="engine-layer" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Visibility computed in EmulatedEngine</h3>
+      <p><code>EmulatedGame</code> stays pure physics. <code>EmulatedEngine</code> (the CDI layer above) reads <code>GameState</code> + <code>TerrainGrid</code>, computes visibility as a post-processing step, filters enemies, and attaches the grid to the broadcast.</p>
+      <div class="pros-cons" style="margin-top:0.5rem;">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>EmulatedGame stays focused on physics</li>
+          <li>Visibility is an observation concern, not game state</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Engine needs terrain access (currently in EmulatedGame)</li>
+          <li>MEMORY state must live outside the game — separate field in engine</li>
+          <li>More wiring</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,0.05);border-radius:8px;">
+  <h3 style="margin-top:0;">Data flow (either approach)</h3>
+  <div style="font-family:monospace;font-size:0.85em;line-height:2;color:#ccc;">
+    <span style="color:#88cc88;">EmulatedGame.tick()</span> → compute VisibilityGrid from units + terrain<br>
+    <span style="color:#88cc88;">EmulatedGame.observe()</span> → return GameState with <em>filtered</em> enemyUnits<br>
+    <span style="color:#88cc88;">GameStateBroadcaster</span> → WebSocket: { gameState, visibility: int[64][64] }<br>
+    <span style="color:#aaaaff;">Visualizer</span> → fog layer updated each tick (0=black, 1=grey, 2=clear)
+  </div>
+</div>
+
+<div style="margin-top:1rem;padding:1rem;background:rgba(255,255,255,0.05);border-radius:8px;">
+  <h3 style="margin-top:0;">What changes across the codebase</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.85em;">
+    <div>
+      <div class="label">New</div>
+      <ul style="margin:0.25rem 0;color:#ccc;">
+        <li><code>VisibilityGrid</code> — 64×64 tile states + compute logic</li>
+        <li>SC2Data sight ranges (per unit + building type)</li>
+        <li>Visualizer fog overlay layer</li>
+      </ul>
+    </div>
+    <div>
+      <div class="label">Modified</div>
+      <ul style="margin:0.25rem 0;color:#ccc;">
+        <li><code>EmulatedGame</code> — owns/computes visibility, filters observe()</li>
+        <li><code>GameStateBroadcaster</code> — adds visibility to WebSocket payload</li>
+        <li><code>visualizer.html</code> — fog layer, 3-state rendering</li>
+      </ul>
+    </div>
+  </div>
+</div>

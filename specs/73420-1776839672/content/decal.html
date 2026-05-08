@@ -1,0 +1,143 @@
+<h2>E16 — Zerg Team Colour Placement</h2>
+<p class="subtitle">Purple body, yellow eyes already decided. Where does teamColor (blue/red) appear?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:16px;display:flex;gap:16px;justify-content:center">
+      <canvas id="da" width="110" height="110"></canvas>
+      <canvas id="da2" width="110" height="110"></canvas>
+    </div>
+    <div class="card-body">
+      <h3>A — Spine / Frill Glow</h3>
+      <p>Dorsal spines and frills glow in teamColor. Zergling spikes, Hydralisk fin-spines, Mutalisk wing-tips.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:16px;display:flex;gap:16px;justify-content:center">
+      <canvas id="db" width="110" height="110"></canvas>
+      <canvas id="db2" width="110" height="110"></canvas>
+    </div>
+    <div class="card-body">
+      <h3>B — Bio-Sac / Pustule ★ recommended</h3>
+      <p>Organic glands and sacs pulse with teamColor bio-fluid. Roach acid glands, Hydralisk throat sac, Zergling belly gland. Distinctly Zerg, easily read.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:16px;display:flex;gap:16px;justify-content:center">
+      <canvas id="dc" width="110" height="110"></canvas>
+      <canvas id="dc2" width="110" height="110"></canvas>
+    </div>
+    <div class="card-body">
+      <h3>C — Carapace Edge Highlight</h3>
+      <p>Rim lighting on carapace edges in teamColor. Subtle — works at large sizes, may be hard to read at sprite scale.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BODY = '#2a0a3a';
+const FLESH = '#5c1a6e';
+const HIGHLIGHT = '#8b3a9e';
+const EYES = '#ffe066';
+const FRIENDLY = '#4488ff';
+const ENEMY = '#ff4422';
+
+function drawZergBase(ctx, S) {
+  // body blob
+  ctx.fillStyle = BODY;
+  ctx.beginPath();
+  ctx.ellipse(S/2, S*0.55, S*0.28, S*0.32, 0, 0, Math.PI*2);
+  ctx.fill();
+  // flesh belly
+  ctx.fillStyle = FLESH;
+  ctx.beginPath();
+  ctx.ellipse(S/2, S*0.62, S*0.16, S*0.18, 0, 0, Math.PI*2);
+  ctx.fill();
+  // head
+  ctx.fillStyle = HIGHLIGHT;
+  ctx.beginPath();
+  ctx.ellipse(S/2, S*0.3, S*0.18, S*0.16, 0, 0, Math.PI*2);
+  ctx.fill();
+  // eyes
+  ctx.fillStyle = EYES;
+  ctx.beginPath(); ctx.arc(S*0.42, S*0.28, S*0.045, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.58, S*0.28, S*0.045, 0, Math.PI*2); ctx.fill();
+}
+
+// Option A — spine glow
+function drawSpineGlow(id, teamColor) {
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width;
+  drawZergBase(ctx, S);
+  // spines on back
+  ctx.strokeStyle = teamColor;
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = teamColor;
+  ctx.shadowBlur = 6;
+  [[S*0.38,S*0.18],[S*0.5,S*0.12],[S*0.62,S*0.18],[S*0.32,S*0.28],[S*0.68,S*0.28]].forEach(([x,y])=>{
+    ctx.beginPath(); ctx.moveTo(S/2,S*0.3); ctx.lineTo(x,y); ctx.stroke();
+    ctx.fillStyle = teamColor;
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+  });
+  ctx.shadowBlur = 0;
+}
+
+// Option B — bio sac
+function drawBioSac(id, teamColor) {
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width;
+  drawZergBase(ctx, S);
+  // belly sac
+  const grd = ctx.createRadialGradient(S/2,S*0.68,2,S/2,S*0.68,S*0.13);
+  grd.addColorStop(0, teamColor+'ff');
+  grd.addColorStop(0.5, teamColor+'99');
+  grd.addColorStop(1, teamColor+'22');
+  ctx.fillStyle = grd;
+  ctx.shadowColor = teamColor;
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.ellipse(S/2, S*0.68, S*0.1, S*0.09, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  // two small shoulder sacs
+  [S*0.36, S*0.64].forEach(x => {
+    const g2 = ctx.createRadialGradient(x,S*0.5,1,x,S*0.5,S*0.06);
+    g2.addColorStop(0, teamColor+'cc');
+    g2.addColorStop(1, teamColor+'11');
+    ctx.fillStyle = g2;
+    ctx.beginPath(); ctx.arc(x,S*0.5,S*0.055,0,Math.PI*2); ctx.fill();
+  });
+}
+
+// Option C — edge highlight
+function drawEdge(id, teamColor) {
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width;
+  drawZergBase(ctx, S);
+  // rim on body
+  ctx.strokeStyle = teamColor;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.55;
+  ctx.beginPath();
+  ctx.ellipse(S/2, S*0.55, S*0.28, S*0.32, 0, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(S/2, S*0.3, S*0.18, S*0.16, 0, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+drawSpineGlow('da',  FRIENDLY);
+drawSpineGlow('da2', ENEMY);
+drawBioSac('db',  FRIENDLY);
+drawBioSac('db2', ENEMY);
+drawEdge('dc',  FRIENDLY);
+drawEdge('dc2', ENEMY);
+</script>

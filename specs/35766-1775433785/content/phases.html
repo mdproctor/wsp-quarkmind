@@ -1,0 +1,103 @@
+<h2>Phased Build Plan</h2>
+<p class="subtitle">Each phase produces a running bot — no phase leaves it broken</p>
+
+<div style="font-family: monospace; font-size: 13px; margin-top: 20px; display: flex; flex-direction: column; gap: 0;">
+
+  <!-- Phase 0 -->
+  <div style="display: flex; gap: 0;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 60px; flex-shrink: 0;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(74,158,255,0.2); border: 2px solid #4a9eff; display: flex; align-items: center; justify-content: center; color: #4a9eff; font-weight: bold; font-size: 14px;">0</div>
+      <div style="width: 2px; flex: 1; background: linear-gradient(#4a9eff, #7c5cbf); margin: 4px 0;"></div>
+    </div>
+    <div style="flex: 1; padding-bottom: 24px;">
+      <div style="color: #4a9eff; font-weight: bold; font-size: 13px; margin-bottom: 4px;">Bootstrap — Connect &amp; Breathe</div>
+      <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Quarkus app boots, connects to SC2, joins a game, does absolutely nothing, exits cleanly</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <span style="background: rgba(74,158,255,0.1); border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">pom.xml + Quarkus scaffold</span>
+        <span style="background: rgba(74,158,255,0.1); border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">ocraft-s2client wired</span>
+        <span style="background: rgba(74,158,255,0.1); border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">StarCraftClient bean</span>
+        <span style="background: rgba(74,158,255,0.1); border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">empty GameObserver</span>
+        <span style="background: rgba(74,158,255,0.1); border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">NATIVE.md started</span>
+      </div>
+      <div style="margin-top: 8px; font-size: 11px; color: #4caf82;">✓ Done when: bot connects, game starts, bot doesn't crash</div>
+    </div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div style="display: flex; gap: 0;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 60px; flex-shrink: 0;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(124,92,191,0.2); border: 2px solid #7c5cbf; display: flex; align-items: center; justify-content: center; color: #7c5cbf; font-weight: bold; font-size: 14px;">1</div>
+      <div style="width: 2px; flex: 1; background: linear-gradient(#7c5cbf, #e8a838); margin: 4px 0;"></div>
+    </div>
+    <div style="flex: 1; padding-bottom: 24px;">
+      <div style="color: #7c5cbf; font-weight: bold; font-size: 13px; margin-bottom: 4px;">Skeleton — All Boxes, No Logic</div>
+      <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Full package structure in place. CaseFile, CaseEngine, IntentQueue, all four plugin seams wired with dummy implementations. Bot still does nothing in-game.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">domain package (GameState etc)</span>
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">CaseHub integrated</span>
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">GameStateTranslator (stub)</span>
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">4 plugin seam interfaces</span>
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">4 dummy implementations</span>
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">IntentQueue wired</span>
+        <span style="background: rgba(124,92,191,0.1); border: 1px solid #7c5cbf; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">SimulatedGameObserver (%test)</span>
+      </div>
+      <div style="margin-top: 8px; font-size: 11px; color: #4caf82;">✓ Done when: CaseEngine cycles, all plugins activate, structured logs visible in dev UI</div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div style="display: flex; gap: 0;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 60px; flex-shrink: 0;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(232,168,56,0.2); border: 2px solid #e8a838; display: flex; align-items: center; justify-content: center; color: #e8a838; font-weight: bold; font-size: 14px;">2</div>
+      <div style="width: 2px; flex: 1; background: linear-gradient(#e8a838, #e85454); margin: 4px 0;"></div>
+    </div>
+    <div style="flex: 1; padding-bottom: 24px;">
+      <div style="color: #e8a838; font-weight: bold; font-size: 13px; margin-bottom: 4px;">Survive — Basic Protoss Economy</div>
+      <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Bot can play a full game without crashing. Builds probes, pylons to avoid supply cap, nexus mining. Loses badly but finishes the game.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <span style="background: rgba(232,168,56,0.1); border: 1px solid #e8a838; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">GameStateTranslator fills CaseFile</span>
+        <span style="background: rgba(232,168,56,0.1); border: 1px solid #e8a838; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">BasicEconomicsTask: real logic</span>
+        <span style="background: rgba(232,168,56,0.1); border: 1px solid #e8a838; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">CommandDispatcher draining intents</span>
+        <span style="background: rgba(232,168,56,0.1); border: 1px solid #e8a838; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">Protoss unit types in domain model</span>
+      </div>
+      <div style="margin-top: 8px; font-size: 11px; color: #4caf82;">✓ Done when: bot plays a full game, economy runs, doesn't supply-block itself</div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div style="display: flex; gap: 0;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 60px; flex-shrink: 0;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(232,84,84,0.2); border: 2px solid #e85454; display: flex; align-items: center; justify-content: center; color: #e85454; font-weight: bold; font-size: 14px;">3</div>
+      <div style="width: 2px; flex: 1; background: linear-gradient(#e85454, #4caf82); margin: 4px 0;"></div>
+    </div>
+    <div style="flex: 1; padding-bottom: 24px;">
+      <div style="color: #e85454; font-weight: bold; font-size: 13px; margin-bottom: 4px;">Fight — First Real Plugin</div>
+      <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Replace one dummy plugin with a real implementation. The first R&D plugin (Drools rule set, Quarkus Flow workflow, or CaseHub PlanningStrategy) slots in via CDI. Bot can beat the easiest built-in AI.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <span style="background: rgba(232,84,84,0.1); border: 1px solid #e85454; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">First real plugin implementation</span>
+        <span style="background: rgba(232,84,84,0.1); border: 1px solid #e85454; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">CDI profile-based plugin swap proven</span>
+        <span style="background: rgba(232,84,84,0.1); border: 1px solid #e85454; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">Cross-level plugin interaction tested</span>
+      </div>
+      <div style="margin-top: 8px; font-size: 11px; color: #4caf82;">✓ Done when: first non-dummy plugin runs, plugin swap mechanism proven</div>
+    </div>
+  </div>
+
+  <!-- Phase 4+ -->
+  <div style="display: flex; gap: 0;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 60px; flex-shrink: 0;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(76,175,130,0.2); border: 2px solid #4caf82; display: flex; align-items: center; justify-content: center; color: #4caf82; font-weight: bold; font-size: 14px;">4+</div>
+    </div>
+    <div style="flex: 1;">
+      <div style="color: #4caf82; font-weight: bold; font-size: 13px; margin-bottom: 4px;">Evolve — R&D Iteration</div>
+      <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Progressively replace dummy plugins with Drools, Quarkus Flow, and CaseHub/CMMN implementations. Add cross-level plugins. Push toward beating harder built-in AI difficulties. Extract modules when implementations mature.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <span style="background: rgba(76,175,130,0.1); border: 1px solid #4caf82; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">Drools at Level 2/3</span>
+        <span style="background: rgba(76,175,130,0.1); border: 1px solid #4caf82; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">Quarkus Flow Workers</span>
+        <span style="background: rgba(76,175,130,0.1); border: 1px solid #4caf82; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">CaseHub PlanningStrategies</span>
+        <span style="background: rgba(76,175,130,0.1); border: 1px solid #4caf82; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">Module extraction as plugins mature</span>
+        <span style="background: rgba(76,175,130,0.1); border: 1px solid #4caf82; border-radius: 3px; padding: 2px 8px; font-size: 11px; color: #ccc;">Native Quarkus verification</span>
+      </div>
+    </div>
+  </div>
+
+</div>

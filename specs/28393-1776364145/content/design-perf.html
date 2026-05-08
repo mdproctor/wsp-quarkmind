@@ -1,0 +1,103 @@
+<h2>Performance Analysis — Fog of War at SC2 Speed</h2>
+<p class="subtitle">SC2 Faster = 22.4 fps. Every design choice below is held to that budget.</p>
+
+<div class="section">
+  <h3>Visibility computation — negligible</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.85em;color:#ccc;">
+    <div>
+      <div class="label">Work per tick</div>
+      <ul style="margin:0.25rem 0;">
+        <li>~15 friendly observers (units + buildings)</li>
+        <li>Vision radius 8–10 → ~260 tiles per observer</li>
+        <li>~3,900 tile checks: distance float + height lookup</li>
+        <li>Filter ~20 enemy units through isVisible()</li>
+      </ul>
+    </div>
+    <div>
+      <div class="label">Estimate</div>
+      <div style="font-size:2em;color:#88cc88;margin:0.5rem 0;">~0.05ms</div>
+      <div style="color:#888;">per tick. Budget is 44ms at 22.4fps.<br>No concern here.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>WebSocket payload — needs compact encoding</h3>
+  <p style="font-size:0.9em;color:#ccc;">64×64 = 4,096 tiles. How we encode matters:</p>
+  <table style="width:100%;border-collapse:collapse;font-size:0.82em;color:#ccc;">
+    <tr style="color:#888;border-bottom:1px solid #333;">
+      <td style="padding:4px 8px;">Encoding</td>
+      <td style="padding:4px 8px;text-align:right;">Size/frame</td>
+      <td style="padding:4px 8px;text-align:right;">@ 22.4fps</td>
+      <td style="padding:4px 8px;">Verdict</td>
+    </tr>
+    <tr style="border-bottom:1px solid #222;">
+      <td style="padding:4px 8px;"><code>int[64][64]</code> JSON array</td>
+      <td style="padding:4px 8px;text-align:right;">~12 KB</td>
+      <td style="padding:4px 8px;text-align:right;">~270 KB/s</td>
+      <td style="padding:4px 8px;color:#cc8844;">Workable but heavy</td>
+    </tr>
+    <tr style="border-bottom:1px solid #222;background:rgba(100,255,100,0.05);">
+      <td style="padding:4px 8px;"><code>String</code> of 4096 chars ('0'/'1'/'2')</td>
+      <td style="padding:4px 8px;text-align:right;">~4 KB</td>
+      <td style="padding:4px 8px;text-align:right;">~90 KB/s</td>
+      <td style="padding:4px 8px;color:#88cc88;">✓ Recommended</td>
+    </tr>
+    <tr>
+      <td style="padding:4px 8px;">Delta (changed tiles only)</td>
+      <td style="padding:4px 8px;text-align:right;">~0.1 KB</td>
+      <td style="padding:4px 8px;text-align:right;">~2 KB/s</td>
+      <td style="padding:4px 8px;color:#888;">Overkill for local</td>
+    </tr>
+  </table>
+  <p style="font-size:0.82em;color:#aaa;margin-top:0.5rem;">
+    Flat string: <code>"0002211..."</code> — 4096 chars. JS reads it as <code>vis.charAt(y*64+x)</code>.
+    Simple, compact, no parsing overhead. Local WebSocket handles 90KB/s trivially.
+  </p>
+</div>
+
+<div class="section">
+  <h3>Visualizer rendering — requires careful PixiJS approach</h3>
+  <div style="padding:0.75rem;background:rgba(255,180,50,0.08);border-left:3px solid #cc8844;border-radius:4px;margin-bottom:0.75rem;font-size:0.88em;color:#ccc;">
+    <strong>The real risk:</strong> 4,096 individual PixiJS sprites updated each frame would tank performance. We must use a single-pass batch draw.
+  </div>
+  <div style="font-size:0.88em;color:#ccc;">
+    <strong>Approach:</strong> One <code>PIXI.Graphics</code> object for the fog layer, redrawn each frame:
+    <div style="font-family:monospace;font-size:0.82em;background:rgba(0,0,0,0.3);padding:0.6rem;border-radius:6px;line-height:1.8;margin-top:0.5rem;">
+      fogLayer.clear();<br>
+      <span style="color:#666;">// Single pass — PixiJS batches all rect draws</span><br>
+      for (let y = 0; y &lt; 64; y++) {<br>
+      &nbsp;&nbsp;for (let x = 0; x &lt; 64; x++) {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;const s = vis.charAt(y*64+x);<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;if (s === '2') continue; <span style="color:#666;">// VISIBLE — no fog</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;fogLayer.rect(x*TILE, yFlip(y)*TILE, TILE, TILE)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.fill({ color: 0x000000, alpha: s==='0' ? 1.0 : 0.6 });<br>
+      &nbsp;&nbsp;}<br>
+      }
+    </div>
+    <p style="margin-top:0.5rem;color:#aaa;">4,096 batched rect calls in PixiJS 8 — well within 44ms budget. PixiJS submits as a single GPU draw call.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Summary — no performance risk at 22.4fps</h3>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;font-size:0.82em;">
+    <div style="padding:0.5rem;background:rgba(100,255,100,0.07);border-radius:6px;text-align:center;">
+      <div style="color:#88cc88;font-size:1.3em;">✓</div>
+      <strong>Compute</strong><br>
+      <span style="color:#aaa;">~0.05ms/tick</span>
+    </div>
+    <div style="padding:0.5rem;background:rgba(100,255,100,0.07);border-radius:6px;text-align:center;">
+      <div style="color:#88cc88;font-size:1.3em;">✓</div>
+      <strong>Bandwidth</strong><br>
+      <span style="color:#aaa;">~90KB/s local</span>
+    </div>
+    <div style="padding:0.5rem;background:rgba(100,255,100,0.07);border-radius:6px;text-align:center;">
+      <div style="color:#88cc88;font-size:1.3em;">✓</div>
+      <strong>Render</strong><br>
+      <span style="color:#aaa;">1 GPU draw call</span>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle">No design changes needed for performance — just the compact string encoding and single-pass fog draw.</p>

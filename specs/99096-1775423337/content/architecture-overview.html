@@ -1,0 +1,68 @@
+<h2>Overall Architecture</h2>
+<p class="subtitle">Single Quarkus module · Four package layers · Plugin seams at the intelligence layer</p>
+
+<div style="font-family: monospace; font-size: 13px; line-height: 1.6; margin: 24px 0;">
+
+  <!-- SC2 Layer -->
+  <div style="border: 2px solid #4a9eff; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: rgba(74,158,255,0.08);">
+    <div style="color: #4a9eff; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">📡 sc2 package — SC2 I/O Adapter</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="background: rgba(74,158,255,0.15); border: 1px solid #4a9eff; border-radius: 4px; padding: 8px 14px;">StarCraftClient<br><span style="font-size:10px;color:#888">manages SC2 connection via ocraft-s2client</span></div>
+      <div style="background: rgba(74,158,255,0.15); border: 1px solid #4a9eff; border-radius: 4px; padding: 8px 14px;">GameObserver<br><span style="font-size:10px;color:#888">receives per-frame SC2 observations</span></div>
+      <div style="background: rgba(74,158,255,0.15); border: 1px solid #4a9eff; border-radius: 4px; padding: 8px 14px;">CommandDispatcher<br><span style="font-size:10px;color:#888">sends SC2 commands back each frame</span></div>
+    </div>
+  </div>
+
+  <div style="text-align:center; color: #666; margin: -4px 0;">▼ raw SC2 observations &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SC2 commands ▲</div>
+
+  <!-- Domain Layer -->
+  <div style="border: 2px solid #7c5cbf; border-radius: 8px; padding: 16px; margin: 12px 0; background: rgba(124,92,191,0.08);">
+    <div style="color: #7c5cbf; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">🗺 domain package — Game State Model</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="background: rgba(124,92,191,0.15); border: 1px solid #7c5cbf; border-radius: 4px; padding: 8px 14px;">GameState<br><span style="font-size:10px;color:#888">master snapshot each decision cycle</span></div>
+      <div style="background: rgba(124,92,191,0.15); border: 1px solid #7c5cbf; border-radius: 4px; padding: 8px 14px;">Unit · Building · Resource<br><span style="font-size:10px;color:#888">plain Java domain objects</span></div>
+      <div style="background: rgba(124,92,191,0.15); border: 1px solid #7c5cbf; border-radius: 4px; padding: 8px 14px;">GameMap · PlayerInfo<br><span style="font-size:10px;color:#888">terrain, fog of war, enemy intel</span></div>
+    </div>
+  </div>
+
+  <div style="text-align:center; color: #666; margin: -4px 0;">▼ structured GameState &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; high-level intents ▲</div>
+
+  <!-- Agent / CaseHub Layer -->
+  <div style="border: 2px solid #e8a838; border-radius: 8px; padding: 16px; margin: 12px 0; background: rgba(232,168,56,0.08);">
+    <div style="color: #e8a838; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">🧠 agent package — CaseHub Intelligence Layer</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+      <div style="background: rgba(232,168,56,0.15); border: 1px solid #e8a838; border-radius: 4px; padding: 8px 14px;">StarCraftCaseFile<br><span style="font-size:10px;color:#888">CaseFile with typed SC2 keys</span></div>
+      <div style="background: rgba(232,168,56,0.15); border: 1px solid #e8a838; border-radius: 4px; padding: 8px 14px;">GameStateTranslator<br><span style="font-size:10px;color:#888">GameState → CaseFile updates</span></div>
+      <div style="background: rgba(232,168,56,0.15); border: 1px solid #e8a838; border-radius: 4px; padding: 8px 14px;">CaseEngine (CaseHub)<br><span style="font-size:10px;color:#888">control loop, drives TaskDefinitions</span></div>
+      <div style="background: rgba(232,168,56,0.15); border: 1px solid #e8a838; border-radius: 4px; padding: 8px 14px;">IntentQueue<br><span style="font-size:10px;color:#888">collects actions for CommandDispatcher</span></div>
+    </div>
+    <!-- Plugin seams -->
+    <div style="border: 1px dashed #e8a838; border-radius: 6px; padding: 12px; background: rgba(232,168,56,0.05);">
+      <div style="color: #e8a838; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🔌 Plugin seams (AgentTask implementations)</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 4px; padding: 6px 12px; font-size:12px;">StrategyTask<br><span style="font-size:10px;color:#888">what strategy are we executing?</span></div>
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 4px; padding: 6px 12px; font-size:12px;">EconomicsTask<br><span style="font-size:10px;color:#888">resources, workers, supply, builds</span></div>
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 4px; padding: 6px 12px; font-size:12px;">TacticsTask<br><span style="font-size:10px;color:#888">army, combat, micromanagement</span></div>
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 4px; padding: 6px 12px; font-size:12px;">ScoutingTask<br><span style="font-size:10px;color:#888">map awareness, enemy intel</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; color: #666; margin: -4px 0;">▼ dummy implementations (Phase 1) &nbsp;&nbsp;&nbsp;&nbsp; future: Drools · Quarkus Flow · CaseHub nested ▲</div>
+
+  <!-- Plugin package -->
+  <div style="border: 2px solid #4caf82; border-radius: 8px; padding: 16px; margin: 12px 0; background: rgba(76,175,130,0.08);">
+    <div style="color: #4caf82; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">🧩 plugin package — Default Implementations</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="background: rgba(76,175,130,0.15); border: 1px solid #4caf82; border-radius: 4px; padding: 8px 14px; font-size:12px;">PassThroughStrategyTask<br><span style="font-size:10px;color:#888">fixed strategy, no logic</span></div>
+      <div style="background: rgba(76,175,130,0.15); border: 1px solid #4caf82; border-radius: 4px; padding: 8px 14px; font-size:12px;">BasicEconomicsTask<br><span style="font-size:10px;color:#888">just keep workers mining</span></div>
+      <div style="background: rgba(76,175,130,0.15); border: 1px solid #4caf82; border-radius: 4px; padding: 8px 14px; font-size:12px;">PassThroughTacticsTask<br><span style="font-size:10px;color:#888">units do nothing</span></div>
+      <div style="background: rgba(76,175,130,0.15); border: 1px solid #4caf82; border-radius: 4px; padding: 8px 14px; font-size:12px;">PassThroughScoutingTask<br><span style="font-size:10px;color:#888">no scouting</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top: 16px; padding: 12px 16px; background: rgba(255,255,255,0.04); border-left: 3px solid #555; border-radius: 4px; font-size: 13px; color: #aaa;">
+  <strong style="color:#ccc;">Key constraint:</strong> All layer boundaries are CDI interfaces. Swap a plugin by providing a new <code>@ApplicationScoped</code> bean — no wiring changes. Native Quarkus compatible by design.
+</div>

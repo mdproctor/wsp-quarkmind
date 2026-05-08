@@ -1,0 +1,70 @@
+<h2>Cross-Cutting Concerns</h2>
+<p class="subtitle">Issues that touch every layer — need to be decided before or during Phase 1</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+
+  <!-- Threading / Timing -->
+  <div style="border: 2px solid #e85454; border-radius: 8px; padding: 16px; background: rgba(232,84,84,0.07);">
+    <div style="color: #e85454; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">⏱ Threading &amp; Timing Bridge</div>
+    <p style="font-size:13px; color:#ccc; margin: 0 0 8px;">SC2 game loop is synchronous — ocraft-s2client calls your bot every frame (~22fps) and <em>waits</em> for commands. CaseEngine is async. These two clocks need a clear bridge.</p>
+    <div style="font-size:12px; color:#aaa; border-left: 2px solid #e85454; padding-left: 8px;">
+      <strong style="color:#ddd;">Proposed:</strong> GameObserver translates frames to CaseFile updates at SC2 speed. CaseEngine runs on its own schedule (event-driven on CaseFile changes). An <code>IntentQueue</code> buffers actions; CommandDispatcher drains it each frame. The two loops never block each other.
+    </div>
+  </div>
+
+  <!-- Native Quarkus Guardrails -->
+  <div style="border: 2px solid #e8a838; border-radius: 8px; padding: 16px; background: rgba(232,168,56,0.07);">
+    <div style="color: #e8a838; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🏗 Native Quarkus Guardrails</div>
+    <p style="font-size:13px; color:#ccc; margin: 0 0 8px;">Every plugin added risks drifting away from native compatibility. Need explicit rules enforced by convention, not hope.</p>
+    <div style="font-size:12px; color:#aaa; border-left: 2px solid #e8a838; padding-left: 8px;">
+      <strong style="color:#ddd;">Rules:</strong><br>
+      • No dynamic class loading or runtime code generation<br>
+      • All CDI injection via constructor or field with proper annotations<br>
+      • Reflection uses → register in <code>reflection-config.json</code><br>
+      • ocraft-s2client (RxJava + Protobuf) needs native verification before going far<br>
+      • A <code>NATIVE.md</code> tracks known issues and workarounds per dependency
+    </div>
+  </div>
+
+  <!-- Testability without SC2 -->
+  <div style="border: 2px solid #4a9eff; border-radius: 8px; padding: 16px; background: rgba(74,158,255,0.07);">
+    <div style="color: #4a9eff; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🧪 SC2-Free Testability</div>
+    <p style="font-size:13px; color:#ccc; margin: 0 0 8px;">R&amp;D iteration speed requires testing plugin logic without launching StarCraft II. Connecting to a live game just to test strategy logic is too slow.</p>
+    <div style="font-size:12px; color:#aaa; border-left: 2px solid #4a9eff; padding-left: 8px;">
+      <strong style="color:#ddd;">Proposed:</strong> <code>SimulatedGameObserver</code> — a test-mode alternative to the real SC2 adapter that injects scripted <code>GameState</code> snapshots. Activated via Quarkus profile (<code>%test</code>). Intelligence layer is completely unaware of the difference.
+    </div>
+  </div>
+
+  <!-- Race Selection -->
+  <div style="border: 2px solid #7c5cbf; border-radius: 8px; padding: 16px; background: rgba(124,92,191,0.07);">
+    <div style="color: #7c5cbf; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🎮 Race Selection</div>
+    <p style="font-size:13px; color:#ccc; margin: 0 0 8px;">The domain model (units, buildings, production chains) is heavily race-specific. Choosing a race shapes the entire domain package from day one.</p>
+    <div style="font-size:12px; color:#aaa; border-left: 2px solid #7c5cbf; padding-left: 8px;">
+      <strong style="color:#ddd;">Recommendation: Protoss.</strong><br>
+      Simplest production model (no larvae/Zerg mechanics, no reactor/tech-lab/Terran floating buildings). EISBot used Protoss for the same reason. Domain model starts smallest, easiest to fill in over time.
+    </div>
+  </div>
+
+  <!-- Action Conflict Resolution -->
+  <div style="border: 2px solid #4caf82; border-radius: 8px; padding: 16px; background: rgba(76,175,130,0.07);">
+    <div style="color: #4caf82; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">⚖️ Action Conflict Resolution</div>
+    <p style="font-size:13px; color:#ccc; margin: 0 0 8px;">Multiple TaskDefinitions (e.g. Economics + Tactics) can both want to command the same worker unit. Without resolution, commands conflict or overwrite.</p>
+    <div style="font-size:12px; color:#aaa; border-left: 2px solid #4caf82; padding-left: 8px;">
+      <strong style="color:#ddd;">Proposed:</strong> <code>IntentQueue</code> uses typed intents (<code>BuildIntent</code>, <code>AttackIntent</code>, <code>MoveIntent</code>) with unit ownership. CaseEngine's <code>PlanningStrategy</code> arbitrates conflicts before dispatch. Priority: Tactics > Economics > Strategy for unit commands.
+    </div>
+  </div>
+
+  <!-- Observability -->
+  <div style="border: 2px solid #aaa; border-radius: 8px; padding: 16px; background: rgba(170,170,170,0.05);">
+    <div style="color: #aaa; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">📊 Observability</div>
+    <p style="font-size:13px; color:#ccc; margin: 0 0 8px;">This is an R&amp;D project — understanding <em>why</em> the bot made a decision is as important as the decision itself. CaseHub's PropagationContext already supports this.</p>
+    <div style="font-size:12px; color:#aaa; border-left: 2px solid #aaa; padding-left: 8px;">
+      <strong style="color:#ddd;">Proposed:</strong> Structured logging on every CaseFile write and every TaskDefinition activation. Quarkus Dev UI visible during development. Can wire into full OpenTelemetry later via the quarkus-observability skill.
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top: 20px; padding: 12px 16px; background: rgba(255,255,255,0.04); border-left: 3px solid #e85454; border-radius: 4px; font-size: 13px; color: #aaa;">
+  <strong style="color:#e85454;">Most critical to get right in Phase 1:</strong> The threading/timing bridge and native guardrails. Getting these wrong early creates compounding problems. The others can evolve.
+</div>

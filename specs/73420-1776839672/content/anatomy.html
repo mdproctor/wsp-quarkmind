@@ -1,0 +1,200 @@
+<h2>E16 — Unit Anatomy Sketches</h2>
+<p class="subtitle">Purple palette, yellow eyes, teamColor bio-sacs. Front-facing view. Does each read clearly?</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;margin-top:16px">
+
+  <div style="text-align:center">
+    <canvas id="zergling" width="140" height="140" style="border:1px solid #333;border-radius:8px;background:#12091e"></canvas>
+    <div style="margin-top:8px"><strong>Zergling</strong></div>
+    <div style="font-size:12px;color:#888;margin-top:4px">Quadrupedal · scythe blades<br>bio-sac on belly</div>
+  </div>
+
+  <div style="text-align:center">
+    <canvas id="roach" width="140" height="140" style="border:1px solid #333;border-radius:8px;background:#12091e"></canvas>
+    <div style="margin-top:8px"><strong>Roach</strong></div>
+    <div style="font-size:12px;color:#888;margin-top:4px">Low-slung · heavy armour<br>acid gland sacs on back</div>
+  </div>
+
+  <div style="text-align:center">
+    <canvas id="hydralisk" width="140" height="140" style="border:1px solid #333;border-radius:8px;background:#12091e"></canvas>
+    <div style="margin-top:8px"><strong>Hydralisk</strong></div>
+    <div style="font-size:12px;color:#888;margin-top:4px">Upright · cobra hood<br>throat sac + shoulder pustules</div>
+  </div>
+
+  <div style="text-align:center">
+    <canvas id="mutalisk" width="140" height="140" style="border:1px solid #333;border-radius:8px;background:#12091e"></canvas>
+    <div style="margin-top:8px"><strong>Mutalisk</strong> (flying)</div>
+    <div style="font-size:12px;color:#888;margin-top:4px">Manta silhouette · long tail<br>wing-joint bio-sacs</div>
+  </div>
+
+</div>
+
+<script>
+const BODY      = '#2a0a3a';
+const FLESH     = '#5c1a6e';
+const HIGHLIGHT = '#8b3a9e';
+const EYES      = '#ffe066';
+const TEAM      = '#4488ff';
+
+// ── Zergling ────────────────────────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('zergling');
+  const ctx = cv.getContext('2d'); const S = cv.width;
+  // body
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.58, S*0.22, S*0.26, 0, 0, Math.PI*2); ctx.fill();
+  // carapace top
+  ctx.fillStyle = HIGHLIGHT;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.4, S*0.18, S*0.14, 0, 0, Math.PI*2); ctx.fill();
+  // legs (4 stubby)
+  ctx.strokeStyle = FLESH; ctx.lineWidth = 4;
+  [[0.32,0.66,0.18,0.78],[0.4,0.7,0.28,0.84],[0.6,0.7,0.72,0.84],[0.68,0.66,0.82,0.78]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath(); ctx.moveTo(S*x1,S*y1); ctx.lineTo(S*x2,S*y2); ctx.stroke();
+  });
+  // scythe blades
+  ctx.strokeStyle = HIGHLIGHT; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(S*0.36,S*0.48); ctx.quadraticCurveTo(S*0.18,S*0.35,S*0.22,S*0.18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(S*0.64,S*0.48); ctx.quadraticCurveTo(S*0.82,S*0.35,S*0.78,S*0.18); ctx.stroke();
+  // head
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.3, S*0.13, S*0.12, 0, 0, Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle = EYES;
+  ctx.beginPath(); ctx.arc(S*0.44,S*0.28,S*0.035,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.56,S*0.28,S*0.035,0,Math.PI*2); ctx.fill();
+  // bio-sac (belly)
+  const g = ctx.createRadialGradient(S/2,S*0.68,2,S/2,S*0.68,S*0.09);
+  g.addColorStop(0,TEAM+'ff'); g.addColorStop(0.5,TEAM+'88'); g.addColorStop(1,TEAM+'00');
+  ctx.fillStyle = g; ctx.shadowColor=TEAM; ctx.shadowBlur=8;
+  ctx.beginPath(); ctx.ellipse(S/2,S*0.68,S*0.08,S*0.07,0,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+})();
+
+// ── Roach ───────────────────────────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('roach');
+  const ctx = cv.getContext('2d'); const S = cv.width;
+  // wide low body
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.62, S*0.34, S*0.22, 0, 0, Math.PI*2); ctx.fill();
+  // armour plates
+  ctx.fillStyle = HIGHLIGHT;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.55, S*0.28, S*0.14, 0, 0, Math.PI*2); ctx.fill();
+  // legs (3 each side, stubby)
+  ctx.strokeStyle = FLESH; ctx.lineWidth = 3.5;
+  [[0.24,0.65,0.1,0.72],[0.28,0.7,0.13,0.82],[0.34,0.75,0.2,0.86],
+   [0.76,0.65,0.9,0.72],[0.72,0.7,0.87,0.82],[0.66,0.75,0.8,0.86]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath(); ctx.moveTo(S*x1,S*y1); ctx.lineTo(S*x2,S*y2); ctx.stroke();
+  });
+  // head — heavy jaw
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.4, S*0.2, S*0.15, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = FLESH;
+  ctx.beginPath(); ctx.ellipse(S/2, S*0.46, S*0.16, S*0.08, 0, 0, Math.PI*2); ctx.fill(); // jaw
+  // eyes
+  ctx.fillStyle = EYES;
+  ctx.beginPath(); ctx.arc(S*0.42,S*0.37,S*0.04,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.58,S*0.37,S*0.04,0,Math.PI*2); ctx.fill();
+  // acid gland sacs (back)
+  [[0.38,0.48],[0.5,0.44],[0.62,0.48]].forEach(([fx,fy])=>{
+    const g = ctx.createRadialGradient(S*fx,S*fy,1,S*fx,S*fy,S*0.065);
+    g.addColorStop(0,TEAM+'ff'); g.addColorStop(0.5,TEAM+'77'); g.addColorStop(1,TEAM+'00');
+    ctx.fillStyle=g; ctx.shadowColor=TEAM; ctx.shadowBlur=7;
+    ctx.beginPath(); ctx.ellipse(S*fx,S*fy,S*0.055,S*0.05,0,0,Math.PI*2); ctx.fill();
+  });
+  ctx.shadowBlur=0;
+})();
+
+// ── Hydralisk ────────────────────────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('hydralisk');
+  const ctx = cv.getContext('2d'); const S = cv.width;
+  // snake lower body
+  ctx.strokeStyle = BODY; ctx.lineWidth = 18;
+  ctx.beginPath(); ctx.moveTo(S*0.38,S*0.88); ctx.quadraticCurveTo(S*0.52,S*0.78,S/2,S*0.6); ctx.stroke();
+  ctx.strokeStyle = FLESH; ctx.lineWidth = 10;
+  ctx.beginPath(); ctx.moveTo(S*0.38,S*0.88); ctx.quadraticCurveTo(S*0.52,S*0.78,S/2,S*0.6); ctx.stroke();
+  // upper torso
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2,S*0.52,S*0.2,S*0.18,0,0,Math.PI*2); ctx.fill();
+  // cobra hood/frill
+  ctx.fillStyle = FLESH;
+  ctx.beginPath();
+  ctx.moveTo(S*0.5,S*0.3);
+  ctx.quadraticCurveTo(S*0.22,S*0.32,S*0.28,S*0.52);
+  ctx.lineTo(S*0.4,S*0.48);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(S*0.5,S*0.3);
+  ctx.quadraticCurveTo(S*0.78,S*0.32,S*0.72,S*0.52);
+  ctx.lineTo(S*0.6,S*0.48);
+  ctx.closePath(); ctx.fill();
+  // head
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2,S*0.32,S*0.14,S*0.13,0,0,Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle = EYES;
+  ctx.beginPath(); ctx.arc(S*0.44,S*0.3,S*0.038,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.56,S*0.3,S*0.038,0,Math.PI*2); ctx.fill();
+  // throat sac
+  const g = ctx.createRadialGradient(S*0.5,S*0.44,2,S*0.5,S*0.44,S*0.08);
+  g.addColorStop(0,TEAM+'ff'); g.addColorStop(0.6,TEAM+'88'); g.addColorStop(1,TEAM+'00');
+  ctx.fillStyle=g; ctx.shadowColor=TEAM; ctx.shadowBlur=9;
+  ctx.beginPath(); ctx.ellipse(S*0.5,S*0.44,S*0.07,S*0.065,0,0,Math.PI*2); ctx.fill();
+  // shoulder pustules
+  [S*0.35,S*0.65].forEach(x=>{
+    const g2=ctx.createRadialGradient(x,S*0.52,1,x,S*0.52,S*0.05);
+    g2.addColorStop(0,TEAM+'dd'); g2.addColorStop(1,TEAM+'00');
+    ctx.fillStyle=g2;
+    ctx.beginPath(); ctx.arc(x,S*0.52,S*0.045,0,Math.PI*2); ctx.fill();
+  });
+  ctx.shadowBlur=0;
+})();
+
+// ── Mutalisk ─────────────────────────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('mutalisk');
+  const ctx = cv.getContext('2d'); const S = cv.width;
+  // wings (manta)
+  ctx.fillStyle = FLESH;
+  ctx.beginPath();
+  ctx.moveTo(S*0.5,S*0.48);
+  ctx.quadraticCurveTo(S*0.12,S*0.38,S*0.08,S*0.62);
+  ctx.quadraticCurveTo(S*0.28,S*0.68,S*0.5,S*0.56);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(S*0.5,S*0.48);
+  ctx.quadraticCurveTo(S*0.88,S*0.38,S*0.92,S*0.62);
+  ctx.quadraticCurveTo(S*0.72,S*0.68,S*0.5,S*0.56);
+  ctx.closePath(); ctx.fill();
+  // wing veins
+  ctx.strokeStyle = HIGHLIGHT; ctx.lineWidth = 1.5; ctx.globalAlpha=0.5;
+  [[0.5,0.52,0.2,0.58],[0.5,0.52,0.14,0.5],[0.5,0.52,0.8,0.58],[0.5,0.52,0.86,0.5]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath(); ctx.moveTo(S*x1,S*y1); ctx.lineTo(S*x2,S*y2); ctx.stroke();
+  });
+  ctx.globalAlpha=1;
+  // body
+  ctx.fillStyle = BODY;
+  ctx.beginPath(); ctx.ellipse(S/2,S*0.5,S*0.12,S*0.16,0,0,Math.PI*2); ctx.fill();
+  // tail
+  ctx.strokeStyle = BODY; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(S/2,S*0.64); ctx.quadraticCurveTo(S*0.56,S*0.78,S*0.52,S*0.88); ctx.stroke();
+  ctx.strokeStyle = FLESH; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(S/2,S*0.64); ctx.quadraticCurveTo(S*0.56,S*0.78,S*0.52,S*0.88); ctx.stroke();
+  // head
+  ctx.fillStyle = HIGHLIGHT;
+  ctx.beginPath(); ctx.ellipse(S/2,S*0.34,S*0.1,S*0.1,0,0,Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle = EYES;
+  ctx.beginPath(); ctx.arc(S*0.45,S*0.32,S*0.033,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.55,S*0.32,S*0.033,0,Math.PI*2); ctx.fill();
+  // wing-joint sacs
+  [S*0.3, S*0.7].forEach(x=>{
+    const g=ctx.createRadialGradient(x,S*0.52,1,x,S*0.52,S*0.06);
+    g.addColorStop(0,TEAM+'ff'); g.addColorStop(0.5,TEAM+'88'); g.addColorStop(1,TEAM+'00');
+    ctx.fillStyle=g; ctx.shadowColor=TEAM; ctx.shadowBlur=9;
+    ctx.beginPath(); ctx.ellipse(x,S*0.52,S*0.052,S*0.048,0,0,Math.PI*2); ctx.fill();
+  });
+  ctx.shadowBlur=0;
+})();
+</script>

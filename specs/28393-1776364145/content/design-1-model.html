@@ -1,0 +1,55 @@
+<h2>E9 Fog of War — Design (1/3): Core Model</h2>
+<p class="subtitle">VisibilityGrid, sight ranges, and high-ground rules</p>
+
+<div class="section">
+  <h3>VisibilityGrid</h3>
+  <p>New domain class <code>VisibilityGrid</code> — a 64×64 grid of tile states, computed by <code>EmulatedGame</code> each tick and persisted between ticks (MEMORY accumulates).</p>
+  <div style="font-family:monospace;font-size:0.85em;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:6px;line-height:1.8;color:#ccc;">
+    enum TileVisibility { UNSEEN, MEMORY, VISIBLE }<br><br>
+    class VisibilityGrid {<br>
+    &nbsp;&nbsp;TileVisibility[][] tiles; <span style="color:#666;">// [x][y], persists across ticks</span><br>
+    &nbsp;&nbsp;void recompute(List&lt;Unit&gt; friendly, List&lt;Building&gt; buildings, TerrainGrid terrain)<br>
+    &nbsp;&nbsp;TileVisibility at(int x, int y)<br>
+    &nbsp;&nbsp;boolean isVisible(Point2d pos)<br>
+    }
+  </div>
+  <p style="margin-top:0.75rem;font-size:0.9em;color:#aaa;">Each tick: tiles that were VISIBLE become MEMORY if no longer in vision. New VISIBLE tiles are added from current observer coverage. MEMORY never reverts to UNSEEN.</p>
+</div>
+
+<div class="section">
+  <h3>Sight Ranges — official SC2 values (friendly units only)</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.85em;">
+    <div>
+      <div class="label">Units</div>
+      <table style="width:100%;border-collapse:collapse;color:#ccc;">
+        <tr><td style="padding:3px 0;">Probe</td><td style="color:#88cc88;text-align:right;">8</td></tr>
+        <tr><td style="padding:3px 0;">Zealot</td><td style="color:#88cc88;text-align:right;">9</td></tr>
+        <tr><td style="padding:3px 0;">Stalker</td><td style="color:#88cc88;text-align:right;">10</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="label">Buildings</div>
+      <table style="width:100%;border-collapse:collapse;color:#ccc;">
+        <tr><td style="padding:3px 0;">Nexus</td><td style="color:#88cc88;text-align:right;">9</td></tr>
+        <tr><td style="padding:3px 0;">Gateway</td><td style="color:#88cc88;text-align:right;">9</td></tr>
+        <tr><td style="padding:3px 0;">Assimilator</td><td style="color:#88cc88;text-align:right;">6</td></tr>
+      </table>
+    </div>
+  </div>
+  <p style="font-size:0.8em;color:#666;margin-top:0.5rem;">Enemy sight ranges not needed — we compute friendly vision only.</p>
+</div>
+
+<div class="section">
+  <h3>High Ground Visibility Rule (official SC2)</h3>
+  <div style="font-size:0.9em;color:#ccc;line-height:1.8;">
+    <div style="padding:0.5rem;background:rgba(255,100,100,0.1);border-left:3px solid #cc4444;border-radius:4px;margin-bottom:0.5rem;">
+      Observer on <strong>LOW / RAMP</strong> → vision covers only LOW and RAMP tiles. HIGH tiles are <strong>never made VISIBLE</strong>, regardless of range.
+    </div>
+    <div style="padding:0.5rem;background:rgba(100,255,100,0.1);border-left:3px solid #44cc44;border-radius:4px;">
+      Observer on <strong>HIGH</strong> → vision covers HIGH, RAMP, and LOW tiles normally.
+    </div>
+  </div>
+  <p style="margin-top:0.75rem;font-size:0.85em;color:#aaa;">Consequence: the entire enemy staging area is invisible until a probe reaches HIGH ground. Scouting becomes genuinely meaningful.</p>
+</div>
+
+<p class="subtitle">Confirmed ✓ — ready for section 2: server-side filtering + broadcast</p>

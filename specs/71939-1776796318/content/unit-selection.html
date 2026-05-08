@@ -1,0 +1,114 @@
+<h2>Which Terran units should E15 cover?</h2>
+<p class="subtitle">Select all units you want cartoon sprites for. These will replace the generic red blob for Terran enemies.</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="marine" onclick="toggleSelect(this)">
+    <div class="letter">
+      <canvas id="c-marine" width="80" height="80"></canvas>
+    </div>
+    <div class="content">
+      <h3>Marine</h3>
+      <p>Already in the config dropdown as a wave type. Iconic infantry — CMC suit, rifle, visor. The minimum viable E15.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="marauder" onclick="toggleSelect(this)">
+    <div class="letter">
+      <canvas id="c-marauder" width="80" height="80"></canvas>
+    </div>
+    <div class="content">
+      <h3>Marauder</h3>
+      <p>Armored bio companion to the Marine. Bigger suit, concussive shells. Natural bio-ball pair.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="medivac" onclick="toggleSelect(this)">
+    <div class="letter">
+      <canvas id="c-medivac" width="80" height="80"></canvas>
+    </div>
+    <div class="content">
+      <h3>Medivac</h3>
+      <p>Flying healer/transport. Would need a distinct flying look — floats above the ground plane. More complex to draw and integrate.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function drawMarine(canvas) {
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width, cx = S/2, cy = S/2 + 4;
+  const grd = ctx.createRadialGradient(cx, cy, S*.05, cx, cy, S*.44);
+  grd.addColorStop(0, 'rgba(80,160,255,0.3)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grd; ctx.beginPath(); ctx.ellipse(cx,cy,S*.44,S*.44,0,0,Math.PI*2); ctx.fill();
+  const b = ctx.createRadialGradient(cx-S*.06, cy-S*.04, S*.04, cx, cy, S*.32);
+  b.addColorStop(0,'#6699cc'); b.addColorStop(.5,'#336699'); b.addColorStop(1,'#112244');
+  ctx.fillStyle=b; ctx.beginPath(); ctx.ellipse(cx, cy+S*.02, S*.28, S*.3, 0, 0, Math.PI*2); ctx.fill();
+  const h = ctx.createRadialGradient(cx-S*.06,cy-S*.22,S*.02,cx,cy-S*.16,S*.2);
+  h.addColorStop(0,'#88bbee'); h.addColorStop(.5,'#2255aa'); h.addColorStop(1,'#0d1f44');
+  ctx.fillStyle=h; ctx.beginPath(); ctx.ellipse(cx,cy-S*.16,S*.2,S*.2,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(100,200,255,0.7)';
+  ctx.beginPath(); ctx.ellipse(cx,cy-S*.17,S*.12,S*.07,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(200,240,255,0.5)';
+  ctx.beginPath(); ctx.ellipse(cx-S*.04,cy-S*.2,S*.05,S*.03,-0.3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#336699';
+  ctx.beginPath(); ctx.ellipse(cx-S*.24,cy-S*.06,S*.1,S*.07,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.24,cy-S*.06,S*.1,S*.07,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#445566';
+  ctx.fillRect(cx+S*.18,cy-S*.04,S*.24,S*.08);
+  ctx.beginPath(); ctx.ellipse(cx+S*.44,cy-S*.01,S*.06,S*.05,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#223344';
+  ctx.beginPath(); ctx.ellipse(cx-S*.1,cy+S*.28,S*.1,S*.055,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.1,cy+S*.28,S*.1,S*.055,0,0,Math.PI*2); ctx.fill();
+}
+
+function drawMarauder(canvas) {
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width, cx = S/2, cy = S/2+2;
+  const grd = ctx.createRadialGradient(cx,cy,S*.06,cx,cy,S*.46);
+  grd.addColorStop(0,'rgba(80,200,120,0.25)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,S*.46,S*.46,0,0,Math.PI*2); ctx.fill();
+  const b = ctx.createRadialGradient(cx-S*.08,cy-S*.06,S*.04,cx,cy,S*.36);
+  b.addColorStop(0,'#668844'); b.addColorStop(.5,'#334422'); b.addColorStop(1,'#111a0a');
+  ctx.fillStyle=b; ctx.beginPath(); ctx.ellipse(cx,cy+S*.04,S*.34,S*.3,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#556633';
+  ctx.beginPath(); ctx.ellipse(cx-S*.3,cy-S*.04,S*.12,S*.09,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.3,cy-S*.04,S*.12,S*.09,0,0,Math.PI*2); ctx.fill();
+  const h = ctx.createRadialGradient(cx-S*.04,cy-S*.22,S*.02,cx,cy-S*.14,S*.22);
+  h.addColorStop(0,'#88aa66'); h.addColorStop(.5,'#334422'); h.addColorStop(1,'#0d1508');
+  ctx.fillStyle=h; ctx.beginPath(); ctx.ellipse(cx,cy-S*.16,S*.22,S*.19,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(180,255,100,0.7)';
+  ctx.beginPath(); ctx.ellipse(cx,cy-S*.18,S*.13,S*.045,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#333';
+  ctx.fillRect(cx+S*.18,cy-S*.06,S*.26,S*.07);
+  ctx.fillRect(cx+S*.18,cy+S*.02,S*.26,S*.07);
+  ctx.fillStyle='#555'; ctx.beginPath(); ctx.ellipse(cx+S*.46,cy-S*.03,S*.06,S*.05,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#555'; ctx.beginPath(); ctx.ellipse(cx+S*.46,cy+S*.06,S*.06,S*.05,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#223311';
+  ctx.beginPath(); ctx.ellipse(cx-S*.12,cy+S*.3,S*.12,S*.06,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.12,cy+S*.3,S*.12,S*.06,0,0,Math.PI*2); ctx.fill();
+}
+
+function drawMedivac(canvas) {
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width, cx = S/2, cy = S/2;
+  const grd = ctx.createRadialGradient(cx,cy,S*.06,cx,cy,S*.46);
+  grd.addColorStop(0,'rgba(200,220,255,0.3)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,S*.46,S*.46,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#8899bb'; ctx.beginPath(); ctx.ellipse(cx,cy,S*.38,S*.22,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#556688';
+  ctx.beginPath(); ctx.ellipse(cx-S*.34,cy+S*.04,S*.1,S*.07,0.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.34,cy+S*.04,S*.1,S*.07,-0.3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(100,180,255,0.7)';
+  ctx.beginPath(); ctx.ellipse(cx-S*.34,cy+S*.08,S*.06,S*.04,0.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+S*.34,cy+S*.08,S*.06,S*.04,-0.3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,60,60,0.9)';
+  ctx.fillRect(cx-S*.04,cy-S*.1,S*.08,S*.22);
+  ctx.fillRect(cx-S*.1,cy-S*.04,S*.2,S*.08);
+  ctx.fillStyle='rgba(100,200,255,0.6)';
+  ctx.beginPath(); ctx.ellipse(cx-S*.16,cy-S*.04,S*.08,S*.06,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(100,180,255,0.4)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(cx,cy,S*.42,S*.26,0,0,Math.PI*2); ctx.stroke();
+}
+
+drawMarine(document.getElementById('c-marine'));
+drawMarauder(document.getElementById('c-marauder'));
+drawMedivac(document.getElementById('c-medivac'));
+</script>
