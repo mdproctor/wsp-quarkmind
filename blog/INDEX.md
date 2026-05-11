@@ -27,3 +27,4 @@
 | [2026-04-28-mdp01-seeing-is-believing.md](2026-04-28-mdp01-seeing-is-believing.md) | 2026-04-28 | Real pixel tests replace NDC projection checks; three Three.js bugs surfaced |
 | [2026-05-05-mdp01-both-sides-of-the-board.md](2026-05-05-mdp01-both-sides-of-the-board.md) | 2026-05-05 | Symmetric PlayerState refactor, silent supply=0 failure, Bresenham LOS gotcha in path smoothing |
 | [2026-05-08-mdp01-clean-desk-bigger-picture.md](2026-05-08-mdp01-clean-desk-bigger-picture.md) | 2026-05-08 | Panel CSS bug the tests missed, doc debt cleared, Phase 6 replay-accurate engine goal crystallised |
+| [2026-05-11-mdp01-accurate-not-just-working.md](2026-05-11-mdp01-accurate-not-just-working.md) | 2026-05-11 | Tier-4 health check before Phase 5: stale docs, missing emulated mode, and a domain layer violation in GameStateTick |
