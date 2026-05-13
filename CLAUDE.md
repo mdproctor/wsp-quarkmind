@@ -44,10 +44,11 @@ Per-artifact routing destinations.
 | Artifact   | Destination | Notes |
 |------------|-------------|-------|
 | adr        | project     | lands in `docs/adr/` |
-| blog       | workspace   | blog entries stay in workspace |
+| blog       | mdproctor.github.io | via blog-routing.yaml |
 | design     | project     | lands in `docs/DESIGN.md` |
 | snapshots  | workspace   | |
-| specs      | workspace   | |
+| specs      | project     | lands in `docs/superpowers/specs/` |
+| plans      | workspace   | |
 
 Valid destinations: `project` · `workspace` · `alternative ~/path/to/repo/`
 
