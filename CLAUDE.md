@@ -1,7 +1,9 @@
 # quarkmind Workspace
 
-**Name:** quarkmind
-**Project repo:** /Users/mdproctor/claude/quarkmind
+**Physical path:** `/Users/mdproctor/claude/public/quarkmind/CLAUDE.md`
+**Symlinked at:** none — project has a separate CLAUDE.md (includes this via @include)
+**Project repo:** `/Users/mdproctor/claude/quarkmind`
+**Workspace:** `/Users/mdproctor/claude/public/quarkmind`
 **Workspace type:** public
 
 ## Session Start
@@ -30,6 +32,19 @@ Run `add-dir /Users/mdproctor/claude/quarkmind` before any other work.
 - `snapshots/` — design snapshots with INDEX.md (auto-pruned, max 10)
 - `adr/` — architecture decision records with INDEX.md
 - `blog/` — project diary entries with INDEX.md
+
+## Git Discipline
+
+Two git repositories are active in every session:
+- **Workspace** (`/Users/mdproctor/claude/public/quarkmind`) — plans, blog (staging), snapshots, handover
+- **Project repo** (`/Users/mdproctor/claude/quarkmind`) — source code, ADRs (`docs/adr/`), specs
+
+Never rely on CWD for git operations — the session may have started in either repo. Always use explicit paths:
+```bash
+git -C /Users/mdproctor/claude/public/quarkmind ...     # workspace artifacts
+git -C /Users/mdproctor/claude/quarkmind ...            # project artifacts
+```
+The file path determines the repo: if the file lives under `Workspace`, use the workspace path; if under `Project repo`, use the project path.
 
 ## Rules
 
