@@ -5,8 +5,9 @@ date: 2026-05-11
 type: phase-update
 entry_type: note
 subtype: diary
-projects: [QuarkusMind]
+projects: [quarkmind]
 tags: [architecture, documentation, quarkus, java]
+excerpt: "A tier-4 health check before Phase 6 finds the README still naming replaced stubs and the emulated mode guide completely absent — accuracy over progress."
 ---
 
 Phase 6 was the plan. I didn't start it.

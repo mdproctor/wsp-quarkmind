@@ -5,8 +5,9 @@ date: 2026-05-13
 type: phase-update
 entry_type: note
 subtype: diary
-projects: [QuarkusMind]
+projects: [quarkmind]
 tags: [emulation, sc2, java, testing]
+excerpt: "Phase 6 requires the emulated engine to behave like real SC2 — fixing independent building queues, supply reservation timing, building type validation, and an enemy AI that generated fake building tags."
 ---
 
 Phase 6 requires that the emulated engine behave like real SC2. Not approximately — divergence from real replays shows up as systematic error, not noise. Two things that clearly didn't match were training queues and combat.

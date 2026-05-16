@@ -5,8 +5,9 @@ date: 2026-05-08
 type: phase-update
 entry_type: note
 subtype: diary
-projects: [QuarkusMind]
+projects: [quarkmind]
 tags: [emulation, visualizer, testing, planning]
+excerpt: "Clearing the backlog before Phase 6 — ADRs written, PixiJS bundle removed, scouting threshold recalibrated, and documentation that had described stubs instead of real implementations finally fixed."
 ---
 
 The panel worked in the tests. The user said it was broken.

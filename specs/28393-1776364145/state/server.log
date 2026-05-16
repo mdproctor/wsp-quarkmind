@@ -1,7 +1,0 @@
-{"type":"server-started","port":63242,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:63242","screen_dir":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/content","state_dir":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/state"}
-{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/content/design-1-model.html"}
-{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/content/design-2-server.html"}
-{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/content/design-perf.html"}
-{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/content/design-3-visualizer.html"}
-{"type":"screen-added","file":"/Users/mdproctor/claude/quarkmind/.superpowers/brainstorm/28393-1776364145/content/waiting-2.html"}
-{"type":"server-stopped","reason":"idle timeout"}
