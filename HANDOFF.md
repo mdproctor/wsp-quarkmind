@@ -24,16 +24,23 @@ Key components landed:
 
 **Skill fix:** protocol sweep no longer skips when `docs/protocols/` is absent — the skill now creates it. Both `handover` and `protocol` skills updated in cc-praxis (commit `f5397b4`).
 
-## Immediate Cleanup Required
+## Immediate Cleanup Required (do at session start)
 
-1. **Delete debug file** — `src/test/java/io/quarkmind/sc2/replay/HarnessDebugTest.java` is untracked (created during harness debugging). Review and delete if not needed.
+1. **Sync DESIGN.md** — Phase 6 components are NOT in `docs/DESIGN.md`. Run `java-update-design` to add `AbilityMapping`, `ReplayCommandExtractor`, `ReplayValidationHarness`, `DivergenceReport` to the module table and test list. The `sc2/replay/` row currently only lists `ReplayEngine` and `ReplaySimulatedGame`.
 
-2. **Remove `design/.meta` from workspace** — epic-phase-6 closed but `.meta` was merged to workspace main. Run:
+2. **Close issue #137** — epic close workflow was never run:
    ```bash
-   git -C ~/claude/public/quarkmind rm design/.meta design/JOURNAL.md
+   gh issue close 137 --repo mdproctor/quarkmind
+   ```
+
+3. **Remove `design/.meta` from workspace** — epic-phase-6 closed but `.meta` was merged to workspace main:
+   ```bash
+   git -C ~/claude/public/quarkmind rm design/.meta
    git -C ~/claude/public/quarkmind commit -m "chore: remove epic-phase-6 metadata after close"
    ```
-   Or keep JOURNAL.md for reference and only remove `.meta`.
+   Keep `design/JOURNAL.md` for reference.
+
+4. **Delete debug file** — `src/test/java/io/quarkmind/sc2/replay/HarnessDebugTest.java` is untracked (created during harness debugging). Review and delete if not needed.
 
 ## Immediate Next Step
 
