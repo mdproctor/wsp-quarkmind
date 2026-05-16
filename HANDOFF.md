@@ -1,31 +1,48 @@
-# Handover — 2026-05-09
+# Handover — 2026-05-16
 
-**Head commit (project):** `f4e1858` — chore: migrate methodology artifacts to workspace
-**Head commit (workspace):** workspace pushed to `mdproctor/wsp-quarkmind`
+**Head commit (project):** `50c5728` — docs: update CLAUDE.md with Phase 6 test classes  
+**Head commit (workspace):** `63ff55b` — docs: add blog entry 2026-05-16
 
 ## What Changed This Session
 
-**Workspace created — whole session was infrastructure:**
-- Companion workspace at `~/claude/public/quarkmind/` (public GitHub: `mdproctor/wsp-quarkmind`)
-- CLAUDE.md kept in project (choice B); workspace CLAUDE.md `@includes` it
-- Migrated: 33 blog entries → `blog/`, 35 plans → `plans/`, 12 brainstorm specs → `specs/`, `HANDOFF.md`, `IDEAS.md`
-- Navigation symlinks: `project/wksp/` → workspace, `workspace/proj/` → project
-- Blog section in project CLAUDE.md updated: directory is now `~/claude/public/quarkmind/blog/`
-- Forage entry submitted: `GE-20260508-a30558` — `git rm -r` silently leaves untracked files
+**Phase 6 — Replay-Accurate Forward Simulation: complete and merged to main.**
 
-**Gotcha encountered:** `git rm -r <dir>/` leaves untracked files untouched (no warning, exits 0). One blog entry (`docs/_posts/2026-04-18-mdp01-e11-the-strategy-question.md`) was still in the project at session end — confirmed already copied to workspace, removed from project filesystem.
+Key components landed:
+- `GameEventStream` refactored to thin MPQ reader (`events(Path) → List<Event>`)
+- `AbilityMapping` — stateful CmdEvent → TrainIntent converter; ability IDs discovered empirically via `AbilityDiscoveryTest` from PvZ replays
+- `ReplayCommand`, `TimedIntent`, `ReplayCommandStream`, `ReplayCommandExtractor` pipeline
+- `EmulatedGame` extended: `injectReplayBuilding(Building)`, `markReplayBuildingComplete(String)`, `setMiningProbes(int)`
+- `DivergenceReport` + `ReplayValidationHarness` + `ReplayValidationTest` (passes: maxUnitDelta ≤ 2)
+- `ReplayValidationReportTest` (`mvn test -Preport`) for full divergence dump
 
-**Phase 6 not started** — entire session consumed by workspace setup.
+**Critical finding:** bot SC2 replays use `abilLink=42` (Smart) for building placement — identical to movement, indistinguishable from GAME_EVENTS. Solution: inject buildings from tracker events into EmulatedGame each tick. Garden entry `GE-20260516-42a11c` captures this as undocumented behaviour.
+
+**Issues filed this session:**
+- #138 — Terran/Zerg EmulatedGame mechanics  
+- #140 — Terran `.SC2Replay` files for AbilityMapping discovery  
+- #141 — Saturation-aware mining model (needed for exact unit count match)
+
+**Skill fix:** protocol sweep no longer skips when `docs/protocols/` is absent — the skill now creates it. Both `handover` and `protocol` skills updated in cc-praxis (commit `f5397b4`).
+
+## Immediate Cleanup Required
+
+1. **Delete debug file** — `src/test/java/io/quarkmind/sc2/replay/HarnessDebugTest.java` is untracked (created during harness debugging). Review and delete if not needed.
+
+2. **Remove `design/.meta` from workspace** — epic-phase-6 closed but `.meta` was merged to workspace main. Run:
+   ```bash
+   git -C ~/claude/public/quarkmind rm design/.meta design/JOURNAL.md
+   git -C ~/claude/public/quarkmind commit -m "chore: remove epic-phase-6 metadata after close"
+   ```
+   Or keep JOURNAL.md for reference and only remove `.meta`.
 
 ## Immediate Next Step
 
-**Start Phase 6 epic.** The workspace is now configured — `/epic` will work from `~/claude/public/quarkmind/`.
+**Start the next epic.** Phase 6 is complete on main. Options per `docs/roadmap-sc2-engine.md`:
+- Saturation mining model (#141) — needed for exact unit count validation
+- Terran/Zerg EmulatedGame (#138) — blockers for multi-race validation
+- Phase 7 scope TBD
 
-Epic: "Replay-Accurate Forward Simulation"
-1. Open GitHub issue for the epic
-2. Extract build/train ability commands from replay `CmdEvent`s (ability ID → Intent)
-3. Write `ReplayValidationHarness` — runs `ReplaySimulatedGame` + `EmulatedGame` in parallel, records divergence per tick
-4. First target: economic layer (build times, train times, resource rates) — assert exact match
+Run `/epic` from the workspace to open the next epic.
 
 ## Open Issues
 
@@ -34,16 +51,16 @@ Epic: "Replay-Accurate Forward Simulation"
 | #13 | Live SC2 smoke test | Blocked on SC2 |
 | #14 | GraalVM native image | Blocked on #13 |
 | #74 | YAML unit definitions | Parked |
-
-## Project Artifacts (unchanged)
-
-*Unchanged — `git show HEAD~1:HANDOFF.md` for prior context*
+| #138 | Terran/Zerg EmulatedGame | Open |
+| #140 | Terran replay files for AbilityMapping | Open |
+| #141 | Saturation mining model | Open |
 
 ## References
 
 | Context | Where |
 |---------|-------|
-| Phase 6 roadmap | `docs/roadmap-sc2-engine.md` |
-| ADR index | `docs/adr/INDEX.md` |
-| Workspace | `~/claude/public/quarkmind/` |
-| Prior handover | `git show HEAD:HANDOFF.md` (project repo) |
+| Phase 6 spec | `docs/superpowers/specs/2026-05-14-phase6-replay-validation-design.md` |
+| Phase 6 plan | `~/claude/public/quarkmind/plans/2026-05-15-phase6-replay-validation.md` |
+| Roadmap | `docs/roadmap-sc2-engine.md` |
+| Design journal | `~/claude/public/quarkmind/design/JOURNAL.md` |
+| Blog entry | `~/claude/public/quarkmind/blog/2026-05-16-mdp01-smart-command-hides.md` |
