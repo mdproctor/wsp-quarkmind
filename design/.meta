@@ -1,0 +1,21 @@
+epic: epic-saturation-mining
+project-sha: d78217d3564d5d30032a80bc047daa2054ceef61
+date: 2026-05-17
+issue: 141
+design-section-hashes:
+  29e93738 ## Overview
+  a09ceb07 ## Architecture
+  a0790a8f ## Domain Model
+  563faafc ## Component Structure
+  a739a7e2 ## Plugin System
+  fe64bc0e ## Mock Infrastructure
+  c3a4b47d ## Visualizer
+  4148a593 ## Real SC2 Integration
+  8cb5eee9 ## Core Agent Loop Decisions
+  7b490d81 ## Quarkus Profiles
+  89a2886f ## Key Dependencies
+  813e5a28 ## Testing Strategy
+  94890225 ## Current State
+  09589096 ## Next Steps
+  a7c65ff2 ## Open Questions
+  27e6794c ## ADRs
