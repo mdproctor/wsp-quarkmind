@@ -1,21 +1,19 @@
-# Handover — 2026-05-19
+# Handover — 2026-05-21
 
-**Head commit (project):** `d78217d` — docs: add docs/protocols/ to project artifacts table
-**Head commit (workspace):** `21f9481` — docs: session handover 2026-05-18
+**Head commit (project):** `ee2bdc1` — docs: add SC2DataTest to unit test list in CLAUDE.md
+**Head commit (workspace):** `e499f52` — docs: add blog entry 2026-05-21 two-fixes-finally-together
 
 ## What Changed This Session
 
-- **Handover skill redesigned** — resume output now structured: Last Session / Immediate Next Step / Cross-Module / What's Left / What's Next. Items carry Scale · Complexity tags. Cross-Module section surfaces blocking/blocked relationships across modules.
-- **cc-praxis edited and synced** — `handover/SKILL.md` and `handover/handover-reference.md` updated; all 56 skills synced.
-- Both repos landed on `main` (epic-saturation-mining closed last session); epic branches still exist but not deleted.
+- **epic-saturation-mining rebased and merged** — 4 orphaned commits (saturation model, design journal, protocol, spec) rebased onto main in both repos. Conflicts in `SC2Data.java` (timing constants + saturation tier rates), `ReplayValidationHarness.java` (probe count multiplier), `ReplayValidationTest.java` (Javadoc merge), `docs/DESIGN.md` (three locations). All resolved. 672 tests pass.
+- **Issues #130 and #141 closed** — saturation mining model complete; building-cost divergence (#146) is the remaining gap.
+- **Workspace cleanup** — orphaned `design/.meta` removed from workspace main; `EPIC-CLOSED.md` relocated to `design/` (note: landed on workspace main rather than epic branch — minor convention gap, no action needed).
+- **CLAUDE.md** — `SC2DataTest` added to unit test list.
+- **Garden** — GE-20260521-b6a1a7 submitted: `git merge --ff-only` brings branch-only workflow markers to main.
 
 ## Immediate Next Step
 
-Delete the `epic-saturation-mining` branches from both repos — they're merged and retained from last session. Run `/epic` or manually:
-```
-git -C /Users/mdproctor/claude/quarkmind branch -d epic-saturation-mining
-git -C /Users/mdproctor/claude/public/quarkmind branch -d epic-saturation-mining
-```
+Pick up **#146** (building-cost mineral timing — the remaining divergence cause after both #141 and #142) or **#143** (multi-base mining in `mineralIncomePerTick`). Either is ready to start. Run `work-start` first.
 
 ## Cross-Module
 
@@ -23,16 +21,17 @@ git -C /Users/mdproctor/claude/public/quarkmind branch -d epic-saturation-mining
 
 ## What's Left
 
-- Delete `epic-saturation-mining` branches (both repos) · XS · Low
+- `EPIC-CLOSED.md` for saturation-mining is on workspace main, not the epic branch. Hygiene scan won't find it there. Low priority — branch is closed and issues are shut. · XS · Low
+- `epic-saturation-mining` branches retained; scheduled deletion 2026-06-03 per `design/EPIC-CLOSED.md`.
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #142 | Train-timing: fractional tick rounding in `SC2Data` | S | Low | Isolated math fix, clear path — good first pick |
-| #143 | Multi-base mining in `mineralIncomePerTick` | M | Med | Design needed; single-base assumption documented |
-| #140 | Terran replay files for `AbilityMapping` discovery | M | Med | Data exploration; may surface scelight timing dep |
-| #138 | Terran/Zerg `EmulatedGame` mechanics | L | High | Substantial new physics; broad scope |
+| #146 | Building-cost mineral timing — deduct building costs in harness to eliminate remaining divergence | M | Med | Direct follow-on from #141/#142; firstUnitDivergenceTick target: -1 |
+| #143 | Multi-base mining in `mineralIncomePerTick(int probeCount, int nexusCount)` | M | Med | Single-base assumption documented; design needed |
+| #140 | Terran replay files for `AbilityMapping` discovery | M | Med | Data exploration |
+| #138 | Terran/Zerg `EmulatedGame` mechanics | L | High | Substantial new physics |
 
 ## References
 
@@ -40,5 +39,5 @@ git -C /Users/mdproctor/claude/public/quarkmind branch -d epic-saturation-mining
 |---------|-------|
 | Protocol index | `docs/protocols/INDEX.md` |
 | DESIGN.md | `docs/DESIGN.md` |
-| Blog entry | `blog/2026-05-18-mdp01-right-fix-wrong-hypothesis.md` |
-| Spec | `docs/superpowers/specs/2026-05-17-saturation-mining-design.md` |
+| Blog entry | `blog/2026-05-21-mdp01-two-fixes-finally-together.md` |
+| Garden entry | `tools/GE-20260521-b6a1a7.md` (ff-only merge brings branch markers to main) |
