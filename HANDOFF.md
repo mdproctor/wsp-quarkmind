@@ -1,19 +1,20 @@
 # Handover — 2026-05-21
 
-**Head commit (project):** `ee2bdc1` — docs: add SC2DataTest to unit test list in CLAUDE.md
-**Head commit (workspace):** `e499f52` — docs: add blog entry 2026-05-21 two-fixes-finally-together
+**Head commit (project):** `9682f5c` — docs(issue-146-building-cost-mineral-timing): apply design journal
+**Head commit (workspace):** `63a0bad` — feat: promote blog from issue-146-building-cost-mineral-timing
 
 ## What Changed This Session
 
-- **epic-saturation-mining rebased and merged** — 4 orphaned commits (saturation model, design journal, protocol, spec) rebased onto main in both repos. Conflicts in `SC2Data.java` (timing constants + saturation tier rates), `ReplayValidationHarness.java` (probe count multiplier), `ReplayValidationTest.java` (Javadoc merge), `docs/DESIGN.md` (three locations). All resolved. 672 tests pass.
-- **Issues #130 and #141 closed** — saturation mining model complete; building-cost divergence (#146) is the remaining gap.
-- **Workspace cleanup** — orphaned `design/.meta` removed from workspace main; `EPIC-CLOSED.md` relocated to `design/` (note: landed on workspace main rather than epic branch — minor convention gap, no action needed).
-- **CLAUDE.md** — `SC2DataTest` added to unit test list.
-- **Garden** — GE-20260521-b6a1a7 submitted: `git merge --ff-only` brings branch-only workflow markers to main.
+- **#146 investigated and closed** — building cost deduction wired into harness made divergence worse (firstUnitDivergenceTick moved from 86→49, maxUnitDelta 2→48). Root cause: GT PlayerStats events fire every ~10 ticks, so GT mineral readings are stale at building-injection time; deducting cost against EM's continuous balance creates artificial debt that blocks legitimate trains.
+- **Correct diagnosis established** — two independent divergence causes: (1) `completesAt` in `startTraining` rounds 1 tick early for specific loop offsets (timing formula gap, not mineral); (2) no vespene income model (Stalker/Immortal trains rejected). Filed #148 for vespene gap.
+- **`injectReplayBuildingWithCost(Building)` added to EmulatedGame** — clean API with 4 unit tests; allows negative mineral balance (debt); not wired into harness. `docs/DESIGN.md` updated with two-method API and corrected Next Steps (#142 precision + #148 vespene).
+- **`ReplayValidationTest` docstring corrected** — two-cause breakdown replaces single-cause mineral narrative.
+- **Garden**: GE-20260521-981f62 submitted (SC2 PlayerStats staleness — stale GT mineral readings).
+- **Blog**: 2026-05-21-mdp02-the-fix-that-made-things-worse.md — both session entries published to mdproctor.github.io.
 
 ## Immediate Next Step
 
-Pick up **#146** (building-cost mineral timing — the remaining divergence cause after both #141 and #142) or **#143** (multi-base mining in `mineralIncomePerTick`). Either is ready to start. Run `work-start` first.
+Pick up **#143** (multi-base mining in `mineralIncomePerTick`) or **#142** (investigate the `completesAt` rounding — why does it produce tick 86 instead of tick 87 for that specific loop offset?). Run `work-start` first.
 
 ## Cross-Module
 
@@ -21,15 +22,16 @@ Pick up **#146** (building-cost mineral timing — the remaining divergence caus
 
 ## What's Left
 
-- `EPIC-CLOSED.md` for saturation-mining is on workspace main, not the epic branch. Hygiene scan won't find it there. Low priority — branch is closed and issues are shut. · XS · Low
-- `epic-saturation-mining` branches retained; scheduled deletion 2026-06-03 per `design/EPIC-CLOSED.md`.
+- `epic-phase-6` workspace branch: no EPIC-CLOSED.md, last commit 7 days ago. Check if still active or close it. · XS · Low
+- `epic-saturation-mining` EPIC-CLOSED.md on workspace main (not the branch) — known gap from previous session. Branches retained until 2026-06-03. · XS · Low
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #146 | Building-cost mineral timing — deduct building costs in harness to eliminate remaining divergence | M | Med | Direct follow-on from #141/#142; firstUnitDivergenceTick target: -1 |
+| #142 | Investigate `completesAt` rounding — why 1-tick-early for specific loop offset at tick 86 | S | Med | Timing formula fix; may need replay data inspection |
 | #143 | Multi-base mining in `mineralIncomePerTick(int probeCount, int nexusCount)` | M | Med | Single-base assumption documented; design needed |
+| #148 | Vespene income model — sync GT vespene or model Assimilator-based gas income in harness | S | Low | Vespene sync is simpler; SC2Data.vespeneCost(BuildingType) doesn't exist yet |
 | #140 | Terran replay files for `AbilityMapping` discovery | M | Med | Data exploration |
 | #138 | Terran/Zerg `EmulatedGame` mechanics | L | High | Substantial new physics |
 
@@ -37,7 +39,7 @@ Pick up **#146** (building-cost mineral timing — the remaining divergence caus
 
 | Context | Where |
 |---------|-------|
-| Protocol index | `docs/protocols/INDEX.md` |
+| Spec | `docs/superpowers/specs/2026-05-21-building-cost-mineral-timing-design.md` |
 | DESIGN.md | `docs/DESIGN.md` |
-| Blog entry | `blog/2026-05-21-mdp01-two-fixes-finally-together.md` |
-| Garden entry | `tools/GE-20260521-b6a1a7.md` (ff-only merge brings branch markers to main) |
+| Blog entry | `blog/2026-05-21-mdp02-the-fix-that-made-things-worse.md` |
+| Garden entry | `jvm/GE-20260521-981f62.md` (SC2 PlayerStats staleness) |
