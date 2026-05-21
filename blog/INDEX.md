@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-05-21-mdp01-two-fixes-finally-together.md](2026-05-21-mdp01-two-fixes-finally-together.md) | 2026-05-21 | Two Fixes, Finally Together |
 | [2026-04-09-mdp01-building-a-sc2-emulator.md](2026-04-09-mdp01-building-a-sc2-emulator.md) | 2026-04-09 | Building a SC2 emulator when you have no SC2 |
 | [2026-05-18-mdp01-right-fix-wrong-hypothesis.md](2026-05-18-mdp01-right-fix-wrong-hypothesis.md) | 2026-05-18 | Probe saturation model implemented; unit divergence attributed to wrong root cause |
 | [2026-04-27-mdp01-map-fills-in.md](2026-04-27-mdp01-map-fills-in.md) | 2026-04-27 | Minerals, enemy buildings, creep, and the inspect panel's swallowed TypeError |
