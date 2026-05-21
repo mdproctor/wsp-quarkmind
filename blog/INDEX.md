@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-05-21-mdp02-the-fix-that-made-things-worse.md](2026-05-21-mdp02-the-fix-that-made-things-worse.md) | 2026-05-21 | Building cost deduction reverses divergence; PlayerStats staleness; two-cause diagnosis |
 | [2026-05-21-mdp01-two-fixes-finally-together.md](2026-05-21-mdp01-two-fixes-finally-together.md) | 2026-05-21 | Two Fixes, Finally Together |
 | [2026-04-09-mdp01-building-a-sc2-emulator.md](2026-04-09-mdp01-building-a-sc2-emulator.md) | 2026-04-09 | Building a SC2 emulator when you have no SC2 |
 | [2026-05-18-mdp01-right-fix-wrong-hypothesis.md](2026-05-18-mdp01-right-fix-wrong-hypothesis.md) | 2026-05-18 | Probe saturation model implemented; unit divergence attributed to wrong root cause |
