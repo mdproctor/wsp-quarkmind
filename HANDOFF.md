@@ -5,6 +5,7 @@
 
 ## What Changed This Session
 
+- **QuarkMind moved into CaseHub family** — registered in `casehub/parent` `APPLICATIONS.md` and `docs/repos/quarkmind.md`. Repo physically relocated from `/Users/mdproctor/claude/quarkmind` to `/Users/mdproctor/claude/casehub/quarkmind`. Workspace symlinks (`proj/`, `CLAUDE.md`) and `.claude` project folder updated. **IntelliJ needs manual reopen** from the new path.
 - **#149 closed** — `SC2Data.trainTimeInLoops` changed from `double` to `int`. Empirical calibration from 29 AI Arena replays via `SC2TrainTimeCalibrationTest` (range-bounded modal algorithm, two-source cross-validation): PROBE=272, ZEALOT=618, STALKER=698. The community formula `seconds × 22.4` gives wrong floats — SC2 uses integers that don't round consistently. `firstUnitDivergenceTick` moved from 86 to 150.
 - **IEM10 incompatible for cross-validation** — 2016 build uses different abilLink IDs (Nexus=167 vs 175 in AI Arena). The 28 other AI Arena replays serve as source C instead.
 - **4 garden entries submitted** (jvm/): SC2EGSet userID≠playerID-1 gotcha, SC2 abilLink patch-version gotcha, modal calibration technique, SC2 integer training-time undocumented.
