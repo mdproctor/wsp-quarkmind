@@ -1,0 +1,8 @@
+branch: issue-143-multi-base-mining
+project-sha: e98dbf87ca3149d4b79255358ee9577b0a256c7b
+date: 2026-05-22
+issue: 143
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
