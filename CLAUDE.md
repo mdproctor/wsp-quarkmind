@@ -1,1 +1,1 @@
-/Users/mdproctor/claude/quarkmind/CLAUDE.md
+/Users/mdproctor/claude/casehub/quarkmind/CLAUDE.md
