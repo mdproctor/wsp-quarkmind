@@ -4,7 +4,7 @@ title: "A Tick Too Early"
 date: 2026-05-20
 type: phase-update
 entry_type: note
-subtype: log
+subtype: diary
 projects: [quarkmind]
 tags: [emulation, sc2, java, replay-validation]
 ---
