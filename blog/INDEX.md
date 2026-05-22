@@ -35,3 +35,4 @@
 | [2026-05-16-mdp01-smart-command-hides.md](2026-05-16-mdp01-smart-command-hides.md) | 2026-05-16 | Phase 6: AbilityMapping, the abilLink=42 discovery, building injection, and a ≤ 2 unit delta |
 | [2026-05-20-mdp01-a-tick-too-early.md](2026-05-20-mdp01-a-tick-too-early.md) | 2026-05-20 | Sub-tick train timing: the wrong hypothesis, 268.8 loops, and why ≤ 2 delta is still there |
 | [2026-05-22-mdp01-what-the-replay-actually-said.md](2026-05-22-mdp01-what-the-replay-actually-said.md) | 2026-05-22 | Modal calibration from 499 replay observations; PROBE=272 (not 268.8); IEM10 patch incompatibility |
+| [2026-05-22-mdp02-the-vespene-fix.md](2026-05-22-mdp02-the-vespene-fix.md) | 2026-05-22 | Vespene sync closes gas-unit divergence; pre-tick vs post-tick matters; Runnable switch expression for sealed-interface exhaustiveness |
