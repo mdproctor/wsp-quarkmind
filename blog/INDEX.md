@@ -29,3 +29,4 @@
 | [2026-05-08-mdp01-clean-desk-bigger-picture.md](2026-05-08-mdp01-clean-desk-bigger-picture.md) | 2026-05-08 | Panel CSS bug the tests missed, doc debt cleared, Phase 6 replay-accurate engine goal crystallised |
 | [2026-05-11-mdp01-accurate-not-just-working.md](2026-05-11-mdp01-accurate-not-just-working.md) | 2026-05-11 | Tier-4 health check before Phase 5: stale docs, missing emulated mode, and a domain layer violation in GameStateTick |
 | [2026-05-13-mdp01-the-engine-fights-back.md](2026-05-13-mdp01-the-engine-fights-back.md) | 2026-05-13 | Per-building training queues, building type validation, auto-engage — the engine now behaves like real SC2 without agent commands |
+| [2026-05-15-mdp01-two-engines-same-replay.md](2026-05-15-mdp01-two-engines-same-replay.md) | 2026-05-15 | Building the replay validation harness: AbilityMapping, ReplayCommandExtractor, ReplayValidationHarness, and the first divergence at tick 86 |
