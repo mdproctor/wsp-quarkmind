@@ -1,0 +1,8 @@
+branch: issue-153-152-review-nits-and-probe-dist
+project-sha: d53088ac64b7ea72a2b3750d1e7678f8f5e9e12b
+date: 2026-05-23
+issue: 153
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: project
+design-section-hashes: 7337f3d0:## Overview|a7e56472:## Architecture|436ec511:## Domain Model|e0533f48:## Component Structure|879eac20:## Plugin System|775aba9b:## Mock Infrastructure|242e01f4:## Visualizer|9af2b65c:## Real SC2 Integration|8363a93a:## Core Agent Loop Decisions|4f30a4cd:## Quarkus Profiles|7c963849:## Key Dependencies|7b7415c9:## Testing Strategy|efe02cd0:## Current State|94792dd5:## Next Steps|3cb18856:## Open Questions|a4a0a907:## ADRs|
