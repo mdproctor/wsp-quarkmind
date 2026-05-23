@@ -1,35 +1,36 @@
-# Handover — 2026-05-22
+# Handover — 2026-05-23
 
-**Head commit (project):** `b010c67` — docs(claude-md): add Name field for write-blog frontmatter *(unchanged)*
-**Head commit (workspace):** `0bccdfd` — chore: remove orphaned issue-148 scaffold from workspace main
+**Head commit (project):** `d53088a` — docs: update test count 629 → 682
+**Head commit (workspace):** `00f8057` — archive(issue-143-multi-base-mining): move plans to attic
 
 ## What Changed This Session
 
-- **Orphaned `.meta` on workspace main cleaned up** — `design/.meta` and `JOURNAL.md` (issue-148-emulated-fixes) removed and committed.
-- **`epic-phase-6` properly closed** — `EPIC-CLOSED.md` written to branch, pushed; branch scheduled for deletion 2026-06-05. Issue #137 was already closed.
-- **4 more workspace branches need `work-end`** — all have closed issues, none have `EPIC-CLOSED.md`: `epic-saturation-mining` (#141), `issue-142-tick-rounding` (#142), `issue-146-building-cost-mineral-timing` (#146), `issue-149-completesat-rounding` (#149).
-- **2 garden entries** — GE-20260522-f8c1c3 (workspace dotfiles invisible to bare `ls`), GE-20260522-76dc5b (blog entries on main invisible from diverged epic branch).
+- **#147 closed** — `drainBuildingQueues` now propagates the previous unit's absolute completion loop to the next queued unit via `buildingCompletionAtLoop` map on `PlayerState`. Fixes ±1 tick imprecision for queued training. Code review caught a stale-entry leak for non-queued buildings; fixed with conditional cleanup in the completion callback.
+- **#143 closed** — `EmulatedGame.miningProbes` (scalar) replaced with `miningProbesPerBase` (int[]). `tick()` sums per-base income. `ReplayValidationHarness.countProbesPerBase()` assigns probes to nearest complete Nexus by Euclidean distance. `SC2Data.mineralIncomePerTick` unchanged — already per-base.
+- **#152 created** — deferred: AI expansion mining when EmulatedGame standalone supports building a second Nexus.
+- **#153 created** — batched code review minors: sqrt optimization, defensive array copy, zero-nexus test.
+- **Branch hygiene** — wrote EPIC-CLOSED.md to `epic-saturation-mining` (#141); cleaned stale `design/EPIC-CLOSED.md` from workspace main. Branches #142/#146/#149 already had markers.
+- **DESIGN.md synced** — updated SC2Data, EmulatedGame, PlayerState descriptions; marked #143/#148 as resolved; test count 629→682.
 
 ## Immediate Next Step
 
-Run `work-start` and pick up **#143** (multi-base mining in `mineralIncomePerTick`) or **#145** (BuildIntent sub-tick timing + boundary test).
-
-## What's Left
-
-- `epic-saturation-mining` — issue #141 closed, no `EPIC-CLOSED.md` on branch · XS · Low
-- `issue-142-tick-rounding` — issue #142 closed, no `EPIC-CLOSED.md` on branch · XS · Low
-- `issue-146-building-cost-mineral-timing` — issue #146 closed, no `EPIC-CLOSED.md` on branch · XS · Low
-- `issue-149-completesat-rounding` — issue #149 closed, no `EPIC-CLOSED.md` on branch · XS · Low
+Run `work-start` and pick up **#145** (BuildIntent sub-tick timing + boundary test) or **#150** (IEM10JsonSimulatedGame: expose gameEvents as TimedIntent stream).
 
 ## What's Next
 
-*Unchanged — `git show HEAD~1:HANDOFF.md`*
+| # | Description | Scale | Complexity | Notes |
+|---|-------------|-------|------------|-------|
+| #145 | BuildIntent sub-tick timing + boundary test (offset=17) | M | Med | UnitInit/UnitDone give building calibration directly |
+| #150 | IEM10JsonSimulatedGame: expose gameEvents as TimedIntent stream | M | Med | Enables multi-game harness validation |
+| #152 | EmulatedGame: per-base probe distribution for AI expansion | S | Low | Deferred from #143; blocked on AI expansion capability |
+| #153 | Code review nits: sqrt, defensive copy, zero-nexus test | XS | Low | Batched minors from #143/#147 review |
+| #140 | Acquire Terran .SC2Replay files for AbilityMapping | M | Med | Data exploration |
+| #138 | Terran/Zerg EmulatedGame mechanics | L | High | Substantial new physics |
 
 ## References
 
 | Context | Where |
 |---------|-------|
-| Garden entries (this session) | `tools/GE-20260522-f8c1c3.md`, `tools/GE-20260522-76dc5b.md` |
-| Prior session garden entries | `tools/GE-20260522-d6a1c9.md`, `jvm/GE-20260522-5ff0b2.md` |
-| Blog entry | `blog/2026-05-22-mdp02-the-vespene-fix.md` |
-| LAYER-LOG.md | `LAYER-LOG.md` (project root) |
+| Blog entry | `blog/2026-05-23-mdp01-two-precision-fixes.md` |
+| Design spec | `docs/superpowers/specs/2026-05-22-multi-base-mining-design.md` |
+| Plan (archived) | `plans/attic/issue-143-multi-base-mining/2026-05-22-multi-base-mining.md` |
