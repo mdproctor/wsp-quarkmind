@@ -33,6 +33,7 @@
 | [2026-05-08-mdp01-clean-desk-bigger-picture.md](2026-05-08-mdp01-clean-desk-bigger-picture.md) | 2026-05-08 | Panel CSS bug the tests missed, doc debt cleared, Phase 6 replay-accurate engine goal crystallised |
 | [2026-05-11-mdp01-accurate-not-just-working.md](2026-05-11-mdp01-accurate-not-just-working.md) | 2026-05-11 | Tier-4 health check before Phase 5: stale docs, missing emulated mode, and a domain layer violation in GameStateTick |
 | [2026-05-13-mdp01-the-engine-fights-back.md](2026-05-13-mdp01-the-engine-fights-back.md) | 2026-05-13 | Per-building training queues, building type validation, auto-engage — the engine now behaves like real SC2 without agent commands |
+| [2026-05-15-mdp01-two-engines-same-replay.md](2026-05-15-mdp01-two-engines-same-replay.md) | 2026-05-15 | Running EmulatedGame and the replay side by side — first meaningful divergence data |
 | [2026-05-16-mdp01-smart-command-hides.md](2026-05-16-mdp01-smart-command-hides.md) | 2026-05-16 | Phase 6: AbilityMapping, the abilLink=42 discovery, building injection, and a ≤ 2 unit delta |
 | [2026-05-20-mdp01-a-tick-too-early.md](2026-05-20-mdp01-a-tick-too-early.md) | 2026-05-20 | Sub-tick train timing: the wrong hypothesis, 268.8 loops, and why ≤ 2 delta is still there |
 | [2026-05-22-mdp01-what-the-replay-actually-said.md](2026-05-22-mdp01-what-the-replay-actually-said.md) | 2026-05-22 | Modal calibration from 499 replay observations; PROBE=272 (not 268.8); IEM10 patch incompatibility |
