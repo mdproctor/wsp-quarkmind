@@ -1,34 +1,25 @@
-# Handover — 2026-05-23
+# Handover — 2026-05-24
 
-**Head commit (project):** `7abccfa` — docs: sync DESIGN.md and CLAUDE.md with #152/#153
-**Head commit (workspace):** `0335df3` — docs: add blog entry 2026-05-23-mdp02-override-and-cleanup
+**Head commit (project):** `15e9178` — feat(#152): auto-compute miningProbesPerBase in tick() with one-shot override
+**Head commit (workspace):** `699276e` — docs: session handover 2026-05-23
 
 ## What Changed This Session
 
-- **#153 closed** — sqrt→squared distance in `countProbesPerBase`, defensive clone in `setMiningProbesPerBase`, `ReplayValidationHarnessTest` added (zero-nexus, single-nexus, two-nexus, non-probe filtering).
-- **#152 closed** — `tick()` now auto-computes `miningProbesPerBase` from `friendly.buildings`/`friendly.units` via one-shot override flag (`miningProbesOverridden`); `countProbesPerBase` extracted from `ReplayValidationHarness` to `EmulatedGame` as canonical public static method. Replay harness compatibility preserved — it calls `setMiningProbesPerBase` before every tick.
-- **Test updated** — `zeroProbesYieldsNoMineralGain` reduced to single-tick scope; 690 tests passing.
-- **DESIGN.md + CLAUDE.md synced** — test count 682→690, EmulatedGame description updated, `ReplayValidationHarnessTest` added to unit test list.
+- **git-squash (first run):** 620 → 452 commits on `main`. filter-repo stripped `docs/_posts/` (11 commits pruned); 154 squash-classified commits absorbed (session handovers, design specs, docs syncs, old blog entries, chores). Force-pushed to `mdproctor/quarkmind`.
+- **Backup branch retained:** `backup/pre-squash-main-20260523` — 14-day retention policy.
+- **quarkmind.md updated** in `casehubio/parent` — reflected post-Phase 6 state (690 tests, per-base mining, vespene sync, sub-tick timing, training queues, auto-engage, visualiser). Pushed to both `mdproctor/parent` and `casehubio/parent`.
 
 ## Immediate Next Step
 
-Run `work-start` and pick up **#145** (BuildIntent sub-tick timing + boundary test) or **#150** (IEM10JsonSimulatedGame: expose gameEvents as TimedIntent stream).
+Run `work-start` and pick up **#145** (BuildIntent sub-tick timing + boundary test) or **#150** (`IEM10JsonSimulatedGame`: expose `gameEvents` as `TimedIntent` stream).
 
 ## What's Next
 
-| # | Description | Scale | Complexity | Notes |
-|---|-------------|-------|------------|-------|
-| #145 | BuildIntent sub-tick timing + boundary test (offset=17) | M | Med | UnitInit/UnitDone give building calibration directly |
-| #150 | IEM10JsonSimulatedGame: expose gameEvents as TimedIntent stream | M | Med | Enables multi-game harness validation |
-| #152 | EmulatedGame: per-base probe distribution for AI expansion | S | Low | ✅ CLOSED this session |
-| #153 | Code review nits: sqrt, defensive copy, zero-nexus test | XS | Low | ✅ CLOSED this session |
-| #140 | Acquire Terran .SC2Replay files for AbilityMapping | M | Med | Data exploration |
-| #138 | Terran/Zerg EmulatedGame mechanics | L | High | Substantial new physics |
+*Unchanged — `git show HEAD~1:HANDOFF.md`*
 
 ## References
 
 | Context | Where |
 |---------|-------|
-| Blog entry (today, session 2) | `blog/2026-05-23-mdp02-override-and-cleanup.md` |
-| Blog entry (today, session 1) | `blog/2026-05-23-mdp01-two-precision-fixes.md` |
-| Design spec | `docs/superpowers/specs/2026-05-23-review-nits-and-probe-dist-design.md` |
+| Previous handover (issues #152/#153) | `git show HEAD~1:HANDOFF.md` |
+| Blog entries (05-23) | `blog/2026-05-23-mdp01-two-precision-fixes.md`, `blog/2026-05-23-mdp02-override-and-cleanup.md` |
