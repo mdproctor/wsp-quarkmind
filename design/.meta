@@ -1,0 +1,8 @@
+branch: issue-145-build-intent-subtick
+project-sha: 15e917896d592db02bf4399b2e7070d0754d0ce5
+date: 2026-05-24
+issue: 145
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
