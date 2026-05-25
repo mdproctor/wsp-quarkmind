@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-05-25-mdp01-two-wrong-build-times.md](2026-05-25-mdp01-two-wrong-build-times.md) | 2026-05-25 | Building calibration finds NEXUS 32 ticks wrong (default case); FACTORY n=32 was addon contamination |
 | [2026-05-23-mdp02-override-and-cleanup.md](2026-05-23-mdp02-override-and-cleanup.md) | 2026-05-23 | One-shot override flag for probe distribution; algorithm extraction; test contract update |
 | [2026-05-21-mdp02-the-fix-that-made-things-worse.md](2026-05-21-mdp02-the-fix-that-made-things-worse.md) | 2026-05-21 | Building cost deduction reverses divergence; PlayerStats staleness; two-cause diagnosis |
 | [2026-05-21-mdp01-two-fixes-finally-together.md](2026-05-21-mdp01-two-fixes-finally-together.md) | 2026-05-21 | Two Fixes, Finally Together |
