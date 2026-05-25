@@ -1,37 +1,41 @@
-# Handover — 2026-05-24
+# Handover — 2026-05-25
 
-**Head commit (project):** `15e9178` — feat(#152): auto-compute miningProbesPerBase in tick() with one-shot override
-**Head commit (workspace):** `cc16f24` — docs: add 2026-05-15 entry to blog INDEX.md
+**Head commit (project):** `0c4dd41` — chore: update settings.local.json
+**Head commit (workspace):** `c9e5d24` — feat: promote blog from issue-145-build-intent-subtick
 
 ## What Changed This Session
 
-- **git-squash (first run):** 620 → 452 commits on `main`. filter-repo stripped `docs/_posts/` (11 commits pruned); 154 squash-classified commits absorbed. Force-pushed to `mdproctor/quarkmind`.
-- **Backup branch retained:** `backup/pre-squash-main-20260523` — 14-day retention.
-- **quarkmind.md updated** in `casehubio/parent` — reflected post-Phase 6 state (690 tests, per-base mining, vespene sync, sub-tick timing, training queues, auto-engage, visualiser). Pushed to both forks.
-- **Branch verification:** all 7 closed issue branches confirmed — 0 unique commits missing from squashed main. Workspace artifacts promoted:
-  - `blog/2026-05-15-mdp01-two-engines-same-replay.md` (was missing from workspace main)
-  - `plans/` — 3 plan files promoted (issue-142, issue-143, issue-153-152)
-  - `design/JOURNAL.md` — consolidated journals from issues 142, 143, 146, 149, 153-152
-- **Published:** 2 blog entries to `mdproctor.github.io/_notes/` (2026-05-15, 2026-05-23-mdp02)
-- **`origin/issue-142-tick-rounding`** remote branch still exists — not deleted per retention policy
+- **#145 closed:** `buildTimeInLoops(BuildingType)` calibrated from UnitInit→UnitDone tracker event diffs across 30 AI Arena replays — 34 building types, all three races. Key findings: NEXUS was `default → 40 ticks` (880 loops); actual = 1600 loops (72 ticks), 32-tick error. FACTORY n=32 rejected — all addon completions via toBuildingType aliasing; fixed with addon name filter, n=16 clean structures at 960 loops.
+- `handleBuild` now uses sub-tick formula: `gameFrame + (loopOffset + buildTimeInLoops(bt)) / LOOPS_PER_TICK`. `applyIntent(TimedIntent)` passes `ti.loop()`; enemy AI path loopOffset=0.
+- `SC2BuildTimeCalibrationTest` new — UnitInit/UnitDone diff, modal assertion, addon filter.
+- `buildTimeInTicks` now derives from `buildTimeInLoops / LOOPS_PER_TICK`.
+- `docs/DESIGN.md` and `sc2data-train-times-require-calibration.md` updated.
+- **#154 created:** addon calibration cleanup (FACTORY/BARRACKS/STARPORT re-calibration, makeTag extraction).
+- 2 garden entries: `GE-20260525-a8c35a` (addon contamination gotcha), `GE-20260525-1a1a7f` (UnitInit/UnitDone technique).
+- Blog: `2026-05-25-mdp01-two-wrong-build-times.md` published.
 
 ## Immediate Next Step
 
-Run `work-start` and pick up **#145** (BuildIntent sub-tick timing + boundary test) or **#150** (`IEM10JsonSimulatedGame`: expose `gameEvents` as `TimedIntent` stream).
+Run `work-start` and pick up **#154** (addon calibration cleanup — quick) or **#150** (`IEM10JsonSimulatedGame`: expose `gameEvents` as `TimedIntent` stream).
+
+## What's Left
+
+- `origin/issue-142-tick-rounding` remote branch — retained under 14-day policy (due ~2026-06-06)
+- `backup/pre-squash-main-20260523` — retained until ~2026-06-06
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #145 | BuildIntent sub-tick timing + boundary test (offset=17) | M | Med | UnitInit/UnitDone give building calibration directly |
-| #150 | IEM10JsonSimulatedGame: expose gameEvents as TimedIntent stream | M | Med | Enables multi-game harness validation |
-| #140 | Acquire Terran .SC2Replay files for AbilityMapping | M | Med | Data exploration |
+| #154 | Addon calibration: filter toBuildingType aliases in SC2BuildTimeCalibrationTest; makeTag extraction | S | Low | Quick win; unblocks clean FACTORY/BARRACKS/STARPORT values |
+| #150 | IEM10JsonSimulatedGame: expose `gameEvents` as `TimedIntent` stream | M | Med | Enables multi-game harness validation |
+| #140 | Acquire Terran `.SC2Replay` files for AbilityMapping | M | Med | Data exploration |
 | #138 | Terran/Zerg EmulatedGame mechanics | L | High | Substantial new physics |
 
 ## References
 
 | Context | Where |
 |---------|-------|
-| Previous handover (issues #152/#153) | `git show HEAD~2:HANDOFF.md` |
-| Blog entries (today) | `blog/2026-05-15-mdp01-two-engines-same-replay.md` (promoted), `blog/2026-05-23-mdp02-override-and-cleanup.md` |
-| Consolidated design journals | `design/JOURNAL.md` |
+| Previous handover (#152/#153) | `git show HEAD~1:HANDOFF.md` |
+| Blog entry (this session) | `blog/2026-05-25-mdp01-two-wrong-build-times.md` |
+| Addon calibration issue | `gh issue view 154 --repo mdproctor/quarkmind` |
