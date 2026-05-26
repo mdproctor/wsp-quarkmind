@@ -1,0 +1,8 @@
+branch: issue-150-iem10-timed-intent-stream
+project-sha: 0b7b197fad0d926aec18c5ab58c42565ffa7e636
+date: 2026-05-26
+issue: 150
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
