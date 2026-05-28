@@ -41,3 +41,4 @@
 | [2026-05-22-mdp02-the-vespene-fix.md](2026-05-22-mdp02-the-vespene-fix.md) | 2026-05-22 | Vespene sync closes gas-unit divergence; pre-tick vs post-tick matters; Runnable switch expression for sealed-interface exhaustiveness |
 | [2026-05-23-mdp01-two-precision-fixes.md](2026-05-23-mdp01-two-precision-fixes.md) | 2026-05-23 | Sub-tick completion loop propagation fixes ±1 tick queued-unit imprecision; multi-base mining reframed as caller-side per-base probe counting |
 | [2026-05-25-mdp02-dead-state-lucky-guesses.md](2026-05-25-mdp02-dead-state-lucky-guesses.md) | 2026-05-25 | attackingUnits dead state removed; FACTORY estimate coincidentally correct; enemy freeze technique; Layer 1 never deployed |
+| [2026-05-28-mdp01-three-ways-to-extract-nothing.md](2026-05-28-mdp01-three-ways-to-extract-nothing.md) | 2026-05-28 | IEM10 gameEvents extraction: three silent failure modes, 30-game validation baseline |
