@@ -1,45 +1,44 @@
-# Handover — 2026-05-28
+# Handover — 2026-05-29
 
-**Head commit (project):** `c148910` — protocol: replay tag prefix per source + extractor separation
-**Head commit (workspace):** `9746808` — docs: mark issue-150 closed
+**Head commit (project):** `5a5c811` — docs(#140,#160,#161): sync DESIGN.md — test inventory + #140 Terran done
+**Head commit (workspace):** `6d011b6` — archive(issue-160-remove-mask-tests): move plans to attic
 
 ## What Changed This Session
 
-- **#150 closed:** `IEM10CommandExtractor` added — extracts `List<TimedIntent>` from SC2EGSet
-  JSON `gameEvents` using IEM10 2016 patch constants (patch-specific abilLink table derived
-  from narrow-window modal analysis across all 30 games).
-- `ReplayValidationHarness` generalised: new `run(SimulatedGame, List<TimedIntent>, int)`
-  overload; existing binary-replay overload delegates. `assertInitialStateMatch` allows ±1
-  unit tolerance for SC2EGSet loop-0 UnitBorn quirk.
-- 30-game IEM10 baseline established: PvP 9.6 / PvT 22.6 / PvZ 40.1 mean ΔUnits.
-- 2 new protocols: `replay-tag-prefix-per-source`, `extractor-separate-from-simulated-game`.
-- 3 garden entries: GE-20260528-3b9ccb (r- prefix gotcha), -6ebb38 (±1 unit at loop 0),
-  -f89f62 (training command filter `data: {None: null}`).
-- Issues filed: #160 (removeMask unit tests), #161 (CLAUDE.md + SimulatedGame test),
-  casehubio/parent#83 (quarkmind.md doc sync).
-- History squashed (14→7), pushed to origin, work-end complete.
+- **#160, #161 closed:** `IEM10CommandExtractorSelectionDeltaTest` (10 tests covering all 4 removeMask
+  variants), `isCompleteReturnsFalseByDefault` in `SimulatedGameTest`. `applySelectionDelta` made
+  package-private.
+- **#140 Terran coverage added:** `AbilityMapping.onSelection` rewritten to handle Scelight binary
+  `Delta.getRemoveMask()` variants correctly — ZeroIndices (retain-index), Mask (BitArray, instanceof guard),
+  None (additive), OneIndices (descending removal). Fixes silent building-tag corruption in human replays
+  (1787–1998 Mask events/game). Terran constants: ABIL_COMMAND_CENTER=155 (SCV), ABIL_BARRACKS=159
+  (Marine idx=0, Marauder idx=3). `TerranReplayCommandExtractorTest` (10 assertions, Nothing_4720935
+  player 2). `AbilityDiscoveryTest` extended with PvT replays.
+- **#162 filed:** SelectionState unification — two independent removeMask implementations (binary +
+  IEM10 JSON) diverging. Low priority, tracked.
+- **1 garden entry:** GE-20260529-a2681d — Scelight `Delta.getRemoveMask()` heterogeneous payload types.
+- Branch `issue-160-remove-mask-tests` closed, deletion due 2026-06-12.
 
 ## Immediate Next Step
 
-Pick up **#160** (removeMask unit tests — XS, ~30 min) to clear follow-up debt,
-or start **#140** (Terran `.SC2Replay` acquisition for AbilityMapping) as the next
-substantive piece.
+Start **#138** (Terran/Zerg EmulatedGame mechanics — L, High) as the next substantive piece,
+or pick up **#162** (SelectionState unification — XS, Low) as a quick warmup.
 
 ## What's Left
 
-- `issue-150-iem10-timed-intent-stream` workspace/project branch — EPIC-CLOSED.md written, deletion due 2026-06-11
+- `issue-160-remove-mask-tests` workspace/project branch — EPIC-CLOSED.md written, deletion due 2026-06-12
+- `issue-150-iem10-timed-intent-stream` workspace/project branch — EPIC-CLOSED.md, deletion due 2026-06-11
 - `issue-154-s-xs-batch` workspace/project branch — EPIC-CLOSED.md, deletion due 2026-06-08
 - `origin/issue-142-tick-rounding` remote — retained until ~2026-06-06
 - `backup/pre-squash-main-20260523` — retained until ~2026-06-06
-- casehubio/parent#83 — quarkmind.md doc sync (peer repo, filed, their responsibility)
+- casehubio/parent#83 — quarkmind.md doc sync (peer repo, their responsibility)
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #160 | removeMask unit tests for IEM10CommandExtractor | XS | Low | Quick follow-up from code review |
-| #161 | CLAUDE.md test inventory + SimulatedGame.isComplete unit test | XS | Low | Quick follow-up |
-| #140 | Acquire Terran `.SC2Replay` files for AbilityMapping | M | Med | Data exploration |
+| #162 | SelectionState unification — shared removeMask logic between binary and JSON extractors | XS | Low | Quick follow-up from this session |
+| #140 | Terran train time calibration from replay data | S | Med | Constants added but uncalibrated (default 672) |
 | #138 | Terran/Zerg EmulatedGame mechanics | L | High | Substantial new physics |
 | #127 | Phase 5 completion — EmulatedGame accuracy gaps | L | High | Epic; may have child issues |
 | #155 | Layer 3: casehub-qhorus inter-plugin messaging | L | High | Foundation gate: qhorus pending |
@@ -50,5 +49,5 @@ substantive piece.
 | Context | Where |
 |---------|-------|
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
-| Blog entry (this session) | `blog/2026-05-28-mdp01-three-ways-to-extract-nothing.md` |
-| IEM10 spec | `docs/superpowers/specs/2026-05-27-iem10-timed-intent-stream-design.md` |
+| Blog entry (this session) | `blog/2026-05-29-mdp01-zeroindices-doesnt-mean-zero.md` |
+| Garden entry | `~/.hortora/garden/scelight/GE-20260529-a2681d.md` |
