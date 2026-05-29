@@ -1,0 +1,8 @@
+branch: issue-162-selection-state-unification
+project-sha: 5a5c8118178535c35e404d6c1a0d0fb8f29470d9
+date: 2026-05-29
+issue: 162
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
