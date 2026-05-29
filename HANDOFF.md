@@ -1,36 +1,44 @@
-# Handover — 2026-05-25
+# Handover — 2026-05-28
 
-**Head commit (project):** `3ea47b9` — chore: update settings.local.json
-**Head commit (workspace):** `615f39e` — feat: promote blog from issue-154-s-xs-batch
+**Head commit (project):** `c148910` — protocol: replay tag prefix per source + extractor separation
+**Head commit (workspace):** `9746808` — docs: mark issue-150 closed
 
 ## What Changed This Session
 
-- **S/XS batch closed:** #136, #154, #134, #135, #139 — all on `issue-154-s-xs-batch`, now merged to main.
-- **#154:** `makeTag` extracted to `Sc2ReplayShared` (package-private); FACTORY confirmed empirical at 960 loops (n=16 clean after addon filter). BARRACKS/STARPORT obs counts updated.
-- **#134:** `attackingUnits` removed from `PlayerState` entirely. `isAttack` param from `setTarget` also removed (was log-only after field removal). ADR-0003 superseded. DESIGN.md corrected.
-- **#135:** Focus-fire convergence test added — two Stalkers directed via AttackIntents every tick converge on ZealotA; auto-engage at same tick count leaves ZealotA alive.
-- **#136:** `deadUnitRemovedFromRetreatingSet` comment + `autoAttack_prefersLowerHpAtEqualDistance` snapshot API fixed.
-- **#139:** LAYER-LOG.md Layer 1 (conceptual baseline) + Layer 2 (CaseHub blackboard) written. CLAUDE.md tutorial structure table updated with issue links #155–#159 for Layers 3–7.
-- Garden: `GE-20260525-56c580` — freeze technique (`moveEnemyUnits` does not remove targets on arrival).
-- Blog: `2026-05-25-mdp02-dead-state-lucky-guesses.md` published.
-- Peer repo issue: casehubio/parent#72 — quarkmind.md LAYER-LOG pending note stale.
+- **#150 closed:** `IEM10CommandExtractor` added — extracts `List<TimedIntent>` from SC2EGSet
+  JSON `gameEvents` using IEM10 2016 patch constants (patch-specific abilLink table derived
+  from narrow-window modal analysis across all 30 games).
+- `ReplayValidationHarness` generalised: new `run(SimulatedGame, List<TimedIntent>, int)`
+  overload; existing binary-replay overload delegates. `assertInitialStateMatch` allows ±1
+  unit tolerance for SC2EGSet loop-0 UnitBorn quirk.
+- 30-game IEM10 baseline established: PvP 9.6 / PvT 22.6 / PvZ 40.1 mean ΔUnits.
+- 2 new protocols: `replay-tag-prefix-per-source`, `extractor-separate-from-simulated-game`.
+- 3 garden entries: GE-20260528-3b9ccb (r- prefix gotcha), -6ebb38 (±1 unit at loop 0),
+  -f89f62 (training command filter `data: {None: null}`).
+- Issues filed: #160 (removeMask unit tests), #161 (CLAUDE.md + SimulatedGame test),
+  casehubio/parent#83 (quarkmind.md doc sync).
+- History squashed (14→7), pushed to origin, work-end complete.
 
 ## Immediate Next Step
 
-Run `work-start` and pick up **#150** (`IEM10JsonSimulatedGame`: expose `gameEvents` as `TimedIntent` stream) or **#127** (Phase 5 completion epic review).
+Pick up **#160** (removeMask unit tests — XS, ~30 min) to clear follow-up debt,
+or start **#140** (Terran `.SC2Replay` acquisition for AbilityMapping) as the next
+substantive piece.
 
 ## What's Left
 
-- `issue-154-s-xs-batch` workspace/project branch — EPIC-CLOSED.md written, deletion due 2026-06-08
-- `origin/issue-142-tick-rounding` remote branch — retained until ~2026-06-06
+- `issue-150-iem10-timed-intent-stream` workspace/project branch — EPIC-CLOSED.md written, deletion due 2026-06-11
+- `issue-154-s-xs-batch` workspace/project branch — EPIC-CLOSED.md, deletion due 2026-06-08
+- `origin/issue-142-tick-rounding` remote — retained until ~2026-06-06
 - `backup/pre-squash-main-20260523` — retained until ~2026-06-06
-- casehubio/parent#72 — quarkmind.md doc sync (peer repo, filed, their responsibility)
+- casehubio/parent#83 — quarkmind.md doc sync (peer repo, filed, their responsibility)
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #150 | IEM10JsonSimulatedGame: expose `gameEvents` as `TimedIntent` stream | M | Med | Enables multi-game harness validation |
+| #160 | removeMask unit tests for IEM10CommandExtractor | XS | Low | Quick follow-up from code review |
+| #161 | CLAUDE.md test inventory + SimulatedGame.isComplete unit test | XS | Low | Quick follow-up |
 | #140 | Acquire Terran `.SC2Replay` files for AbilityMapping | M | Med | Data exploration |
 | #138 | Terran/Zerg EmulatedGame mechanics | L | High | Substantial new physics |
 | #127 | Phase 5 completion — EmulatedGame accuracy gaps | L | High | Epic; may have child issues |
@@ -42,5 +50,5 @@ Run `work-start` and pick up **#150** (`IEM10JsonSimulatedGame`: expose `gameEve
 | Context | Where |
 |---------|-------|
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
-| Blog entry (this session) | `blog/2026-05-25-mdp02-dead-state-lucky-guesses.md` |
-| Garden entry | `GE-20260525-56c580` (jvm/) |
+| Blog entry (this session) | `blog/2026-05-28-mdp01-three-ways-to-extract-nothing.md` |
+| IEM10 spec | `docs/superpowers/specs/2026-05-27-iem10-timed-intent-stream-design.md` |
