@@ -1,0 +1,8 @@
+branch: issue-131-visualizer-deferred
+project-sha: 61f9b6dd3e87416f7bcebd22cc0c4235777bb0a9
+date: 2026-05-31
+issue: 131
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
