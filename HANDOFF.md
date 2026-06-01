@@ -1,22 +1,15 @@
-# Handover — 2026-06-01
+# Handover — 2026-06-02
 
-**Head commit (project):** `523467b` — docs: add PhysicsStateTest and PlayerStateTest to unit test list
-**Head commit (workspace):** `1c91024` — feat: promote blog and archive plan from issue-164-playerstate-public-api
+**Head commit (project):** `e0cfba9` — adr: 0008 RaceModel.canProduce read-only enforcement and MULE calldown intent extraction
+**Head commit (workspace):** `4732e0a` — archive(issue-165-racemodel-canproduce-readonly): move plan to attic
 
 ## What Changed This Session
 
-- **#164 closed:** PlayerState/PhysicsState three-way split. `PlayerState` is now
-  public with private fields and typed mutation API. New `PhysicsState` (package-private)
-  holds EmulatedGame's physics machinery (movement targets, cooldowns, production queues).
-  `stagingArea` moved to `EnemyBehavior`. `RaceModel`, `ProductionResult`,
-  `RaceModelFactory` promoted to public. All three race model implementations migrated
-  to the typed API. 841 tests passing. 8 squashed commits on project main.
-- **#165 filed:** RaceModel.canProduce() read-only contract is doc-only — tracked for
-  #74 redesign of the RaceModel installation seam.
-- **Protocol:** PP-20260601-5fa812 `emulated-plugin-seam-visibility` — external plugin
-  seam: interface and API types public; implementations package-private.
-- **Blog:** 2026-06-01-mdp02-playerstate-plugin-seam.md (published).
-- **CLAUDE.md:** added `PhysicsStateTest`, `PlayerStateTest` to unit test list.
+- **#165 closed:** `RaceModel.canProduce()` is now structurally read-only via `PlayerStateView` interface. MULE calldown extracted from `TrainIntent` into `MuleCalldownIntent` (sealed `Intent` subtype). `ProductionDecision { PROCEED, BLOCKED }` replaces `ProductionResult { PROCEED, HANDLED, BLOCKED }`. New `RaceModel.onCalldown()` default method handles ability-use spawns. `TerranRaceModel.canProduce()` is a one-liner; MULE logic moved to `onCalldown()`. 843 tests passing. 7 squashed commits on project main (16 → 6 on branch, then rebased).
+- **ADR-0008** filed: `docs/adr/0008-racemodel-canproduce-readonly-and-mule-intent-extraction.md`
+- **Protocol PP-20260601-5fa812** updated: `ProductionDecision` + `PlayerStateView` + `MuleCalldownIntent` added to public type examples.
+- **DESIGN.md** synced: RaceModel, TerranRaceModel, and EmulatedGame rows updated.
+- **Blog:** `2026-06-02-mdp01-canproduce-readonly.md` (published).
 
 ## Immediate Next Step
 
@@ -27,7 +20,6 @@ Run `/work` to start #127 (Phase 5 — EmulatedGame accuracy gaps).
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
 | #127 | Phase 5 completion — EmulatedGame accuracy gaps | L | High | Main thread; may spawn child issues |
-| #165 | RaceModel.canProduce() read-only enforcement | S | Med | Deferred to #74 redesign |
 | #155 | Layer 3: casehub-qhorus inter-plugin messaging | L | High | Foundation gate pending |
 | #156 | Layer 4: casehub-ledger audit trail | L | High | Foundation gate pending |
 
@@ -36,5 +28,6 @@ Run `/work` to start #127 (Phase 5 — EmulatedGame accuracy gaps).
 | Context | Where |
 |---------|-------|
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
-| Blog entry (this session) | `blog/2026-06-01-mdp02-playerstate-plugin-seam.md` |
-| Spec | `docs/superpowers/specs/2026-06-01-playerstate-public-api-design.md` (project repo) |
+| Blog entry (this session) | `blog/2026-06-02-mdp01-canproduce-readonly.md` |
+| ADR | `docs/adr/0008-racemodel-canproduce-readonly-and-mule-intent-extraction.md` (project repo) |
+| Spec | `docs/superpowers/specs/2026-06-01-racemodel-canproduce-readonly-design.md` (project repo) |
