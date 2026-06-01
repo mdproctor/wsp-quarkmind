@@ -1,0 +1,8 @@
+branch: issue-165-racemodel-canproduce-readonly
+project-sha: 523467b603d254a3229c79efb8ba17f1df3c1ddc
+date: 2026-06-01
+issue: 165
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
