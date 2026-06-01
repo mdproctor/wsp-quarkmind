@@ -1,0 +1,8 @@
+branch: issue-164-playerstate-public-api
+project-sha: 1d4a744ae73b76244347583b9fa3aee69cee2d9d
+date: 2026-06-01
+issue: 164
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
