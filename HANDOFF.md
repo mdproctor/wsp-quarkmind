@@ -11,6 +11,13 @@
 - **DESIGN.md** synced: RaceModel, TerranRaceModel, and EmulatedGame rows updated.
 - **Blog:** `2026-06-02-mdp01-canproduce-readonly.md` (published).
 
+## Cross-repo activity (casehubio/ledger#114 session, 2026-06-02)
+
+- Commented on #156 — EigenTrust skip decision, OutcomeRecorder API shape, Layer 4 config
+- Commented on #158 — incremental trust update design, confidence-based multi-granularity, routing config
+- Filed #168 — QuarkMind-specific ADR to document EigenTrust skip (write after ledger#114 ships)
+- casehubio/ledger ADR 0016 filed — platform-level EigenTrust applicability criteria
+
 ## Immediate Next Step
 
 Run `/work` to start #127 (Phase 5 — EmulatedGame accuracy gaps).
