@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-06-02-mdp02-arc42stories-and-a-lighter-ledger.md](2026-06-02-mdp02-arc42stories-and-a-lighter-ledger.md) | 2026-06-02 | ARC42STORIES.MD bootstrapped; tutorial framing retired; casehubio/ledger#114 filed for lightweight Bayesian Beta mode |
 | [2026-06-02-mdp01-canproduce-readonly.md](2026-06-02-mdp01-canproduce-readonly.md) | 2026-06-02 | MuleCalldownIntent extraction makes canProduce structurally read-only; ProductionDecision goes full-circle to enum |
 | [2026-06-01-mdp02-playerstate-plugin-seam.md](2026-06-01-mdp02-playerstate-plugin-seam.md) | 2026-06-01 | Three-way split of PlayerState opens RaceModel seam for external plugins |
 | [2026-05-25-mdp01-two-wrong-build-times.md](2026-05-25-mdp01-two-wrong-build-times.md) | 2026-05-25 | Building calibration finds NEXUS 32 ticks wrong (default case); FACTORY n=32 was addon contamination |
