@@ -1,0 +1,8 @@
+branch: issue-157-adaptive-plugin-selection
+project-sha: 542a9bd1e979eadd362e0015ab886ed8a783fb84
+date: 2026-06-02
+issue: 157
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
