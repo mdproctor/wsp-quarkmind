@@ -1,0 +1,8 @@
+branch: issue-168-eigentrust-skip-adr
+project-sha: 5e242660a0b09529ae0cddf10245b3ec87e896c7
+date: 2026-06-02
+issue: 168
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
