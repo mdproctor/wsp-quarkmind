@@ -1,31 +1,36 @@
-# Handover — 2026-06-02
+# Handover — 2026-06-03
 
-**Head commit (project):** `5e24266` — docs(#166): fix EigenTrust → Bayesian Beta trust scoring in ARC42STORIES.MD L4 stub
-**Head commit (workspace):** `0ef7dfa` — docs: add blog entry 2026-06-02-mdp02-arc42stories-and-a-lighter-ledger
+**Head commit (project):** `b16f6d8` — protocol(PP-20260603-cefed9,PP-20260603-049dd0): plugin canActivate override required; NEAREST_THREAT conditional write
+**Head commit (workspace):** `9c9339c` — archive(issue-157-adaptive-plugin-selection): move plans to attic
 
 ## What Changed This Session
 
-- **#166 closed:** Quality checks passed (all 12 L2 class names verified, tutorial framing absent, SC2/harness boundary clean). ARC42STORIES.MD is the live architecture record. LAYER-LOG.md retained until L3–L7 migrate as each layer ships.
-- Everything else unchanged from prior handover — see `git show HEAD~1:HANDOFF.md`
+- **#168 closed:** ADR-0009 written — EigenTrust GLOBAL computation is inert in QuarkMind's single-attestor deployment; TrustWeightedAgentStrategy routes by CAPABILITY scores (Bayesian Beta). ARC42STORIES.MD L4/L6 stubs corrected.
+- **#157 closed:** Layer 5 complete — `TacticsTask` gates on `{READY, STRATEGY, NEAREST_THREAT}`; `StrategyTask` gates on `{READY, ENEMY_ARMY_SIZE}` (ordering). Two casehub-core defects discovered: `canActivate()` default returns `true` unconditionally; `createAndSolve()` returns pre-solve CaseFile. Both documented in garden and protocols.
+- `epic-saturation-mining` branch-closed stamp still pending (deferred from last session).
 
 ## Immediate Next Step
 
-Run `/work` — #157 (adaptive plugin selection, L5) is the only open harness issue without a foundation gate. Or continue #166 follow-through by stamping `epic-saturation-mining` with a branch-closed commit.
+Run `/work` — `epic-saturation-mining` needs a closure stamp (`git commit --allow-empty -m "chore: branch closed"` on that branch), then L3 (#155) or L4 (#156) depending on ledger#114 status.
 
 ## Cross-Module
 
 **Blocked by:**
 - `casehubio/ledger` — lightweight Bayesian Beta mode (casehubio/ledger#114) · gates #156, #158
 
+## What's Left
+
+- `epic-saturation-mining` branch closure stamp (empty commit, see CLAUDE.md convention) · XS · Low
+- #169 — C2: refactor StrategyTask to use ENEMY_POSTURE + ENEMY_BUILD_ORDER instead of raw ENEMY_UNITS · M · Med
+- #170 — cleanup: remove dead MAP_CENTER fallback in DroolsTacticsTask.dispatch() post-NEAREST_THREAT gate · XS · Low
+
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #157 | Layer 5: adaptive plugin selection | M | Med | Unblocked — foundation gate ✅ (engine#186) |
 | #155 | Layer 3: casehub-qhorus inter-plugin messaging | L | High | Foundation gate pending |
 | #156 | Layer 4: casehub-ledger integration | L | High | Blocked on casehubio/ledger#114 |
 | #158 | Layer 6: trust routing | M | High | Blocked on casehubio/ledger#114 |
-| #168 | ADR: EigenTrust skip — single-attestor deployment decision | S | Low | Write after ledger#114 ships |
 
 ## References
 
@@ -34,4 +39,5 @@ Run `/work` — #157 (adaptive plugin selection, L5) is the only open harness is
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
 | ARC42STORIES.MD | `ARC42STORIES.MD` (project root) |
 | Ledger blocker | `https://github.com/casehubio/ledger/issues/114` |
-| Garden entry | `GE-20260602-c68651` (casehub-engine) |
+| Garden entries (this session) | `GE-20260603-e98633` (canActivate default broken), `GE-20260603-a944d1` (createAndSolve pre-solve) |
+| Protocols (this session) | `docs/protocols/plugin-canactivate-override-required.md`, `docs/protocols/nearest-threat-conditional-write.md` |
