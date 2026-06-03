@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-06-03-mdp01-layer5-adaptive-plugin-selection.md](2026-06-03-mdp01-layer5-adaptive-plugin-selection.md) | 2026-06-03 | Layer 5 complete: TacticsTask gate on NEAREST_THREAT; canActivate() default broken in casehub-core; createAndSolve() returns pre-solve CaseFile |
 | [2026-06-02-mdp03-eigentrust-inert-single-attestor.md](2026-06-02-mdp03-eigentrust-inert-single-attestor.md) | 2026-06-02 | ADR-0009: EigenTrust inert in single-attestor deployment; CAPABILITY vs GLOBAL score distinction; casehub-engine-ledger still needed for routing |
 | [2026-06-02-mdp02-arc42stories-and-a-lighter-ledger.md](2026-06-02-mdp02-arc42stories-and-a-lighter-ledger.md) | 2026-06-02 | ARC42STORIES.MD bootstrapped; tutorial framing retired; casehubio/ledger#114 filed for lightweight Bayesian Beta mode |
 | [2026-06-02-mdp01-canproduce-readonly.md](2026-06-02-mdp01-canproduce-readonly.md) | 2026-06-02 | MuleCalldownIntent extraction makes canProduce structurally read-only; ProductionDecision goes full-circle to enum |
