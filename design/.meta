@@ -1,0 +1,8 @@
+branch: issue-170-167-169-cleanup-migration-strategy
+project-sha: b16f6d8
+date: 2026-06-03
+issue: 170
+issue-repo: mdproctor/quarkmind
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
