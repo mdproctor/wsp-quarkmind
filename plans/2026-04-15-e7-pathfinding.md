@@ -37,41 +37,41 @@
 ```bash
 cd /Users/mdproctor/claude/quarkmind
 
-MILESTONE=$(gh api repos/mdproctor/quarkmind/milestones \
+MILESTONE=$(gh api repos/casehubio/quarkmind/milestones \
   -f title="E7: Pathfinding" -f state=open --jq '.number')
 echo "Milestone: $MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-1: WalkabilityGrid in domain/ — 64×64 grid, emulatedMap(), fromPathingGrid()" \
   --body "Pure Java class. boolean[][] grid. isWalkable(x,y) returning false for out-of-bounds. Static factories: emulatedMap() with wall at y=18 except gap x=11-13; fromPathingGrid() for real SC2." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-2: AStarPathfinder in domain/ — 8-directional A*, tile centres" \
   --body "Stateless. findPath(grid, from, to) returns List<Point2d> tile centres. Cardinal cost=1, diagonal=sqrt(2), Euclidean heuristic. Snaps unwalkable endpoints to nearest walkable." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-3: MovementStrategy interface + DirectMovement + PathfindingMovement" \
   --body "MovementStrategy: advance(tag, current, target, speed), clearUnit(tag), reset(). DirectMovement: wraps stepToward. PathfindingMovement: A* with per-unit waypoint Deques, path recomputed on target change." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-4: EmulatedGame — movementStrategy field, delegation, clearUnit, reset" \
   --body "Add MovementStrategy field defaulting to DirectMovement. Delegate moveFriendlyUnits/moveEnemyUnits to strategy.advance(). Call clearUnit on unit death and staging transfer. Call reset() in EmulatedGame.reset(). Add setMovementStrategy() test helper." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-5: EmulatedTerrainResource — GET /qa/emulated/terrain" \
   --body "QA endpoint returning width, height, and sparse wall list as int[][]. @UnlessBuildProfile(prod). No injection needed — calls WalkabilityGrid.emulatedMap() directly." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-6: Visualizer — static terrain layer from /qa/emulated/terrain" \
   --body "loadTerrain() fetches once at startup. Draws dark rectangles for wall tiles using PIXI.Graphics. Inserted between background and resource layers." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E7-7: Tests — WalkabilityGridTest, AStarPathfinderTest, PathfindingMovementTest, EmulatedTerrainIT, EmulatedGameTest additions" \
   --body "Full TDD coverage: grid data, A* routing around walls, waypoint following, REST endpoint, EmulatedGame integration with pathfinding enabled." \
   --milestone "$MILESTONE"

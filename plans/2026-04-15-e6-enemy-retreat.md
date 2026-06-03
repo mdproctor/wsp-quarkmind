@@ -31,7 +31,7 @@
 ```bash
 cd /Users/mdproctor/claude/quarkmind
 
-MILESTONE=$(gh api repos/mdproctor/quarkmind/milestones \
+MILESTONE=$(gh api repos/casehubio/quarkmind/milestones \
   -f title="E6: Enemy Retreat & Regroup" \
   -f state=open \
   --jq '.number')
@@ -41,22 +41,22 @@ echo "Milestone: $MILESTONE"
 - [ ] **Step 2: Create the four child issues**
 
 ```bash
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E6-1: EnemyAttackConfig — retreatHealthPercent + retreatArmyPercent fields" \
   --body "Add two new int fields to EnemyAttackConfig record. 0 = disabled. Update defaultProtoss() with retreatHealthPercent=30, retreatArmyPercent=50." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E6-2: EmulatedGame — retreatingUnits, initialAttackSize, STAGING_POS, test helpers" \
   --body "Add Set<String> retreatingUnits, int initialAttackSize fields. Extract STAGING_POS constant. Add retreatingUnitTags(), setInitialAttackSizeForTesting(), setEnemyHealthForTesting() helpers. Wire initialAttackSize on wave launch. Clean retreatingUnits on unit death in resolveCombat." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E6-3: EmulatedGame.tickEnemyRetreat() — per-unit + army-wide thresholds + staging transfer" \
   --body "New private method in tick loop after resolveCombat(). Per-unit health threshold, army-wide depletion threshold, arrival transfer to enemyStagingArea with damaged HP preserved." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E6-4: Tests — 9 new EmulatedGameTest retreat tests + EnemyStrategyTest updates" \
   --body "9 new unit tests covering both retreat triggers, movement, staging transfer, HP preservation, disabled thresholds, pre-wave guard, dead-unit cleanup. Update all 2-arg EnemyAttackConfig calls." \
   --milestone "$MILESTONE"

@@ -70,7 +70,7 @@ EOF
 
 - [ ] **Step 2: Note the issue number**
 
-The command prints a URL like `https://github.com/mdproctor/quarkmind/issues/42`.
+The command prints a URL like `https://github.com/casehubio/quarkmind/issues/42`.
 Use that number (e.g. `42`) in all `Refs #N` trailers in subsequent commits.
 
 ---

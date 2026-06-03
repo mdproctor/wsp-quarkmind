@@ -31,7 +31,7 @@
 - [ ] **Step 1: Create the E5 milestone**
 
 ```bash
-MILESTONE=$(gh api repos/mdproctor/quarkmind/milestones \
+MILESTONE=$(gh api repos/casehubio/quarkmind/milestones \
   -f title="E5: Damage Types, Armour & Hardened Shield" \
   -f state=open \
   --jq '.number')
@@ -41,27 +41,27 @@ echo "Milestone: $MILESTONE"
 - [ ] **Step 2: Create the five child issues**
 
 ```bash
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E5-1: UnitAttribute enum in domain/" \
   --body "Add UnitAttribute enum (LIGHT, ARMORED, BIOLOGICAL, MECHANICAL, PSIONIC, MASSIVE, STRUCTURE) to domain/. Pure Java, no framework deps." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E5-2: SC2Data — unitAttributes, armour, bonusDamageVs, hasHardenedShield + HP corrections" \
   --body "Four new static methods on SC2Data. Fix maxHealth for Immortal(200), Marine(45), Marauder(125), Roach(145), Hydralisk(90)." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E5-3: DamageCalculator in sc2/emulated/" \
   --body "Package-private class. computeEffective(UnitType, Unit) applies armour, bonus damage vs attributes, and Immortal Hardened Shield cap." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E5-4: EmulatedGame.resolveCombat() — use DamageCalculator" \
   --body "Replace raw damagePerAttack with damageCalculator.computeEffective(attacker.type(), target) in both combat loops. Add spawnFriendlyForTesting and setEnemyShieldsForTesting helpers." \
   --milestone "$MILESTONE"
 
-gh issue create --repo mdproctor/quarkmind \
+gh issue create --repo casehubio/quarkmind \
   --title "E5-5: Tests — SC2DataTest, DamageCalculatorTest, EmulatedGameTest additions" \
   --body "New test classes for SC2Data and DamageCalculator. New EmulatedGameTest tests for armour, Hardened Shield, stat corrections. Fix 2 existing tests broken by armour introduction." \
   --milestone "$MILESTONE"
