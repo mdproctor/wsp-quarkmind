@@ -14,23 +14,31 @@
 non-null, so `contains(key)` returns `true`, but `get(key, Type)` then calls `Optional.of(null)`
 which throws `NullPointerException`. The same `Optional.of` pattern appears in `fireEvent`.
 
-### Fix — three sites in `InMemoryCaseFile.java` (casehub-poc)
+A secondary path: the constructor stores values from `initialState` without filtering nulls,
+bypassing `put()`. A subsequent `put(key, newValue)` would then get an `ItemEntry(null, ver)`
+as `previous`, causing `Optional.of(previous.value())` to NPE in `fireEvent`.
+
+### Fix — four sites in `InMemoryCaseFile.java` (casehub-poc)
+
+The goal is an airtight invariant: null values can never enter the store via any path.
 
 | Site | Change | Rationale |
 |------|--------|-----------|
-| `put()` top | `if (value == null) return;` | Prevents null storage. Matches `MapCaseFile` contract. Makes `contains()` correct as side-effect — no null `ItemEntry` values enter the store. |
-| `get()` line 80 | `Optional.of(...)` unchanged | After the null guard in `put()`, null cannot reach `get()`. Keep `Optional.of` — it is the correct strong assertion. `ofNullable` would make the impossible look possible and weaken the invariant. |
-| `fireEvent()` line 181 | `Optional.of(previous.value())` → `Optional.ofNullable(previous.value())` | `previous` is from `ref.getAndSet()` in `put()` — it is the *previously stored* ItemEntry, which may have been stored before the null guard was added. `ofNullable` is correct here for the transition period. |
+| `put()` top | `if (value == null) return;` | Prevents null storage via put(). Matches `MapCaseFile` contract. Makes `contains()` correct as side-effect. |
+| Constructor `initialState` forEach | Skip entries where `v == null` | Closes the constructor bypass path. Makes the null invariant fully airtight. |
+| `get()` line 80 | Keep `Optional.of(...)` | With both null guards in place, null can never reach get(). `Optional.of` is the correct strong assertion. |
+| `fireEvent()` line 181 | Keep `Optional.of(previous.value())` when `previous != null` | Same reasoning — null-value ItemEntries cannot exist after constructor filter + put() guard. |
+
+No `Optional.ofNullable` anywhere — using it would silently mask an invariant violation.
 
 ### Tests — plain JUnit (no Quarkus), `InMemoryCaseFileNullTest`
 
 - `put(key, null)` → key remains absent: `contains()` false, `get()` empty
 - `put(key, value)` then `put(key, null)` → no-op, key still holds original value
 - `put(key, a)` then `put(key, b)` → normal update still works (regression guard)
-- `fireEvent` null path: verify listener receives `Optional.empty()` as previous when first write
-
-Thread safety: `put(null)` early-return is a read-only check on an immutable null reference;
-no synchronization concern.
+- Constructor with `Map.of("k", "v")` → key present and readable
+- Constructor with `{k=null}` (passed via `new HashMap<>()`) → key filtered, absent after construction
+- `fireEvent` first-write path: verify listener receives `Optional.empty()` as previous
 
 ### After fix
 
@@ -47,33 +55,34 @@ Rebuild and install: `mvn install -DskipTests` from
 
 Agent plugin decisions are captured as ledger entries via `OutcomeRecorder` on state
 *transitions only* — not every tick. This creates a meaningful audit trail and seeds the
-trust-score pipeline used at Layer 6 (#158). Transition-level recording gives Layer 6 a
-clean signal (strategy changed, engagement started, intel arrived) rather than high-volume
-tick-level noise (~88 entries/second at 22fps × 4 plugins).
+trust-score pipeline at Layer 6 (#158). Transition-level recording gives Layer 6 a clean
+signal (strategy changed, new attack engagement, new intel observed, new build type queued).
 
 ### Verdict semantics
 
-`AttestationVerdict` enum values: `SOUND, FLAGGED, ENDORSED, CHALLENGED`.
+`AttestationVerdict` enum: `SOUND, FLAGGED, ENDORSED, CHALLENGED`.
 
-- `SOUND` — used for **all legitimate plugin executions**, including "nothing to do this tick"
-  (no enemy in range, no budget, no new intel). Positive EigenTrust signal.
-- `FLAGGED` — reserved for genuine plugin errors: uncaught exception, inconsistent output,
-  unexpected null from a required CaseFile key. Negative EigenTrust signal.
+- `SOUND` — all legitimate plugin executions, including "nothing to do this tick." Positive EigenTrust signal.
+- `FLAGGED` — genuine plugin errors only: uncaught exception, inconsistent state. Negative signal.
 
-Recording "no action" as `FLAGGED` would systematically penalize plugins for normal quiescent
-game states and corrupt trust scores at Layer 6.
+"No action needed" is not `FLAGGED`. Recording quiescent ticks as `FLAGGED` would systematically
+penalize plugins for normal game states and corrupt trust scores at Layer 6.
 
 ### Transition detection — when to fire
 
-| Plugin | Fire when | `SOUND` condition | `FLAGGED` condition |
-|--------|-----------|-------------------|---------------------|
-| `DroolsStrategyTask` | `STRATEGY` value changes from previous | Strategy changed | Exception in rule evaluation |
-| `DroolsTacticsTask` | new attack target selected (NEAREST_THREAT changes) | Target found | Exception resolving threat |
-| `DroolsScoutingTask` | enemy intel first observed or enemy unit set changes | Intel updated | Exception in scouting rules |
-| `EconomicsDecisionService` | new build intent queued | Intent queued | Exception in decision |
+| Plugin | Fire when | Previous-state field | Verdict |
+|--------|-----------|---------------------|---------|
+| `DroolsStrategyTask` | `STRATEGY` value changes from previous tick | `volatile String prevStrategy` | `SOUND` on change; `FLAGGED` on exception |
+| `DroolsTacticsTask` | NEAREST_THREAT tag changes (not position — Unit is a record; position changes every tick) | `volatile String prevTargetTag` | `SOUND` on new target; `FLAGGED` on exception |
+| `DroolsScoutingTask` | enemy unit count or enemy set tag-hash changes | `volatile int prevEnemyHash` | `SOUND` on change; `FLAGGED` on exception |
+| `EconomicsDecisionService` | queued build TYPE changes (Probe→Pylon is a transition; Probe→Probe is not) | `volatile String prevBuildType` | `SOUND` on new type; `FLAGGED` on exception |
 
-Each plugin tracks its previous output value in a `volatile` field. No external state store
-required.
+On the **first call after game start** (`prevX == null`), any non-null output is a transition.
+This means the first `execute()` call always fires an event — no complex state setup required.
+
+**Unit tag note:** `Unit` is `record Unit(String tag, UnitType type, Point2d position, ...)`.
+Record `equals()` compares all fields including `position`, which changes every tick. Never
+compare `Unit` instances directly for transition detection — compare `unit.tag()` strings.
 
 ### New components (quarkmind)
 
@@ -100,12 +109,11 @@ public record PluginDecisionEvent(
     String capabilityTag,       // QuarkMindCapabilityTag constant
     AttestationVerdict verdict, // SOUND or FLAGGED
     UUID gameSessionId,
-    int gameFrame               // for transition logging
+    int gameFrame               // logged by observer for which frame the transition occurred
 ) {}
 ```
 
-No `decision` field — not persisted to `OutcomeRecord`, pure allocation pressure at game speed.
-`gameFrame` is logged by the observer for debugging (which frame the transition occurred).
+No `decision` field — not persisted to `OutcomeRecord`.
 
 #### `QuarkMindCapabilityTag` constants — `io.quarkmind.agent`
 
@@ -121,7 +129,7 @@ public final class QuarkMindCapabilityTag {
 
 #### `PluginOutcomeAuditor @ApplicationScoped` — `io.quarkmind.agent`
 
-Cross-cutting infrastructure, not a game plugin. Belongs in `agent/`, not `plugin/`.
+Cross-cutting infrastructure. Belongs in `agent/`, not `plugin/`.
 
 ```java
 @ApplicationScoped
@@ -131,31 +139,31 @@ public class PluginOutcomeAuditor {
     public void onDecision(@ObservesAsync PluginDecisionEvent e) {
         outcomeRecorder.record(OutcomeRecord.of(
             e.actorId(), e.gameSessionId(),
-            e.capabilityTag(), e.verdict(), 0.1
+            e.capabilityTag(), e.verdict(), 0.7   // game-level decision scope
         ));
         log.debugf("Ledger: %s %s frame=%d", e.actorId(), e.verdict(), e.gameFrame());
     }
 }
 ```
 
-Confidence 0.1 = tick-level (per `OutcomeRecord` recommendation). Transitions are infrequent
-so 0.1 still applies — each captured event represents one observed game decision.
+Confidence 0.7 = game-level decision scope (per `OutcomeRecord` recommendation). Transitions
+are game-level signals regardless of how frequently they occur.
 
 ### Plugin wiring
 
 Plugins already import from `io.quarkmind.agent` (`ResourceBudget`, `QuarkMindCaseFile`,
-`StrategyTask`). Adding `Event<PluginDecisionEvent>` and `GameSession` injection continues the
+`StrategyTask`). Adding `Event<PluginDecisionEvent>` and `GameSession` injection follows the
 same established pattern. No seam-rule violation.
 
-| Plugin | Event source | Previous-state tracking |
-|--------|-------------|------------------------|
-| `DroolsStrategyTask` | end of `execute()` if strategy changed | `volatile String prevStrategy` |
-| `DroolsTacticsTask` | end of `execute()` if NEAREST_THREAT changed | `volatile Unit prevTarget` |
-| `DroolsScoutingTask` | end of `execute()` if enemy set changed | `volatile int prevEnemyCount` |
-| `EconomicsDecisionService` | after `decide()` if a new intent was queued | stateless — fire on every queue |
+`FlowEconomicsTask.execute()` only submits a tick to the flow; does not fire event.
+`EconomicsDecisionService` is the decision point.
 
-`FlowEconomicsTask.execute()` only submits a tick to the flow; does not fire event. Economics
-decision event fires from `EconomicsDecisionService`.
+### Memory lifecycle
+
+`InMemoryLedgerEntryRepository` should observe `@Observes GameStopped` and self-clear.
+`AgentOrchestrator.stopGame()` already fires `gameStoppedEvent.fire(new GameStopped())`.
+This keeps orchestrator clean (no injection of concrete memory type) and respects the CDI
+event pattern already established in the orchestrator.
 
 ### Dependencies (pom.xml)
 
@@ -164,21 +172,21 @@ decision event fires from `EconomicsDecisionService`.
 <dependency>
   <groupId>io.casehub</groupId>
   <artifactId>casehub-ledger-api</artifactId>
-  <version>${casehub-ledger.version}</version>
+  <version>0.2-SNAPSHOT</version>
 </dependency>
 
 <!-- Ledger runtime — DefaultOutcomeRecorder @DefaultBean -->
 <dependency>
   <groupId>io.casehub</groupId>
   <artifactId>casehub-ledger</artifactId>
-  <version>${casehub-ledger.version}</version>
+  <version>0.2-SNAPSHOT</version>
 </dependency>
 
 <!-- In-memory ledger SPIs — no JPA datasource needed for %mock/%emulated/%test -->
 <dependency>
   <groupId>io.casehub</groupId>
   <artifactId>casehub-ledger-memory</artifactId>
-  <version>${casehub-ledger.version}</version>
+  <version>0.2-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -187,84 +195,117 @@ decision event fires from `EconomicsDecisionService`.
 **Global (all profiles):**
 ```properties
 # Required by DefaultOutcomeRecorder — throws ISE if absent and OutcomeRecord.attestorId is null
+# LedgerConfig javadoc: "For QuarkMind: quarkmind:game-engine@v1"
 casehub.ledger.outcome.default-attestor-id=quarkmind:game-engine@v1
+
+# casehub.ledger.enabled defaults to true — no explicit set needed
+# casehub.ledger.attestations.enabled defaults to true — no explicit set needed
+# casehub.ledger.reactive.enabled has @WithDefault("false") — no explicit set needed
+#   (it's a build-time property; setting at runtime does not gate CDI behavior)
 ```
 
-**`%test` profile:**
+**Per-profile config (must be spelled out for each profile — Quarkus has no wildcard):**
+
+`%test` profile:
 ```properties
-# Activate in-memory ledger alternatives (required — @Priority(1) alone is not enough)
 %test.quarkus.arc.selected-alternatives=\
   io.casehub.ledger.memory.InMemoryLedgerEntryRepository,\
   io.casehub.ledger.memory.InMemoryLedgerMerkleFrontierRepository,\
   io.casehub.ledger.memory.InMemoryActorTrustScoreRepository,\
   io.casehub.ledger.memory.InMemoryKeyRotationRepository,\
-  io.casehub.ledger.memory.InMemoryAgentSigner
+  io.casehub.ledger.memory.InMemoryAgentSigner,\
+  io.casehub.ledger.memory.InMemoryActorIdentityBindingRepository,\
+  io.casehub.ledger.memory.InMemoryReactiveLedgerEntryRepository,\
+  io.casehub.ledger.memory.InMemoryReactiveKeyRotationRepository
 
-# Quarkus cannot scan Jandex-less jars — required for in-memory alternatives
 %test.quarkus.index-dependency.casehub-ledger-memory.group-id=io.casehub
 %test.quarkus.index-dependency.casehub-ledger-memory.artifact-id=casehub-ledger-memory
-
-# Disable hash chain (not needed for in-memory tutorial)
 %test.casehub.ledger.hash-chain.enabled=false
-%test.casehub.ledger.reactive.enabled=false
 ```
 
-**`%mock` and `%emulated` profiles:** same selected-alternatives + index-dependency blocks as
-`%test`. `casehub.ledger.enabled` defaults to `true` — no explicit set needed.
+`%mock` profile — same 8 alternatives + index-dependency + hash-chain:
+```properties
+%mock.quarkus.arc.selected-alternatives=\
+  io.casehub.ledger.memory.InMemoryLedgerEntryRepository,\
+  ... (same 8 as %test)
+%mock.quarkus.index-dependency.casehub-ledger-memory.group-id=io.casehub
+%mock.quarkus.index-dependency.casehub-ledger-memory.artifact-id=casehub-ledger-memory
+%mock.casehub.ledger.hash-chain.enabled=false
+```
 
-**CDI risk (GE-20260519-e13b01):** Adding `casehub-ledger` runtime can crash `@QuarkusTest` if
-`ReactiveLedgerEntryRepository` is unsatisfied. With `casehub-ledger-memory` on the classpath
-AND the alternatives explicitly selected, all ledger SPIs are satisfied. TDD will confirm; a
-package-private `@ApplicationScoped` test stub resolves it if the memory module alone is
-insufficient (see GE).
+`%emulated` profile — same blocks:
+```properties
+%emulated.quarkus.arc.selected-alternatives=\ ... (same 8)
+%emulated.quarkus.index-dependency.casehub-ledger-memory.group-id=io.casehub
+%emulated.quarkus.index-dependency.casehub-ledger-memory.artifact-id=casehub-ledger-memory
+%emulated.casehub.ledger.hash-chain.enabled=false
+```
 
-### Memory lifecycle
-
-`InMemoryLedgerEntryRepository` accumulates entries indefinitely. Wire `ledgerRepo.clear()` in
-`AgentOrchestrator.stopGame()` to prevent unbounded growth across games. Transition-level
-recording reduces volume significantly (a 30-min game produces O(hundreds) of events, not
-O(tens of thousands)).
+**CDI risk (GE-20260519-e13b01):** With `casehub-ledger-memory` AND all 8 alternatives
+explicitly selected, all ledger SPI requirements are satisfied without JPA. TDD will confirm.
 
 ### Integration test — `LedgerAuditIT @QuarkusTest` (`%test` profile)
 
-Deliberate state setup required before `gameTick()` — strategy plugin only fires a transition
-event when READY, ENEMY_POSTURE, and TIMING_ATTACK_INCOMING are present in the CaseFile:
+Pattern follows `DroolsStrategyTaskTest`: inject the plugin and call `execute(cf)` directly
+on a hand-constructed CaseFile. No `SimulatedGame` setters needed. On the first call,
+`prevStrategy == null` and any non-null strategy output is a transition — the event fires
+unconditionally regardless of game state.
 
 ```java
-simulatedGame.setReady(true);
-simulatedGame.setEnemyPosture("AGGRESSIVE");
-simulatedGame.setTimingAttack(false);
-// ... minimal game state so strategy rules fire and change from default
+@QuarkusTest
+class LedgerAuditIT {
+    @Inject @CaseType("starcraft-game") StrategyTask strategyTask;
+    @Inject LedgerEntryRepository ledgerRepo;
+    @Inject GameSession gameSession;
+
+    @BeforeEach void reset() { gameSession.reset(); }
+
+    @Test
+    void strategyTransitionWritesLedgerEntry() throws InterruptedException {
+        CaseFile cf = caseFile(/* minimal valid state */);
+        strategyTask.execute(cf);
+        Thread.sleep(300); // CDI async observer
+        List<LedgerEntry> entries = ledgerRepo.findBySubjectId(gameSession.id(), 0, 10);
+        assertThat(entries).isNotEmpty();
+        assertThat(entries).anyMatch(e -> "strategy.drools".equals(e.actorId()));
+    }
+}
 ```
 
-Assertions:
-- After `gameTick()` + `Thread.sleep(300)` (async observer): at least one `LedgerEntry` persisted
-- At least one entry has `actorId = "strategy.drools"` and `capabilityTag = "starcraft.strategy"`
-- All entries have `SOUND` verdict (no errors injected)
+Note: `LedgerEntryRepository.findBySubjectId()` — verify exact method signature against the
+actual SPI before implementing.
 
 ### ARC42STORIES.MD update
 
-Layer 4 row updated to ✅ complete. `#156` forward reference cleared. (Issue #166 — migration
-to ARC42STORIES.MD — is CLOSED. LAYER-LOG.md is retired. Do not write a LAYER-LOG entry.)
+Layer 4 row updated to ✅ complete. `#156` forward reference cleared.
+Issue #166 (migration to ARC42STORIES.MD) is CLOSED. LAYER-LOG.md is retired. Do not write
+a LAYER-LOG entry.
 
-### CLAUDE.md update (concrete step)
+### CLAUDE.md update (numbered step)
 
-Remove the stale "Until migration is complete, new layer completions still require a LAYER-LOG
-entry" language. Update to reference ARC42STORIES.MD as the sole architecture record.
-Invoke `update-claude-md` as a numbered step after committing #156.
+Step 11 below: invoke `update-claude-md` to remove the stale "Until migration is complete,
+new layer completions still require a LAYER-LOG entry" sentence.
 
 ---
 
 ## Sequence
 
-1. Fix `InMemoryCaseFile` in casehub-poc (3 sites + test)
-2. `mvn install -DskipTests` in casehub-poc to publish fixed snapshot
-3. Add pom.xml deps (casehub-ledger-api, casehub-ledger, casehub-ledger-memory)
-4. Add application.properties config (default-attestor-id, selected-alternatives, index-dependency)
-5. Add `GameSession`, `PluginDecisionEvent`, `QuarkMindCapabilityTag` in `agent/`
-6. Add `PluginOutcomeAuditor` in `agent/` (not `plugin/`)
-7. Wire transition detection + event firing in all four plugins / EconomicsDecisionService
-8. Wire `gameSession.reset()` in `startGame()`; wire `ledgerRepo.clear()` in `stopGame()`
-9. Write `LedgerAuditIT` with deliberate state setup
-10. Update ARC42STORIES.MD Layer 4 status
-11. Invoke `update-claude-md` (remove stale LAYER-LOG reference)
+1. Fix `InMemoryCaseFile` in casehub-poc (4 sites including constructor filter + test)
+2. `mvn install -DskipTests` from casehub-poc/casehub-persistence-memory
+3. Add pom.xml deps (casehub-ledger-api, casehub-ledger, casehub-ledger-memory) at version `0.2-SNAPSHOT`
+4. Add `casehub.ledger.outcome.default-attestor-id` to global application.properties
+5. Add per-profile `selected-alternatives` (8 beans), `index-dependency`, `hash-chain.enabled=false`
+   for `%test`, `%mock`, `%emulated`
+6. Add `GameSession`, `PluginDecisionEvent`, `QuarkMindCapabilityTag`, `PluginOutcomeAuditor`
+   in `io.quarkmind.agent`
+7. Wire `gameSession.reset()` in `AgentOrchestrator.startGame()`
+8. Add `@Observes GameStopped` self-clear to `InMemoryLedgerEntryRepository` (in ledger-memory module)
+9. Wire transition detection + `Event<PluginDecisionEvent>` firing in:
+   - `DroolsStrategyTask` (prevStrategy string)
+   - `DroolsTacticsTask` (prevTargetTag string — tag only, not Unit record)
+   - `DroolsScoutingTask` (prevEnemyHash int)
+   - `EconomicsDecisionService` (prevBuildType string)
+10. Write `LedgerAuditIT` — verify method signatures on `LedgerEntryRepository` before
+    writing the query call
+11. Update ARC42STORIES.MD Layer 4 status to ✅
+12. Invoke `update-claude-md` (remove stale LAYER-LOG reference)
