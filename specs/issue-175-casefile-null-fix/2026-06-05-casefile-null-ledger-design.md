@@ -167,8 +167,8 @@ public class LedgerLifecycleAdapter {
 ```
 
 In `%sc2` (production): `InMemoryLedgerEntryRepository` is not in `selected-alternatives` →
-`isUnsatisfied()` returns true → no-op. In `%test`/`%mock`/`%emulated`: bean is selected →
-`clear()` called. `Instance<>` injection is always valid regardless of whether the bean exists
+`isUnsatisfied()` returns true → no-op. In `%test`/`%mock`/`%emulated`/`%replay`: bean is
+selected → `clear()` called. `Instance<>` injection is always valid regardless of whether the bean exists
 (resolution is lazy).
 
 ### Plugin wiring
@@ -259,6 +259,22 @@ a future profile that enables reactive.
 %emulated.casehub.ledger.hash-chain.enabled=false
 ```
 
+**`%replay` profile:**
+```properties
+%replay.quarkus.arc.selected-alternatives=\
+  io.casehub.ledger.memory.InMemoryLedgerEntryRepository,\
+  io.casehub.ledger.memory.InMemoryLedgerMerkleFrontierRepository,\
+  io.casehub.ledger.memory.InMemoryActorTrustScoreRepository,\
+  io.casehub.ledger.memory.InMemoryKeyRotationRepository,\
+  io.casehub.ledger.memory.InMemoryAgentSigner,\
+  io.casehub.ledger.memory.InMemoryActorIdentityBindingRepository,\
+  io.casehub.ledger.memory.InMemoryReactiveLedgerEntryRepository,\
+  io.casehub.ledger.memory.InMemoryReactiveKeyRotationRepository
+%replay.quarkus.index-dependency.casehub-ledger-memory.group-id=io.casehub
+%replay.quarkus.index-dependency.casehub-ledger-memory.artifact-id=casehub-ledger-memory
+%replay.casehub.ledger.hash-chain.enabled=false
+```
+
 ### Integration test — `LedgerAuditIT @QuarkusTest` (`%test` profile)
 
 Follows `DroolsStrategyTaskTest` pattern: inject the plugin, call `execute(cf)` directly on
@@ -277,6 +293,12 @@ class LedgerAuditIT {
 
     @BeforeEach void reset() { gameSession.reset(); }
 
+    // Single test method by design: DroolsStrategyTask.prevStrategy is a volatile field
+    // on an @ApplicationScoped bean and persists across @Test methods in the same run.
+    // The first call (prevStrategy == null) always fires a transition. A second method
+    // using the same CaseFile state will produce the same strategy output — no change,
+    // no event, assertion fails. Future additions must either produce a different strategy
+    // value or add a package-private clearPrevState() on DroolsStrategyTask.
     @Test
     void strategyTransitionWritesLedgerEntry() throws InterruptedException {
         CaseFile cf = caseFile(/* minimal valid state per DroolsStrategyTaskTest helper */);
@@ -300,7 +322,7 @@ Issue #166 (migration to ARC42STORIES.MD) is CLOSED. LAYER-LOG.md is retired.
 
 1. Fix `InMemoryCaseFile` (4 sites: `put()` null guard, constructor filter, `get()` `Optional.of` kept, `fireEvent()` `Optional.of` kept) + test
 2. `mvn install -DskipTests` from `casehub-poc/casehub-persistence-memory/`
-3. Add pom.xml deps (`casehub-ledger-api`, `casehub-ledger`, `casehub-ledger-memory`) at `0.2-SNAPSHOT`
+3. Add pom.xml deps (`casehub-ledger-api`, `casehub-ledger`, `casehub-ledger-memory`) at `0.2-SNAPSHOT` (artifacts already installed in local repo; reinstall via `mvn install -DskipTests` from `casehub/ledger/` if stale)
 4. Add `casehub.ledger.outcome.default-attestor-id=quarkmind:game-engine@v1` globally
 5. Add `%test`, `%mock`, `%emulated` property blocks (8 alternatives each, index-dependency, hash-chain=false)
 6. Add `GameSession` (public `reset()`), `PluginDecisionEvent`, `QuarkMindCapabilityTag`,
