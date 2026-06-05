@@ -1,0 +1,9 @@
+branch: issue-175-casefile-null-fix
+project-sha: 0a4e88248c59554e64abd2da43f27b2a1e4be64c
+date: 2026-06-05
+issue: 175
+issue-repo: casehubio/quarkmind
+covers: 175,156
+flyway-next-v: unknown
+design-repo: workspace
+design-section-hashes:
