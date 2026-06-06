@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-06-06-mdp01-layer4-ledger-integration.md](2026-06-06-mdp01-layer4-ledger-integration.md) | 2026-06-06 | Layer 4 complete: InMemoryCaseFile null fix at all entry points; CDI async event bridge for ledger; Event.fire() silent failure for @ObservesAsync; Unit record position-sensitivity in transition detection |
 | [2026-06-04-mdp02-casefile-null-semantics.md](2026-06-04-mdp02-casefile-null-semantics.md) | 2026-06-04 | CaseFile null semantics and three small fixes: InMemoryCaseFile vs CaseContextImpl opposite null behaviour; Assimilator handler; stale doc refs |
 | [2026-06-04-mdp01-three-cleanups-strategy-upgrade.md](2026-06-04-mdp01-three-cleanups-strategy-upgrade.md) | 2026-06-04 | StrategyTask C2: dead MAP_CENTER fallback removed; org migration done; UNKNOWN posture semantics and eval()+accumulate() Drools compilation failure |
 | [2026-06-03-mdp01-layer5-adaptive-plugin-selection.md](2026-06-03-mdp01-layer5-adaptive-plugin-selection.md) | 2026-06-03 | Layer 5 complete: TacticsTask gate on NEAREST_THREAT; canActivate() default broken in casehub-core; createAndSolve() returns pre-solve CaseFile |
