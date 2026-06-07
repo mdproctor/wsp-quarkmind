@@ -1,5 +1,7 @@
 # Handover — 2026-06-06
 
+*Updated: #155 closed — removed from What's Next.*
+
 **Head commit (project):** `604b044` — docs: sync ARC42STORIES.MD — stale scan at session wrap
 **Head commit (workspace):** `8b976d0` — docs: add blog entry 2026-06-06-mdp01-layer4-ledger-integration
 
@@ -30,7 +32,6 @@ Run `/work` and start #156's successor: **#158** (Layer 6: trust routing — `Tr
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
 | #158 | Layer 6: trust routing — `TrustWeightedAgentStrategy` | M | High | Unblocked — `OutcomeRecorder` writing; wire `TrustScoreRoutingPublisher` CDI events |
-| #155 | Layer 3: casehub-qhorus inter-plugin messaging | L | High | Foundation gate pending |
 | #159 | Layer 7: comparison baseline vs naive AI | M | Med | Unblocked |
 
 ## References
