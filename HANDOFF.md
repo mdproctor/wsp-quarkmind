@@ -1,45 +1,57 @@
-# Handover — 2026-06-06
+# Handover — 2026-06-08
 
-*Updated: #155 closed — removed from What's Next.*
-
-**Head commit (project):** `604b044` — docs: sync ARC42STORIES.MD — stale scan at session wrap
-**Head commit (workspace):** `8b976d0` — docs: add blog entry 2026-06-06-mdp01-layer4-ledger-integration
+**Head commit (project):** `4fad1f7` — docs: sync ARC42STORIES.MD — stale scan at session wrap
+**Head commit (workspace):** `2266937` — docs(issue-177-layer3-scouting-followon): mark closed
 
 ## What Changed This Session
 
-Closed #175 (InMemoryCaseFile null fix in casehub-poc — null guard in `put()`, constructor, `putIfAbsent`, `putIfVersion`) and #156 (Layer 4 casehub-ledger integration). Layer 4 wires all four plugins to casehub-ledger via CDI async events: plugins `fireAsync(PluginDecisionEvent)` on state transitions only, `PluginOutcomeAuditor @ObservesAsync` writes `OutcomeRecord` (confidence 0.7, SOUND verdict). `LedgerLifecycleAdapter` uses `@Any Instance<InMemoryLedgerEntryRepository>` + `isUnsatisfied()` to clear at game-stop without coupling production code to the memory impl.
+Closed #177, #178, #179, #176 — Layer 3 dual-stack redesign. The core architectural change:
+`ScoutingIntelBroker` becomes a typed in-memory store (Stack 1, synchronous, for plugins); the
+Qhorus channel stays as an advisory surface for future LLM consumers (Stack 2, async, #180/#181).
 
-Key discovery: `Event.fire()` silently does nothing for `@ObservesAsync` observers — must be `fireAsync()`. Also: `Unit` is a record whose `equals()`/`hashCode()` includes `position` (changes every tick) — all transition detection must compare by `unit.tag()` only (new protocol PP-20260606-506f33).
+`DroolsTacticsTask` migrated from `MessageObserver` + `TacticsIntelCache` to reading from the
+broker. `DroolsStrategyTask` and `FlowEconomicsTask` added as new `ScoutingIntelConsumer`
+implementations. `NEAREST_THREAT` CaseFile key removed entirely (#179) — threat intel flows via
+broker only. Hot-reload endpoints added (#178): `POST /qa/scouting/subscriptions/reload` and
+`/thresholds/reload`.
+
+Four future issues filed during brainstorming: #180 (LLM advisory team), #181 (Commentator/Coach
+LLM), #182 (hierarchical event summarisation), #183 (attack pattern recognition).
 
 ## Immediate Next Step
 
-Run `/work` and start #156's successor: **#158** (Layer 6: trust routing — `TrustWeightedAgentStrategy` wired via `TrustScoreRoutingPublisher` CDI events). `DefaultOutcomeRecorder` is now writing attestations; the trust scorer has data to work from.
+Run `/work` and start **#158** (Layer 6: trust routing — `TrustWeightedAgentStrategy`).
+`TrustWeightedAgentStrategy` is already shipped in casehub-engine (confirmed this session — no
+longer blocked by the foundation). Wire it via `TrustScoreRoutingPublisher` CDI events.
 
 ## Cross-Module
 
 *No active blockers.*
 
-**Previously blocked by (now resolved):**
-- `casehubio/ledger#114` — shipped 2026-06-02. `DefaultOutcomeRecorder @DefaultBean` available.
-- `#156` (Layer 4) — closed this session.
-
 ## What's Left
 
-- casehub-poc fix (InMemoryCaseFile null) — merged to casehub-poc `docs/engine-reconstruction-v2` branch. Not yet on their main. Low urgency.
+- casehub-poc fix (InMemoryCaseFile null) — on `docs/engine-reconstruction-v2`, not yet on their main. Low urgency.
+- Minor review findings → #184 (stale Javadoc in BasicScoutingTask/DroolsScoutingTask, stale test name in AdaptivePluginSelectionIT, annotation cleanup)
+- peer-repo doc update → casehubio/parent#201 (quarkmind.md — L3 status, Qhorus dep, Agentic Harness table)
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #158 | Layer 6: trust routing — `TrustWeightedAgentStrategy` | M | High | Unblocked — `OutcomeRecorder` writing; wire `TrustScoreRoutingPublisher` CDI events |
+| #158 | Layer 6: trust routing — `TrustWeightedAgentStrategy` | M | High | Foundation unblocked — `TrustWeightedAgentStrategy` shipped in casehub-engine |
 | #159 | Layer 7: comparison baseline vs naive AI | M | Med | Unblocked |
+| #180 | LLM advisory team — trust, latency, personality-based selection | L | High | New; depends on Qhorus channel from this session |
+| #181 | Commentator/Coach LLM — real-time narration and coaching | L | High | New; depends on #182 summarisation layer |
+| #182 | Hierarchical event summarisation — temporal abstraction layer | L | High | New; foundation for #180 and #181 |
+| #183 | Enemy strategy classifier — attack pattern recognition | M | High | New; Level 2 in #182 hierarchy |
 
 ## References
 
 | Context | Where |
 |---------|-------|
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
-| ARC42STORIES.MD | `ARC42STORIES.MD` (project root) — Layer 4 ✅, L5 ✅, L3/L6/L7 pending |
-| New protocol | `docs/protocols/unit-record-tag-only-comparison.md` (PP-20260606-506f33) |
-| Garden entry | `GE-20260606-0718fd` (@Any Instance<> + isUnsatisfied() technique) |
-| Blog entry | `blog/2026-06-06-mdp01-layer4-ledger-integration.md` |
+| ARC42STORIES.MD | `ARC42STORIES.MD` — L3 ✅ (redesigned), L4 ✅, L5 ✅, L6/L7 pending |
+| Spec | `docs/superpowers/specs/2026-06-08-layer3-dual-stack-redesign.md` |
+| New protocol | `docs/protocols/scouting-consumer-postconstruct-required.md` (PP-20260608-8584ab) |
+| Garden entry | `GE-20260608-2c8739` (CDI proxy package-private cross-package visibility) |
+| Blog entry | `blog/2026-06-08-mdp01-two-delivery-paths.md` |
