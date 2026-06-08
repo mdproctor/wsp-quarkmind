@@ -1,0 +1,9 @@
+branch: issue-13-live-sc2-smoke-test
+project-sha: 4fad1f7023516316fff265a90292ace8095668f1
+date: 2026-06-08
+issue: 13
+issue-repo: casehubio/quarkmind
+covers: 13
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes:
