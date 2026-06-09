@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-06-09-mdp01-pulling-out-ocraft-vert-x-heart.md](2026-06-09-mdp01-pulling-out-ocraft-vert-x-heart.md) | 2026-06-09 | Replacing ocraft's Vert.x 3.x transport with a raw-socket QuarkusSC2Transport; spec review rounds; test server debugging |
 | [2026-06-06-mdp01-layer4-ledger-integration.md](2026-06-06-mdp01-layer4-ledger-integration.md) | 2026-06-06 | Layer 4 complete: InMemoryCaseFile null fix at all entry points; CDI async event bridge for ledger; Event.fire() silent failure for @ObservesAsync; Unit record position-sensitivity in transition detection |
 | [2026-06-04-mdp02-casefile-null-semantics.md](2026-06-04-mdp02-casefile-null-semantics.md) | 2026-06-04 | CaseFile null semantics and three small fixes: InMemoryCaseFile vs CaseContextImpl opposite null behaviour; Assimilator handler; stale doc refs |
 | [2026-06-04-mdp01-three-cleanups-strategy-upgrade.md](2026-06-04-mdp01-three-cleanups-strategy-upgrade.md) | 2026-06-04 | StrategyTask C2: dead MAP_CENTER fallback removed; org migration done; UNKNOWN posture semantics and eval()+accumulate() Drools compilation failure |
