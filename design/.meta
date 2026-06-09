@@ -1,0 +1,9 @@
+branch: issue-185-quarkus-sc2-transport
+project-sha: 5590153
+date: 2026-06-09
+issue: 185
+issue-repo: casehubio/quarkmind
+covers: 185
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes: 
