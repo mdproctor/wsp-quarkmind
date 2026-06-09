@@ -1,21 +1,15 @@
-# Handover — 2026-06-09
+# Handover — 2026-06-10
 
-**Head commit (project):** `1527e02` — protocol(PP-20260609-38a43e): sc2-stale-process-must-be-killed
-**Head commit (workspace):** `b1b702e` — docs(issue-13-live-sc2-smoke-test): mark closed
+**Head commit (project):** `a372578` — docs: sync CLAUDE.md — add QuarkusSC2Transport tests and sc2/real description
+**Head commit (workspace):** `411ef5b` — feat: promote blog entry from issue-185-quarkus-sc2-transport
 
 ## What Changed This Session
 
-Closed #13 (SC2 smoke test). SC2 is running — probes mining, economics ticking, scenario runner
-spawning Zealots that trigger DEFEND. But ocraft 0.4.21 needs bytecode patching to run on Vert.x 4.x.
-Seven incompatibilities fixed across 5 classes (`VertxChannel`, `VertxChannelProvider`,
-`S2ClientVerticle`, `Ping`, `OnRequest`). Patches live in the local Maven repo only — fragile.
-Also filed #185 to replace ocraft's transport layer entirely with Quarkus-native WebSocket.
+Closed #185. Replaced ocraft-s2client-bot (Vert.x 3.x + RxJava2 transport) with `QuarkusSC2Transport` — a raw Socket WebSocket implementation (~280 lines) using RFC 6455 framing, `SynchronousQueue` for send/receive pairing, virtual thread game loop with correct quit()/running lifecycle semantics. All 931 tests pass. Ocraft jar patches no longer needed. `ocraft-s2client-protocol` kept as a direct dep (data types only, no transport code, no Vert.x). Also filed #186, #187, #188 for Phase 2 implementation issues found during code review.
 
 ## Immediate Next Step
 
-Run `/work #185` — replace ocraft-s2client-api transport with Quarkus-native SC2 WebSocket client.
-Plan: vendor `ocraft-s2client-protocol` (protobuf types), write `QuarkusSC2Transport` (~200 lines),
-drop the Vert.x 3.x / RxJava2 transport dependency. Eliminates the jar patching entirely.
+`/work #184` — minor code review findings (stale Javadoc, test name, annotation cleanup) · S · Low. Quick win to clear the trailing review debt before L6 work.
 
 ## Cross-Module
 
@@ -23,30 +17,29 @@ drop the Vert.x 3.x / RxJava2 transport dependency. Eliminates the jar patching 
 
 ## What's Left
 
-- **ocraft jar patches** — 5 classes patched in `~/.m2/repository/com/github/ocraft/ocraft-s2client-api/0.4.21/`. Lost on `mvn dependency:purge-local-repository`. Re-apply with scripts documented in `NATIVE.md`. This urgency is why #185 is the immediate next step.
 - **#184** — Minor review findings (stale Javadoc, test name, annotation cleanup) · S · Low
+- **#186** — `connectFallback()` must stop lifecycle chain on failure · S · Med
+- **#187** — `onStep` sendActions/sendDebug exception handling + Opus model switch signal · S · Med
+- **#188** — macOS-only comment in `resolveSC2Executable()` · XS · Low
 - casehub-poc fix (InMemoryCaseFile null) — low urgency, separate repo
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #185 | Replace ocraft-s2client-api with Quarkus-native SC2 WebSocket transport | L | Med | **Start here** — eliminates fragile jar patches; unblocks #14 (GraalVM native tracing) |
+| #184 | Minor code review cleanup — Javadoc, test names, annotation | S | Low | **Start here** |
 | #158 | Layer 6: trust routing — `TrustWeightedAgentStrategy` | M | High | Foundation unblocked |
 | #159 | Layer 7: comparison baseline vs naive AI | M | Med | Unblocked |
 | #180 | LLM advisory team on scouting channel | L | High | Depends on Qhorus channel |
-| #181 | Commentator/Coach LLM | L | High | Depends on #182 |
-| #182 | Hierarchical event summarisation | L | High | Foundation for #180, #181 |
-| #183 | Enemy strategy classifier | M | High | Level 2 in #182 hierarchy |
+| #181–183 | Commentator/Coach LLM + hierarchical summarisation + enemy classifier | L | High | Cascade dependency |
 
 ## References
 
 | Context | Where |
 |---------|-------|
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
-| #185 issue | casehubio/quarkmind#185 — full rationale in issue body |
-| ocraft patch scripts | `NATIVE.md` — procedure for re-patching after `mvn clean` |
-| SC2 smoke test blog | `blog/2026-06-09-mdp01-ocraft-vertx-archaeology.md` |
-| Garden entries | `GE-20260609-432b2f` (Mac path separator), `GE-20260609-12a3d7` (Vert.x 4.x breakage), `GE-20260609-0b703b` (SC2 single WS), `GE-20260609-6ae928` (System.exit bypass), `GE-20260609-d24a97` (rx vs core writeBinaryMessage) |
-| Protocol | `docs/protocols/sc2-stale-process-must-be-killed.md` (PP-20260609-38a43e) |
-| ARC42STORIES.MD | `ARC42STORIES.MD` — L3 ✅, L4 ✅, L5 ✅, L6/L7 pending |
+| #185 spec (Revision 9) | `docs/superpowers/specs/2026-06-09-quarkus-sc2-transport-design.md` |
+| Transport protocols | `docs/protocols/sc2-joinGame-raw-interface-required.md`, `sc2-createGame-realtime-must-not-be-set.md` |
+| Garden entries | `GE-20260609-d6cabc` (TCP probe/accept), `GE-20260609-54d3c7` (BufferedReader frames), `GE-20260609-878c41` (JDK HttpClient hang), `GE-20260609-f0d149` (ImageData byte count), `GE-20260609-f14f75` (SynchronousQueue pairing) |
+| Diary entry | `blog/2026-06-09-mdp01-pulling-out-ocraft-vert-x-heart.md` |
+| ARC42STORIES.MD | L3 ✅, L4 ✅, L5 ✅, L6/L7 pending (#158, #159) |
