@@ -1,4 +1,4 @@
-# Branch Closed — issue-150-iem10-timed-intent-stream
-**Date:** 2026-05-28
-**Issue:** #150
-**Scheduled for deletion:** 2026-06-11
+# Branch Closed — issue-185-quarkus-sc2-transport
+**Date:** 2026-06-09
+**Issue:** #185
+**Covers:** 185
