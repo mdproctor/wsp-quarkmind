@@ -25,7 +25,6 @@ drop the Vert.x 3.x / RxJava2 transport dependency. Eliminates the jar patching 
 
 - **ocraft jar patches** — 5 classes patched in `~/.m2/repository/com/github/ocraft/ocraft-s2client-api/0.4.21/`. Lost on `mvn dependency:purge-local-repository`. Re-apply with scripts documented in `NATIVE.md`. This urgency is why #185 is the immediate next step.
 - **#184** — Minor review findings (stale Javadoc, test name, annotation cleanup) · S · Low
-- **casehubio/parent#201** — quarkmind.md doc update: L3 status, Qhorus dep, Agentic Harness table · S · Low
 - casehub-poc fix (InMemoryCaseFile null) — low urgency, separate repo
 
 ## What's Next
