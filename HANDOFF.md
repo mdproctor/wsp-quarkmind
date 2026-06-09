@@ -1,28 +1,21 @@
-# Handover — 2026-06-08
+# Handover — 2026-06-09
 
-**Head commit (project):** `4fad1f7` — docs: sync ARC42STORIES.MD — stale scan at session wrap
-**Head commit (workspace):** `2266937` — docs(issue-177-layer3-scouting-followon): mark closed
+**Head commit (project):** `1527e02` — protocol(PP-20260609-38a43e): sc2-stale-process-must-be-killed
+**Head commit (workspace):** `b1b702e` — docs(issue-13-live-sc2-smoke-test): mark closed
 
 ## What Changed This Session
 
-Closed #177, #178, #179, #176 — Layer 3 dual-stack redesign. The core architectural change:
-`ScoutingIntelBroker` becomes a typed in-memory store (Stack 1, synchronous, for plugins); the
-Qhorus channel stays as an advisory surface for future LLM consumers (Stack 2, async, #180/#181).
-
-`DroolsTacticsTask` migrated from `MessageObserver` + `TacticsIntelCache` to reading from the
-broker. `DroolsStrategyTask` and `FlowEconomicsTask` added as new `ScoutingIntelConsumer`
-implementations. `NEAREST_THREAT` CaseFile key removed entirely (#179) — threat intel flows via
-broker only. Hot-reload endpoints added (#178): `POST /qa/scouting/subscriptions/reload` and
-`/thresholds/reload`.
-
-Four future issues filed during brainstorming: #180 (LLM advisory team), #181 (Commentator/Coach
-LLM), #182 (hierarchical event summarisation), #183 (attack pattern recognition).
+Closed #13 (SC2 smoke test). SC2 is running — probes mining, economics ticking, scenario runner
+spawning Zealots that trigger DEFEND. But ocraft 0.4.21 needs bytecode patching to run on Vert.x 4.x.
+Seven incompatibilities fixed across 5 classes (`VertxChannel`, `VertxChannelProvider`,
+`S2ClientVerticle`, `Ping`, `OnRequest`). Patches live in the local Maven repo only — fragile.
+Also filed #185 to replace ocraft's transport layer entirely with Quarkus-native WebSocket.
 
 ## Immediate Next Step
 
-Run `/work` and start **#158** (Layer 6: trust routing — `TrustWeightedAgentStrategy`).
-`TrustWeightedAgentStrategy` is already shipped in casehub-engine (confirmed this session — no
-longer blocked by the foundation). Wire it via `TrustScoreRoutingPublisher` CDI events.
+Run `/work #185` — replace ocraft-s2client-api transport with Quarkus-native SC2 WebSocket client.
+Plan: vendor `ocraft-s2client-protocol` (protobuf types), write `QuarkusSC2Transport` (~200 lines),
+drop the Vert.x 3.x / RxJava2 transport dependency. Eliminates the jar patching entirely.
 
 ## Cross-Module
 
@@ -30,28 +23,31 @@ longer blocked by the foundation). Wire it via `TrustScoreRoutingPublisher` CDI 
 
 ## What's Left
 
-- casehub-poc fix (InMemoryCaseFile null) — on `docs/engine-reconstruction-v2`, not yet on their main. Low urgency.
-- Minor review findings → #184 (stale Javadoc in BasicScoutingTask/DroolsScoutingTask, stale test name in AdaptivePluginSelectionIT, annotation cleanup)
-- peer-repo doc update → casehubio/parent#201 (quarkmind.md — L3 status, Qhorus dep, Agentic Harness table)
+- **ocraft jar patches** — 5 classes patched in `~/.m2/repository/com/github/ocraft/ocraft-s2client-api/0.4.21/`. Lost on `mvn dependency:purge-local-repository`. Re-apply with scripts documented in `NATIVE.md`. This urgency is why #185 is the immediate next step.
+- **#184** — Minor review findings (stale Javadoc, test name, annotation cleanup) · S · Low
+- **casehubio/parent#201** — quarkmind.md doc update: L3 status, Qhorus dep, Agentic Harness table · S · Low
+- casehub-poc fix (InMemoryCaseFile null) — low urgency, separate repo
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #158 | Layer 6: trust routing — `TrustWeightedAgentStrategy` | M | High | Foundation unblocked — `TrustWeightedAgentStrategy` shipped in casehub-engine |
+| #185 | Replace ocraft-s2client-api with Quarkus-native SC2 WebSocket transport | L | Med | **Start here** — eliminates fragile jar patches; unblocks #14 (GraalVM native tracing) |
+| #158 | Layer 6: trust routing — `TrustWeightedAgentStrategy` | M | High | Foundation unblocked |
 | #159 | Layer 7: comparison baseline vs naive AI | M | Med | Unblocked |
-| #180 | LLM advisory team — trust, latency, personality-based selection | L | High | New; depends on Qhorus channel from this session |
-| #181 | Commentator/Coach LLM — real-time narration and coaching | L | High | New; depends on #182 summarisation layer |
-| #182 | Hierarchical event summarisation — temporal abstraction layer | L | High | New; foundation for #180 and #181 |
-| #183 | Enemy strategy classifier — attack pattern recognition | M | High | New; Level 2 in #182 hierarchy |
+| #180 | LLM advisory team on scouting channel | L | High | Depends on Qhorus channel |
+| #181 | Commentator/Coach LLM | L | High | Depends on #182 |
+| #182 | Hierarchical event summarisation | L | High | Foundation for #180, #181 |
+| #183 | Enemy strategy classifier | M | High | Level 2 in #182 hierarchy |
 
 ## References
 
 | Context | Where |
 |---------|-------|
 | Previous handover | `git show HEAD~1:HANDOFF.md` |
-| ARC42STORIES.MD | `ARC42STORIES.MD` — L3 ✅ (redesigned), L4 ✅, L5 ✅, L6/L7 pending |
-| Spec | `docs/superpowers/specs/2026-06-08-layer3-dual-stack-redesign.md` |
-| New protocol | `docs/protocols/scouting-consumer-postconstruct-required.md` (PP-20260608-8584ab) |
-| Garden entry | `GE-20260608-2c8739` (CDI proxy package-private cross-package visibility) |
-| Blog entry | `blog/2026-06-08-mdp01-two-delivery-paths.md` |
+| #185 issue | casehubio/quarkmind#185 — full rationale in issue body |
+| ocraft patch scripts | `NATIVE.md` — procedure for re-patching after `mvn clean` |
+| SC2 smoke test blog | `blog/2026-06-09-mdp01-ocraft-vertx-archaeology.md` |
+| Garden entries | `GE-20260609-432b2f` (Mac path separator), `GE-20260609-12a3d7` (Vert.x 4.x breakage), `GE-20260609-0b703b` (SC2 single WS), `GE-20260609-6ae928` (System.exit bypass), `GE-20260609-d24a97` (rx vs core writeBinaryMessage) |
+| Protocol | `docs/protocols/sc2-stale-process-must-be-killed.md` (PP-20260609-38a43e) |
+| ARC42STORIES.MD | `ARC42STORIES.MD` — L3 ✅, L4 ✅, L5 ✅, L6/L7 pending |
