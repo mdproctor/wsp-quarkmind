@@ -1,0 +1,9 @@
+branch: issue-184-cleanup-and-layer6-trust
+project-sha: a37257801c897356cb28e8a8aa27882f0995f7c6
+date: 2026-06-10
+issue: 184
+issue-repo: casehubio/quarkmind
+covers: 184,186,187,188,158
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes: 
