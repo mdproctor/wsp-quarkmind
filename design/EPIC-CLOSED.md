@@ -1,4 +1,4 @@
-# Branch Closed — issue-150-iem10-timed-intent-stream
-**Date:** 2026-05-28
-**Issue:** #150
-**Scheduled for deletion:** 2026-06-11
+# Branch Closed — issue-13-live-sc2-smoke-test
+**Date:** 2026-06-09
+**Issue:** #13
+**Covers:** 13
