@@ -1,4 +1,4 @@
-# Branch Closed — issue-150-iem10-timed-intent-stream
-**Date:** 2026-05-28
-**Issue:** #150
-**Scheduled for deletion:** 2026-06-11
+# Branch Closed — issue-184-cleanup-and-layer6-trust
+**Date:** 2026-06-10
+**Issue:** #184
+**Covers:** 184,186,187,188,158
