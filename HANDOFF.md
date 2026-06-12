@@ -27,6 +27,19 @@ Closed #184, #186, #187, #188 (transport / code review minor fixes). Closed #158
 - `docs/PLATFORM.md` — CBR and `ImplementationRoutingStrategy` entries in capability table; boundary rules
 - `docs/AGENTIC-HARNESS-GUIDE.md` — CBR section added so all harness apps see it
 
+**CBR epic + all child issues filed:**
+- casehubio/parent#227 — Epic tracking all CBR work
+- casehubio/engine#476 — ImplementationRoutingStrategy SPI (Reuse)
+- casehubio/engine#477 — CaseOutcomeObserver SPI (Retain hook)
+- casehubio/engine#478 — CaseRetriever integration at plan creation (Retrieve bridge)
+- casehubio/neural-text#20 — CaseRetriever contract (Retrieve)
+- casehubio/platform#87 — CbrCaseEntry structured type (Retain schema)
+- casehubio/ledger#136 — TrustGateService batch scoring (Reuse)
+- casehubio/quarkmind#192 — QuarkMind CBR reference implementation
+- casehubio/aml#61 — CBR over AML investigation patterns
+- casehubio/clinical#78 — CBR over adverse event history
+- casehubio/devtown#75 — CBR over PR review patterns
+
 ## What's Left
 
 - casehub-poc fix (InMemoryCaseFile null) — low urgency · S · Med
