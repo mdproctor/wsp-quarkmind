@@ -34,7 +34,6 @@ Architecture exploration session — no QuarkMind implementation changes. Audite
 
 ## What's Left
 
-- casehub-poc fix (InMemoryCaseFile null) — low urgency · S · Med
 - Remove redundant `entryCriteria()` re-check from `DroolsStrategyTask`/`DroolsTacticsTask` `canActivate()` — blocked on `mdproctor/casehub#9` · XS · Low
 - Remove `ENEMY_ARMY_SIZE` ordering hack — blocked on `mdproctor/casehub#10` · XS · Low
 - Delete `StrategyTrustRouter`/`StrategySelector`/`StrategyTrustObserver` — blocked on `casehubio/engine#476` · S · Low
