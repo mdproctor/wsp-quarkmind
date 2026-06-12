@@ -15,11 +15,15 @@ Closed #184, #186, #187, #188 (transport / code review minor fixes). Closed #158
 
 ## Cross-Module
 
-*No active blockers.*
+**casehub-poc issues filed this session:**
+- `mdproctor/casehub#9` — consolidate `canActivate()` as single activation gate (removes redundant entryCriteria re-check from QuarkMind overrides once fixed)
+- `mdproctor/casehub#10` — add `dependsOn` task ordering mechanism (removes `ENEMY_ARMY_SIZE` ordering hack from `DroolsStrategyTask.entryCriteria()` once fixed)
 
 ## What's Left
 
 - casehub-poc fix (InMemoryCaseFile null) — low urgency · S · Med
+- Remove redundant `entryCriteria()` re-check from `DroolsStrategyTask` / `DroolsTacticsTask` `canActivate()` — blocked on `mdproctor/casehub#9` · XS · Low
+- Remove `ENEMY_ARMY_SIZE` ordering hack from `DroolsStrategyTask.entryCriteria()` — blocked on `mdproctor/casehub#10` · XS · Low
 
 ## What's Next
 
