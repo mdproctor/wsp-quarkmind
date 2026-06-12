@@ -19,6 +19,14 @@ Closed #184, #186, #187, #188 (transport / code review minor fixes). Closed #158
 - `mdproctor/casehub#9` — consolidate `canActivate()` as single activation gate (removes redundant entryCriteria re-check from QuarkMind overrides once fixed)
 - `mdproctor/casehub#10` — add `dependsOn` task ordering mechanism (removes `ENEMY_ARMY_SIZE` ordering hack from `DroolsStrategyTask.entryCriteria()` once fixed)
 
+**casehub-engine issue filed this session:**
+- `casehubio/engine#476` — `ImplementationRoutingStrategy` SPI — trust-based routing among competing `TaskDefinition` implementations; replaces `StrategyTrustRouter` + `StrategySelector` + `StrategyTrustObserver` in QuarkMind (~300 lines) once shipped
+
+**casehub-parent docs updated this session:**
+- `docs/CBR-CAPABILITY.md` — new doc defining CBR as a platform capability (Retrieve/Reuse/Revise/Retain), per-repo responsibilities, component map, QuarkMind as reference implementation
+- `docs/PLATFORM.md` — CBR and `ImplementationRoutingStrategy` entries in capability table; boundary rules
+- `docs/AGENTIC-HARNESS-GUIDE.md` — CBR section added so all harness apps see it
+
 ## What's Left
 
 - casehub-poc fix (InMemoryCaseFile null) — low urgency · S · Med
