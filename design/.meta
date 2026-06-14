@@ -1,0 +1,9 @@
+branch: issue-193-casehub-engine-phase1-casefile-migration
+project-sha: 8c4046dd29eb8128b19fbc29ac0471ac48287c2d
+date: 2026-06-14
+issue: 193
+issue-repo: casehubio/quarkmind
+covers: 193
+flyway-next-v: none
+design-repo: project
+design-section-hashes: 
