@@ -1,58 +1,31 @@
-# Handover — 2026-06-12
+# QuarkMind Handover — 2026-06-15
 
-**Head commit (project):** `0aee4ba` — chore: allow WebFetch for raw.githubusercontent.com
-**Head commit (workspace):** see below after commit
+## Last Session
 
-## What Changed This Session
-
-Architecture exploration session — no QuarkMind implementation changes. Audited CaseHub usage in QuarkMind: `createAndSolve()` is a thin plugin dispatch loop; `StrategyTrustRouter`/`StrategySelector`/`StrategyTrustObserver` (228 lines) are application-layer reimplementations of what `casehub-engine` should own. CBR framing: trust routing is degenerate CBR — Retain and Reuse only, Retrieve and Revise missing. Wrote `docs/CBR-CAPABILITY.md` in casehub-parent; updated PLATFORM.md and AGENTIC-HARNESS-GUIDE.md. Filed 11 issues across 7 repos with casehubio/parent#227 as parent epic. Garden entry GE-20260612-bd3b4d submitted (degenerate CBR diagnostic technique).
+Phase 1 of the casehub-engine migration shipped (closed). All 8 plugins now have `execute(CaseContext)`, `activateIf()`, `requires()`, `produces()`, and Phase 1 bridge methods. The poc `CaseEngine.createAndSolve()` path works transparently through bridges via `CaseFileContext` and the `testActivation()` helper on `TaskDefinition`. Three rounds of code review; all findings fixed including the CDI deployment failures post-close.
 
 ## Immediate Next Step
 
-`/work #159` — Layer 7: comparison baseline vs naive AI. Or: drop Quarkus Drools CDI injection to remove GE-0053 classloader constraint (half-day prep, enables richer rules). Ask at session start.
-
-## Cross-Module
-
-**casehub-poc issues filed (retiring codebase — workarounds only):**
-- `mdproctor/casehub#9` — consolidate `canActivate()` as single activation gate
-- `mdproctor/casehub#10` — add `dependsOn` task ordering mechanism
-
-**casehub-engine issues filed:**
-- `casehubio/engine#476` — ImplementationRoutingStrategy SPI (Reuse) — replaces StrategyTrustRouter when shipped
-- `casehubio/engine#477` — CaseOutcomeObserver SPI (Retain hook)
-- `casehubio/engine#478` — CaseRetriever integration at plan creation (Retrieve bridge)
-
-**CBR epic + foundation issues:**
-- `casehubio/parent#227` — parent epic, four implementation waves
-- `casehubio/neural-text#20` — CaseRetriever contract
-- `casehubio/platform#87` — CbrCaseEntry type (Wave 1 — start here)
-- `casehubio/ledger#136` — TrustGateService batch scoring (Wave 1 — start here)
-
-**Application issues:**
-- `casehubio/quarkmind#192` — QuarkMind CBR reference implementation (Wave 4)
-- `casehubio/aml#61`, `casehubio/clinical#78`, `casehubio/devtown#75` — domain CBR
+Phase 2 is blocked on engine — no quarkmind work until engine#483 (bulk `signalAndAwaitSync()` + generation counter) and engine#484 (`SequenceWorker` + skip-and-continue) land in casehubio/engine. L7 comparison baseline (#159) is the remaining standalone open issue.
 
 ## What's Left
 
-- Remove redundant `entryCriteria()` re-check from `DroolsStrategyTask`/`DroolsTacticsTask` `canActivate()` — blocked on `mdproctor/casehub#9` · XS · Low
-- Remove `ENEMY_ARMY_SIZE` ordering hack — blocked on `mdproctor/casehub#10` · XS · Low
-- Delete `StrategyTrustRouter`/`StrategySelector`/`StrategyTrustObserver` — blocked on `casehubio/engine#476` · S · Low
+- casehubio/parent#246 — PLATFORM.md dep map needs `casehub-engine-api` + `casehub-engine-blackboard` rows · XS · Low
+- quarkmind#196 — plugin-guide.md `activateIf()` example trivial; show a non-trivial CDI gate · XS · Low
+- quarkmind#197 — `CaseFileContext.set(key, null)` null-drop undocumented · XS · Low
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #159 | Layer 7: comparison vs naive game AI | M | Med | Unblocked |
-| #192 | QuarkMind CBR reference implementation | L | High | Blocked on engine#476, #477, #478 (Wave 4) |
-| #180 | LLM advisory team on scouting channel | L | High | Depends on Qhorus channel |
-| #181–183 | Commentator/Coach LLM + hierarchy + enemy classifier | L | High | Cascade dependency |
+| #159 | L7 comparison baseline — benchmark vs naive loop | L | Med | No blockers |
+| #74 | Genericise unit/building definitions — trademark removal | L | Med | Independent |
+| #192 | CBR reference implementation | L | High | Needs engine Phase 2 first |
+| engine#483+484 | Phase 2: wire QuarkMindCaseHub + signalAndAwaitSync | L | Med | Engine team work |
 
 ## References
 
-| Context | Where |
-|---------|-------|
-| Previous handover | `git show HEAD~1:HANDOFF.md` |
-| CBR architecture | `casehub-parent/docs/CBR-CAPABILITY.md` |
-| CBR epic | `casehubio/parent#227` (four implementation waves) |
-| Diary entry | `blog/2026-06-12-mdp02-trust-routing-is-degenerate-cbr.md` |
-| ARC42STORIES.MD | L1–L6 ✅, L7 pending (#159) |
+- Migration spec: `docs/superpowers/specs/2026-06-13-casehub-engine-migration-design.md`
+- Protocol (activateIf/requires): `docs/protocols/plugin-canactivate-override-required.md` (PP-20260603-cefed9)
+- Blog: `blog/2026-06-15-mdp01-casehub-engine-phase1.md`
+- Garden: GE-20260615-6c4767, GE-20260615-514e8b, GE-20260615-83f6cb, GE-20260615-537b99
