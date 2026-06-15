@@ -1,0 +1,9 @@
+branch: issue-159-l7-comparison-baseline
+project-sha: 2331615a8938308a738c6c796fcae3ad7422548f
+date: 2026-06-15
+issue: 159
+issue-repo: casehubio/quarkmind
+covers: 159
+flyway-next-v: none
+design-repo: project
+design-section-hashes: 7337f3d0:## Overview|a7e56472:## Architecture|436ec511:## Domain Model|e0533f48:## Component Structure|879eac20:## Plugin System|775aba9b:## Mock Infrastructure|242e01f4:## Visualizer|9af2b65c:## Real SC2 Integration|8363a93a:## Core Agent Loop Decisions|4f30a4cd:## Quarkus Profiles|7c963849:## Key Dependencies|7b7415c9:## Testing Strategy|efe02cd0:## Current State|94792dd5:## Next Steps|3cb18856:## Open Questions|a4a0a907:## ADRs
