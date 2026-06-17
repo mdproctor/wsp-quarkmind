@@ -1,5 +1,7 @@
 # QuarkMind Handover — 2026-06-17
 
+*Updated: casehubio/parent#250, casehubio/parent#246 closed — removed from backlog.*
+
 ## Last Session
 
 #198 (ARC42STORIES.MD §9.3 C2–C5 chapter entries) closed. Five spec review rounds caught real errors — wrong class attribution (GameOutcomeRecorder vs PluginOutcomeAuditor), wrong chapter boundary (StrategySelector belongs to C5 not C4), stale §9.2 matrix cells, false sequencing rationale. All four chapter entries written, §9.2 metadata corrected, #199 filed for DECLINE wiring (Quality Goal 2), #200 filed for C3→C4 rationale fix.
@@ -10,8 +12,6 @@ Pick up #200 (XS/Low) — fix C3→C4 and C4→C5 sequencing rationale in ARC42S
 
 ## What's Left
 
-- casehubio/parent#250 — quarkmind.md deep-dive: tutorial framing → Layer Taxonomy, LAYER-LOG.md → ARC42STORIES.MD, L7 now complete · XS · Low
-- casehubio/parent#246 — PLATFORM.md dep map: add casehub-engine-api + casehub-engine-blackboard rows · XS · Low
 - quarkmind#196 — plugin-guide.md: show non-trivial CDI gate in activateIf() example · XS · Low
 - quarkmind#197 — document CaseFileContext.set(key, null) null-drop behaviour · XS · Low
 - quarkmind#199 — wire DECLINE speech act in game-loop dispatch (Quality Goal 2) · L · High
