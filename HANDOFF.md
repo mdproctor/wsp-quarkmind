@@ -1,12 +1,12 @@
-# QuarkMind Handover — 2026-06-16
+# QuarkMind Handover — 2026-06-17
 
 ## Last Session
 
-#159 (L7 comparison baseline) closed. Chapter 6 of the Game Agent Coordination journey complete. Added `EmulatedGameBenchmarkTest` (plain JUnit, 15,571 ticks/sec, mirrors `EmulatedEngine.joinGame()`); validated harness dispatch P99 at 2ms against 400ms budget; filled in ARC42STORIES.MD §9.2/§9.3/§9.4 for L7; caught and corrected two overstated capability claims (DECLINE, inter-plugin state symmetry). Protocol PP-20260616-0d5ad3 captures the ARC42 verification rule.
+#198 (ARC42STORIES.MD §9.3 C2–C5 chapter entries) closed. Five spec review rounds caught real errors — wrong class attribution (GameOutcomeRecorder vs PluginOutcomeAuditor), wrong chapter boundary (StrategySelector belongs to C5 not C4), stale §9.2 matrix cells, false sequencing rationale. All four chapter entries written, §9.2 metadata corrected, #199 filed for DECLINE wiring (Quality Goal 2), #200 filed for C3→C4 rationale fix.
 
 ## Immediate Next Step
 
-Write C2–C5 §9.3 chapter entries (#198) — layers are complete, narrative stubs are not. Source material: blog entries and §9.4 layer entries already written.
+Pick up #200 (XS/Low) — fix C3→C4 and C4→C5 sequencing rationale in ARC42STORIES.MD, then close.
 
 ## What's Left
 
@@ -14,21 +14,24 @@ Write C2–C5 §9.3 chapter entries (#198) — layers are complete, narrative st
 - casehubio/parent#246 — PLATFORM.md dep map: add casehub-engine-api + casehub-engine-blackboard rows · XS · Low
 - quarkmind#196 — plugin-guide.md: show non-trivial CDI gate in activateIf() example · XS · Low
 - quarkmind#197 — document CaseFileContext.set(key, null) null-drop behaviour · XS · Low
-- quarkmind#198 — write ARC42STORIES.MD §9.3 C2–C5 chapter entries · M · Low
+- quarkmind#199 — wire DECLINE speech act in game-loop dispatch (Quality Goal 2) · L · High
+- quarkmind#200 — fix C3→C4 and C4→C5 sequencing rationale in ARC42STORIES.MD · XS · Low
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #198 | C2–C5 §9.3 chapter entries | M | Low | Source: blog + §9.4 layer entries |
+| #200 | Fix C3→C4 / C4→C5 rationale | XS | Low | Pre-existing errors surfaced by arc42 stale scan |
 | #74 | Genericise unit/building definitions — trademark removal | L | Med | Independent |
 | #192 | CBR reference implementation | L | High | Needs engine Phase 2 first |
-| engine#483+484 | Phase 2: signalAndAwaitSync + SequenceWorker | L | Med | Engine team work — re-run benchmark at Phase 2 close |
+| engine#483+484 | Phase 2: signalAndAwaitSync + SequenceWorker | L | Med | Engine team work |
+
+## Build Note
+
+mvn install -DskipITs failed with `io/casehub/ledger/runtime/privacy/ActorIdentityProvider` JVM classpath error. Pre-existing — not related to #198 (doc-only branch). Investigate before next Java work.
 
 ## References
 
-- Spec: `docs/superpowers/specs/2026-06-15-l7-comparison-baseline-design.md`
-- Benchmarks: `docs/benchmarks/2026-06-16-l7-harness.md`, `docs/benchmarks/2026-06-16-l7-emulated.md`
-- Protocol: `docs/protocols/arc42-capability-claims-require-source-verification.md` (PP-20260616-0d5ad3)
-- Blog: `blog/2026-06-16-mdp01-chapter-six-closes.md`
-- Garden: GE-20260616-bb1a1b, GE-20260616-bc7911
+- Protocol: `docs/protocols/arc42-matrix-chapter-layer-delta-consistency.md` (PP-20260617-248106)
+- Garden: GE-20260617-6d8baf (PluginOutcomeAuditor vs GameOutcomeRecorder)
+- Blog: `blog/2026-06-17-mdp01-arc42-attribution-errors.md`
