@@ -1,0 +1,9 @@
+branch: issue-200-docs-and-decline
+project-sha: 3d1a20152eb97090f652e811ea794b295228d3b1
+date: 2026-06-17
+issue: 200
+issue-repo: casehubio/quarkmind
+covers: 200,196,197,199
+flyway-next-v: none
+design-repo: project
+design-section-hashes: 
