@@ -1,4 +1,4 @@
-# Branch Closed — issue-198-arc42-c2-c5-chapters
-**Date:** 2026-06-17
-**Issue:** #198
-**Covers:** 198
+# Branch Closed — issue-200-docs-and-decline
+**Date:** 2026-06-18
+**Issue:** #200
+**Covers:** 200,196,197,199
