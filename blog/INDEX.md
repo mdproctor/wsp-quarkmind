@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-06-18-mdp01-decline-wiring-qg2-closed.md](2026-06-18-mdp01-decline-wiring-qg2-closed.md) | 2026-06-18 | DECLINE wired: QG2 finally closed — PluginDispatchBroker, MapCaseContext, collect-then-apply, async race fix |
 | [2026-06-16-mdp01-chapter-six-closes.md](2026-06-16-mdp01-chapter-six-closes.md) | 2026-06-16 | L7 closes Chapter 6 — harness P99 2ms, EmulatedGame 15,571 ticks/sec, DECLINE gap found |
 | [2026-06-12-mdp02-trust-routing-is-degenerate-cbr.md](2026-06-12-mdp02-trust-routing-is-degenerate-cbr.md) | 2026-06-12 | CaseHub usage audit reveals StrategyTrustRouter belongs in the engine; trust routing is degenerate CBR — Retrieve and Revise are missing |
 | [2026-06-12-mdp01-wiring-playerresult-to-trust.md](2026-06-12-mdp01-wiring-playerresult-to-trust.md) | 2026-06-12 | Wiring SC2 playerResult to L6 trust routing: natural game-end gap, CAS double-fire race, happens-before ordering, qhorus domainContentBytes() |
