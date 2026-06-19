@@ -1,4 +1,5 @@
-# Branch Closed — issue-198-arc42-c2-c5-chapters
-**Date:** 2026-06-17
-**Issue:** #198
-**Covers:** 198
+# Branch Closed: issue-201-fix-ci
+
+**Date:** 2026-06-19
+**Issues:** 201
+**Status:** merged to main
