@@ -1,5 +1,7 @@
 # QuarkMind Handover — 2026-06-20
 
+*Updated: casehubio/parent#280 closed — removed from backlog.*
+
 ## Last Session
 
 CI fully green after two rounds of fixes. Round 1 (issue-201): inlined scelight + casehub-core source, added casehubio/* GitHub Packages repository — resolved dependency failures blocking CI since 2026-06-12. Round 2 (issues-202): fixed GameStateWebSocketTest async race — connect().join() returned client-side before Quarkus @OnOpen fired server-side; added waitForSession() barrier to GameStateBroadcaster. Three commits on main; all 1006 tests pass.
@@ -12,7 +14,6 @@ Pick new work from What's Next. Run `/work` to start a branch.
 
 - quarkmind#74 — genericise unit/building definitions — trademark removal · L · Med
 - quarkmind#192 — CBR reference implementation · L · High (needs engine Phase 2 first)
-- casehubio/parent#280 — sync quarkmind.md: L7 Comparison Baseline now complete
 
 ## What's Next
 
