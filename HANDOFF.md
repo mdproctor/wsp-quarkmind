@@ -1,8 +1,8 @@
-# QuarkMind Handover — 2026-06-19
+# QuarkMind Handover — 2026-06-20
 
 ## Last Session
 
-Branch `issue-201-fix-ci` closed. Fixed Build and Test CI (red since 2026-06-12): inlined scelight-mpq/s2protocol (150 Java + 122 .dat files, Apache 2.0) and casehub-core/persistence-memory (55 Java files, POC) directly into src/main/java/; added casehubio/* GitHub Packages repository for the 0.2-SNAPSHOT deps. Single squashed commit on main. 1006 tests pass; CI green.
+CI fully green after two rounds of fixes. Round 1 (issue-201): inlined scelight + casehub-core source, added casehubio/* GitHub Packages repository — resolved dependency failures blocking CI since 2026-06-12. Round 2 (issues-202): fixed GameStateWebSocketTest async race — connect().join() returned client-side before Quarkus @OnOpen fired server-side; added waitForSession() barrier to GameStateBroadcaster. Three commits on main; all 1006 tests pass.
 
 ## Immediate Next Step
 
@@ -24,4 +24,4 @@ Pick new work from What's Next. Run `/work` to start a branch.
 
 ## Build Note
 
-Build on main is clean. `mvn install` passes (1006 tests). CI is now green on main.
+Build on main is clean. `mvn install` passes (1006 tests). CI is green on main.
