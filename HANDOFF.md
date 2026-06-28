@@ -2,7 +2,7 @@
 
 ## Last Session
 
-Closed #171 (EmulatedSC2Server). Code review caught tag collisions (unit/building/enemy tags all mapping to the same protobuf tag), null key in WebSocket handshake, and shared mutable state — all fixed. 14 commits squashed to 3, pushed to origin/main. Blog published (3 entries). Build green.
+Two branches closed. #171 (EmulatedSC2Server) — code review caught tag collisions and null safety gaps, 14 commits squashed to 3. #206 (POM parent inheritance) — quarkmind now inherits from casehub-parent:0.2-SNAPSHOT, groupId changed to io.casehub, version aligned to 0.2-SNAPSHOT. Quarkus downgraded from 3.34.2 to 3.32.2 to match parent — all 1022 tests pass. Garden: 3 entries submitted, 1 protocol captured.
 
 ## Immediate Next Step
 
@@ -28,4 +28,4 @@ Pick new work from What's Next. Run `/work` to start a branch.
 
 ## Build Note
 
-Build on main is clean. `mvn install` passes. CI green on main.
+Build on main is clean. `mvn install` passes (1022 tests). POM now inherits from casehub-parent — `casehub-ledger-memory` and `casehub-qhorus-api` use `${casehub.version}` (not in parent BOM).
