@@ -1,12 +1,12 @@
-# QuarkMind Handover — 2026-06-27
+# QuarkMind Handover — 2026-06-28
 
 ## Last Session
 
-Implemented #171 — EmulatedGame SC2 protocol wrapper. New `%emulated-sc2` profile wraps EmulatedGame in a full SC2 WebSocket/protobuf server so `RealSC2Engine` connects to it identically to real SC2. Six implementation tasks complete (TerrainGrid.toPathingGrid, GameStateToProtobuf, ProtobufToIntent, SC2WebSocketCodec, profile gates + config, EmulatedSC2Server). Three design review rounds refined ocraft validation requirements. 1022 tests green. Pre-close sweep done (forage: 1 new GE + 1 revision, diary written). Branch not yet closed.
+Closed #171 (EmulatedSC2Server). Code review caught tag collisions (unit/building/enemy tags all mapping to the same protobuf tag), null key in WebSocket handshake, and shared mutable state — all fixed. 14 commits squashed to 3, pushed to origin/main. Blog published (3 entries). Build green.
 
 ## Immediate Next Step
 
-Run `/work-end` on branch `issue-171-emulated-sc2-protocol-wrapper` to close. The pre-close sweep (forage, protocol, diary, update-claude-md) is already done — work-end should skip Step 3b and proceed to code review (Step 3c), then artifact promotion, journal merge, rebase, squash, and push.
+Pick new work from What's Next. Run `/work` to start a branch.
 
 ## What's Left
 
@@ -20,12 +20,12 @@ Run `/work-end` on branch `issue-171-emulated-sc2-protocol-wrapper` to close. Th
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #203 | SC2DebugScenarioRunner for %emulated-sc2 | S | Low | Widen profile gate, depends on #171 |
+| #203 | SC2DebugScenarioRunner for %emulated-sc2 | S | Low | Widen profile gate, depends on #171 (done) |
 | #204 | Fix RealSC2Engine.addFrameListener() | S | Low | Benefits both %sc2 and %emulated-sc2 |
 | #205 | Eliminate CDI config duplication | S | Low | Move to unqualified defaults |
 | #74 | Genericise unit/building definitions | L | Med | Independent |
-| #192 | CBR reference implementation | L | High | Blocked on engine Phase 2 (#483, #484) |
+| #192 | CBR reference implementation | L | High | Blocked on engine Phase 2 (engine#483, #484) |
 
 ## Build Note
 
-Build on branch is clean. `mvn test` passes (1022 tests). Branch has 11 commits ahead of main.
+Build on main is clean. `mvn install` passes. CI green on main.
