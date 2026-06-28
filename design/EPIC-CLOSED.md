@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-171-emulated-sc2-protocol-wrapper
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-06-28
+**Issues:** 171
 **Status:** merged to main
