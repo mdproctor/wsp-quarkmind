@@ -1,0 +1,9 @@
+branch: issue-206-inherit-casehub-parent
+project-sha: 311f1070c64a77ccb5721a3b69e83ad7f667d084
+date: 2026-06-28
+issue: 206
+issue-repo: casehubio/quarkmind
+covers: 206
+flyway-next-v: unknown
+design-repo: project
+design-section-hashes: 4d2cc5ab:##|4f6b26ef:##|39b76cb9:##|74aa736f:##|9ca8de62:##|f1938c56:##|65807a21:##|a03d508f:##|b2e1b57c:##|598f3a04:##|1f604475:##|af5f260f:##|42d51385:##
