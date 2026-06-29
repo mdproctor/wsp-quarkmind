@@ -60,3 +60,4 @@
 | [2026-05-31-mdp01-hud-sprites-stale-pixels.md](2026-05-31-mdp01-hud-sprites-stale-pixels.md) | 2026-05-31 | Visualizer deferred: HUD formatting, probe spread, canvas resource sprites, time-based tests — stale pixel buffer gotcha |
 | [2026-06-01-mdp01-phase5-complete.md](2026-06-01-mdp01-phase5-complete.md) | 2026-06-01 | Phase 5 complete: 828 tests pass, all four accuracy gaps closed, Playwright count corrected to 288 |
 | [2026-05-30-mdp01-three-races-one-seam.md](2026-05-30-mdp01-three-races-one-seam.md) | 2026-05-30 | RaceModel plugin seam — Protoss/Terran/Zerg; canProduce ordering bug caught in spec review; Scelight baseBuild construction trap |
+| [2026-06-29-mdp01-the-game-learns-to-watch-itself.md](2026-06-29-mdp01-the-game-learns-to-watch-itself.md) | 2026-06-29 | Four-level temporal abstraction hierarchy — generic EventStreamBus/Summariser framework pre-positioned for blocks migration; EventStreamBus.clear() lifecycle gotcha |
