@@ -1,8 +1,8 @@
-# QuarkMind Handover — 2026-07-02
+# QuarkMind Handover — 2026-07-04
 
 ## Last Session
 
-Completed #180 (LLM advisory team) and #207 (engine migration Phase 2). Resumed SDD at Task 8, executed Tasks 8-15, final whole-branch review caught 1 critical (infinite CDI event recursion) + 2 important (snapshot live view, unsynchronized list) — all fixed. 27 commits squashed to 1, pushed to origin/main. Blog published (2 entries). 1176 tests pass.
+Planning session — no code changes. Created the ONNX strategy classifier epic (#208, cross-repo with neocortex) and the full CBR game experience epic (#214, cross-repo with neocortex #86). Research sweep found a decade of SC2 strategy classification literature; neocortex already has `OnnxInferenceModel` + `TextClassifier` — QuarkMind won't build its own ONNX integration.
 
 ## Immediate Next Step
 
@@ -12,21 +12,24 @@ Pick new work from What's Next. Run `/work` to start a branch.
 
 **engine#625** (TrustWeightedImplementationRoutingStrategy) committed on engine branch `issue-625-trust-impl-routing` — needs to be merged to engine main and published. QuarkMind already consumes it from local ~/.m2.
 
+**neocortex#77** (raw tensor SPI) — prerequisite for QuarkMind's ONNX classifier tier. Not blocking current work.
+
 ## What's Left
 
 - quarkmind#74 — genericise unit/building definitions · L · Med
-- quarkmind#192 — CBR reference implementation · L · High (blocked on engine Phase 2 — now done, unblocked)
+- quarkmind#192 — CBR reference implementation · L · High (unblocked — #207 done)
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
+| #192 | CBR reference implementation — mechanical wiring | L | High | Unblocked, first step of CBR epic #214 |
 | #74 | Genericise unit/building definitions | L | Med | Independent |
 | #181 | Commentator/Coach LLM | L | High | Unblocked by #182 + #180 |
 | #183 | Enemy strategy classifier | M | High | Unblocked by #182 |
 | #191 | Milestone-based trust scoring | M | Med | Independent |
-| #192 | CBR reference implementation | L | High | Now unblocked (#207 done) |
+| #221 | Learning curve observability | M | Med | CBR epic #214, Tier 1-2 |
 
 ## Build Note
 
-Build on main is clean. `mvn install` passes (1176 tests). POM inherits from casehub-parent. Engine migration complete — QuarkMind runs on casehub-engine Worker model.
+*Unchanged — retrieve with: `git show HEAD~1:HANDOFF.md`*
