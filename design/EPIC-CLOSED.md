@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-191-milestone-trust-scoring
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-07-05
+**Issues:** 191
 **Status:** merged to main
