@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-226-namedstrategy-routing-migration
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-07-05
+**Issues:** 226
 **Status:** merged to main
