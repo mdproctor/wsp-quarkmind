@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-223-multi-factor-dominance
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-07-06
+**Issues:** 223
 **Status:** merged to main
