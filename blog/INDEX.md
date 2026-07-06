@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-07-06-mdp01-the-bot-sees-the-whole-board.md](2026-07-06-mdp01-the-bot-sees-the-whole-board.md) | 2026-07-06 | The Bot That Sees the Whole Board — four-factor dominance assessment with fog-of-war guards |
 | [2026-07-04-mdp01-the-bot-that-remembers.md](2026-07-04-mdp01-the-bot-that-remembers.md) | 2026-07-04 | The Bot That Remembers — three-tier CBR vision, ONNX classifier research, neocortex platform roadmap |
 | [2026-07-02-mdp01-advisors-on-the-wire.md](2026-07-02-mdp01-advisors-on-the-wire.md) | 2026-07-02 | Advisors on the Wire — LLM advisory Workers with trust-weighted disposition routing, two-signal async dispatch, multi-dimensional trust scoring |
 | [2026-06-18-mdp01-decline-wiring-qg2-closed.md](2026-06-18-mdp01-decline-wiring-qg2-closed.md) | 2026-06-18 | DECLINE wired: QG2 finally closed — PluginDispatchBroker, MapCaseContext, collect-then-apply, async race fix |
