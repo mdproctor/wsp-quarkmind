@@ -2,7 +2,7 @@
 
 ## Last Session
 
-Implemented #181 (Commentator LLM Observer Mode) — dual-pattern architecture: reactive commentary (Pattern A: Worker dispatch on L2 moments with 5s cooldown) + narrative commentary (Pattern B: EventAccumulator + Worker dispatch on 45s/4-moment window). Both feed quarkmind-commentary Qhorus channel. Design review ran 2 rounds (16 issues, $9). 7 implementation tasks via SDD, 1305 tests. Generalized advisory latency recorder to shared LlmWorkerCompleted event. Added 3 new GameMomentTypes. Filed #230 (Coach mode) and #231 (human feedback trust dimensions). Landed as a1bb248 on main.
+Implemented #232 (pre-migration hardening for blocks summarisation layer) — async Summariser interface (CompletionStage return type with ofSync() factory), WindowPolicy encapsulation in SummarisationRunner (collect()/size() API), thread-safety contracts on EventAccumulator and EventStreamBus. Landed as f47bf79 on main. 1305 tests, zero regressions.
 
 ## Immediate Next Step
 
