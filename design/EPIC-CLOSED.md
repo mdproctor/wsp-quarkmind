@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-181-commentator-coach-llm
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-07-07
+**Issues:** 181
 **Status:** merged to main
