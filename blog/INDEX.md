@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-07-09-mdp01-data-tables-arent-dispatch-tables.md](2026-07-09-mdp01-data-tables-arent-dispatch-tables.md) | 2026-07-09 | Data Tables Aren't Dispatch Tables — UnitCosts EnumMap replaces switch defaults, 81% army undervaluation fixed |
 | [2026-07-06-mdp01-the-bot-sees-the-whole-board.md](2026-07-06-mdp01-the-bot-sees-the-whole-board.md) | 2026-07-06 | The Bot That Sees the Whole Board — four-factor dominance assessment with fog-of-war guards |
 | [2026-07-04-mdp01-the-bot-that-remembers.md](2026-07-04-mdp01-the-bot-that-remembers.md) | 2026-07-04 | The Bot That Remembers — three-tier CBR vision, ONNX classifier research, neocortex platform roadmap |
 | [2026-07-02-mdp01-advisors-on-the-wire.md](2026-07-02-mdp01-advisors-on-the-wire.md) | 2026-07-02 | Advisors on the Wire — LLM advisory Workers with trust-weighted disposition routing, two-signal async dispatch, multi-dimensional trust scoring |
