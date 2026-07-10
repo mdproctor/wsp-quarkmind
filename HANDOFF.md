@@ -30,6 +30,5 @@ Pick up #227 (phase-adaptive dominance weights). Run `/work` to start a branch. 
 | #233 | Consolidate SC2Data switch methods to EnumMap | M | Low | Filed from #229 review |
 | #234 | Zergling batch cost deduction fix | S | Low | Filed from #229 review |
 | #221 | Learning curve observability | M | Med | CBR epic #214, Tier 1-2 |
-| #229 | SC2Data cost table expansion | S | Low | **CLOSED** — landed 4cc6de2 |
 | #230 | Coach mode — real-time advice for human players | L | High | Filed from #181 |
 | #231 | Human feedback trust dimensions | M | Med | Requires visualizer UI |
