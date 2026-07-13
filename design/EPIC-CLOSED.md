@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-227-phase-adaptive-dominance
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-07-13
+**Issues:** 227
 **Status:** merged to main
