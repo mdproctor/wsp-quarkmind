@@ -2,11 +2,11 @@
 
 ## Last Session
 
-Implemented #236 (replay classification accuracy ≥ 70%) and #238 (Commentator/Advisory prompt updates for PATTERN_ASSESSMENT). PatternClassificationCalibrationTest runs the full Drools CEP pipeline against 59 replays — 75% rush accuracy at 3-min mark. CommentaryWorkerFactory and AdvisoryWorkerFactory system prompts and user messages now reference and format PATTERN_ASSESSMENT intel. Filed #239 (cannon rush false positive — 4/16 misclassifications from race-unguarded rule). 1335 tests, zero regressions. Landed as 4e71612 on main.
+Implemented #227 (phase-adaptive dominance weights). DominanceWeightStrategy SPI with two implementations — TemporalDominanceWeightStrategy (anchor-point interpolation from gameFrame) and SituationalDominanceWeightStrategy (temporal baseline + phase modifiers). AnchorInterpolator shared helper. MultiFactorDominanceAssessor migrated to strategy delegation with phase bus subscription. Design review (4 rounds, 18 issues, all resolved). 1368 tests, zero regressions. Filed #240 (Drools-based weight strategy). Landed as 7e0a529 on main.
 
 ## Immediate Next Step
 
-Pick up #227 (phase-adaptive dominance weights). Run `/work` to start a branch. All prerequisites (#229, #183) are done.
+Pick up #239 (cannon rush false positive — race guard missing). Quick fix, would push pattern classifier accuracy toward ~100%. Run `/work` to start a branch.
 
 ## Cross-Module
 
@@ -15,20 +15,21 @@ Pick up #227 (phase-adaptive dominance weights). Run `/work` to start a branch. 
 ## What's Left
 
 - #74 — genericise unit/building definitions · L · Med
-- #192 — CBR reference implementation · L · High (Step 2 blocked on engine#478; platform#87 closed — bump SNAPSHOT to unblock Step 1)
+- #192 — CBR reference implementation · L · High (Step 2 blocked on engine#478)
 - #233 — consolidate remaining SC2Data switch methods to EnumMap pattern · M · Low
 - #235 — LLM fallback for novel/ambiguous builds · M · Med
 - #237 — confidence revision — decay, counter-indication, multi-archetype · M · Med
 - #239 — cannon rush false positive — race guard missing · S · Low
+- #240 — Drools-based DominanceWeightStrategy · M · Med
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #227 | Phase-adaptive dominance weights | M | Med | Unblocked by #229 |
-| #239 | Cannon rush false positive — race guard | S | Low | Filed this session, would push accuracy to ~100% |
+| #239 | Cannon rush false positive — race guard | S | Low | Would push accuracy to ~100% |
 | #237 | Confidence revision — decay + counter-indication | M | Med | Builds on #183 classifier |
 | #235 | LLM fallback for novel/ambiguous builds | M | Med | Async advisory concern |
+| #240 | Drools-based DominanceWeightStrategy | M | Med | SPI seam ready from #227 |
 | #192 | CBR reference implementation — Steps 1+3 unblocked | L | High | Step 2 blocked on engine#478 |
 | #74 | Genericise unit/building definitions | L | Med | Independent |
 | #233 | Consolidate SC2Data switch methods to EnumMap | M | Low | Filed from #229 review |
