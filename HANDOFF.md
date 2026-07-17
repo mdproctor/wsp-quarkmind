@@ -1,12 +1,12 @@
-# QuarkMind Handover — 2026-07-14
+# QuarkMind Handover — 2026-07-17
 
 ## Last Session
 
-Closed #239 (cannon rush false positive) and #237 (confidence revision) on a single branch. UnitType and EnemyArchetype now carry Race via constructor parameter — DRL rules gate race-specific archetypes on observed units. PatternClassifier gains frame-based decay (60s half-life), multiplicative counter-indication (expansion/tech/prediction-window), and multi-archetype publishing. Design-reviewed (5 rounds, 13 issues). 1547 tests, zero regressions, 100% calibration accuracy. Landed as 9e66ce8 on main.
+Closed #240 (Drools-based DominanceWeightStrategy). WeightContext enriched with `List<EnemyPatternAssessment>` — all strategies receive pattern signals via pure function. `MINIMUM_WEIGHT` extracted to SPI interface. DominanceWeightRuleUnit with 13 DRL rules (rush/push/harass/macro archetypes, 4 phases, 4 combined signals) resolves weights via composable `WeightModifier` deltas. 7-round design review ($18.76). 1576 tests, zero regressions. Landed as 81ef65f on main.
 
 ## Immediate Next Step
 
-Pick up #240 (Drools-based DominanceWeightStrategy). The SPI seam from #227 is ready; `allAssessments()` from #237 provides the multi-archetype input. Run `/work` to start a branch.
+Pick up #235 (LLM fallback for novel/ambiguous builds). Multi-archetype assessments and Drools weight resolution are ready — #235 can now reason over the same signals. Run `/work` to start a branch.
 
 ## Cross-Module
 
@@ -15,18 +15,16 @@ Pick up #240 (Drools-based DominanceWeightStrategy). The SPI seam from #227 is r
 ## What's Left
 
 - #74 — genericise unit/building definitions · L · Med
-- #192 — CBR reference implementation · L · High (Step 2 blocked on engine#478)
+- #192 — CBR reference implementation · L · High (engine#478 now closed — all 3 steps unblocked)
 - #233 — consolidate remaining SC2Data switch methods to EnumMap pattern · M · Low
 - #235 — LLM fallback for novel/ambiguous builds · M · Med
-- #240 — Drools-based DominanceWeightStrategy · M · Med
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #240 | Drools-based DominanceWeightStrategy | M | Med | SPI seam ready from #227, allAssessments available |
 | #235 | LLM fallback for novel/ambiguous builds | M | Med | Can reason over multi-archetype assessments now |
-| #192 | CBR reference implementation — Steps 1+3 unblocked | L | High | Step 2 blocked on engine#478 |
+| #192 | CBR reference implementation — all 3 steps unblocked | L | High | engine#478 closed |
 | #74 | Genericise unit/building definitions | L | Med | Independent |
 | #233 | Consolidate SC2Data switch methods to EnumMap | M | Low | Filed from #229 review |
 | #230 | Coach mode — real-time advice for human players | L | High | Filed from #181 |
