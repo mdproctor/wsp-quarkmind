@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-192-cbr-reference-impl
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-07-18
+**Issues:** 192
 **Status:** merged to main
