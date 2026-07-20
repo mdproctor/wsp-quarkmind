@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-07-19-mdp01-when-the-coach-needs-a-playbook.md](2026-07-19-mdp01-when-the-coach-needs-a-playbook.md) | 2026-07-19 | When the Coach Needs a Playbook — commentary vs coaching speech acts, implicit compliance detection, external strategy knowledge gap |
 | [2026-07-09-mdp01-data-tables-arent-dispatch-tables.md](2026-07-09-mdp01-data-tables-arent-dispatch-tables.md) | 2026-07-09 | Data Tables Aren't Dispatch Tables — UnitCosts EnumMap replaces switch defaults, 81% army undervaluation fixed |
 | [2026-07-06-mdp01-the-bot-sees-the-whole-board.md](2026-07-06-mdp01-the-bot-sees-the-whole-board.md) | 2026-07-06 | The Bot That Sees the Whole Board — four-factor dominance assessment with fog-of-war guards |
 | [2026-07-04-mdp01-the-bot-that-remembers.md](2026-07-04-mdp01-the-bot-that-remembers.md) | 2026-07-04 | The Bot That Remembers — three-tier CBR vision, ONNX classifier research, neocortex platform roadmap |
@@ -65,3 +66,5 @@
 | [2026-06-01-mdp01-phase5-complete.md](2026-06-01-mdp01-phase5-complete.md) | 2026-06-01 | Phase 5 complete: 828 tests pass, all four accuracy gaps closed, Playwright count corrected to 288 |
 | [2026-05-30-mdp01-three-races-one-seam.md](2026-05-30-mdp01-three-races-one-seam.md) | 2026-05-30 | RaceModel plugin seam — Protoss/Terran/Zerg; canProduce ordering bug caught in spec review; Scelight baseBuild construction trap |
 | [2026-06-29-mdp01-the-game-learns-to-watch-itself.md](2026-06-29-mdp01-the-game-learns-to-watch-itself.md) | 2026-06-29 | Four-level temporal abstraction hierarchy — generic EventStreamBus/Summariser framework pre-positioned for blocks migration; EventStreamBus.clear() lifecycle gotcha |
+| [2026-07-19-mdp01-when-the-coach-needs-a-playbook.md](2026-07-19-mdp01-when-the-coach-needs-a-playbook.md) | 2026-07-19 | Coach mode design — third LLM pipeline for human players; urgency tiers, compliance evaluation, structured output coaching |
+| [2026-07-20-mdp01-the-pipeline-that-listens-back.md](2026-07-20-mdp01-the-pipeline-that-listens-back.md) | 2026-07-20 | Coach mode implementation — compliance evaluator, CDI proxy shared-state gotcha, plugin gating, trust routing |
