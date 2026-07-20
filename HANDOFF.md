@@ -1,12 +1,12 @@
-# QuarkMind Handover — 2026-07-19
+# QuarkMind Handover — 2026-07-20
 
 ## Last Session
 
-Designed coach mode (#230) end-to-end: brainstorming (6 design questions, approach selection), design spec with 8 sections, adversarial design review (3 rounds, 20 issues, 17 verified fixes), 10-task implementation plan. Created 7 follow-up issues across 3 epics (#250 compliance evolution, #251 personality model, #252 SC2 knowledge infrastructure). Discovered structured external strategy knowledge sources (TacticCraft, Spawning Tool, STARDATA, Liquipedia taxonomy) — garden entry GE-20260719-8c18fa submitted.
+Implemented coach mode (#230) end-to-end: 14 new files in `plugin/coaching/`, game loop integration, plugin gating, trust routing, integration tests. Discovered CDI `@ApplicationScoped` proxy gotcha with shared `ConcurrentHashMap` — garden entry submitted (GE-20260719-f5ccc9). Landed as fcc4f1f on main. #253 (integration tests) folded into the same branch and closed.
 
 ## Immediate Next Step
 
-Resume branch `issue-230-coach-mode` and execute the implementation plan. Run `/work` → work-start detects `.meta` → resume path. Then invoke `executing-plans` with plan at `/Users/mdproctor/claude/public/quarkmind/plans/2026-07-19-coach-mode.md`. Start at Task 1 (domain records and enums). All 10 tasks are unstarted.
+Pick new work. Run `/work` from main.
 
 ## Cross-Module
 
@@ -16,7 +16,6 @@ Resume branch `issue-230-coach-mode` and execute the implementation plan. Run `/
 
 ## What's Left
 
-- #230 — coach mode implementation (10 tasks in plan, design complete) · L · High
 - #74 — genericise unit/building definitions · L · Med
 - #233 — consolidate remaining SC2Data switch methods · M · Low
 
@@ -26,6 +25,6 @@ Resume branch `issue-230-coach-mode` and execute the implementation plan. Run `/
 |---|-------------|-------|------------|-------|
 | #235 | LLM fallback for novel/ambiguous builds | M | Med | CBR infrastructure in place |
 | #243 | Full tactic taxonomy (all game phases) | L | High | Epic #252; external data sources identified |
-| #74 | Genericise unit/building definitions | L | Med | Independent |
-| #233 | Consolidate SC2Data switch methods | M | Low | Filed from #229 review |
+| #250 | Coaching compliance evolution | L | High | Epic; position-based + LLM-evaluated verification |
+| #251 | Coaching personality model | M | Med | Epic; adaptive intra-game disposition |
 | #231 | Human feedback trust dimensions | M | Med | Requires visualizer UI |
