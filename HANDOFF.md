@@ -1,10 +1,8 @@
-*Updated: neocortex#162 closed — removed from cross-module.*
-
 # QuarkMind Handover — 2026-07-21
 
 ## Last Session
 
-Implemented position-based compliance verification (#244) — sealed VerificationPredicate hierarchy replacing flat count-delta model. 4 predicate types (CountDelta, ArmyCentroidMovement, ExpansionPlacement, UnitsNearLocation), LocationReference vocabulary with 7 permits, domain model enriched with MapInfo/ExpansionLocation/NeutralFeature. Design spec adversarially reviewed (4 rounds, 22 issues). 1717 tests green. Landed as 371e51e on main.
+Closed two trailing items from #244's position compliance work. ObservationTranslator now extracts neutral units (watchtowers, destructibles, geysers, minerals) from real SC2 observations instead of passing `List.of()`. IEM10JsonSimulatedGame populates minerals/geysers for neutral units, matching ReplaySimulatedGame. ExpansionLocationCalibrationTest validates CLUSTER_RADIUS=12.0 across 59 replays (12-20 expansions per map). Also fixed upstream Uni retirement compilation errors. Landed as 284a8c9 on main.
 
 ## Immediate Next Step
 
@@ -14,13 +12,11 @@ Pick new work from epic #250 backlog. Run `/work` from main. Next child: #245 (L
 
 **engine#648** (AttestingOutcomeRecorder) — prerequisite for activating milestone evaluation. QuarkMind infrastructure ready; activates automatically when the SPI lands.
 
-
 ## What's Left
 
 - #74 — genericise unit/building definitions · L · Med
 - #233 — consolidate remaining SC2Data switch methods · M · Low
-- Neutral feature extraction from real SC2 observations — wired but passing null; needs SC2 unit type mapping for watchtowers/destructibles · S · Low
-- ExpansionLocationCalibrationTest against IEM10 replays — validates 12.0 clustering radius · S · Low
+- MapInfo construction in SC2BotAgent.onStep() — extractNeutralFeatures() and resource extraction now available; needs first-frame caching lifecycle · M · Med
 
 ## What's Next
 
