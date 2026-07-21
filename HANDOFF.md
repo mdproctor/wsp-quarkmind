@@ -2,7 +2,7 @@
 
 ## Last Session
 
-Closed two trailing items from #244's position compliance work. ObservationTranslator now extracts neutral units (watchtowers, destructibles, geysers, minerals) from real SC2 observations instead of passing `List.of()`. IEM10JsonSimulatedGame populates minerals/geysers for neutral units, matching ReplaySimulatedGame. ExpansionLocationCalibrationTest validates CLUSTER_RADIUS=12.0 across 59 replays (12-20 expansions per map). Also fixed upstream Uni retirement compilation errors. Landed as 284a8c9 on main.
+Closed #233 — replaced 10 UnitType switch methods with 5 validated EnumMaps (UNIT_COMBAT_STATS, UNIT_DEFENSES, UNIT_ATTRIBUTES, UNIT_TRAIN_TIMES, UNIT_SIGHT_RANGES). New records UnitCombatStats and UnitDefenses group related properties. Code review caught an SCV armour regression (1→0) before merge. Landed as d70f743 on main.
 
 ## Immediate Next Step
 
@@ -15,7 +15,6 @@ Pick new work from epic #250 backlog. Run `/work` from main. Next child: #245 (L
 ## What's Left
 
 - #74 — genericise unit/building definitions · L · Med
-- #233 — consolidate remaining SC2Data switch methods · M · Low
 - MapInfo construction in SC2BotAgent.onStep() — extractNeutralFeatures() and resource extraction now available; needs first-frame caching lifecycle · M · Med
 
 ## What's Next
