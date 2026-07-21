@@ -1,3 +1,5 @@
+*Updated: neocortex#162 closed — removed from cross-module.*
+
 # QuarkMind Handover — 2026-07-21
 
 ## Last Session
@@ -12,7 +14,6 @@ Pick new work from epic #250 backlog. Run `/work` from main. Next child: #245 (L
 
 **engine#648** (AttestingOutcomeRecorder) — prerequisite for activating milestone evaluation. QuarkMind infrastructure ready; activates automatically when the SPI lands.
 
-**neocortex#162** (InMemoryCbrCaseMemoryStore.retrieveSimilar() empty) — CBR retention IT cannot verify end-to-end store+retrieve. Unit tests pass with mocked store.
 
 ## What's Left
 
