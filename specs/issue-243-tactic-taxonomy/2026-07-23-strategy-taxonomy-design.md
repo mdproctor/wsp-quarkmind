@@ -106,16 +106,24 @@ public record PatternAssessment(
 - `GameArcSummariser` — `Summariser<GamePhase, GameArc>` → `Summariser<TacticalPosture, GameArc>` (class declaration), `List<LevelEvent<GamePhase>>` → `List<LevelEvent<TacticalPosture>>` in `summarise()` and `doSummarise()` parameters. Accessor calls `.phase()` → `.posture()`
 - `NarrativeContextHolder` — `volatile GamePhase latestPhase` → `volatile TacticalPosture latestPosture` (line 37), `EventStreamBus<GamePhase>` → `EventStreamBus<TacticalPosture>` (constructor param line 46, field line 52), return type `GamePhase latestPhase()` → `TacticalPosture latestPosture()` (line 103), setter `setLatestPhase(GamePhase)` → `setLatestPosture(TacticalPosture)` (line 109). Bridges summarisation to coaching via `snapshot()`.
 - `StarCraftStrategy.drl` — `import io.quarkmind.plugin.summarisation.GamePhase` → `TacticalPosture`, `/phaseStore[this.phase().equals("MID_SKIRMISH")]` → `/tacticalPostureStore[this.posture().equals("MID_SKIRMISH")]`
-- `DominanceWeightAdjustment.drl` — `/phaseStore[this == "..."]` → `/tacticalPostureStore[this.posture().equals("...")]` (Phase modifier rules and combined signal rules reference the store by field name)
+- `DominanceWeightAdjustment.drl` — `/phaseStore[this == "..."]` → `/tacticalPostureStore[this.posture().equals("...")]` (Phase modifier rules and combined signal rules reference the store by field name). Note: this requires the `DominanceWeightRuleUnit.phaseStore` type upgrade below.
 
-**StrategyRuleUnit field renames (resolves naming collision):**
+**Rule unit field renames and type corrections (resolves naming collision + type inconsistency):**
+
+*StrategyRuleUnit:*
 - `DataStore<GamePhase> phaseStore` → `DataStore<TacticalPosture> tacticalPostureStore` (line 76)
 - `DataStore<String> postureStore` → `DataStore<String> enemyPostureStore` (line 60)
 - Getter renames: `getPhaseStore()` → `getTacticalPostureStore()`, `getPostureStore()` → `getEnemyPostureStore()`
-- DRL updates required (manual — IDE refactor doesn't cover DRL field paths):
-  - `StarCraftStrategy.drl`: `/phaseStore` → `/tacticalPostureStore`, `/postureStore` → `/enemyPostureStore`
-  - `DominanceWeightAdjustment.drl`: `/phaseStore` → `/tacticalPostureStore`
-- All callers of `StrategyRuleUnit` that populate these stores (e.g., `DroolsStrategyTask`) update field names
+
+*DominanceWeightRuleUnit:*
+- `DataStore<String> phaseStore` → `DataStore<TacticalPosture> tacticalPostureStore` (line 15). **Type upgrade:** the current `DataStore<String>` holding bare posture names (`"DEFENSIVE_HOLD"`, `"EARLY_AGGRESSION"`) is upgraded to `DataStore<TacticalPosture>` for consistency with StrategyRuleUnit. Eliminates the type inconsistency where the same conceptual data (L3 tactical posture) is represented as `String` in one rule unit and `GamePhase` record in another.
+- Getter rename: `getPhaseStore()` → `getTacticalPostureStore()`
+- Populator update: whoever adds to this store (traced from `DroolsStrategyTask` or similar) passes full `TacticalPosture` records instead of raw strings. Mechanical change.
+
+*DRL updates (manual — IDE refactor doesn't cover DRL field paths):*
+- `StarCraftStrategy.drl`: `/phaseStore` → `/tacticalPostureStore`, `/postureStore` → `/enemyPostureStore`
+- `DominanceWeightAdjustment.drl`: `/phaseStore` → `/tacticalPostureStore`, pattern matching updates from `this == "DEFENSIVE_HOLD"` to `this.posture().equals("DEFENSIVE_HOLD")` (now correct because the store holds `TacticalPosture` records, not strings)
+- All callers of both rule units that populate these stores update field names and types
 
 - `StrategyRuleUnit` — `DataStore<GamePhase>` → `DataStore<TacticalPosture>` (covered by field rename above)
 - Associated test classes (`GamePhaseSummariserTest`, `GamePhaseTriggerTest`, `NarrativeContextHolderTest` if exists, `SummarisationLifecycleTest` if exists)
