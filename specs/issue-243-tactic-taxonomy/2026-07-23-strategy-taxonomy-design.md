@@ -29,6 +29,7 @@ The current `EnemyArchetype` enum covers 10 early-game patterns only. The coachi
 - `EnemyArchetype` → `StrategyArchetype`
 - `EnemyPatternAssessment` → `PatternAssessment`
 - `io.quarkmind.plugin.summarisation.GamePhase` → `TacticalPosture` (existing record carries tactical state names like `"DEFENSIVE_HOLD"`, `"EARLY_AGGRESSION"` — not temporal phases; renaming resolves the collision with the new `GamePhase` enum)
+  - Record component rename: `phase` → `posture` — i.e., `record TacticalPosture(String posture, long sinceFrame, String rationale)`. Without this, `tacticalPosture.phase()` reads as "the phase of this posture" rather than "the posture name." All accessor call sites (`e.payload().phase()`, `latestPhase.phase()`, DRL `.phase().equals(...)`) migrate to `.posture()`.
 
 Full codebase migration via IDE refactor. Pre-release — no deprecation shim. `.drl` files require manual update (IDE refactor doesn't cover Drools rule text).
 
@@ -99,11 +100,25 @@ public record PatternAssessment(
 
 **GamePhase record → TacticalPosture (summarisation layer):**
 - `GamePhase.java` → `TacticalPosture.java` (record definition in `io.quarkmind.plugin.summarisation`)
-- `GamePhaseSummariser` — return type references
+- `GamePhaseSummariser` — return type references, constructor call `new GamePhase(...)` → `new TacticalPosture(...)`
 - `GamePhaseTrigger` — parameter and field references
-- `StarCraftStrategy.drl` — `import io.quarkmind.plugin.summarisation.GamePhase` → `TacticalPosture`, `phaseStore` type unchanged (DRL pattern matching uses string accessors)
-- `StrategyRuleUnit` — `DataStore<GamePhase>` → `DataStore<TacticalPosture>`
-- Associated test classes (`GamePhaseSummariserTest`, `GamePhaseTriggerTest`)
+- `SummarisationLifecycle` — `EventStreamBus<GamePhase>` → `EventStreamBus<TacticalPosture>` (phaseBus field, line 49), `SummarisationRunner<GameMoment, GamePhase>` → `SummarisationRunner<GameMoment, TacticalPosture>` (phaseRunner, line 52), `SummarisationRunner<GamePhase, GameArc>` → `SummarisationRunner<TacticalPosture, GameArc>` (arcRunner, line 53), `phaseBus()` return type (line 75)
+- `GameArcSummariser` — `Summariser<GamePhase, GameArc>` → `Summariser<TacticalPosture, GameArc>` (class declaration), `List<LevelEvent<GamePhase>>` → `List<LevelEvent<TacticalPosture>>` in `summarise()` and `doSummarise()` parameters. Accessor calls `.phase()` → `.posture()`
+- `NarrativeContextHolder` — `volatile GamePhase latestPhase` → `volatile TacticalPosture latestPosture` (line 37), `EventStreamBus<GamePhase>` → `EventStreamBus<TacticalPosture>` (constructor param line 46, field line 52), return type `GamePhase latestPhase()` → `TacticalPosture latestPosture()` (line 103), setter `setLatestPhase(GamePhase)` → `setLatestPosture(TacticalPosture)` (line 109). Bridges summarisation to coaching via `snapshot()`.
+- `StarCraftStrategy.drl` — `import io.quarkmind.plugin.summarisation.GamePhase` → `TacticalPosture`, `/phaseStore[this.phase().equals("MID_SKIRMISH")]` → `/tacticalPostureStore[this.posture().equals("MID_SKIRMISH")]`
+- `DominanceWeightAdjustment.drl` — `/phaseStore[this == "..."]` → `/tacticalPostureStore[this.posture().equals("...")]` (Phase modifier rules and combined signal rules reference the store by field name)
+
+**StrategyRuleUnit field renames (resolves naming collision):**
+- `DataStore<GamePhase> phaseStore` → `DataStore<TacticalPosture> tacticalPostureStore` (line 76)
+- `DataStore<String> postureStore` → `DataStore<String> enemyPostureStore` (line 60)
+- Getter renames: `getPhaseStore()` → `getTacticalPostureStore()`, `getPostureStore()` → `getEnemyPostureStore()`
+- DRL updates required (manual — IDE refactor doesn't cover DRL field paths):
+  - `StarCraftStrategy.drl`: `/phaseStore` → `/tacticalPostureStore`, `/postureStore` → `/enemyPostureStore`
+  - `DominanceWeightAdjustment.drl`: `/phaseStore` → `/tacticalPostureStore`
+- All callers of `StrategyRuleUnit` that populate these stores (e.g., `DroolsStrategyTask`) update field names
+
+- `StrategyRuleUnit` — `DataStore<GamePhase>` → `DataStore<TacticalPosture>` (covered by field rename above)
+- Associated test classes (`GamePhaseSummariserTest`, `GamePhaseTriggerTest`, `NarrativeContextHolderTest` if exists, `SummarisationLifecycleTest` if exists)
 
 ## Section 2: Structured Taxonomy (YAML)
 
@@ -370,8 +385,10 @@ Report accuracy per `ArchetypeCategory` (rush, timing, harass, macro, tech, comp
 Unit test asserting:
 - Every `StrategyArchetype` enum value has a YAML entry with non-empty `signature`, `strongCounters`, and `detectionSignals`
 - Every YAML key maps to a valid `StrategyArchetype` enum value
+- **`handAuthored` safety check:** for each archetype with `handAuthored: true`, verify that `PatternClassification.drl` contains at least one rule whose condition references that archetype enum value. Simple text scan of the DRL file content — prevents silent detection blindness if a hand-authored rule is accidentally deleted during refactoring while the `handAuthored` flag remains set.
+- **Generic pipeline validation:** for each archetype with `handAuthored: false` (or absent), verify that the YAML signature has non-empty `units` with valid `UnitType` values and a valid `phaseWindow` — ensuring the generic pipeline can actually generate `SignatureFact` instances for it.
 
-Catches drift between code and data in either direction.
+Catches drift between code, data, and DRL rules in all directions.
 
 ### Existing test migration
 
