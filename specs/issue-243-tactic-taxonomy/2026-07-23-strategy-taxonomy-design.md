@@ -19,6 +19,8 @@ The current `EnemyArchetype` enum covers 10 early-game patterns only. The coachi
 | Phase model | `PhaseResolver` interface, time-based default | Extensible to dynamic state-based detection without consumer changes |
 | Counter encoding | Structured data in YAML, injected into LLM prompt AND available as standalone API | Grounds coaching advice in concrete counters; standalone API enables future visualizer overlay |
 | Scope | Infrastructure + ~20-25 representative archetypes | Validate pipeline works across all phases; remaining 30-60 archetypes are pure data authoring tracked under epic #252 |
+| Neocortex RAG | Excluded | Counter data is structured, finite, and deterministic — a hashmap lookup serves it with zero latency. RAG adds retrieval latency and corpus maintenance overhead for a dataset fully enumerable at startup |
+| Counter scope | Protoss perspective | QuarkMind is a Protoss agent; counters describe Protoss responses to each archetype. Multi-race counters deferred to follow-up under epic #252 |
 
 ## Section 1: Domain Model
 
@@ -26,6 +28,7 @@ The current `EnemyArchetype` enum covers 10 early-game patterns only. The coachi
 
 - `EnemyArchetype` → `StrategyArchetype`
 - `EnemyPatternAssessment` → `PatternAssessment`
+- `io.quarkmind.plugin.summarisation.GamePhase` → `TacticalPosture` (existing record carries tactical state names like `"DEFENSIVE_HOLD"`, `"EARLY_AGGRESSION"` — not temporal phases; renaming resolves the collision with the new `GamePhase` enum)
 
 Full codebase migration via IDE refactor. Pre-release — no deprecation shim. `.drl` files require manual update (IDE refactor doesn't cover Drools rule text).
 
@@ -79,14 +82,28 @@ public record PatternAssessment(
 
 ### Ripple
 
-Every consumer of `EnemyArchetype` and `EnemyPatternAssessment` gets the rename:
+**EnemyArchetype → StrategyArchetype, EnemyPatternAssessment → PatternAssessment:**
 - `PatternClassification.drl` — enum references in evidence and revision rules
-- `DominanceWeightAdjustment.drl` — enum references + `.name().contains("RUSH")` → `.category() == ArchetypeCategory.RUSH`
-- `PatternClassifier` — type references
+- `DominanceWeightAdjustment.drl` — enum references + ALL `.name().contains()` conversions:
+  - `.name().contains("RUSH")` → `.category() == ArchetypeCategory.RUSH` (rush response, combined rush rules)
+  - `.name().contains("MACRO")` → `.category() == ArchetypeCategory.MACRO` (macro response, combined macro rule)
+- `StarCraftStrategy.drl` — imports `EnemyPatternAssessment`, rule "Strategy: Defend — Rush Detected" uses `.archetype().name().contains("RUSH")` → `.archetype().category() == ArchetypeCategory.RUSH`
+- `PatternClassifier` — type references (`EnemyArchetype` → `StrategyArchetype`, `EnemyPatternAssessment` → `PatternAssessment`)
 - `DroolsScoutingTask` — `EnumMap<StrategyArchetype, Double>`, `List<PatternAssessment>`
+- `DominanceWeightRuleUnit` — `DataStore<EnemyPatternAssessment>` → `DataStore<PatternAssessment>`
+- `StrategyRuleUnit` — `DataStore<EnemyPatternAssessment>` → `DataStore<PatternAssessment>`
+- `ScoutingIntelPayload` — inner record `PatternAssessment` → `PatternAssessmentPayload` (avoids collision with domain `PatternAssessment`)
 - `CoachingWorkerFactory` — prompt building
 - CBR layer (`SC2GameCbrCase`, `SC2CbrRetentionObserver`, `SC2ImplementationRoutingStrategy`)
 - All test classes
+
+**GamePhase record → TacticalPosture (summarisation layer):**
+- `GamePhase.java` → `TacticalPosture.java` (record definition in `io.quarkmind.plugin.summarisation`)
+- `GamePhaseSummariser` — return type references
+- `GamePhaseTrigger` — parameter and field references
+- `StarCraftStrategy.drl` — `import io.quarkmind.plugin.summarisation.GamePhase` → `TacticalPosture`, `phaseStore` type unchanged (DRL pattern matching uses string accessors)
+- `StrategyRuleUnit` — `DataStore<GamePhase>` → `DataStore<TacticalPosture>`
+- Associated test classes (`GamePhaseSummariserTest`, `GamePhaseTriggerTest`)
 
 ## Section 2: Structured Taxonomy (YAML)
 
@@ -104,6 +121,7 @@ archetypes:
     phase: EARLY
     category: RUSH
     phaseWindow: [0.0, 5.0]
+    handAuthored: true
     signature:
       units:
         - type: MARINE
@@ -127,6 +145,10 @@ Each entry fields:
 - `signature` — unit types, counts, and conditions that signal this archetype
 - `strongCounters` / `weakCounters` — units + natural-language action descriptions
 - `detectionSignals` — human-readable detection descriptions for coaching context
+
+**Signature semantics:** When `signature.units` contains multiple entries, each generates an independent `SignatureFact` contributing separately to noisy-OR confidence combination. Multi-unit conjunctions (e.g., Marines AND Medivac simultaneously) require hand-authored CEP rules in Layer 2. The `signature.units` list documents all contributing unit types, but the generic rules treat each independently.
+
+**Counter scope:** All counter entries are from the Protoss player perspective, consistent with QuarkMind's identity as a Protoss agent. The coaching pipeline always advises from this perspective.
 
 ### StrategyTaxonomy loader
 
@@ -157,6 +179,16 @@ public record CounterEntry(
 ```
 
 In `io.quarkmind.domain` — plain Java, no framework dependencies.
+
+### Validation
+
+`StrategyTaxonomy` uses SnakeYAML (via Quarkus `@ConfigMapping` or direct `Yaml` parser). `@PostConstruct` loading fails fast at startup on:
+- Missing required fields (`race`, `phase`, `category`, `signature`, `strongCounters`)
+- Unknown enum values (`UnitType`, `Race`, `ArchetypeCategory`)
+- Invalid `phaseWindow` (start > end, negative values)
+- YAML keys that don't map to a valid `StrategyArchetype` enum value
+
+Fail-fast is correct — a broken taxonomy at startup is better than silent runtime failures in detection or coaching.
 
 ## Section 3: Detection Pipeline (Hybrid)
 
@@ -225,14 +257,24 @@ New hand-authored rules added as needed for complex mid/late-game patterns that 
 public class SignatureFactBuilder {
     @Inject StrategyTaxonomy taxonomy;
 
-    public List<SignatureFact> buildFacts(GamePhase currentPhase) {
+    public List<SignatureFact> buildFacts(double gameTimeMinutes) {
         // converts taxonomy signature entries into SignatureFact instances
-        // filtered by current phase to avoid checking late-game signatures at 2 min
+        // filtered by time-window overlap: includes any signature whose
+        // [windowStart, windowEnd] overlaps with the current game time
+        // (NOT filtered by categorical phase — avoids false negatives at transitions)
     }
 }
 ```
 
-Injected into `DroolsScoutingTask`. Called each tick before populating the rule unit's `signatureStore`.
+**Wiring:** `DroolsScoutingTask` injects `SignatureFactBuilder`. In the pattern classification block, after `sessionManager.buildPatternRuleUnit(gameTimeMin)` returns the rule unit, the task calls `signatureFactBuilder.buildFacts(gameTimeMin)` and adds each resulting `SignatureFact` to `patternData.getSignatureStore()` before firing rules.
+
+### Migration strategy — Layer 1/Layer 2 coexistence
+
+The 10 existing archetypes retain their hand-authored evidence rules in `PatternClassification.drl`. Their YAML entries include `signature` sections for documentation and counter data, but `SignatureFactBuilder` does NOT generate generic facts for archetypes that have hand-authored evidence rules — preventing double-fire and confidence inflation.
+
+New archetypes (~10-15 mid/late-game) use the generic pipeline by default. Hand-authored CEP rules are added only for patterns that require multi-unit conjunctions, tech-transition detection, or counter-indication logic beyond simple unit-count-in-window.
+
+The `StrategyTaxonomy` YAML entry gains an optional `handAuthored: true` flag. When set, `SignatureFactBuilder` skips generic fact generation for that archetype. Default is `false` (generic pipeline).
 
 ### PatternClassifier
 
@@ -244,11 +286,11 @@ Unchanged — aggregates `EvidenceMarker` and `ConfidenceRevision` from both lay
 
 ```java
 public interface PhaseResolver {
-    GamePhase resolve(CaseContext ctx);
+    GamePhase resolve(double gameTimeMinutes);
 }
 ```
 
-In `io.quarkmind.domain`.
+In `io.quarkmind.domain`. Takes a domain-level input — the caller in `DroolsScoutingTask` extracts game time from `CaseContext` and passes it. This keeps the interface genuinely framework-free and testable with plain `new`.
 
 ### TimeBasedPhaseResolver
 
@@ -259,11 +301,9 @@ public class TimeBasedPhaseResolver implements PhaseResolver {
     static final double MID_END = 12.0;
 
     @Override
-    public GamePhase resolve(CaseContext ctx) {
-        Long frame = ctx.getAs(QuarkMindCaseFile.GAME_FRAME, Long.class);
-        double minutes = (frame != null ? frame : 0L) / (22.4 * 60.0);
-        if (minutes < EARLY_END) return GamePhase.EARLY;
-        if (minutes < MID_END) return GamePhase.MID;
+    public GamePhase resolve(double gameTimeMinutes) {
+        if (gameTimeMinutes < EARLY_END) return GamePhase.EARLY;
+        if (gameTimeMinutes < MID_END) return GamePhase.MID;
         return GamePhase.LATE;
     }
 }
@@ -271,7 +311,9 @@ public class TimeBasedPhaseResolver implements PhaseResolver {
 
 ### Integration
 
-`DroolsScoutingTask` injects `PhaseResolver`, calls `resolve(ctx)` each tick, sets `QuarkMindCaseFile.GAME_PHASE` on the context. `SignatureFactBuilder` uses the resolved phase to filter which signatures to evaluate.
+`DroolsScoutingTask` injects `PhaseResolver`. Each tick, it computes `gameTimeMin` from the game frame and calls `phaseResolver.resolve(gameTimeMin)`. The resolved phase is stored via `QuarkMindCaseFile.GAME_PHASE` on the context. `SignatureFactBuilder` receives `gameTimeMin` directly and filters by time-window overlap — it does not use the categorical phase for filtering.
+
+**New CaseFile constant:** `QuarkMindCaseFile.GAME_PHASE = "agent.intel.game.phase"` — added to `ALL_KEYS`. Namespace: `agent.intel.*` because this is agent-derived data (resolved by a plugin), not raw game observation.
 
 Future dynamic resolver: CDI `@Alternative` or `@ConfigProperty` selector — same interface, richer logic (expansion count, tech buildings, supply). No consumer changes.
 
@@ -354,9 +396,12 @@ Catches drift between code and data in either direction.
 
 ### Follow-up issues under epic #252
 
+Filed as GitHub issues (not just spec notes):
 - **Fill out taxonomy to 50-90 archetypes** — pure YAML authoring + enum values, no infrastructure changes. One issue per race or per phase.
 - **Dynamic PhaseResolver** — state-based phase detection (expansion count, tech buildings, supply).
 - **Visualizer counter overlay** — consume `CounterInfo` API in visualizer UI.
+- **Strategy transitions** — model archetype transitions (e.g., Marine Rush → Bio Timing, Gateway Rush → Colossus tech). Requires temporal sequencing of archetype detections — a distinct layer beyond per-tick classification. Coaching-relevant for advice like "they're switching to mech — get Immortals."
+- **Multi-race counters** — matchup-keyed counter data for non-Protoss perspectives. Required when/if the agent supports multiple player races or generic replay analysis tools consume the taxonomy.
 
 ## Package placement
 
