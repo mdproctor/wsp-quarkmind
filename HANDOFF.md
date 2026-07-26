@@ -1,29 +1,30 @@
-# QuarkMind Handover — 2026-07-21
+# QuarkMind Handover — 2026-07-25
 
 ## Last Session
 
-Closed #233 — replaced 10 UnitType switch methods with 5 validated EnumMaps (UNIT_COMBAT_STATS, UNIT_DEFENSES, UNIT_ATTRIBUTES, UNIT_TRAIN_TIMES, UNIT_SIGHT_RANGES). New records UnitCombatStats and UnitDefenses group related properties. Code review caught an SCV armour regression (1→0) before merge. Landed as d70f743 on main.
+Branch `issue-243-tactic-taxonomy` — completed Tasks 1-5 of 8 for #243 (strategy taxonomy). Three rename waves landed (EnemyArchetype → StrategyArchetype, EnemyPatternAssessment → PatternAssessment, summarisation.GamePhase → TacticalPosture). YAML taxonomy with StrategyTaxonomy loader created. Two rounds of upstream API breakage fixed. Blocked by #262 (ReactiveAgentIdentityVerificationService CDI bean removed — breaks all @QuarkusTest execution).
 
 ## Immediate Next Step
 
-Pick new work from epic #250 backlog. Run `/work` from main. Next child: #245 (LLM-evaluated compliance) or #248 (coaching acknowledgment UI).
+Fix #262 first — `mvn test` blocked. Then continue with Task 6 (SignatureFact + SignatureFactBuilder + generic Drools rules). Plan at `plans/2026-07-23-strategy-taxonomy.md`, spec at `specs/issue-243-tactic-taxonomy/2026-07-23-strategy-taxonomy-design.md`.
 
-## Cross-Module
+## Blocked by
 
-**engine#648** (AttestingOutcomeRecorder) — prerequisite for activating milestone evaluation. QuarkMind infrastructure ready; activates automatically when the SPI lands.
+- **casehub-platform** — #262 ReactiveAgentIdentityVerificationService CDI bean removed; blocks all @QuarkusTest integration tests · S · Low
 
 ## What's Left
 
+- Task 6: Detection pipeline (SignatureFact, SignatureFactBuilder, generic DRL rules) · M · Med
+- Task 7: Phase resolution + coaching integration (TimeBasedPhaseResolver, GAME_PHASE key, prompt enrichment) · M · Med
+- Task 8: New archetypes + multi-window calibration + follow-up issues · L · Med
 - #74 — genericise unit/building definitions · L · Med
-- MapInfo construction in SC2BotAgent.onStep() — extractNeutralFeatures() and resource extraction now available; needs first-frame caching lifecycle · M · Med
+- Garden push pending — GE-20260630-91be72 revision committed locally, push to GitHub failed (auth)
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #245 | LLM-evaluated compliance verification | M | Med | New VerificationPredicate permit — infrastructure ready |
-| #248 | Coaching acknowledgment UI (DONE/DECLINE) | M | Med | Visualizer overlay work |
-| #251 | Coaching personality model | M | Med | Epic; adaptive intra-game disposition |
+| #245 | LLM-evaluated compliance verification | M | Med | New VerificationPredicate permit |
+| #248 | Coaching acknowledgment UI (DONE/DECLINE) | M | Med | Visualizer overlay |
+| #251 | Coaching personality model | M | Med | Epic; adaptive disposition |
 | #235 | LLM fallback for novel/ambiguous builds | M | Med | CBR infrastructure in place |
-| #243 | Full tactic taxonomy (all game phases) | L | High | Epic #252 |
-| #231 | Human feedback trust dimensions | M | Med | Requires visualizer UI |
