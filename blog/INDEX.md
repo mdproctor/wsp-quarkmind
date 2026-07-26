@@ -69,3 +69,4 @@
 | [2026-07-19-mdp01-when-the-coach-needs-a-playbook.md](2026-07-19-mdp01-when-the-coach-needs-a-playbook.md) | 2026-07-19 | Coach mode design — third LLM pipeline for human players; urgency tiers, compliance evaluation, structured output coaching |
 | [2026-07-20-mdp01-the-pipeline-that-listens-back.md](2026-07-20-mdp01-the-pipeline-that-listens-back.md) | 2026-07-20 | Coach mode implementation — compliance evaluator, CDI proxy shared-state gotcha, plugin gating, trust routing |
 | [2026-07-21-mdp01-filling-in-the-blanks.md](2026-07-21-mdp01-filling-in-the-blanks.md) | 2026-07-21 | Neutral feature extraction for real SC2 observations, expansion location calibration against 59 replays |
+| [2026-07-26-mdp01-taxonomy-grows-second-track.md](2026-07-26-mdp01-taxonomy-grows-second-track.md) | 2026-07-26 | Two-track detection architecture — hand-authored DRL + generic data-driven pipeline; Drools nested-class codegen gotcha; coaching counter enrichment |
