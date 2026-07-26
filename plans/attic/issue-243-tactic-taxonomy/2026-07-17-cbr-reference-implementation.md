@@ -752,7 +752,6 @@ Refs #192
 ```java
 package io.quarkmind.agent.cbr;
 
-import io.casehub.api.context.CaseContext;
 import io.casehub.api.spi.routing.*;
 import io.casehub.ledger.api.spi.TrustScoreSource;
 import io.casehub.ledger.routing.TrustCandidateClassifier;
@@ -761,43 +760,44 @@ import io.quarkmind.agent.GameSession;
 import io.quarkmind.agent.MutableMapCaseContext;
 import io.quarkmind.agent.QuarkMindCaseFile;
 import io.quarkmind.agent.plugin.ScoutingIntelBroker;
-import io.quarkmind.agent.plugin.ScoutingIntelPayload;
+import io.quarkmind.agent.plugin.ScoutingIntelPayload.PatternAssessmentPayload;
 import io.quarkmind.agent.plugin.ScoutingIntelType;
 import io.quarkmind.agent.plugin.StrategyTask;
 import io.quarkmind.domain.EnemyArchetype;
 import io.quarkmind.domain.EnemyPatternAssessment;
-import io.smallrye.mutiny.Uni;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.*;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class SC2StrategyRouterTaskTest {
 
-    ScoutingIntelBroker broker;
-    CbrCaseMemoryStore cbrStore;
-    GameSession gameSession;
+    ScoutingIntelBroker   broker;
+    CbrCaseMemoryStore    cbrStore;
+    GameSession           gameSession;
     SC2StrategyRouterTask router;
 
     @BeforeEach
     void setUp() {
-        broker = mock(ScoutingIntelBroker.class);
+        broker   = mock(ScoutingIntelBroker.class);
         cbrStore = mock(CbrCaseMemoryStore.class);
         when(cbrStore.retrieveSimilar(any(), any())).thenReturn(List.of());
         gameSession = new GameSession();
 
-        TrustCandidateClassifier classifier = new TrustCandidateClassifier();
-        TrustScoreSource scoreSource = SC2ImplementationRoutingStrategyTest.stubScoreSource(Map.of());
+        TrustCandidateClassifier   classifier     = new TrustCandidateClassifier();
+        TrustScoreSource           scoreSource    = SC2ImplementationRoutingStrategyTest.stubScoreSource(Map.of());
         TrustRoutingPolicyProvider policyProvider = cap -> SC2ImplementationRoutingStrategyTest.POLICY;
 
         List<StrategyTask> strategies = List.of(
-            stubStrategy("strategy.drools"),
-            stubStrategy("strategy.early-pressure"));
+                stubStrategy("strategy.drools"),
+                stubStrategy("strategy.early-pressure"));
 
         router = new SC2StrategyRouterTask(
-            broker, cbrStore, gameSession, strategies,
-            classifier, scoreSource, policyProvider, 0.6, 1);
+                broker, cbrStore, gameSession, strategies,
+                classifier, scoreSource, policyProvider, 0.6, 1);
     }
 
     @Test
@@ -813,7 +813,7 @@ class SC2StrategyRouterTaskTest {
         router.execute(ctx);
 
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_SELECTED_ID, String.class))
-            .hasValue("strategy.drools");
+                .hasValue("strategy.drools");
     }
 
     @Test
@@ -826,18 +826,18 @@ class SC2StrategyRouterTaskTest {
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_SELECTED_ID, String.class)).isPresent();
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT, String.class)).isPresent();
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_ROUTED_ARCHETYPE, String.class))
-            .hasValue("ZERG_ROACH_RUSH");
+                .hasValue("ZERG_ROACH_RUSH");
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_PIVOT_COUNT, Integer.class))
-            .hasValue(0);
+                .hasValue(0);
     }
 
     @Test
     void sameArchetype_skipsReroute() {
         setArchetype(EnemyArchetype.ZERG_ROACH_RUSH, 0.85);
         Map<String, Object> persisted = new HashMap<>(Map.of(
-            QuarkMindCaseFile.READY, true,
-            QuarkMindCaseFile.STRATEGY_SELECTED_ID, "strategy.drools",
-            QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT, "ZERG_ROACH_RUSH-ZERG-PvZ"));
+                QuarkMindCaseFile.READY, true,
+                QuarkMindCaseFile.STRATEGY_SELECTED_ID, "strategy.drools",
+                QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT, "ZERG_ROACH_RUSH-ZERG-PvZ"));
         MutableMapCaseContext ctx = new MutableMapCaseContext(persisted);
 
         router.execute(ctx);
@@ -854,17 +854,17 @@ class SC2StrategyRouterTaskTest {
 
         verify(cbrStore, never()).retrieveSimilar(any(), any());
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_SELECTED_ID, String.class))
-            .hasValue("strategy.drools");
+                .hasValue("strategy.drools");
     }
 
     @Test
     void pivotLimitEnforced() {
         setArchetype(EnemyArchetype.TERRAN_MARINE_RUSH, 0.9);
         Map<String, Object> persisted = new HashMap<>(Map.of(
-            QuarkMindCaseFile.READY, true,
-            QuarkMindCaseFile.STRATEGY_SELECTED_ID, "strategy.drools",
-            QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT, "ZERG_ROACH_RUSH-ZERG-PvZ",
-            QuarkMindCaseFile.STRATEGY_PIVOT_COUNT, 1));
+                QuarkMindCaseFile.READY, true,
+                QuarkMindCaseFile.STRATEGY_SELECTED_ID, "strategy.drools",
+                QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT, "ZERG_ROACH_RUSH-ZERG-PvZ",
+                QuarkMindCaseFile.STRATEGY_PIVOT_COUNT, 1));
         MutableMapCaseContext ctx = new MutableMapCaseContext(persisted);
 
         router.execute(ctx);
@@ -883,7 +883,7 @@ class SC2StrategyRouterTaskTest {
     private void setArchetype(EnemyArchetype archetype, double confidence) {
         var assessment = new EnemyPatternAssessment(archetype, confidence, 1000, "test");
         when(broker.current(ScoutingIntelType.PATTERN_ASSESSMENT))
-            .thenReturn(Optional.of(new ScoutingIntelPayload.PatternAssessment(List.of(assessment))));
+                .thenReturn(Optional.of(new PatternAssessmentPayload(List.of(assessment))));
     }
 
     private StrategyTask stubStrategy(String id) {
@@ -919,6 +919,7 @@ import io.quarkmind.agent.QuarkMindCaseFile;
 import io.quarkmind.agent.TaskDefinition;
 import io.quarkmind.agent.plugin.ScoutingIntelBroker;
 import io.quarkmind.agent.plugin.ScoutingIntelPayload;
+import io.quarkmind.agent.plugin.ScoutingIntelPayload.PatternAssessmentPayload;
 import io.quarkmind.agent.plugin.ScoutingIntelType;
 import io.quarkmind.agent.plugin.StrategyTask;
 import io.quarkmind.domain.EnemyArchetype;
@@ -938,23 +939,23 @@ import java.util.function.Predicate;
 @CaseType("starcraft-game")
 public class SC2StrategyRouterTask implements TaskDefinition {
 
-    static final String FALLBACK = "strategy.drools";
-    private static final Logger log = Logger.getLogger(SC2StrategyRouterTask.class);
-    private static final MemoryDomain DOMAIN = new MemoryDomain("quarkmind");
-    private static final String CAPABILITY = "strategy";
+    static final         String       FALLBACK   = "strategy.drools";
+    private static final Logger       log        = Logger.getLogger(SC2StrategyRouterTask.class);
+    private static final MemoryDomain DOMAIN     = new MemoryDomain("quarkmind");
+    private static final String       CAPABILITY = "strategy";
 
-    private final ScoutingIntelBroker broker;
-    private final CbrCaseMemoryStore cbrStore;
-    private final GameSession gameSession;
-    private final List<StrategyTask> strategies;
-    private final TrustCandidateClassifier classifier;
-    private final TrustScoreSource scoreSource;
+    private final ScoutingIntelBroker        broker;
+    private final CbrCaseMemoryStore         cbrStore;
+    private final GameSession                gameSession;
+    private final List<StrategyTask>         strategies;
+    private final TrustCandidateClassifier   classifier;
+    private final TrustScoreSource           scoreSource;
     private final TrustRoutingPolicyProvider policyProvider;
-    private final double confidenceThreshold;
-    private final int maxPivots;
+    private final double                     confidenceThreshold;
+    private final int                        maxPivots;
 
-    private SC2ImplementationRoutingStrategy routingStrategy;
-    private volatile String lastSelectedId = FALLBACK;
+    private          SC2ImplementationRoutingStrategy routingStrategy;
+    private volatile String                           lastSelectedId = FALLBACK;
 
     @Inject
     public SC2StrategyRouterTask(
@@ -981,15 +982,15 @@ public class SC2StrategyRouterTask implements TaskDefinition {
             TrustCandidateClassifier classifier, TrustScoreSource scoreSource,
             TrustRoutingPolicyProvider policyProvider,
             double confidenceThreshold, int maxPivots) {
-        this.broker = broker;
-        this.cbrStore = cbrStore;
-        this.gameSession = gameSession;
-        this.strategies = strategies;
-        this.classifier = classifier;
-        this.scoreSource = scoreSource;
-        this.policyProvider = policyProvider;
+        this.broker              = broker;
+        this.cbrStore            = cbrStore;
+        this.gameSession         = gameSession;
+        this.strategies          = strategies;
+        this.classifier          = classifier;
+        this.scoreSource         = scoreSource;
+        this.policyProvider      = policyProvider;
         this.confidenceThreshold = confidenceThreshold;
-        this.maxPivots = maxPivots;
+        this.maxPivots           = maxPivots;
     }
 
     @PostConstruct
@@ -997,16 +998,21 @@ public class SC2StrategyRouterTask implements TaskDefinition {
         routingStrategy = new SC2ImplementationRoutingStrategy(classifier, scoreSource, policyProvider);
     }
 
-    @Override public String getId()   { return "strategy-routing.cbr"; }
-    @Override public String getName() { return "SC2 CBR Strategy Router"; }
-    @Override public Set<String> produces() {
+    @Override
+    public String getId()   {return "strategy-routing.cbr";}
+
+    @Override
+    public String getName() {return "SC2 CBR Strategy Router";}
+
+    @Override
+    public Set<String> produces() {
         return Set.of(QuarkMindCaseFile.STRATEGY_SELECTED_ID, QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT);
     }
 
     @Override
-    public Predicate<CaseContext> activateIf() { return ctx -> true; }
+    public Predicate<CaseContext> activateIf() {return ctx -> true;}
 
-    public String lastSelectedId() { return lastSelectedId; }
+    public String lastSelectedId() {return lastSelectedId;}
 
     @Override
     public void execute(CaseContext ctx) {
@@ -1019,7 +1025,7 @@ public class SC2StrategyRouterTask implements TaskDefinition {
             return;
         }
 
-        ScoutingIntelPayload.PatternAssessment pa = (ScoutingIntelPayload.PatternAssessment) raw.get();
+        PatternAssessmentPayload pa = (PatternAssessmentPayload) raw.get();
         if (pa.assessments().isEmpty()) {
             if (ctx.get(QuarkMindCaseFile.STRATEGY_SELECTED_ID, String.class).isEmpty()) {
                 ctx.set(QuarkMindCaseFile.STRATEGY_SELECTED_ID, FALLBACK);
@@ -1028,9 +1034,9 @@ public class SC2StrategyRouterTask implements TaskDefinition {
             return;
         }
 
-        EnemyPatternAssessment best = pa.assessments().getFirst();
-        EnemyArchetype archetype = best.archetype();
-        double confidence = best.confidence();
+        EnemyPatternAssessment best       = pa.assessments().getFirst();
+        EnemyArchetype         archetype  = best.archetype();
+        double                 confidence = best.confidence();
 
         if (confidence < confidenceThreshold) {
             if (ctx.get(QuarkMindCaseFile.STRATEGY_SELECTED_ID, String.class).isEmpty()) {
@@ -1040,51 +1046,51 @@ public class SC2StrategyRouterTask implements TaskDefinition {
             return;
         }
 
-        String raceName = archetype.race().name();
-        String matchup = "Pv" + raceName.charAt(0);
+        String raceName   = archetype.race().name();
+        String matchup    = "Pv" + raceName.charAt(0);
         String contextKey = archetype.name() + "-" + raceName + "-" + matchup;
 
         String existingContext = ctx.get(QuarkMindCaseFile.STRATEGY_ROUTED_CONTEXT, String.class)
-            .orElse("");
+                                    .orElse("");
         if (contextKey.equals(existingContext)) return;
 
         int pivotCount = ctx.get(QuarkMindCaseFile.STRATEGY_PIVOT_COUNT, Integer.class).orElse(-1);
         if (pivotCount >= maxPivots) return;
 
         List<ScoredCbrCase<SC2GameCbrCase>> retrieved = cbrStore.retrieveSimilar(
-            CbrQuery.of("default", DOMAIN, Path.root(), SC2GameCbrCase.CBR_TYPE,
-                    Map.of(
-                        "enemy_archetype", FeatureValue.string(archetype.name()),
-                        "enemy_race", FeatureValue.string(raceName),
-                        "matchup", FeatureValue.string(matchup),
-                        "assessment_confidence", FeatureValue.number(confidence)),
-                    5)
-                .withWeights(Map.of(
-                    "enemy_archetype", 0.5,
-                    "enemy_race", 0.15,
-                    "matchup", 0.15,
-                    "assessment_confidence", 0.2))
-                .withMinSimilarity(0.3),
-            SC2GameCbrCase.class);
+                CbrQuery.of("default", DOMAIN, Path.root(), SC2GameCbrCase.CBR_TYPE,
+                            Map.of(
+                                    "enemy_archetype", FeatureValue.string(archetype.name()),
+                                    "enemy_race", FeatureValue.string(raceName),
+                                    "matchup", FeatureValue.string(matchup),
+                                    "assessment_confidence", FeatureValue.number(confidence)),
+                            5)
+                        .withWeights(Map.of(
+                                "enemy_archetype", 0.5,
+                                "enemy_race", 0.15,
+                                "matchup", 0.15,
+                                "assessment_confidence", 0.2))
+                        .withMinSimilarity(0.3),
+                SC2GameCbrCase.class);
 
         List<RetrievedExperience> experiences = retrieved.stream()
-            .map(sc -> new RetrievedExperience(
-                sc.cbrCase().problem(), sc.cbrCase().solution(),
-                sc.cbrCase().outcome(), sc.cbrCase().confidence(),
-                sc.score(),
-                FeatureValue.toRawMap(sc.cbrCase().features()),
-                List.of(), sc.featureSimilarities()))
-            .toList();
+                                                         .map(sc -> new RetrievedExperience(
+                                                                 sc.cbrCase().problem(), sc.cbrCase().solution(),
+                                                                 sc.cbrCase().outcome(), sc.cbrCase().confidence(),
+                                                                 sc.score(),
+                                                                 FeatureValue.toRawMap(sc.cbrCase().features()),
+                                                                 List.of(), sc.featureSimilarities()))
+                                                         .toList();
 
         List<ImplementationCandidate> candidates = strategies.stream()
-            .map(s -> new ImplementationCandidate(s.getId(), s.getId(), CAPABILITY))
-            .toList();
+                                                             .map(s -> new ImplementationCandidate(s.getId(), s.getId(), CAPABILITY))
+                                                             .toList();
 
         ImplementationRoutingContext routingCtx = new ImplementationRoutingContext(
-            gameSession.id(), CAPABILITY, null, "default", experiences);
+                gameSession.id(), CAPABILITY, null, "default", experiences);
 
         ImplementationSelection selection = routingStrategy.select(routingCtx, candidates)
-            .await().indefinitely();
+                                                           .await().indefinitely();
 
         String winner = switch (selection) {
             case ImplementationSelection.Selected s -> s.bindingNames().getFirst();
@@ -1100,8 +1106,8 @@ public class SC2StrategyRouterTask implements TaskDefinition {
         lastSelectedId = winner;
 
         log.infof("[CBR-ROUTE] %s → %s (archetype=%s confidence=%.2f experiences=%d pivot=%d)",
-            existingContext.isEmpty() ? "initial" : "pivot",
-            winner, archetype, confidence, experiences.size(), pivotCount + 1);
+                  existingContext.isEmpty() ? "initial" : "pivot",
+                  winner, archetype, confidence, experiences.size(), pivotCount + 1);
     }
 }
 ```
@@ -1363,29 +1369,33 @@ class SC2CbrRetentionIT {
 package io.quarkmind.agent.cbr;
 
 import io.casehub.api.spi.CaseOutcomeEvent;
-import io.casehub.neocortex.memory.cbr.CbrCaseMemoryStore;
 import io.quarkmind.agent.GameSession;
 import io.quarkmind.agent.MutableMapCaseContext;
 import io.quarkmind.agent.QuarkMindCaseFile;
 import io.quarkmind.agent.plugin.ScoutingIntelBroker;
-import io.quarkmind.agent.plugin.ScoutingIntelPayload;
-import io.quarkmind.agent.plugin.ScoutingIntelType;
+import io.quarkmind.agent.plugin.ScoutingIntelPayload.PatternAssessmentPayload;
 import io.quarkmind.domain.EnemyArchetype;
 import io.quarkmind.domain.EnemyPatternAssessment;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+
 import java.time.Instant;
 import java.util.*;
+
 import static org.assertj.core.api.Assertions.*;
 
 @QuarkusTest
 class SC2CbrRoutingIT {
 
-    @Inject SC2CbrRetentionObserver retentionObserver;
-    @Inject SC2StrategyRouterTask routerTask;
-    @Inject ScoutingIntelBroker broker;
-    @Inject GameSession gameSession;
+    @Inject
+    SC2CbrRetentionObserver retentionObserver;
+    @Inject
+    SC2StrategyRouterTask   routerTask;
+    @Inject
+    ScoutingIntelBroker     broker;
+    @Inject
+    GameSession             gameSession;
 
     @Test
     void pastGames_influenceStrategySelection() {
@@ -1393,26 +1403,26 @@ class SC2CbrRoutingIT {
 
         for (int i = 0; i < 3; i++) {
             retentionObserver.onOutcome(new CaseOutcomeEvent(
-                "starcraft-game", "default", UUID.randomUUID(),
-                Map.of(
-                    QuarkMindCaseFile.STRATEGY_SELECTED_ID, "strategy.early-pressure",
-                    QuarkMindCaseFile.STRATEGY_ROUTED_ARCHETYPE, "ZERG_ROACH_RUSH",
-                    QuarkMindCaseFile.STRATEGY_ROUTED_CONFIDENCE, 0.9),
-                "WIN", Instant.now(), Map.of()));
+                    "starcraft-game", "default", UUID.randomUUID(),
+                    Map.of(
+                            QuarkMindCaseFile.STRATEGY_SELECTED_ID, "strategy.early-pressure",
+                            QuarkMindCaseFile.STRATEGY_ROUTED_ARCHETYPE, "ZERG_ROACH_RUSH",
+                            QuarkMindCaseFile.STRATEGY_ROUTED_CONFIDENCE, 0.9),
+                    "WIN", Instant.now(), Map.of()));
         }
 
         var assessment = new EnemyPatternAssessment(
-            EnemyArchetype.ZERG_ROACH_RUSH, 0.9, 1000, "test");
-        broker.update(new ScoutingIntelPayload.PatternAssessment(List.of(assessment)));
+                EnemyArchetype.ZERG_ROACH_RUSH, 0.9, 1000, "test");
+        broker.update(new PatternAssessmentPayload(List.of(assessment)));
 
         MutableMapCaseContext ctx = new MutableMapCaseContext(
-            Map.of(QuarkMindCaseFile.READY, true));
+                Map.of(QuarkMindCaseFile.READY, true));
         routerTask.execute(ctx);
 
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_SELECTED_ID, String.class))
-            .isPresent();
+                .isPresent();
         assertThat(ctx.get(QuarkMindCaseFile.STRATEGY_ROUTED_ARCHETYPE, String.class))
-            .hasValue("ZERG_ROACH_RUSH");
+                .hasValue("ZERG_ROACH_RUSH");
     }
 }
 ```
