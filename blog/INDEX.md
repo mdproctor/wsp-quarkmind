@@ -2,6 +2,7 @@
 
 | File | Date | Title |
 |------|------|-------|
+| [2026-07-29-mdp01-58-archetypes-three-perspectives.md](2026-07-29-mdp01-58-archetypes-three-perspectives.md) | 2026-07-29 | 58 Archetypes, Three Perspectives — taxonomy filled to 58, counter schema migrated to matchup-keyed for all three races |
 | [2026-07-19-mdp01-when-the-coach-needs-a-playbook.md](2026-07-19-mdp01-when-the-coach-needs-a-playbook.md) | 2026-07-19 | When the Coach Needs a Playbook — commentary vs coaching speech acts, implicit compliance detection, external strategy knowledge gap |
 | [2026-07-09-mdp01-data-tables-arent-dispatch-tables.md](2026-07-09-mdp01-data-tables-arent-dispatch-tables.md) | 2026-07-09 | Data Tables Aren't Dispatch Tables — UnitCosts EnumMap replaces switch defaults, 81% army undervaluation fixed |
 | [2026-07-06-mdp01-the-bot-sees-the-whole-board.md](2026-07-06-mdp01-the-bot-sees-the-whole-board.md) | 2026-07-06 | The Bot That Sees the Whole Board — four-factor dominance assessment with fog-of-war guards |
