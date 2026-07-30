@@ -1,23 +1,25 @@
-# QuarkMind Handover — 2026-07-29
+# QuarkMind Handover — 2026-07-30
 
 ## Last Session
 
-Branch `issue-257-fill-strategy-taxonomy` closed — #257 and #261 landed as `5dc6811` on main. Taxonomy filled from 20→58 archetypes across all races and phases. Counter schema migrated from flat Protoss-only to matchup-keyed `counters: {PROTOSS, TERRAN, ZERG}` with `countersFor(archetype, race)` API overload. Garden entry GE-20260729-0c7c61 captured enum/building authoring trap.
+Branch `issue-258-dynamic-phase-resolver` closed — #258 landed as `fa76bed` on main. PhaseResolver interface changed from `resolve(double)` to `resolve(GameState)`. New `StateBasedPhaseResolver` uses expansion count, tech tier, supply with time floors. CDI producer selects implementation via config. GameState added as CaseFile key. Pre-existing upstream API breaks fixed (DispositionValue, AgentRoutingContext). Design was adversarially reviewed (7 rounds, $20.61). Garden entry GE-20260730-6b36c7 captured FP truncation gotcha.
 
 ## Immediate Next Step
 
-Pick next work from What's Next — #258 (dynamic PhaseResolver) is the most architecturally interesting, or #259 (visualizer counter overlay) for user-visible value.
+Pick next work from What's Next — #259 (visualizer counter overlay) or #260 (strategy transition detection). Note: #266 tracks pre-existing build failures (EntityManager unsatisfied from planning dependency) blocking `@QuarkusTest` integration tests — fix before any work that needs integration tests.
 
 ## What's Left
 
 - #74 — genericise unit/building definitions · L · Med
-- Garden push pending — GE-20260630-91be72 + GE-20260726-7213f2 + GE-20260729-0c7c61 committed locally, push blocked by pre-push hook (auth)
+- #265 — GameStateTranslator Protoss-only worker filter · S · Low (prerequisite for multi-race accuracy)
+- #266 — pre-existing compile/CDI errors from upstream API changes · M · Med (blocks @QuarkusTest)
+- #264 — evaluate ALL_KEYS cleanup · XS · Low
+- Garden push pending — local entries not pushed (pre-push hook auth)
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #258 | Dynamic PhaseResolver — state-based phase detection | M | Med | Replace time-based with game-state heuristics |
 | #259 | Visualizer counter overlay | M | Med | Consume CounterInfo API — now multi-race |
 | #260 | Strategy transition detection | L | High | Temporal sequencing of archetype detections |
 | #245 | LLM-evaluated compliance verification | M | Med | New VerificationPredicate permit |
