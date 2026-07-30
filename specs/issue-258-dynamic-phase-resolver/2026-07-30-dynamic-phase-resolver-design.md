@@ -12,7 +12,7 @@
 
 - Change `PhaseResolver.resolve(double gameTimeMinutes)` to `resolve(GameState)`
 - Add `GameState` as a CaseFile key alongside decomposed fields
-- Implement `StateBasedPhaseResolver` using expansion count, tech tier, supply, and army composition
+- Implement `StateBasedPhaseResolver` using expansion count, tech tier, and supply
 - CDI producer selects implementation via config property (default: `state-based`)
 - `StrategyTaxonomy.activeSignatures` keeps independent time-based phaseWindow filtering (different concern — detection windows vs phase labels)
 
@@ -25,7 +25,15 @@ public interface PhaseResolver {
 }
 ```
 
-`PhaseResolver` and `GameState` are both in `domain/` — no dependency issues. Time is derived internally from `gameState.gameFrame()` (÷ 22.4 ÷ 60 for minutes).
+`PhaseResolver` and `GameState` are both in `domain/` — no dependency issues. Time is derived internally via `SC2Data.GAME_LOOPS_PER_SECOND` (the existing domain constant at 22.4 fps). `GameState` gains a convenience method:
+
+```java
+public double gameTimeMinutes() {
+    return gameFrame() / SC2Data.GAME_LOOPS_PER_SECOND / 60.0;
+}
+```
+
+`DroolsScoutingTask.FRAMES_PER_SECOND` and `PatternClassificationCalibrationTest.FRAMES_PER_SECOND` are updated to reference `SC2Data.GAME_LOOPS_PER_SECOND` (existing constant consolidation, not a new constant).
 
 ## GameState on CaseFile
 
@@ -39,6 +47,10 @@ New constant:
 ```java
 public static final String GAME_STATE = "game.state";  // game.* namespace — observation state
 ```
+
+`GAME_STATE` is added to `QuarkMindCaseFile.ALL_KEYS` for completeness. (`ALL_KEYS` currently has zero references — tracked as #264 for cleanup evaluation.)
+
+**Pre-existing bug (out of scope):** `GameStateTranslator.toMap()` filters workers as `u.type() == UnitType.PROBE` — Protoss-only. Terran SCVs and Zerg Drones are misclassified as army. The fix (`u.type().isWorker()`) is tracked as #265; it should land as a prerequisite PR before this change.
 
 Decomposed fields remain for plugins that read individual keys. `DroolsScoutingTask` retrieves the full state:
 
@@ -64,14 +76,14 @@ Location: `agent/StateBasedPhaseResolver.java`. Plain class (no `@ApplicationSco
 
 **Supply** — `supplyUsed` from GameState.
 
-**Army composition** — presence of tech units (non-worker, non-basic) in `myUnits`.
+All building signals count buildings regardless of `Building.isComplete` status. An under-construction building represents a committed resource investment — the transition signal is the decision to build, not the completion. Time floors (below) prevent misclassification from premature construction.
 
 ### Phase Rules
 
 Evaluated top-down, first match wins:
 
 1. **LATE** if: (3+ expansions AND has tier-3 tech) OR supply ≥ 150
-2. **MID** if: 2+ expansions OR has tier-2 tech OR supply ≥ 60
+2. **MID** if: 2+ expansions OR has tier-2 or tier-3 tech OR supply ≥ 60
 3. **EARLY** otherwise
 
 ### Time Floors
@@ -133,6 +145,8 @@ Parameterized tests with constructed `GameState` records:
 - **Empty buildings:** game start, no buildings → EARLY
 - **Mixed signals:** high supply but 1 base → tests supply-based transition
 - **All races:** Protoss, Terran, Zerg building types for expansion and tech detection
+- **Zerg morph chain:** HIVE present, no surviving tier-2 buildings → MID (not EARLY)
+- **Under-construction buildings:** counted toward signals (committed investment)
 
 ### TimeBasedPhaseResolverTest (updated)
 
@@ -151,7 +165,8 @@ DroolsScoutingTask tests referencing `phaseResolver` update to pass `GameState`.
 | File | Change |
 |------|--------|
 | `domain/PhaseResolver.java` | Interface: `resolve(GameState)` |
-| `domain/QuarkMindCaseFile.java`* | New `GAME_STATE` constant |
+| `domain/GameState.java` | Add `gameTimeMinutes()` convenience method |
+| `domain/QuarkMindCaseFile.java`* | New `GAME_STATE` constant, added to `ALL_KEYS` |
 | `agent/TimeBasedPhaseResolver.java` | Update signature, remove `@ApplicationScoped` |
 | `agent/StateBasedPhaseResolver.java` | **New** — state-based implementation |
 | `agent/PhaseResolverProducer.java` | **New** — CDI producer with config selector |
