@@ -1,0 +1,9 @@
+branch: issue-259-visualizer-workbench
+project-sha: 878b117362bf3dcf6032c9158a4f4f52cb501c2e
+date: 2026-08-03
+issue: 259
+issue-repo: casehubio/quarkmind
+covers: 259
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes: 
