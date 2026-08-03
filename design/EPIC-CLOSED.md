@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-259-visualizer-workbench
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-08-03
+**Issues:** 259
 **Status:** merged to main
