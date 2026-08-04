@@ -37,6 +37,15 @@ The `agentId` is available in `CoachingCompleted.workerId()` but currently dropp
 **Downstream:**
 - `CoachingEffectivenessTrustRecorder.record()` — add `agentId` parameter: `record(String correlationId, String agentId, String outcome, CoachingAdvice advice)`. Still a logging stub, now logs which personality produced the outcome.
 - `CoachingComplianceEvaluator.evaluate()` — pass `commitment.agentId()` to recorder.
+- `CoachingComplianceEvaluator.withdrawAll()` — also calls `recorder.record()`: pass `commitment.agentId()` here too.
+
+### CoachingComplianceResolved — add correlationId
+
+Current: `CoachingComplianceResolved(long gameFrame, CoachingDomain domain, String status)`
+
+New: `CoachingComplianceResolved(long gameFrame, CoachingDomain domain, String status, String correlationId)`
+
+The UI currently matches compliance updates by `(gameFrame, domain)` which is fragile — two advice items for the same domain at the same frame would collide. Adding `correlationId` gives the UI a precise handle. `WorkbenchEnricher.onCoachingCompliance()` passes `correlationId` through to `CoachingCompliancePayload`, and visualizer.js matches by `correlationId` instead of `(gameFrame, domain)`.
 
 ### CoachingAdvicePublished — add correlationId
 
@@ -44,7 +53,7 @@ Current: `CoachingAdvicePublished(CoachingAdvice advice, CoachingUrgencyTier urg
 
 New: `CoachingAdvicePublished(CoachingAdvice advice, CoachingUrgencyTier urgencyTier, long gameFrame, String correlationId)`
 
-The correlationId is assigned in `CoachingChannelBroker.onCoachingCompleted()` before the event fires. Flows through `WorkbenchEnricher` → `CoachingPayload` → visualizer.js.
+The correlationId is assigned in `CoachingChannelBroker.onCoachingCompleted()` before the event fires. Explicit pass-through chain: `CoachingChannelBroker` fires `CoachingAdvicePublished(correlationId)` → `WorkbenchEnricher.onCoachingAdvice()` reads `event.correlationId()` and passes to `CoachingPayload(correlationId)` → `WorkbenchBroadcaster.broadcast()` serializes to JSON → visualizer.js stores `correlationId` per coaching item for acknowledgment responses.
 
 ### CoachingPayload — add correlationId
 
@@ -117,10 +126,10 @@ A Commander agent (bold + assertive) stays Commander in all tiers.
 
 ### CoachingDispositionTerm — unchanged
 
-DIRECTIVE and SOCRATIC remain as vocabulary terms for registered agent identities. The 4 quadrants are computed at runtime from `AgentDescriptor.disposition()` + current urgency tier.
+DIRECTIVE and SOCRATIC remain as vocabulary terms for registered agent identities. Two registered agents suffice — the 4 quadrants are **not** 4 agents. They are runtime-derived styles computed from `AgentDescriptor.disposition()` + current urgency tier. A single agent traverses different quadrants as urgency changes within a game.
 
-An agent registered as "directive" → `RISK_APPETITE=bold, SOCIAL_ORIENTATION=assertive` in its descriptor YAML.
-An agent registered as "socratic" → `RISK_APPETITE=cautious, SOCIAL_ORIENTATION=collaborative`.
+An agent registered as "directive" → `RISK_APPETITE=bold, SOCIAL_ORIENTATION=assertive` in its descriptor YAML. Default quadrant: Commander. Under ECONOMIC tier: stays Commander.
+An agent registered as "socratic" → `RISK_APPETITE=cautious, SOCIAL_ORIENTATION=collaborative`. Default quadrant: Mentor. Under CRISIS: becomes Commander. Under STRATEGIC: becomes Rally.
 
 ---
 
@@ -178,21 +187,27 @@ public class CoachingAcknowledgmentHandler {
     //           WorkbenchBroadcaster
 
     public boolean acknowledge(String correlationId, boolean accepted) {
-        // 1. Dispatch response via MessageService (bypasses receiveHumanMessage per GE-20260517-5879a9)
+        // 1. Resolve commitment FIRST (human-wins override)
+        //    - Check commitment exists before any side effects
+        //    - DONE → records ENDORSED via trust recorder
+        //    - DECLINE → records CHALLENGED via trust recorder
+        //    - Returns false if correlationId not found (already resolved by auto-compliance or superseded)
+        //    - If false: return immediately — no dispatch, no broadcast
+        //
+        // 2. Dispatch response via MessageService (bypasses receiveHumanMessage per GE-20260517-5879a9)
         //    - type: accepted ? MessageType.DONE : MessageType.DECLINE
         //    - correlationId: the advice's correlationId
         //    - inReplyTo: correlationId (per GE-20260530-1a7e84)
         //    - actorType: ActorType.HUMAN
         //    - channelId: broker.channelId()
-        //
-        // 2. Resolve commitment (human-wins override)
-        //    - DONE → records ENDORSED via trust recorder, removes commitment
-        //    - DECLINE → records CHALLENGED via trust recorder, removes commitment
         //    - Per GE-20260605-73c9d6: DECLINE produces CommitmentState.DECLINED
         //
         // 3. Broadcast coaching_compliance event to workbench UI
         //
-        // Returns false if correlationId not found (already resolved by auto-compliance)
+        // Order matters: resolve first ensures the commitment is claimed before
+        // MessageService dispatch (which could fail). If dispatch fails after
+        // resolution, the compliance outcome is still recorded — the audit trail
+        // gap is acceptable for a dev-only tool.
     }
 }
 ```
@@ -202,12 +217,12 @@ public class CoachingAcknowledgmentHandler {
 ```java
 public boolean resolveHuman(String correlationId, boolean accepted) {
     // Iterate commitments (max 4 entries — one per CoachingDomain)
-    // Find by correlationId
+    // Find entry where commitment.correlationId().equals(correlationId)
+    // Use ConcurrentHashMap.remove(key, value) for atomic removal — prevents
+    // race with evaluate() where both threads find the same commitment
     // Record: accepted ? "ENDORSED" : "CHALLENGED" (with agentId)
-    // Fire CoachingComplianceResolved with commitment.issuedAtFrame() as gameFrame
-    //   (UI matches compliance updates by gameFrame + domain — must use the advice's frame)
-    // Remove from map
-    // Returns false if not found
+    // Fire CoachingComplianceResolved with (commitment.issuedAtFrame(), domain, status, correlationId)
+    // Returns false if not found or if remove(key, value) lost the CAS race
 }
 ```
 
@@ -217,7 +232,10 @@ public boolean resolveHuman(String correlationId, boolean accepted) {
 @OnTextMessage
 public void onMessage(String message, WebSocketConnection connection) {
     // Parse JSON: {type: "coaching_response", correlationId: "...", response: "DONE"|"DECLINE"}
+    // Validate: type must be "coaching_response", correlationId must be non-null/non-blank,
+    //           response must be "DONE" or "DECLINE". Ignore malformed messages (log.debug).
     // Delegate to CoachingAcknowledgmentHandler.acknowledge()
+    // Future message types can be added via the type discriminator without changing the handler.
 }
 ```
 
@@ -227,6 +245,7 @@ public void onMessage(String message, WebSocketConnection connection) {
 - Clicking sends `{type: "coaching_response", correlationId: "...", response: "DONE"|"DECLINE"}` via the existing WebSocket connection
 - After click or auto-compliance resolution (whichever comes first), buttons disappear and the status badge shows (✅ Endorsed / ❌ Challenged / ⏸ Neutral)
 - Race handling: `coaching_compliance` event from server always wins — both human-initiated and auto-initiated compliance events use the same rendering path
+- Supersession handling: when `CoachingChannelBroker` replaces a commitment for the same domain (new advice supersedes old), broadcast a `coaching_compliance` event for the old correlationId with status `SUPERSEDED`. The UI hides buttons for the superseded advice. Without this, buttons for old advice remain visible but clicking them returns false (commitment gone)
 
 ### Qhorus garden gotcha checklist
 
@@ -248,10 +267,10 @@ public void onMessage(String message, WebSocketConnection connection) {
 |---|---|
 | `CoachingStyleTest` (new) | `resolve()` across 12 combinations: 4 quadrants × 3 urgency tiers. Crisis forces Commander, strategic forces bold, economic uses defaults. |
 | `CoachingWorkerFactoryTest` (update) | `buildSystemPrompt(descriptor, tier)` — each quadrant produces correct style instructions. Replace boolean crisisOverride tests with CoachingUrgencyTier tests. |
-| `CoachingComplianceEvaluatorTest` (update) | `resolveHuman()`: DONE → ENDORSED + removal, DECLINE → CHALLENGED + removal, unknown correlationId → false. Verify agentId passed to recorder. |
-| `CoachingAcknowledgmentHandlerTest` (new) | DONE dispatches MessageType.DONE with correct correlationId/inReplyTo/actorType, records ENDORSED, removes commitment. DECLINE dispatches DECLINE, records CHALLENGED. Race returns false. |
-| `CoachingChannelBrokerTest` (update) | agentId from CoachingCompleted.workerId() flows into OpenCommitment. correlationId flows into CoachingAdvicePublished. |
-| `WorkbenchEventTest` (update) | CoachingPayload serialization includes correlationId. |
+| `CoachingComplianceEvaluatorTest` (update) | `resolveHuman()`: DONE → ENDORSED + removal, DECLINE → CHALLENGED + removal, unknown correlationId → false. CAS race with `evaluate()` → loser returns false. Verify agentId passed to recorder. Verify `withdrawAll()` passes agentId. |
+| `CoachingAcknowledgmentHandlerTest` (new) | DONE dispatches MessageType.DONE with correct correlationId/inReplyTo/actorType, records ENDORSED, removes commitment. DECLINE dispatches DECLINE, records CHALLENGED. Race returns false — no dispatch or broadcast. Resolve-before-dispatch ordering verified. |
+| `CoachingChannelBrokerTest` (update) | agentId from CoachingCompleted.workerId() flows into OpenCommitment. correlationId flows into CoachingAdvicePublished. Supersession: replacing commitment for same domain broadcasts SUPERSEDED for old correlationId. |
+| `WorkbenchEventTest` (update) | CoachingPayload serialization includes correlationId. CoachingCompliancePayload includes correlationId. |
 
 ### Integration tests (@QuarkusTest)
 
@@ -293,4 +312,4 @@ public void onMessage(String message, WebSocketConnection connection) {
 - GE-20260530-1a7e84 — response messages require inReplyTo + correlationId
 - GE-20260605-73c9d6 — CommitmentState.DECLINED not CANCELLED
 - GE-20260529-e32a4d — MessageDispatch requires actorType
-- GE-20260803-c02ab3 — DispositionConfig rejects dominantFunction/auxiliaryFunction
+- GE-20260803-c02ab3 — DispositionConfig rejects dominantFunction/auxiliaryFunction (relevant if agent YAML uses these fields)
