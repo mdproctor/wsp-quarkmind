@@ -168,13 +168,18 @@ The `resolveUrgencyTier()` method already exists and returns the correct tier fr
 ```
 visualizer.js  ──WebSocket──>  WorkbenchSocket  ──>  CoachingAcknowledgmentHandler
                                 (@OnTextMessage)           │
-                                                           ├─> MessageService.dispatch(DONE/DECLINE)
-                                                           │   (qhorus audit trail, correct correlationId)
-                                                           ├─> CoachingComplianceEvaluator.resolveHuman()
-                                                           │   (removes commitment, records outcome)
-                                                           └─> WorkbenchBroadcaster.broadcast()
-                                                               (coaching_compliance event → UI update)
+                                                           ├─> 1. CoachingComplianceEvaluator.resolveHuman()
+                                                           │      (removes commitment, records outcome,
+                                                           │       fires CoachingComplianceResolved via CDI)
+                                                           │          │
+                                                           │          └─> WorkbenchEnricher.onCoachingCompliance()
+                                                           │              (broadcasts coaching_compliance to UI)
+                                                           │
+                                                           └─> 2. MessageService.dispatch(DONE/DECLINE)
+                                                                   (qhorus audit trail, correct correlationId)
 ```
+
+No direct `WorkbenchBroadcaster.broadcast()` call in the handler — the CDI event chain through `WorkbenchEnricher.onCoachingCompliance(@Observes CoachingComplianceResolved)` handles UI notification, matching the existing auto-compliance broadcast path.
 
 ### CoachingAcknowledgmentHandler (new CDI bean)
 
@@ -183,8 +188,7 @@ visualizer.js  ──WebSocket──>  WorkbenchSocket  ──>  CoachingAcknowl
 @UnlessBuildProfile("prod")
 @ApplicationScoped
 public class CoachingAcknowledgmentHandler {
-    // Injected: MessageService, CoachingChannelBroker, CoachingComplianceEvaluator,
-    //           WorkbenchBroadcaster
+    // Injected: MessageService, CoachingChannelBroker, CoachingComplianceEvaluator
 
     public boolean acknowledge(String correlationId, boolean accepted) {
         // 1. Resolve commitment FIRST (human-wins override)
@@ -192,7 +196,9 @@ public class CoachingAcknowledgmentHandler {
         //    - DONE → records ENDORSED via trust recorder
         //    - DECLINE → records CHALLENGED via trust recorder
         //    - Returns false if correlationId not found (already resolved by auto-compliance or superseded)
-        //    - If false: return immediately — no dispatch, no broadcast
+        //    - If false: return immediately — no dispatch
+        //    - If true: resolveHuman() fires CoachingComplianceResolved via CDI →
+        //      WorkbenchEnricher broadcasts coaching_compliance to workbench UI automatically
         //
         // 2. Dispatch response via MessageService (bypasses receiveHumanMessage per GE-20260517-5879a9)
         //    - type: accepted ? MessageType.DONE : MessageType.DECLINE
@@ -202,7 +208,7 @@ public class CoachingAcknowledgmentHandler {
         //    - channelId: broker.channelId()
         //    - Per GE-20260605-73c9d6: DECLINE produces CommitmentState.DECLINED
         //
-        // 3. Broadcast coaching_compliance event to workbench UI
+        // No step 3 needed — CDI event chain handles UI broadcast.
         //
         // Order matters: resolve first ensures the commitment is claimed before
         // MessageService dispatch (which could fail). If dispatch fails after
@@ -246,6 +252,7 @@ public void onMessage(String message, WebSocketConnection connection) {
 - After click or auto-compliance resolution (whichever comes first), buttons disappear and the status badge shows (✅ Endorsed / ❌ Challenged / ⏸ Neutral)
 - Race handling: `coaching_compliance` event from server always wins — both human-initiated and auto-initiated compliance events use the same rendering path
 - Supersession handling: when `CoachingChannelBroker` replaces a commitment for the same domain (new advice supersedes old), broadcast a `coaching_compliance` event for the old correlationId with status `SUPERSEDED`. The UI hides buttons for the superseded advice. Without this, buttons for old advice remain visible but clicking them returns false (commitment gone)
+- Reconnection handling: `WorkbenchBroadcaster` currently snapshots the latest coaching event but not compliance state. A reconnecting client sees advice with pending buttons even if compliance already resolved. Fix: `WorkbenchEnricher.onCoachingCompliance()` updates a `latestCompliance` map (keyed by correlationId) in `WorkbenchBroadcaster`. On reconnection, `pushSnapshot()` sends pending coaching events followed by any resolved compliance events — the client applies both and renders the correct state
 
 ### Qhorus garden gotcha checklist
 
