@@ -1,16 +1,16 @@
-# QuarkMind Handover — 2026-08-03
+# QuarkMind Handover — 2026-08-04
 
 ## Last Session
 
-Branch `issue-259-visualizer-workbench` closed — landed as `1dff2fa` on main. Workbench application shell replaces full-viewport canvas. Dedicated `/ws/workbench` WebSocket with typed CDI events from all four intelligence pipelines (scouting, coaching, compliance, strategy). Selection model with pulsing ring correlation. Three pages (pattern, coaching, strategy). Design spec adversarially reviewed, 8-task plan executed, code reviewed. Blog entry published. #267 filed for Electron SC2 overlay. Garden entry GE-20260803-166db7 captured `ide_replace_member` gotcha.
+Branch `issue-235-llm-fallback-ambiguous-builds` closed — landed as `bbc3975` on main. Standalone CaseHub capability that fires when Drools pattern classification confidence < 0.5 for all archetypes after 3 minutes. LLM receives the unit observation timeline and Drools confidence scores, classifies from the race-filtered StrategyArchetype enum, and overrides cumulative confidence via CaseContext read-on-next-tick. Reuses advisory CompletionCallback for audit trail. Also fixed 4 pre-existing OutcomeRecorder test stubs (#266 partial). Blog entry published. 3 garden entries submitted.
 
 ## Immediate Next Step
 
-Pick next work from What's Next. Note: #266 tracks pre-existing build failures (MilestoneReachedEvent missing from upstream) blocking `@QuarkusTest` integration tests — fix before any work that needs integration tests. Visual verification of the workbench not yet done — run `mvn quarkus:dev -Dquarkus.profile=emulated` and confirm the workbench renders.
+Pick next work from What's Next. #266 partially addressed (test stubs fixed) but compile/CDI errors from upstream may remain for other classes — verify before relying on `@QuarkusTest`. Workbench visual verification still not done from previous session.
 
 ## What's Left
 
-- #266 — pre-existing compile/CDI errors from upstream API changes · M · Med (blocks @QuarkusTest)
+- #266 — pre-existing compile/CDI errors from upstream API changes · M · Med (partially fixed — test stubs updated, other classes may still break)
 - #265 — GameStateTranslator Protoss-only worker filter · S · Low
 - #264 — evaluate ALL_KEYS cleanup · XS · Low
 - #74 — genericise unit/building definitions · L · Med
@@ -25,4 +25,3 @@ Pick next work from What's Next. Note: #266 tracks pre-existing build failures (
 | #245 | LLM-evaluated compliance verification | M | Med | New VerificationPredicate permit |
 | #248 | Coaching acknowledgment UI (DONE/DECLINE) | M | Med | Workbench now provides the surface |
 | #251 | Coaching personality model | M | Med | Epic; adaptive disposition |
-| #235 | LLM fallback for novel/ambiguous builds | M | Med | CBR infrastructure in place |
