@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-266-batch-fixes
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-08-05
+**Issues:** 266,265,264,254,241,225,216,213
 **Status:** merged to main
