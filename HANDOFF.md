@@ -2,26 +2,24 @@
 
 ## Last Session
 
-Branch `issue-251-coaching-personality-model` closed — landed as `d89cb58` on main. Coaching personality model epic (#251) complete: 2-axis disposition model (Commander/Rally/Instructor/Mentor from RISK_APPETITE x SOCIAL_ORIENTATION), urgency-aware prompt switching (#246, #247), and coaching acknowledgment UI with Accept/Dismiss buttons (#248). 3 squashed commits. All 4 issues closed. Pre-existing `QuarkMindAgentRegistrarTest` failures (3) from upstream eidos API change — unrelated to this branch.
+Branch `issue-266-batch-fixes` closed — landed as `7717d1e` on main. Batch of 8 issues: upstream API breaks (#266), Protoss-only worker filter (#265), dead ALL_KEYS cleanup (#264), spatial calibration protocol (#254), SituationalDominanceWeightStrategy deprecation (#241), proportional game-end attribution for strategy pivots (#225), advisory decision CBR retention (#216), and Drools-only per-minute baseline for #213. 7 issues closed, #213 partially addressed (ONNX-dependent criteria blocked on #211/#212).
 
 ## Immediate Next Step
 
-Pick next work from What's Next. Pre-existing issues #266 (compile/CDI errors from upstream) and registrar test failures (#267 candidate) should be addressed first — they affect test suite reliability.
+Pick next work from What's Next. #213 is the only partially-addressed issue from this batch — ONNX infrastructure (#211, #212) blocks full completion.
 
 ## What's Left
 
-- #266 — pre-existing compile/CDI errors from upstream API changes · M · Med
-- #265 — GameStateTranslator Protoss-only worker filter · S · Low
-- #264 — evaluate ALL_KEYS cleanup · XS · Low
+- #213 — IEM10 replay validation: Drools baseline test added; ONNX cascade, tier hit rate, latency benchmarks blocked on #211/#212 · M · Med
 - #74 — genericise unit/building definitions · L · Med
-- QuarkMindAgentRegistrarTest — 3 pre-existing failures (eidos `socialOrient()` returns `List<DispositionValue>`, test compares to String) · S · Low
-- Diary entry for this session — skipped at close, write from git history
+- VisualizerRenderTest missing @Tag("browser") — runs in default suite and fails without Chromium · XS · Low
 
 ## What's Next
 
 | # | Description | Scale | Complexity | Notes |
 |---|-------------|-------|------------|-------|
-| #267 | Electron overlay — mount SC2 window in workbench | M | Med | Follow-on from #259 |
-| #260 | Strategy transition detection | L | High | Temporal sequencing of archetype detections |
+| #267 | Electron overlay — mount SC2 window in workbench | M | High | Follow-on from #259 |
+| #260 | Strategy transition detection | L | High | Temporal archetype sequencing |
 | #245 | LLM-evaluated compliance verification | M | Med | New VerificationPredicate permit |
-| — | Trust learning bridge — per-personality outcome aggregation | M | Med | Future work from #251; agentId data now being collected |
+| #242 | Expand dominance weight rules from calibration | M | Med | Now default strategy (drools) |
+| — | Trust learning bridge — per-personality outcome aggregation | M | Med | agentId data now being collected |
