@@ -1,5 +1,5 @@
-# Branch Closed: issue-201-fix-ci
+# Branch Closed: issue-251-coaching-personality-model
 
-**Date:** 2026-06-19
-**Issues:** 201
+**Date:** 2026-08-04
+**Issues:** 251,248,246,247
 **Status:** merged to main
