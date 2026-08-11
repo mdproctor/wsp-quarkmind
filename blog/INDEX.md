@@ -69,3 +69,4 @@
 | [2026-07-19-mdp01-when-the-coach-needs-a-playbook.md](2026-07-19-mdp01-when-the-coach-needs-a-playbook.md) | 2026-07-19 | Coach mode design — third LLM pipeline for human players; urgency tiers, compliance evaluation, structured output coaching |
 | [2026-07-20-mdp01-the-pipeline-that-listens-back.md](2026-07-20-mdp01-the-pipeline-that-listens-back.md) | 2026-07-20 | Coach mode implementation — compliance evaluator, CDI proxy shared-state gotcha, plugin gating, trust routing |
 | [2026-07-21-mdp01-filling-in-the-blanks.md](2026-07-21-mdp01-filling-in-the-blanks.md) | 2026-07-21 | Neutral feature extraction for real SC2 observations, expansion location calibration against 59 replays |
+| [2026-08-11-mdp01-opponent-identity-and-engagement-tracking.md](2026-08-11-mdp01-opponent-identity-and-engagement-tracking.md) | 2026-08-11 | Opponent identity as lifecycle data via GameStarted enrichment; army value delta FSM for engagement tracking independent of BATTLE_STARTED |
