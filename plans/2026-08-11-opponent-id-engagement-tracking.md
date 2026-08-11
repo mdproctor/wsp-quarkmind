@@ -37,7 +37,7 @@
 
 **Interfaces:**
 - Consumes: `SC2Data` (no changes), `QuarkMindCaseFile.OPPONENT_ID` (existing key)
-- Produces: `GameStarted(String opponentRace, String opponentType, String opponentDifficulty)` — enriched event consumed by GameStateTranslator and all existing observers
+- Produces: `GameStarted(String opponentRace, String opponentType, String opponentDifficulty, String opponentPlayerId)` — enriched event consumed by GameStateTranslator and all existing observers
 
 - [ ] **Step 1: Write failing test — AI opponent identity hashing**
 
@@ -46,7 +46,7 @@
 @Test
 void toMap_usesOpponentIdFromGameStartedEvent() {
     var translator = new GameStateTranslator();
-    translator.onGameStarted(new GameStarted("ZERG", "COMPUTER", "VeryHard"));
+    translator.onGameStarted(new GameStarted("ZERG", "COMPUTER", "VeryHard", null));
 
     Map<String, Object> map = translator.toMap(minimalGameState());
     String opponentId = (String) map.get(QuarkMindCaseFile.OPPONENT_ID);
@@ -64,16 +64,19 @@ void toMap_defaultsToUnknownBeforeGameStarted() {
 
 @Test
 void computeOpponentId_aiOpponent_hashesRaceAndDifficulty() {
-    String id = GameStateTranslator.computeOpponentId("ZERG", "COMPUTER", "VeryHard");
-    String expected = GameStateTranslator.computeOpponentId("ZERG", "COMPUTER", "VeryHard");
+    String id = GameStateTranslator.computeOpponentId("ZERG", "COMPUTER", "VeryHard", null);
+    String expected = GameStateTranslator.computeOpponentId("ZERG", "COMPUTER", "VeryHard", null);
     assertThat(id).isEqualTo(expected); // deterministic
     assertThat(id).hasSize(64);
 }
 
 @Test
 void computeOpponentId_pvpOpponent_hashesPlayerId() {
-    String id = GameStateTranslator.computeOpponentId("PROTOSS", "PARTICIPANT", null);
+    String id = GameStateTranslator.computeOpponentId("PROTOSS", "PARTICIPANT", null, "12345");
     assertThat(id).hasSize(64);
+    // Different player IDs produce different hashes
+    String id2 = GameStateTranslator.computeOpponentId("PROTOSS", "PARTICIPANT", null, "67890");
+    assertThat(id).isNotEqualTo(id2);
 }
 ```
 
@@ -89,9 +92,10 @@ Replace `GameStarted.java` content:
 ```java
 package io.quarkmind.sc2;
 
-public record GameStarted(String opponentRace, String opponentType, String opponentDifficulty) {
+public record GameStarted(String opponentRace, String opponentType,
+                          String opponentDifficulty, String opponentPlayerId) {
     public GameStarted() {
-        this("UNKNOWN", "UNKNOWN", null);
+        this("UNKNOWN", "UNKNOWN", null, null);
     }
 }
 ```
@@ -126,17 +130,21 @@ public class GameStateTranslator {
     private final AtomicReference<String> opponentId = new AtomicReference<>("unknown");
 
     void onGameStarted(@Observes GameStarted event) {
-        opponentId.set(computeOpponentId(event.opponentRace(), event.opponentType(), event.opponentDifficulty()));
+        opponentId.set(computeOpponentId(event.opponentRace(), event.opponentType(),
+                event.opponentDifficulty(), event.opponentPlayerId()));
     }
 
-    static String computeOpponentId(String race, String playerType, String difficulty) {
+    static String computeOpponentId(String race, String playerType, String difficulty, String playerId) {
         if ("UNKNOWN".equals(race) || "UNKNOWN".equals(playerType)) {
             return "unknown";
         }
-        String input = "COMPUTER".equals(playerType)
-                ? race + ":" + difficulty
-                : race + ":PARTICIPANT";
-        return sha256(input);
+        if ("COMPUTER".equals(playerType)) {
+            return sha256(race + ":" + difficulty);
+        }
+        if (playerId != null && !playerId.isEmpty()) {
+            return sha256(playerId);
+        }
+        return sha256(race + ":PARTICIPANT");
     }
 
     public Map<String, Object> toMap(GameState state) {
@@ -197,15 +205,17 @@ gameStartedEvent.fire(new GameStarted());
 Replace with:
 ```java
 gameStartedEvent.fire(new GameStarted(
-        engine.opponentRace(), engine.opponentType(), engine.opponentDifficulty()));
+        engine.opponentRace(), engine.opponentType(),
+        engine.opponentDifficulty(), engine.opponentPlayerId()));
 ```
 
-This requires adding three methods to the `SC2Engine` interface. For the `SC2Engine` seam interface, add default methods returning "UNKNOWN":
+This requires adding four methods to the `SC2Engine` interface. For the `SC2Engine` seam interface, add default methods returning "UNKNOWN":
 
 ```java
 default String opponentRace()       { return "UNKNOWN"; }
 default String opponentType()       { return "UNKNOWN"; }
 default String opponentDifficulty() { return null; }
+default String opponentPlayerId()   { return null; }
 ```
 
 For `MockEngine` / `SimulatedGame` — override to return mock values:
@@ -222,7 +232,39 @@ For `EmulatedEngine` — override to return the `EnemyStrategy` name as race:
 @Override public String opponentDifficulty() { return enemyBehavior.strategy().name(); }
 ```
 
-For `RealSC2Engine` — the fields are set in `SC2BotAgent.onGameStart(ResponseGameInfo)` and stored for retrieval. This is the actual protocol extraction point.
+For `RealSC2Engine` — extract from `SC2BotAgent.onGameStart(ResponseGameInfo)`. The opponent is the `PlayerInfo` entry where `playerType != PARTICIPANT` (for AI) or the other PARTICIPANT (for PvP). Store in fields:
+
+```java
+// In SC2BotAgent — set during onGameStart(ResponseGameInfo)
+private String opponentRace;
+private String opponentType;
+private String opponentDifficulty;
+private String opponentPlayerId;
+
+public void onGameStart(ResponseGameInfo gameInfo) {
+    // ... existing terrain extraction ...
+    for (PlayerInfo pi : gameInfo.getPlayersInfo()) {
+        if (pi.getPlayerId() != botPlayerId) {
+            opponentRace = pi.getRequestedRace().name();
+            opponentType = pi.getPlayerType().name();
+            opponentDifficulty = pi.getPlayerType() == PlayerType.COMPUTER
+                    ? pi.getDifficulty().name() : null;
+            opponentPlayerId = pi.getPlayerType() == PlayerType.PARTICIPANT
+                    ? String.valueOf(pi.getPlayerId()) : null;
+        }
+    }
+}
+```
+
+`RealSC2Engine` delegates to `SC2BotAgent` getters:
+```java
+@Override public String opponentRace()       { return botAgent.getOpponentRace(); }
+@Override public String opponentType()       { return botAgent.getOpponentType(); }
+@Override public String opponentDifficulty() { return botAgent.getOpponentDifficulty(); }
+@Override public String opponentPlayerId()   { return botAgent.getOpponentPlayerId(); }
+```
+
+**Note:** Full SC2 integration testing requires a live SC2 client (issue #271 prerequisite). The protocol extraction code is implemented here but only verifiable in real SC2 mode.
 
 - [ ] **Step 7: Run all tests to verify nothing broke**
 
@@ -237,7 +279,7 @@ Check `GameStateTranslatorTest.includesOpponentId` — this test constructed `Ga
 @Test
 void includesOpponentId() {
     var translator = new GameStateTranslator();
-    translator.onGameStarted(new GameStarted("PROTOSS", "COMPUTER", "VeryEasy"));
+    translator.onGameStarted(new GameStarted("PROTOSS", "COMPUTER", "VeryEasy", null));
     Map<String, Object> map = translator.toMap(minimalGameState());
     assertThat(map.get(QuarkMindCaseFile.OPPONENT_ID)).isNotNull();
     assertThat((String) map.get(QuarkMindCaseFile.OPPONENT_ID)).hasSize(64);
@@ -455,11 +497,12 @@ class MomentDetectionBattleTest {
     }
 
     // Helper: create N Stalkers at origin
+    // Unit(tag, type, position, health, maxHealth, shields, maxShields, weaponCooldownTicks, blinkCooldownTicks)
     static List<Unit> stalkers(int n) {
         List<Unit> units = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             units.add(new Unit("s" + i, UnitType.STALKER, new Point2d(10, 10),
-                    100, 80, 0, false, false));
+                    160, 160, 80, 80, 0, 0));
         }
         return units;
     }
@@ -468,7 +511,7 @@ class MomentDetectionBattleTest {
         List<Unit> units = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             units.add(new Unit("z" + i, UnitType.ZEALOT, new Point2d(20, 20),
-                    100, 0, 0, false, false));
+                    100, 100, 50, 50, 0, 0));
         }
         return units;
     }
