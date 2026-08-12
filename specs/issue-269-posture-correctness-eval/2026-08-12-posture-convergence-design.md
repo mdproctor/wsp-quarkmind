@@ -21,6 +21,8 @@ These enable CBR retrieval queries like: "in past games where our early scouting
 
 **Convergence, not correctness.** The feature compares the scouting system's first routing assessment against its own final assessment — not against an external ground truth. A scouting system that consistently misidentifies MACRO as HARASS would show high convergence. The feature names reflect this distinction deliberately.
 
+**Scope note:** Issue #269 originally proposed `posture_correct` and `scouting_accuracy` as features measuring correctness against the opponent's actual composition. During design review, convergence was identified as the achievable first step — true correctness requires a composition-derived reverse-classifier (D1 alternative). The issue body should be updated to reflect this scope, and a follow-up issue filed for composition-based correctness evaluation if needed.
+
 ## Architecture
 
 ### New CaseFile Keys
@@ -31,16 +33,23 @@ public static final String STRATEGY_INITIAL_ARCHETYPE  = "agent.strategy.initial
 public static final String SCOUTING_FINAL_ASSESSMENT   = "agent.scouting.final.assessment";
 ```
 
-- `STRATEGY_INITIAL_ARCHETYPE` — written by `SC2StrategyRouterTask` on first successful routing only. Never overwritten on pivot. Captures the archetype that drove the initial strategy selection.
-- `SCOUTING_FINAL_ASSESSMENT` — written by `DroolsScoutingTask` on each tick (overwritten). At game close, the CaseFile snapshot captures the most recent value.
+- `STRATEGY_INITIAL_ARCHETYPE` — written by `SC2StrategyRouterTask` on first successful routing only. Uses a write-once guard:
+  ```java
+  if (ctx.get(QuarkMindCaseFile.STRATEGY_INITIAL_ARCHETYPE) == null) {
+      ctx.set(QuarkMindCaseFile.STRATEGY_INITIAL_ARCHETYPE, archetype.name());
+  }
+  ```
+  Without this guard, a pivot would overwrite the initial archetype, collapsing convergence to 1.0 by construction.
 
-### PostureCorrectnessEvaluator
+- `SCOUTING_FINAL_ASSESSMENT` — written by `DroolsScoutingTask` **unconditionally** after computing assessments, outside the `assessmentsChanged()` / `patternAssessmentDispatchEnabled` guards. The CaseFile write must not be gated by dispatch preferences — disabling pattern assessment dispatch should not silently disable convergence tracking. The write is a single `ctx.set()` call after `PatternClassifier.allAssessments()` returns, regardless of whether assessments changed or will be published.
+
+### ScoutingConvergenceEvaluator
 
 **Package:** `io.quarkmind.agent`
 **Type:** Plain Java class — no CDI, no framework dependencies.
 
 ```java
-public class PostureCorrectnessEvaluator {
+public class ScoutingConvergenceEvaluator {
 
     public record Result(double convergence, boolean stable) {}
 
@@ -50,15 +59,16 @@ public class PostureCorrectnessEvaluator {
 }
 ```
 
-**Scoring logic (phase-aware tiered):**
+**Scoring logic (category-aware tiered):**
 
 1. If `finalAssessments` is empty → `Result(0.0, false)` (no late data to compare)
 2. Take `finalAssessments.getFirst()` (highest confidence — same selection as routing)
 3. If exact archetype match → `1.0`
-4. If same `ArchetypeCategory` AND same `GamePhase` → `0.5`
-5. If initial is EARLY phase and final is MID or LATE phase → `0.5` (cross-phase transition, not penalised)
-6. Otherwise → `0.0`
-7. `stable = convergence >= 0.5`
+4. If same `ArchetypeCategory` (any phase) → `0.5`
+5. Otherwise → `0.0`
+6. `stable = convergence >= 0.5`
+
+Phase transitions are handled naturally by rule 4: same category across phases scores 0.5 regardless of which phases are involved (EARLY→MID, MID→LATE, EARLY→LATE). Cross-race mismatches always score 0.0 because no two archetypes of different races share an enum value — the exact match (rule 3) won't fire, and category match (rule 4) fires only within the `getFirst()` result which carries its own race.
 
 ### SC2CbrRetentionObserver Changes
 
@@ -66,12 +76,17 @@ In `onOutcome()`, after building the existing enrichment:
 
 ```java
 String initialArchetypeStr = (String) snapshot.get(QuarkMindCaseFile.STRATEGY_INITIAL_ARCHETYPE);
-List<PatternAssessment> finalAssessments = /* from SCOUTING_FINAL_ASSESSMENT in snapshot */;
+@SuppressWarnings("unchecked")
+List<PatternAssessment> finalAssessments =
+        (List<PatternAssessment>) snapshot.get(QuarkMindCaseFile.SCOUTING_FINAL_ASSESSMENT);
 
-if (initialArchetypeStr != null && finalAssessments != null) {
-    var result = PostureCorrectnessEvaluator.evaluate(
+double convergence = 0.0;
+boolean stable = false;
+if (initialArchetypeStr != null && finalAssessments != null && !finalAssessments.isEmpty()) {
+    var result = ScoutingConvergenceEvaluator.evaluate(
             StrategyArchetype.valueOf(initialArchetypeStr), finalAssessments);
-    // add to enrichment features
+    convergence = result.convergence();
+    stable = result.stable();
 }
 ```
 
@@ -98,11 +113,11 @@ Game start
     │
     ▼
 SC2StrategyRouterTask — first routing
-    │ writes STRATEGY_INITIAL_ARCHETYPE (once, never overwritten)
+    │ writes STRATEGY_INITIAL_ARCHETYPE (once, write-once guard)
     │ writes STRATEGY_ROUTED_ARCHETYPE (may update on pivot)
     ▼
 DroolsScoutingTask — each tick
-    │ writes SCOUTING_FINAL_ASSESSMENT (overwritten each tick)
+    │ writes SCOUTING_FINAL_ASSESSMENT (unconditional, outside dispatch guards)
     ▼
 Game close — CaseFile snapshot captured
     │
@@ -110,7 +125,7 @@ Game close — CaseFile snapshot captured
 SC2CbrRetentionObserver.onOutcome()
     │ reads STRATEGY_INITIAL_ARCHETYPE from snapshot
     │ reads SCOUTING_FINAL_ASSESSMENT from snapshot
-    │ calls PostureCorrectnessEvaluator.evaluate()
+    │ calls ScoutingConvergenceEvaluator.evaluate()
     │ adds scouting_convergence + assessment_stable to CBR case
     ▼
 CbrCaseMemoryStore.store()
@@ -121,33 +136,33 @@ CbrCaseMemoryStore.store()
 | File | Change |
 |------|--------|
 | `QuarkMindCaseFile.java` | Add `STRATEGY_INITIAL_ARCHETYPE`, `SCOUTING_FINAL_ASSESSMENT` keys |
-| `SC2StrategyRouterTask.java` | Write `STRATEGY_INITIAL_ARCHETYPE` on first routing only |
-| `DroolsScoutingTask.java` | Write `SCOUTING_FINAL_ASSESSMENT` on each tick |
-| `PostureCorrectnessEvaluator.java` | **New** — phase-aware tiered scoring (in `agent/`) |
+| `SC2StrategyRouterTask.java` | Write `STRATEGY_INITIAL_ARCHETYPE` with write-once guard on first routing |
+| `DroolsScoutingTask.java` | Write `SCOUTING_FINAL_ASSESSMENT` unconditionally after computing assessments |
+| `ScoutingConvergenceEvaluator.java` | **New** — category-aware tiered scoring (in `agent/`) |
 | `EnrichedGameData.java` | Add `scoutingConvergence`, `assessmentStable` fields |
 | `SC2GameCbrCase.java` | Add feature mapping in `buildForGameEnriched()` |
 | `SC2CbrRetentionObserver.java` | Call evaluator, pass results to enrichment |
-| `PostureCorrectnessEvaluatorTest.java` | **New** — unit tests for scoring logic |
+| `ScoutingConvergenceEvaluatorTest.java` | **New** — unit tests for scoring logic |
 | `SC2CbrRetentionObserverTest.java` | Add test for convergence feature extraction |
 
 ## Testing Strategy
 
-### PostureCorrectnessEvaluatorTest (unit, plain JUnit)
+### ScoutingConvergenceEvaluatorTest (unit, plain JUnit)
 - Exact match → 1.0, stable=true
 - Same category, same phase → 0.5, stable=true
-- Cross-phase transition (EARLY → MID) → 0.5, stable=true
+- Same category, cross-phase (EARLY→MID) → 0.5, stable=true
+- Same category, cross-phase (MID→LATE) → 0.5, stable=true
 - Different category, same phase → 0.0, stable=false
+- Different category, cross-phase → 0.0, stable=false
 - Empty final assessments → 0.0, stable=false
-- Cross-race (initial TERRAN, final ZERG) → 0.0, stable=false
 
 ### SC2CbrRetentionObserverTest (unit, Mockito)
 - Case with both keys present → features include `scouting_convergence` and `assessment_stable`
-- Case with missing initial archetype → features omitted (graceful degradation)
-- Case with missing final assessment → features omitted
+- Case with missing initial archetype → convergence defaults to 0.0
+- Case with missing final assessment → convergence defaults to 0.0
 
 ## Known Limitations
 
-1. **Convergence, not correctness** — measures internal consistency of the scouting system, not accuracy against reality. A consistently wrong classifier shows high convergence.
+1. **Convergence, not correctness** — measures internal consistency of the scouting system, not accuracy against reality. A consistently wrong classifier shows high convergence. True correctness evaluation (composition-derived reverse-classifier) is a potential follow-up.
 2. **Survivorship bias** — games where scouting confidence never reached the routing threshold have no `STRATEGY_INITIAL_ARCHETYPE` and are excluded from convergence tracking.
 3. **Category granularity varies** — COMPOSITION has 22 archetypes, RUSH has 7. A category-level match of 0.5 means different things depending on the category.
-4. **Cross-phase transitions all treated equally** — a RUSH → MACRO transition is scored the same as HARASS → COMPOSITION. Both get 0.5.
