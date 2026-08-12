@@ -11,7 +11,7 @@
 
 **Goal:** Add `scouting_convergence` and `assessment_stable` features to CBR cases, comparing the initial archetype assessment against the final assessment at game close.
 
-**Architecture:** A pure-function `ScoutingConvergenceEvaluator` in `agent/` computes a tiered score (exact=1.0, same category=0.5, else=0.0). Two new CaseFile keys capture the initial archetype (write-once) and the latest assessment (unconditional per-tick). `SC2CbrRetentionObserver` reads both from the snapshot and enriches the CBR case.
+**Architecture:** A pure-function `ScoutingConvergenceEvaluator` in `agent/` computes a tiered score (exact=1.0, same race+category=0.5, else=0.0). Two new CaseFile keys capture the initial archetype (write-once) and the latest assessment (unconditional per-tick). `SC2CbrRetentionObserver` reads both from the snapshot and enriches the CBR case. Features are stored but not yet wired into retrieval queries — query integration is a follow-up.
 
 **Tech Stack:** Java 21, Quarkus, JUnit 5, Mockito, AssertJ
 
@@ -95,10 +95,19 @@ class ScoutingConvergenceEvaluatorTest {
     }
 
     @Test
-    void crossRace_returnsZero() {
+    void crossRaceDifferentCategory_returnsZero() {
         var result = ScoutingConvergenceEvaluator.evaluate(
                 StrategyArchetype.TERRAN_MARINE_RUSH,
                 List.of(new PatternAssessment(StrategyArchetype.ZERG_BROOD_LORD, 0.7, 10000, "test")));
+        assertThat(result.convergence()).isEqualTo(0.0);
+        assertThat(result.stable()).isFalse();
+    }
+
+    @Test
+    void crossRaceSameCategory_returnsZero() {
+        var result = ScoutingConvergenceEvaluator.evaluate(
+                StrategyArchetype.TERRAN_MARINE_RUSH,
+                List.of(new PatternAssessment(StrategyArchetype.ZERG_ZERGLING_RUSH, 0.7, 5000, "test")));
         assertThat(result.convergence()).isEqualTo(0.0);
         assertThat(result.stable()).isFalse();
     }
@@ -144,7 +153,8 @@ public class ScoutingConvergenceEvaluator {
         double convergence;
         if (initialArchetype == finalArchetype) {
             convergence = 1.0;
-        } else if (initialArchetype.category() == finalArchetype.category()) {
+        } else if (initialArchetype.race() == finalArchetype.race()
+                   && initialArchetype.category() == finalArchetype.category()) {
             convergence = 0.5;
         } else {
             convergence = 0.0;
@@ -157,7 +167,7 @@ public class ScoutingConvergenceEvaluator {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `mvn test -Dtest=ScoutingConvergenceEvaluatorTest -q`
-Expected: All 7 tests PASS
+Expected: All 8 tests PASS
 
 - [ ] **Step 5: Commit**
 
@@ -278,7 +288,7 @@ var assessments = PatternClassifier.allAssessments(cumulativeConfidence, frame);
 ctx.set(QuarkMindCaseFile.SCOUTING_FINAL_ASSESSMENT, assessments);
 ```
 
-Also add `QuarkMindCaseFile.SCOUTING_FINAL_ASSESSMENT` to the `produces()` set (line 390-397).
+Also add `QuarkMindCaseFile.SCOUTING_FINAL_ASSESSMENT` to DroolsScoutingTask's `produces()` set (line 390-397), and `QuarkMindCaseFile.STRATEGY_INITIAL_ARCHETYPE` to SC2StrategyRouterTask's `produces()` set (line 104-106).
 
 - [ ] **Step 9: Run test to verify it passes**
 
@@ -328,7 +338,7 @@ After the `unit_trade_ratio` line in `buildForGameEnriched()`:
 
 ```java
 features.put("scouting_convergence", FeatureValue.number(e.scoutingConvergence()));
-features.put("assessment_stable", FeatureValue.string(String.valueOf(e.assessmentStable())));
+features.put("assessment_stable", FeatureValue.number(e.assessmentStable() ? 1.0 : 0.0));
 ```
 
 - [ ] **Step 3: Write failing test for convergence feature extraction**
@@ -355,7 +365,7 @@ void onOutcome_includesConvergenceFeatures_whenBothKeysPresent() {
                 var f = c.features();
                 return f.containsKey("scouting_convergence")
                        && ((Number) f.get("scouting_convergence").toRawValue()).doubleValue() == 1.0
-                       && "true".equals(f.get("assessment_stable").toRawValue());
+                       && ((Number) f.get("assessment_stable").toRawValue()).doubleValue() == 1.0;
             }),
             any(), any(), any(), any(), any(), any());
 }
@@ -374,7 +384,7 @@ void onOutcome_defaultsConvergenceToZero_whenInitialArchetypeMissing() {
                 var f = c.features();
                 return f.containsKey("scouting_convergence")
                        && ((Number) f.get("scouting_convergence").toRawValue()).doubleValue() == 0.0
-                       && "false".equals(f.get("assessment_stable").toRawValue());
+                       && ((Number) f.get("assessment_stable").toRawValue()).doubleValue() == 0.0;
             }),
             any(), any(), any(), any(), any(), any());
 }
@@ -409,7 +419,14 @@ Then pass `scoutingConvergence` and `assessmentStable` to the `EnrichedGameData`
 
 - [ ] **Step 6: Update all EnrichedGameData constructor call sites**
 
-The `EnrichedGameData` constructor gains two new trailing parameters. Update the call in `SC2CbrRetentionObserver.onOutcome()` (the only production call site). Update any test call sites in `SC2CbrRetentionObserverTest` if they construct `EnrichedGameData` directly.
+The `EnrichedGameData` constructor gains two new trailing parameters (`scoutingConvergence`, `assessmentStable`). All call sites must be updated:
+
+- `SC2CbrRetentionObserver.onOutcome()` — production call site (pass computed values)
+- `SC2GameCbrCaseTest.java:82` — `buildForGameEnriched_allFeaturesPopulated` (append `0.0, false`)
+- `SC2GameCbrCaseTest.java:110` — `buildForGameEnriched_optionalTimingFeaturesOmittedWhenEmpty` (append `0.0, false`)
+- `SC2GameCbrCaseTest.java:128` — `buildForGameEnriched_withOutcomePreservesEnrichment` (append `0.0, false`)
+- `SC2GameCbrCaseTest.java:146` — `buildForGameEnriched_includesEngagementFeatures` (append `0.0, false`)
+- Any other test constructing `EnrichedGameData` directly in `SC2CbrRetentionObserverTest`
 
 - [ ] **Step 7: Run tests to verify they pass**
 
@@ -424,7 +441,7 @@ Expected: All tests PASS
 - [ ] **Step 9: Commit**
 
 ```bash
-git -C /Users/mdproctor/claude/casehub/quarkmind add src/main/java/io/quarkmind/agent/cbr/EnrichedGameData.java src/main/java/io/quarkmind/agent/cbr/SC2GameCbrCase.java src/main/java/io/quarkmind/agent/cbr/SC2CbrRetentionObserver.java src/test/java/io/quarkmind/agent/cbr/SC2CbrRetentionObserverTest.java
+git -C /Users/mdproctor/claude/casehub/quarkmind add src/main/java/io/quarkmind/agent/cbr/EnrichedGameData.java src/main/java/io/quarkmind/agent/cbr/SC2GameCbrCase.java src/main/java/io/quarkmind/agent/cbr/SC2CbrRetentionObserver.java src/test/java/io/quarkmind/agent/cbr/SC2CbrRetentionObserverTest.java src/test/java/io/quarkmind/agent/cbr/SC2GameCbrCaseTest.java
 git -C /Users/mdproctor/claude/casehub/quarkmind commit -m "feat(#269): scouting convergence features in CBR case enrichment
 
 Refs #269"
