@@ -1,1 +1,1 @@
-# Design Journal — issue-271-sc2-opponent-id-cdi-cleanup
+# Design Journal — issue-269-posture-correctness-eval
