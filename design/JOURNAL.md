@@ -1,1 +1,1 @@
-# Design Journal — issue-278-core-agency-harness
+# Design Journal — issue-273-quarkville
