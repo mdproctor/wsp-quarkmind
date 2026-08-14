@@ -98,7 +98,7 @@ grep -r "src/main" /Users/mdproctor/claude/casehub/quarkmind/quarkmind-sc2/src/ 
 - [ ] **Step 6: Verify build**
 
 ```bash
-JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn -C /Users/mdproctor/claude/casehub/quarkmind clean compile
+JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn -f /Users/mdproctor/claude/casehub/quarkmind/pom.xml clean compile
 ```
 
 - [ ] **Step 7: Verify all tests pass**
