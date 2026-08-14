@@ -1,0 +1,10 @@
+branch: issue-272-quarkmind-restructure
+state: scaffolded
+project-sha: c00acd2
+date: 2026-08-14
+issue: 272
+issue-repo: casehubio/quarkmind
+covers: 272
+flyway-next-v: none
+design-repo: workspace
+design-section-hashes: 
