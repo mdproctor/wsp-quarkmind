@@ -2,6 +2,11 @@
 
 ## Queue
 - [ ] #272 — QuarkMind restructure — multi-module agency framework ← active
+- [ ] #273 — quarkmind-town — Sims-like 3D life simulation
+- [ ] #274 — quarkmind-minecraft — Mineflayer bridge + Luanti CI
+- [ ] #275 — quarkmind-evennia — MUD agent bridge
+- [ ] #276 — quarkmind-sonaria — Roblox/Creatures of Sonaria agent
+- [ ] #277 — quarkmind-godot-mcp — Godot EditorPlugin MCP server
 
 ## Session State
 Current: #272 — QuarkMind restructure — multi-module agency framework
