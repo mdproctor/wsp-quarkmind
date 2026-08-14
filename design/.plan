@@ -1,13 +1,14 @@
 # Work Plan — project
 
 ## Queue
-- [ ] #278 — quarkmind-core — extract shared agency harness ← active
-- [ ] #273 — quarkmind-town — Sims-like 3D life simulation
+- [x] #278 — quarkmind-core — extract shared agency harness
+- [ ] #273 — quarkmind-town — Sims-like 3D life simulation ← active
 - [ ] #274 — quarkmind-minecraft — Mineflayer bridge + Luanti CI
 - [ ] #275 — quarkmind-evennia — MUD agent bridge
 - [ ] #276 — quarkmind-sonaria — Roblox/Creatures of Sonaria agent
 - [ ] #277 — quarkmind-godot-mcp — Godot EditorPlugin MCP server
 
 ## Session State
-Current: #278 — quarkmind-core — extract shared agency harness
+Current: #273 — quarkmind-town — Sims-like 3D life simulation
 Started: 2026-08-14
+state: active
