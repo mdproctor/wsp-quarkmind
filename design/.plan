@@ -1,7 +1,7 @@
 # Work Plan — project
 
 ## Queue
-- [ ] #272 — QuarkMind restructure — multi-module agency framework ← active
+- [ ] #278 — quarkmind-core — extract shared agency harness ← active
 - [ ] #273 — quarkmind-town — Sims-like 3D life simulation
 - [ ] #274 — quarkmind-minecraft — Mineflayer bridge + Luanti CI
 - [ ] #275 — quarkmind-evennia — MUD agent bridge
@@ -9,5 +9,5 @@
 - [ ] #277 — quarkmind-godot-mcp — Godot EditorPlugin MCP server
 
 ## Session State
-Current: #272 — QuarkMind restructure — multi-module agency framework
+Current: #278 — quarkmind-core — extract shared agency harness
 Started: 2026-08-14

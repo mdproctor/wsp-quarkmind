@@ -2,70 +2,58 @@
 
 ## Last Session
 
-Brainstormed and specced the QuarkMind restructure — evolving QuarkMind from an SC2-only game AI into a multi-world autonomous agent platform. Extensive research into target platforms (Minecraft, Roblox, MUDs, Smallville-style sims), game frameworks, and asset pipelines. Produced a full spec with 17 decisions and a Phase 1 implementation plan.
+Brainstormed and specced the QuarkMind restructure — evolving from SC2-only to a multi-world autonomous agent platform. Multi-module skeleton (#272) is complete and closed. Created issues for all Phase 2 worlds (#273–#277) and the core harness extraction (#278).
 
-## What Was Produced
+## Current State
 
-| Artifact | Location |
-|----------|----------|
-| Design spec | `specs/quarkmind-restructure/2026-08-14-quarkmind-restructure-design.md` |
-| Decisions (D1–D17) | `specs/quarkmind-restructure/decisions.md` |
-| Phase 1 plan | `plans/2026-08-14-quarkmind-restructure-phase1.md` |
-| GitHub issue | casehubio/quarkmind#272 |
+- Branch `issue-272-quarkmind-restructure` has the multi-module skeleton done
+- All 7 modules exist and compile: quarkmind-core (empty), quarkmind-sc2 (all current code), plus stubs for town/minecraft/evennia/sonaria/godot-mcp
+- #272 is closed
 
 ## Immediate Next Step
 
-Execute Phase 1 plan — 5 tasks, purely structural refactoring:
+**#278 — quarkmind-core — extract shared agency harness**
 
-1. **Convert to multi-module** — root `pom.xml` becomes parent, all code moves to `quarkmind-sc2/`
-2. **Create quarkmind-core** — agency SPIs (WorldBridge, NeedState, IntentQueue, spatial/interaction/moment contracts)
-3. **Wire dependency** — quarkmind-sc2 depends on quarkmind-core
-4. **Create stub modules** — quarkmind-town, quarkmind-minecraft, quarkmind-evennia, quarkmind-sonaria, quarkmind-godot-mcp
-5. **Update docs** — CLAUDE.md, MODULES.md
+Populate quarkmind-core with the agency framework. This gates all world implementations. Create a new branch `issue-278-quarkmind-core-harness`.
 
-## Critical Constraints
+What to build in quarkmind-core:
+- `AgencyLoop` — perceive/need/goal/plan/act/reflect, thin wrapper over CaseEngine
+- `NeedState` — decaying floats with Eidos disposition modifiers
+- `WorldBridge<P, I>` SPI — generic world connection contract
+- `IntentQueue<I>` — generic intent buffer
+- `NavigationSPI`, `VisibilitySPI`, `SpatialMemory` — spatial awareness contracts
+- `InteractionTrigger`, `InteractionPipeline` — trigger→LLM→response pattern
+- `MomentDetector` — significant event detection contract
+- `LlmRequestQueue` — rate limiting, prioritisation, token budgeting
 
-- **All refactoring via IntelliJ MCP** — type-safe rename, move, find references. No bash file operations on source files. No subagents.
-- **SC2 tests must stay green at every step** — run `mvn test` after each task
-- **No behavioural changes** — Phase 1 is structural only
-- Create branch `issue-272-quarkmind-restructure` before starting
+Design principles:
+- SPIs support both strings and rich typed models (Java generics)
+- Supports sequential tick loops AND async independent clients — composition not prescription
+- Wraps CaseEngine with agency vocabulary
+- Extract patterns from SC2 code as reference, but SC2 doesn't implement SPIs yet
 
-## Architecture Summary
+## Constraints
 
-QuarkMind becomes a mono-repo with Maven modules:
+- All refactoring via IntelliJ MCP, no subagents
+- quarkmind-sc2 tests must stay green
+- No behavioural changes to SC2
+
+## Work Queue
 
 ```
-quarkmind/
-├── quarkmind-core/          ← agency framework (SPIs, needs, intents)
-├── quarkmind-sc2/           ← current SC2 code (refactored)
-├── quarkmind-town/          ← Sims-like 3D town (Godot 4 + Quarkus)
-├── quarkmind-minecraft/     ← Mineflayer bridge + Luanti CI
-├── quarkmind-evennia/       ← MUD bridge
-├── quarkmind-sonaria/       ← Roblox/Sonaria partnership
-└── quarkmind-godot-mcp/     ← Godot editor MCP tooling
+- [ ] #278 — quarkmind-core — extract shared agency harness ← next
+- [ ] #273 — quarkmind-town — Sims-like 3D life simulation
+- [ ] #274 — quarkmind-minecraft — Mineflayer bridge + Luanti CI
+- [ ] #275 — quarkmind-evennia — MUD agent bridge
+- [ ] #276 — quarkmind-sonaria — Roblox/Creatures of Sonaria agent
+- [ ] #277 — quarkmind-godot-mcp — Godot EditorPlugin MCP server
 ```
 
-Framework sits on CaseHub foundations (engine, neocortex, ledger, eidos, qhorus, blocks). AgencyLoop wraps CaseEngine with agency vocabulary. SPIs support both string-based and rich typed models. Execution model is configurable — sequential tick loops (SC2) and async independent clients (Town, Minecraft) are both valid compositions.
-
-## Key Decisions (summary)
-
-- **D2:** Multi-module mono-repo (not separate repos)
-- **D5:** Extract agency loop, needs/drives, WorldBridge SPI, intent buffer, spatial SPIs, interaction pipeline, moment detection
-- **D8:** Each agent is an independent client (client/server, not sequential)
-- **D9:** Shared LLM request queue for rate limiting
-- **D10:** Needs driven by Eidos dispositions (personality → need decay coefficients)
-- **D14:** AgencyLoop wraps CaseEngine (thin wrapper, agency vocabulary over engine internals)
-- **D15:** All refactoring via IntelliJ MCP, no subagents
-- **D16:** SPIs support both strings and rich models (Java generics)
-- **D17:** Phase 1 gates everything; Phase 2 all worlds build in parallel
-
-## Prior Work Context
-
-Before this restructure, QuarkMind was on branch `issue-224-advisory-milestone-attestations` with three issues ready to implement (#271 SC2 opponent ID, #268 CDI cleanup, #270 engagement outcomes). Those can resume after the restructure — they'll land in the `quarkmind-sc2` module.
+#278 gates everything. #273–#277 can proceed in parallel after #278.
 
 ## References
 
-- Restructure spec: `specs/quarkmind-restructure/2026-08-14-quarkmind-restructure-design.md`
-- Phase 1 plan: `plans/2026-08-14-quarkmind-restructure-phase1.md`
-- Current QuarkMind CLAUDE.md: project root
-- Current module structure: `MODULES.md` in project root
+- Spec: `specs/quarkmind-restructure/2026-08-14-quarkmind-restructure-design.md`
+- Decisions: `specs/quarkmind-restructure/decisions.md` (D1–D17)
+- Phase 1 plan (skeleton — done): `plans/2026-08-14-quarkmind-restructure-phase1.md`
+- Prior work parked: #271 (SC2 opponent ID), #268 (CDI cleanup), #270 (engagement outcomes) — land in quarkmind-sc2
