@@ -189,3 +189,35 @@ These constraints are independent of need mechanics. Need threshold crossing is 
 **Exploration:** implicit (surfaced by R1-14)
 **Depends on:** D7
 **Status:** captured
+
+## D11: Rename to quarkmind-chat — platform-agnostic chat bot harness
+
+**Choice:** Module is `quarkmind-chat` (not `quarkmind-discord`). The harness works with any `ChatPlatform` SPI implementation — Discord, Slack, IRC. Platform-specific adapters (event sources, message history, identity detection) live in a sub-package within quarkmind-chat-agent. Discord is the first target; other platforms add only the thin adapter layer.
+**Alternatives:**
+- quarkmind-discord (Discord-specific) — build for one platform, generalize later. Premature in this case — the design is already platform-agnostic.
+**Rationale:** The entire design (agency loop, perception, intents, needs, personality, memory) depends on the `ChatPlatform` SPI, not on any Discord-specific type. The only Discord-specific code is 3 classes: event source, gateway message history, identity detector. Naming the module after the abstraction level it operates at (chat) rather than one implementation (Discord) is accurate.
+**Trade-offs:** None — no additional implementation cost.
+**Exploration:** quick
+**Status:** captured
+
+## D12: Configuration-driven deployment — no Java code required for new characters
+
+**Choice:** All character customization is file-driven:
+- **Personality** (already exists): Eidos `AgentDescriptor` loaded from YAML via `ClasspathYamlDescriptorRegistrar` — disposition axes, style profile, briefing, goals, constraints
+- **Needs**: decay rates, satisfaction values, thresholds defined in `application.yaml` (Quarkus config)
+- **Platform**: `ChatPlatform` selected by Quarkus profile (`%discord`, `%slack`, `%irc`) — bot token, guild/channel config in profile-scoped properties
+- **Channels**: watch list configured in properties — which channels to observe, which to actively participate in
+- **Rate governing**: output governor window, minimum interval, channel-pacing parameters in properties
+- **Heartbeat**: interval configured in properties
+
+A new character deployment requires: one YAML personality descriptor + one `application.yaml` with platform credentials and tuning. No Java code.
+
+**Personality generator** (future, out of v1 scope): LLM-powered wizard that helps non-technical users create character descriptors. "Describe your character" → generates the YAML descriptor with appropriate disposition axes, style terms, and briefing. Filed as a separate issue.
+
+**Alternatives:**
+- Java code required for new characters — limits audience to developers
+**Rationale:** An advanced AI chat bot is appealing to a wide audience. Configuration-driven deployment removes the Java barrier — anyone who can write a YAML file and set environment variables can deploy a character. The personality generator further lowers the bar.
+**Trade-offs:** Need to ensure all tuning knobs are externalized as config properties, not hardcoded constants.
+**Exploration:** quick
+**Depends on:** D11
+**Status:** captured
