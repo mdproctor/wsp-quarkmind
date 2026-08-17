@@ -18,12 +18,12 @@
 - Dual-loop (reactive + autonomous) — more complex, two loops sharing mutable state
 - Single tick loop with fixed interval — adds unnecessary latency to message responses
 - Gateway-only accumulation (no REST pull) — simpler but requires robust local gap detection; REST fallback still needed for cold start
-**Rationale:** Push-wake, pull-context is a well-established pattern in distributed systems. The chat SPI's `MessageHistory` abstraction decouples the perception contract from the transport — the default implementation accumulates Gateway events locally (no REST per wake), with REST fallback on cold start or reconnection. Blocks' `ChoreographedDriver` with `EventSource` varargs already provides the dual-wake combiner — no new blocks abstractions needed (EventSource.merge handles combination, DriverEvent.source handles discrimination).
+**Rationale:** Push-wake, pull-context is a well-established pattern in distributed systems. The chat SPI's `MessageHistory` abstraction decouples the perception contract from the transport. The existing `DiscordChatPlatform.getMessageHistory()` calls the REST API directly; a new Gateway-accumulating `MessageHistory` implementation is needed (either in quarkmind-discord wrapping the `DiscordInboundConnector`'s Gateway events, or as a connectors enhancement). This is new implementation work, not existing infrastructure. Blocks' `ChoreographedDriver` with `EventSource` varargs already provides the dual-wake combiner — no new blocks abstractions needed (EventSource.merge handles combination, DriverEvent.source handles discrimination).
 **Trade-offs:** Depends on both casehub-connectors (chat SPI) and blocks (compression). Agent response time depends on LLM latency, not a fixed tick rate.
 **Sources:** `casehub-connectors` chat-spi MessageHistory, ReceivedMessage, Threading; `casehub-blocks` TieredObservationRenderer, EventSource, ChoreographedDriver, DriverEvent
 **Exploration:** quick
 **Depends on:** D1
-**Status:** revised (R1-03: named push-wake/pull-context pattern, clarified MessageHistory backed by Gateway accumulation; R1-04: referenced existing EventSource.merge + ticker — no new blocks abstractions needed)
+**Status:** revised (R1-03: named push-wake/pull-context pattern, clarified MessageHistory backed by Gateway accumulation; R1-04: referenced existing EventSource.merge + ticker — no new blocks abstractions needed; R2-01: acknowledged Gateway-accumulating MessageHistory is new implementation work)
 
 ## D3: Two-tier layering — quarkmind-core / quarkmind-discord
 
@@ -104,19 +104,21 @@
 - AUTONOMY → heartbeat frequency for unprompted action
 - RISK_APPETITE → willingness to engage with strangers/controversial topics
 
-**Layer 3 — Growth (reflection → disposition evolution):** Discord interactions → episodic memory → reflection threshold → semantic insights → `BehavioralSignal` → Eidos `DispositionEvolution`. The idle-time reflection trigger (D5) is the shared mechanism driving both memory consolidation AND personality growth.
+**Layer 3 — Growth (reflection → disposition activation → evolution):** Discord interactions → episodic memory → reflection threshold → semantic insights → classify activated disposition function term → `DispositionSignalStore.recordActivation(agentId, tenancyId, functionTerm)` → periodic `DispositionHealth.probe(descriptor, context)` → on `EvolutionPending` → `DispositionEvolution.evaluate(descriptor, pending)` → `Evolved` with new disposition profile. The idle-time reflection trigger (D5) is the shared mechanism driving both memory consolidation AND disposition activation.
 
-**Reflection → BehavioralSignal mapping:** `ReflectionService` produces insight summaries (e.g., "User X has been consistently helpful and trustworthy across 12 interactions"). A new quarkmind-core `ReflectionSignalMapper` classifies insights into `BehavioralSignal` categories using pattern matching on reflection content: repeated positive social interactions → PROSOCIAL; repeated conflict → DEFENSIVE; repeated knowledge-seeking → CURIOUS. This is the weakest link in the chain and will be validated first during implementation.
+**Reflection → disposition activation mapping:** `ReflectionService` produces insight summaries (e.g., "User X has been consistently helpful and trustworthy across 12 interactions"). A new quarkmind-core `ReflectionDispositionActivator` classifies which disposition function term from the agent's `AgentDescriptor.disposition().dispositionProfile()` a reflection activates — e.g., a reflection about consistent empathy activates the "empathetic" function term; a reflection about analytical conversations activates "analytical". `DispositionSignalStore.recordActivation()` records the activation; `DefaultDispositionHealth.probe()` computes effective weights as `base + count × delta` and checks threshold crossings (DOMINANT_AUXILIARY_SWAP, DOMINANT_REPLACEMENT, AUXILIARY_REPLACEMENT, STRUCTURAL_REORGANIZATION). When a threshold is crossed, `DispositionEvolution.evaluate()` produces either `Evolved(newProfile)` or `Dampened(decayFactor)`.
+
+`BehavioralSignal` (`DECLINE`, `SUCCESS`, `COMPLIANT`, `VIOLATED`) is a capability health signal used by `CapabilityHealth` to track operational health — it is NOT part of the personality evolution pipeline and is removed from D6.
 
 **Alternatives:**
 - Prompt-only personality (no mechanical needs) — character sounds consistent but doesn't behave consistently
 - Static personality (no evolution) — misses the "grows over time" requirement
-**Rationale:** Each layer serves a different concern. Prompt shapes what the character says. Mechanical needs shape when and whether it acts. Reflection-driven growth makes the character change over time. All three use existing foundation modules. Discord is the first consumer of the full reflection → disposition chain — each link uses existing foundation types (`ReflectionService`, `BehavioralSignal`, `DispositionEvolution`), but the end-to-end integration has not been exercised in any existing world (QuarkVille uses direct LLM without reflection; SC2 uses CaseEngine without personality evolution). The integration chain will be validated incrementally during implementation.
+**Rationale:** Each layer serves a different concern. Prompt shapes what the character says. Mechanical needs shape when and whether it acts. Reflection-driven disposition activation makes the character change over time. All three use existing foundation modules. Discord is the first consumer of the full reflection → disposition activation → evolution chain — each link uses existing foundation types (`ReflectionService`, `DispositionSignalStore`, `DispositionHealth`, `DispositionEvolution`), but the end-to-end integration has not been exercised in any existing world (QuarkVille uses direct LLM without reflection; SC2 uses CaseEngine without personality evolution). The integration chain will be validated incrementally during implementation.
 **Trade-offs:** Disposition evolution is subtle — may be hard to observe. Acceptable — the point is long-term believability, not visible personality swings.
-**Sources:** casehub-eidos AgentDescriptor, DispositionEvolution, BehavioralSignal; quarkmind-core DispositionNeedModifier, NeedState; casehub-neocortex ReflectionOrchestrator
+**Sources:** casehub-eidos AgentDescriptor, DispositionSignalStore, DispositionHealth, DispositionEvolution; quarkmind-core DispositionNeedModifier, NeedState; casehub-neocortex ReflectionService
 **Exploration:** deep-analysis
 **Depends on:** D3, D5 (CRITICAL — D5's reflection trigger is the sole input to Layer 3; if reflection never fires, personality never evolves)
-**Status:** revised (R1-09: explicit reflection→BehavioralSignal mapping added via ReflectionSignalMapper; R1-20: D5 dependency upgraded to CRITICAL)
+**Status:** revised (R1-09: reflection→BehavioralSignal mapping was wrong — BehavioralSignal is capability health, not personality evolution; R2 corrected to use DispositionSignalStore.recordActivation → DispositionHealth.probe → DispositionEvolution.evaluate pipeline; R1-20: D5 dependency upgraded to CRITICAL)
 
 ## D7: Three needs — SOCIAL (with sub-drives), CURIOSITY, EXPRESSION
 
