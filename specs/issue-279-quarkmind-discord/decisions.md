@@ -64,3 +64,53 @@
 **Exploration:** quick
 **Depends on:** D2
 **Status:** captured
+
+## D5: Four-layer memory — existing foundation, no new modules
+
+**Choice:** Four memory layers, all backed by existing foundation modules:
+
+| Layer | Purpose | Backed by |
+|-------|---------|-----------|
+| Working memory | Current conversation context | LLM context window (no persistence) |
+| Episodic memory | Conversation cases — who, what, how it went | `CbrCaseMemoryStore` with `TemporalDecayCbrCaseMemoryStore` + importance scoring |
+| Semantic memory | Reflections — generalized insights about people and topics | `ReflectionService` → stored as high-importance CBR cases |
+| Relationship memory | Per-person profiles — trust, history, opinion | `GraphitiCaseMemoryStore` or `Mem0CaseMemoryStore`; `casehub-ledger` for trust scores |
+
+**Small gaps to fill (enhancements, not new modules):**
+- Importance scoring at ingest in neocortex — LLM-rated significance 1–10 at memory creation time (Park et al. retrieval composite = recency + importance + relevance; neocortex has recency and relevance but not importance)
+- Idle-time reflection trigger in quarkmind-core — "when to reflect" scheduler, fires when accumulated importance exceeds threshold during idle periods (analogous to Park et al.'s reflection threshold)
+- Relationship schema for Graphiti/Mem0 — per-person model with trust score, interaction count, opinion, shared topics (schema on existing infrastructure)
+
+**Alternatives:**
+- CBR only (flat case store) — loses relationship modeling and reflection/consolidation
+- Custom memory system — duplicates what neocortex already provides
+- New foundation module for social memory — unnecessary; Graphiti + Mem0 + ledger already cover the infrastructure
+**Rationale:** Research survey (Park et al. Generative Agents, MemGPT/Letta, CoALA framework, Mem0 graph memory) confirms three-tier episodic/semantic/relationship model as field consensus. Neocortex already provides all three tiers via CBR, reflection, and graph memory stores. Platform also has novel capabilities not found in surveyed frameworks: mood-modulated retrieval, personality-weighted retrieval, trust-weighted CBR. No new foundation modules needed — the work is wiring and schema.
+**Trade-offs:** Importance scoring at ingest adds an LLM call per memory creation (latency + cost). Acceptable — memory creation is not on the hot path.
+**Sources:** Park et al. 2023 Generative Agents; MemGPT/Letta tiered memory; Mem0 graph memory; CoALA cognitive architecture; casehub-neocortex existing stores
+**Exploration:** deep-analysis
+**Depends on:** D2, D3
+**Status:** captured
+
+## D6: Personality — Eidos prompt + quarkmind-core mechanical needs + reflection-driven growth
+
+**Choice:** Three-layer personality system using existing foundation:
+
+**Layer 1 — Prompt-driven (Eidos → LLM):** `AgentDescriptor` defines character personality via disposition axes (SOCIAL_ORIENTATION, RULE_FOLLOWING, RISK_APPETITE, AUTONOMY, CONFLICT_MODE), `styleProfile`, `dispositionProfile`, `briefing`, `goals`, and `constraints`. `SystemPromptRenderer` renders this into the LLM system prompt.
+
+**Layer 2 — Mechanical (quarkmind-core NeedState):** Dispositions affect non-LLM behavior via `DispositionNeedModifier`:
+- SOCIAL_ORIENTATION → social need decay rate (extrovert drops fast when alone)
+- AUTONOMY → heartbeat frequency for unprompted action
+- RISK_APPETITE → willingness to engage with strangers/controversial topics
+
+**Layer 3 — Growth (reflection → disposition evolution):** Discord interactions → episodic memory → reflection threshold → semantic insights → `BehavioralSignal` → Eidos `DispositionEvolution`. The idle-time reflection trigger (D5) is the shared mechanism driving both memory consolidation AND personality growth.
+
+**Alternatives:**
+- Prompt-only personality (no mechanical needs) — character sounds consistent but doesn't behave consistently
+- Static personality (no evolution) — misses the "grows over time" requirement
+**Rationale:** Each layer serves a different concern. Prompt shapes what the character says. Mechanical needs shape when and whether it acts. Reflection-driven growth makes the character change over time. All three use existing foundation modules.
+**Trade-offs:** Disposition evolution is subtle — may be hard to observe. Acceptable — the point is long-term believability, not visible personality swings.
+**Sources:** casehub-eidos AgentDescriptor, DispositionEvolution, BehavioralSignal; quarkmind-core DispositionNeedModifier, NeedState; casehub-neocortex ReflectionOrchestrator
+**Exploration:** deep-analysis
+**Depends on:** D3, D5
+**Status:** captured
