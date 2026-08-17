@@ -57,7 +57,7 @@ On wake:
 5. LLM processes context with personality system prompt
 6. Agent emits intents (or stays quiet)
 
-**MessageHistory implementation:** The existing `DiscordChatPlatform.getMessageHistory()` calls the REST API directly. A new Gateway-accumulating implementation is needed — either in quarkmind-discord (wrapping `DiscordInboundConnector` events) or as a connectors enhancement. REST fallback for cold start and gap detection.
+**MessageHistory implementation:** The existing `DiscordChatPlatform.getMessageHistory()` calls the REST API directly. A new Gateway-accumulating `MessageHistory` implementation lives in quarkmind-discord, wrapping `DiscordInboundConnector`'s Gateway events into a local message buffer. REST API fallback for cold start and detected gaps only. This avoids cross-repo changes to connectors for v1; if other consumers need Gateway-accumulating history, it can be promoted to connectors later.
 
 ## Perception
 
@@ -66,8 +66,9 @@ On wake:
 `DiscordPerception` wraps:
 - `Map<String, List<ReceivedMessage>> channelDeltas` — messages per channel since last check, threaded via `parentRef`
 - `Map<String, PresenceStatus> presenceChanges` — who came online/offline
-- `NeedState currentNeeds` — agent's current need levels
 - `WakeReason reason` — MESSAGE or HEARTBEAT
+
+`NeedState` is agent-internal state held by `AgencyContext`, not world perception. Needs are consulted during the agency loop's reasoning phase, not delivered as perception.
 
 **Attention priority classification** (D3):
 - **Direct address** — replies to bot, @mentions → always verbatim, never compressed
@@ -117,7 +118,7 @@ The loop per tick:
 | Working memory | Current conversation context | LLM context window |
 | Episodic memory | Conversation cases | `CbrCaseMemoryStore` + `TemporalDecayCbrCaseMemoryStore` |
 | Semantic memory | Reflections / insights | `ReflectionService` → high-importance CBR cases |
-| Relationship memory | Per-person profiles | `GraphitiCaseMemoryStore` or `Mem0CaseMemoryStore` + `casehub-ledger` |
+| Relationship memory | Per-person profiles | `GraphitiCaseMemoryStore` + `casehub-ledger` |
 
 **Three capability additions required:**
 
@@ -125,7 +126,7 @@ The loop per tick:
 
 2. **Idle-time reflection trigger** (quarkmind-core) — scheduler fires when accumulated importance exceeds threshold during idle periods. Drives both memory consolidation (episodic → semantic) and personality growth (D6 Layer 3).
 
-3. **Relationship schema** (Graphiti/Mem0) — per-person model: trust score (from ledger), interaction count, opinion summary, shared topics, last interaction timestamp.
+3. **Relationship schema** (Graphiti) — per-person model: trust score (from ledger), interaction count, opinion summary, shared topics, last interaction timestamp. Graphiti is the default for entity-relationship graphs; Mem0 is an alternative if Graphiti's entity extraction proves insufficient.
 
 ## Personality System
 
@@ -192,7 +193,9 @@ Need threshold crossing is necessary but not sufficient for action. Multiple sim
 | Layer | Owns | Uses |
 |-------|------|------|
 | **quarkmind-core** | Chat perception bridge, conversation delta report, attention priority classification, need-threshold wake, proactive decision gate, idle-time reflection trigger, output governor | blocks (TieredObservationRenderer, EventSource, ChoreographedDriver), eidos-api, neocortex-api, ledger-api |
-| **quarkmind-discord** | DiscordEventSource, Discord-specific detection (@mentions, bot user ID), channel visibility policy, personality prompt construction, intent dispatch | quarkmind-core, connectors (chat-discord, discord), quarkmind-discord-protocol |
+| **quarkmind-discord** | DiscordEventSource, Gateway-accumulating MessageHistory, Discord-specific detection (@mentions, bot user ID), channel visibility policy, personality prompt construction, intent dispatch | quarkmind-core, connectors (chat-discord, discord), quarkmind-discord-protocol |
+
+Chat-agent abstractions (thread reconstruction, attention priority, conversation delta) live in quarkmind-core because they generalize to any chat-based world (Discord, IRC, Slack). These may not generalize to non-chat worlds (SC2, Godot) — quarkmind-core accepts this specialization as the cost of reuse across chat worlds.
 
 Blocks receives **no new types** — existing `TieredObservationRenderer<E>`, `EventSource`, `ChoreographedDriver` are used directly with custom renderers and event sources.
 
@@ -201,7 +204,7 @@ Blocks receives **no new types** — existing `TieredObservationRenderer<E>`, `E
 | Repo | What changes |
 |------|-------------|
 | `casehub-blocks` | Nothing — existing primitives used directly |
-| `casehub-connectors` | Possible: Gateway-accumulating `MessageHistory` implementation (or quarkmind-discord wraps it) |
+| `casehub-connectors` | Nothing for v1 — Gateway-accumulating MessageHistory lives in quarkmind-discord |
 | `casehub-neocortex` | Importance scoring at ingest (async LLM rating) |
 | `quarkmind` (quarkmind-core) | Chat perception bridge, conversation delta report, attention priority, need-threshold wake, proactive decision gate, idle-time reflection trigger, output governor, ReflectionDispositionActivator |
 | `quarkmind` (quarkmind-discord) | New module: protocol + agent |
