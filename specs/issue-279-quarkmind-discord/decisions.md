@@ -114,3 +114,29 @@
 **Exploration:** deep-analysis
 **Depends on:** D3, D5
 **Status:** captured
+
+## D7: Three needs — SOCIAL (with sub-drives), CURIOSITY, EXPRESSION
+
+**Choice:** Three needs drive the Discord character's autonomous behavior:
+
+**SOCIAL** — decays when idle, satisfied by conversation. The primary engagement driver. Three sub-drives shape how social need is satisfied:
+1. *Learn about people* — the character seeks to understand who people are, what they care about, their history
+2. *Help people* — the character looks for opportunities to be useful, answer questions, offer support
+3. *Meaningful contribution* — the character seeks to add value to the social group as a whole, not just individual exchanges (sharing relevant information, connecting people, remembering things the group forgets)
+
+Sub-drives are not separate needs — they're strategies for satisfying SOCIAL, weighted by disposition. A high-AUTONOMY character leans toward meaningful contribution; a high-SOCIAL_ORIENTATION character leans toward learning about people.
+
+**CURIOSITY** — decays slowly, spikes when interesting topics appear. Drives questions, topic exploration, following up on things mentioned days ago.
+
+**EXPRESSION** — builds up over time, satisfied by sharing opinions/reactions. Drives unprompted posting, emoji reactions, and unsolicited commentary.
+
+All three map through `DispositionNeedModifier` — disposition axes affect decay rates and satisfaction thresholds.
+
+**Alternatives:**
+- More granular needs (separate HELP, LEARN, CONTRIBUTE) — over-specified; the LLM handles strategy selection within the social drive better than mechanical sub-needs
+- Fewer needs (SOCIAL only) — loses the distinction between wanting to talk (social), wanting to know (curiosity), and wanting to share (expression)
+**Rationale:** Three needs are enough to produce varied autonomous behavior. The sub-drives under SOCIAL give the LLM guidance on *how* to be social without mechanizing strategy selection — the character might satisfy its social need by helping someone one moment and by asking a question the next, depending on context.
+**Trade-offs:** Sub-drives are prompt-level guidance, not mechanical — they don't have independent decay rates. If finer control is needed later, they can be promoted to full needs.
+**Exploration:** quick
+**Depends on:** D6
+**Status:** captured
