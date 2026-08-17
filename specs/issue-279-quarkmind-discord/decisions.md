@@ -52,3 +52,15 @@
 **Exploration:** quick
 **Depends on:** D2
 **Status:** captured
+
+## D4: Intent model — text + reactions
+
+**Choice:** `DiscordIntent` is a sealed interface with three variants: `Send(channelId, content)` — post a message; `Reply(parentRef, content)` — reply in a thread; `React(messageRef, emoji)` — add an emoji reaction. Plus implicit `Stay quiet` (no intent emitted). Maps directly to chat SPI: `Messaging.send()`, `Threading.reply()`, `Reactions.add()`.
+**Alternatives:**
+- Text only — simpler but loses lightweight engagement (reactions feel alive with no compose cost)
+- Full action surface (presence, channel creation, member management) — over-scoped for v1
+**Rationale:** Reactions are nearly free to implement (one-liner through the SPI) and add natural expressiveness. A character reacting with :eyes: or :thinking: without composing a full message is a distinctly non-bot behaviour. Text covers communication; reactions cover ambient personality.
+**Trade-offs:** Three intent types to handle in dispatch vs one. Minimal cost.
+**Exploration:** quick
+**Depends on:** D2
+**Status:** captured
