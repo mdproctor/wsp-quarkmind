@@ -1,0 +1,19 @@
+# Work Plan — issue-279-quarkmind-discord
+
+## State
+branch: issue-279-quarkmind-discord
+state: active
+project-sha: slot-creation
+date: 2026-08-17
+issue-repo: casehubio/quarkmind
+covers: 279
+design-repo: project
+design-section-hashes: 
+flyway-next-v: unknown
+
+## Queue
+- [x] #279 — Issue #279
+- [ ] #280 — Phase 2: memory integration (D5 four-layer memory) ← active
+- [ ] #281 — Phase 3: personality growth pipeline (D6 Layer 3)
+- [ ] #282 — Phase 4: multi-character per server (D9 v2)
+- [ ] #283 — Phase 5: personality generator wizard (D12 future)
