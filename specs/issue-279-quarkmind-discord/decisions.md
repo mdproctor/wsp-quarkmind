@@ -221,3 +221,100 @@ A new character deployment requires: one YAML personality descriptor + one `appl
 **Exploration:** quick
 **Depends on:** D11
 **Status:** captured
+
+## D13: ChatMemoryFacade in quarkmind-chat-agent
+
+**Choice:** A single `ChatMemoryFacade` class in quarkmind-chat-agent that composes neocortex stores behind two methods: `recall(conversationContext, participants)` → `List<Memory>` and `ingest(observation, sourceRefs)` → void. ChatAgencyLoop depends only on the facade, not on neocortex types directly. Each quarkmind world gets its own facade with world-specific shapes — ville would get VilleMemoryFacade for game-event shapes.
+**Alternatives:**
+- Direct injection of CaseMemoryStore + GraphCaseMemoryStore + re-rankers into ChatAgencyLoop — simpler but loop grows complex and harder to test
+- quarkmind-core MemoryBridge SPI — no realistic second consumer; chat platforms all use quarkmind-chat via different connectors, and Ville has fundamentally different perception shapes
+**Rationale:** The neocortex stores are already the shared foundation layer. What varies per world is composition: what to store, what to query for, how to format results. A per-world facade handles this without premature generalization. No second chat world exists that isn't covered by quarkmind-chat + a different connector.
+**Trade-offs:** One more class to maintain. Minimal cost.
+**Exploration:** quick
+**Depends on:** D5
+**Status:** captured
+
+## D14: CaseMemoryStore for episodic memory — not CbrCaseMemoryStore
+
+**Choice:** Episodic chat memories stored via `CaseMemoryStore.store(MemoryInput)` with semantic retrieval via `ExperienceQuery.search()` (MemoryOrder.RELEVANCE). This corrects D5 which named CbrCaseMemoryStore — that store is for structured feature-vector cases (like SC2GameCbrCase with supply_count, unit_composition). Chat conversations are unstructured text where semantic embedding search is the right retrieval model.
+**Alternatives:**
+- CbrCaseMemoryStore with a chat-specific CbrFeatureSchema — requires defining explicit features (topic, sentiment, participant count) for structured similarity, which is artificial for free-form conversation
+**Rationale:** ExperienceQuery and ReflectionService already use CaseMemoryStore. PersonalityWeightedRetrieval and MoodModulatedRetrieval re-rank CaseMemoryStore results. The existing retrieval pipeline is built for text memories with semantic search. CbrCaseMemoryStore adds schema and feature-vector overhead with no benefit for text.
+**Trade-offs:** Temporal decay is handled by re-rankers (PersonalityWeightedRetrieval already has recency decay with HALF_LIFE_HOURS=168) rather than by TemporalDecayCbrCaseMemoryStore decorator. This is fine — the decorator only applies to CbrCaseMemoryStore results.
+**Exploration:** quick
+**Depends on:** D5, D13
+**Status:** captured
+
+## D15: Observation summaries with platform source references
+
+**Choice:** Memory text is an LLM-generated observation summary of what happened — not verbatim messages. The observation includes source references in CaseMemoryStore attributes (`source.channelId`, `source.firstMessageId`, `source.lastMessageId`, `source.timestamp.start`, `source.timestamp.end`). Raw messages remain in the platform (Discord) as the source of truth. When verification or revision is needed, the facade queries `MessageHistory` using the source references to retrieve the raw conversation.
+**Alternatives:**
+- Verbatim message storage — high fidelity but high volume, poor semantic embedding, duplicates platform storage
+- Dual storage (observation + raw transcript as linked memories) — durable but doubles storage cost for data the platform already keeps
+- Reference store (separate transcript log) — adds another store to manage
+**Rationale:** The platform already has durable message storage. The agent needs to remember the meaning of what happened, not the raw bytes. Summaries embed better for semantic search than raw multi-turn chat. Source references maintain provenance — if an observation needs verification, the raw messages are queryable.
+**Trade-offs:** If platform messages are deleted, source references are broken. Acceptable — this mirrors human memory (you can't always go back and verify). If durability beyond platform retention is needed later, add a transcript store as a separate concern.
+**Exploration:** quick
+**Depends on:** D14
+**Status:** captured
+
+## D16: Per-tick ingestion — one observation per channel per tick
+
+**Choice:** Each agency tick produces one observation per active channel. If multiple channels have activity in one tick, each gets its own CaseMemoryStore entry with its own source references. This is the natural ingestion boundary — one tick, one perception, one set of intents.
+**Alternatives:**
+- Per-message ingestion — too granular, floods the store
+- Per-conversation ingestion — conversations don't have clear boundaries in async chat
+**Rationale:** The agency tick is the atomic unit of perception-reasoning-action. The observation captures what the agent saw, thought, and did in one cycle. Multiple channels in one tick are independent observations.
+**Trade-offs:** High-activity channels with frequent ticks may generate many observations. Mitigated by the tick rate (governed by heartbeat + event wake).
+**Exploration:** quick
+**Depends on:** D15
+**Status:** captured
+
+## D17: updateImportance() on CaseMemoryStore — cross-repo neocortex API addition
+
+**Choice:** Add `updateImportance(String memoryId, String tenantId, double importance)` to `CaseMemoryStore`. Importance is already a first-class field on MemoryInput and Memory. The method updates the stored importance score after initial storage. All implementations (JPA, InMemory, NoOp) gain the method. The async flow: store observation with importance=null → submit LLM importance scoring at LOW priority via LlmRequestQueue → on LLM response, call updateImportance(). This is cross-repo work in casehub-neocortex, done before quarkmind wiring.
+**Alternatives:**
+- Generic updateAttributes() — importance is a dedicated field, not an attribute; a generic method obscures the intent
+- Store with importance upfront — blocks the tick on an LLM call; importance scoring must be async
+- Quarkmind-only stub — avoids cross-repo but builds a local workaround for a foundation capability
+**Rationale:** Importance scoring is fundamental to retrieval quality (Park et al. composite = recency × importance × relevance). Making it async keeps the agent responsive while still scoring every memory. The API change is small and clean.
+**Trade-offs:** Cross-repo coordination. Small API surface change.
+**Exploration:** quick
+**Depends on:** D14
+**Status:** captured
+
+## D18: Observation generated from same LLM call as action decision
+
+**Choice:** The LLM prompt includes a second instruction asking for a one-line observation alongside the action decision. Single LLM call produces both the intent (SEND/REPLY/REACT/WAIT) and the experience observation. No separate async LLM call for observation generation. JSON response gains an `observation` field.
+**Alternatives:**
+- Separate async LLM call for observation — doubles LLM cost per tick, adds latency
+- Template-based observation (no LLM) — loses nuance, can't capture tone or social dynamics
+**Rationale:** The LLM already has the full conversation context during the tick. Asking it to describe what happened is nearly free (adds ~50 tokens to the response). The observation quality is high because the model just reasoned about the conversation.
+**Trade-offs:** Slightly larger response to parse. Observation quality depends on the action model (not a dedicated summarization model). Acceptable for v1.
+**Exploration:** quick
+**Depends on:** D16
+**Status:** captured
+
+## D19: LLM-based ReflectionSynthesizer in quarkmind-chat-agent
+
+**Choice:** Implement `ReflectionSynthesizer` in quarkmind-chat-agent using `LlmRequestQueue`. The impl submits an LLM request at LOW priority with recent episodic memories and asks for generalized insights. Triggered by the idle-time reflection trigger (NeedThresholdWake in quarkmind-core, already built in phase 1). ReflectionService orchestrates: queries experience memories → passes to synthesizer → stores reflections back via CaseMemoryStore → fires ReflectionRecorded CDI event.
+**Alternatives:**
+- NoOp (skip reflections) — misses the memory consolidation layer; episodic memories grow without semantic compression
+- Implement in neocortex — closer to the store but neocortex has no LLM integration; quarkmind-chat has LlmRequestQueue
+**Rationale:** quarkmind-chat is the first consumer of the full reflection pipeline. LlmRequestQueue provides rate limiting and prioritization. The synthesizer is a thin adapter between the neocortex SPI and the quarkmind LLM infrastructure.
+**Trade-offs:** Implementation lives in quarkmind, not foundation. If a second consumer appears, extract to a shared module. Acceptable — the spec acknowledges this is the first end-to-end exercise of the reflection chain.
+**Exploration:** quick
+**Depends on:** D5, D17
+**Status:** captured
+
+## D20: Graphiti-optional relationship memory
+
+**Choice:** ChatMemoryFacade checks if `GraphCaseMemoryStore` resolves to a real implementation (not NoOp). With Graphiti deployed: `graphQuery()` by participant entity IDs for rich relationship facts (entity extraction, temporal graph). Without Graphiti: fall back to `CaseMemoryStore.query()` with participant attributes on observations (`participant.<userId>`). Bot works either way — Graphiti adds depth but is not required. Participant IDs use Discord user IDs for consistent entity identification.
+**Alternatives:**
+- Graphiti-required — richer results but requires graph database + Graphiti service for all environments including dev/test
+- No graph, attributes only — simpler but loses entity extraction, relationship inference, and temporal fact tracking
+**Rationale:** Graphiti infrastructure may not be available in all deployments. The bot should function with basic relationship memory (attribute-filtered queries) and gain richer memory when Graphiti is present. NoOpCaseMemoryStore already implements GraphCaseMemoryStore (per the interface's Javadoc), so CDI injection is always satisfied.
+**Trade-offs:** Two code paths in ChatMemoryFacade (graph vs attribute fallback). Tested independently.
+**Exploration:** quick
+**Depends on:** D5, D13
+**Status:** captured
