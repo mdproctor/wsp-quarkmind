@@ -8,3 +8,4 @@
 | [2026-08-14-mdp02-autonomous-minds-virtual-worlds.md](2026-08-14-mdp02-autonomous-minds-virtual-worlds.md) | 2026-08-14 | QuarkMind restructure: multi-module split, agency framework extraction from SC2, five world stubs |
 | [2026-08-18-mdp01-from-event-to-response.md](2026-08-18-mdp01-from-event-to-response.md) | 2026-08-18 | quarkmind-chat phase 1 complete — execution harness from Discord event to governed response, two plan deviations caught by implementation |
 | [2026-08-20-mdp01-teaching-bot-to-remember.md](2026-08-20-mdp01-teaching-bot-to-remember.md) | 2026-08-20 | Episodic memory, async importance scoring, idle-time reflection — wiring neocortex into the chat agency loop |
+| [2026-08-20-mdp02-personality-that-grows.md](2026-08-20-mdp02-personality-that-grows.md) | 2026-08-20 | Wiring the reflection-to-disposition-evolution pipeline in quarkmind-chat — decorator pattern bridges ReflectionSynthesizer to DispositionSignalStore |
