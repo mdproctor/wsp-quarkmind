@@ -13,16 +13,15 @@ flyway-next-v: unknown
 
 ## Queue
 - [x] #279 — Issue #279
-- [ ] #280 — Phase 2: memory integration (D5 four-layer memory) ← active
-  - [x] Batch 1: Foundation
-    - [x] Task 1: updateImportance on CaseMemoryStore (neocortex)
-    - [x] Task 2: LlmRequest responseHandler + IdleReflectionTrigger
-  - [x] Batch 2: Memory Facade
-    - [x] Task 3: ChatMemoryFacade recall ingest scoreImportance
-    - [x] Task 4: ChatAgencyLoop memory integration
-  - [x] Batch 3: Reflection
-    - [x] Task 5: LlmReflectionSynthesizer
-    - [x] Task 6: End-to-end test + CLAUDE.md
-- [ ] #281 — Phase 3: personality growth pipeline (D6 Layer 3)
+- [x] #280 — Phase 2: memory integration (D5 four-layer memory)
+- [ ] #281 — Phase 3: personality growth pipeline (D6 Layer 3) ← active
+  - [ ] Batch 1: Foundation
+    - [ ] Task 1: ReflectionDispositionActivator SPI + PersonalityEvolutionPipeline
+  - [ ] Batch 2: LLM Activator
+    - [ ] Task 2: LlmReflectionDispositionActivator
+    - [ ] Task 3: DispositionAwareReflectionSynthesizer
+  - [ ] Batch 3: Wiring
+    - [ ] Task 4: Wire ChatAgencyLoop for evolution
+    - [ ] Task 5: End-to-end test + CLAUDE.md
 - [ ] #282 — Phase 4: multi-character per server (D9 v2)
 - [ ] #283 — Phase 5: personality generator wizard (D12 future)
