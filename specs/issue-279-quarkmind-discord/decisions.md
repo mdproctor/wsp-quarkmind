@@ -400,9 +400,9 @@ The derivation chain (episodic → semantic/reflection → relationship) means a
 **Depends on:** D9
 **Status:** captured
 
-## D26: CharacterContext record + stateless ChatAgencyLoop
+## D26: CharacterContext class + stateless ChatAgencyLoop
 
-**Choice:** Extract all per-character mutable state from `ChatAgencyLoop` into a `CharacterContext` record. `ChatAgencyLoop` becomes stateless — `tick()` reads character identity, system prompt, need state, and other per-character state from the `CharacterContext` stored in `AgencyContext`. `ChatCharacterManager` (CDI `@ApplicationScoped`) holds a `Map<String, CharacterContext>` and orchestrates all characters.
+**Choice:** Extract all per-character mutable state from `ChatAgencyLoop` into a `CharacterContext` class (not a record — has mutable fields). `ChatAgencyLoop` becomes stateless — `tick()` reads character identity, system prompt, need state, and other per-character state from the `CharacterContext` stored in `AgencyContext`. `ChatCharacterManager` (CDI `@ApplicationScoped`) holds a `Map<String, CharacterContext>` and orchestrates all characters.
 
 **CharacterContext holds:**
 - `agentId`, `tenantId`, `systemPrompt`
