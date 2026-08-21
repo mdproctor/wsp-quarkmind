@@ -386,3 +386,104 @@ The derivation chain (episodic → semantic/reflection → relationship) means a
 **Exploration:** implicit (surfaced by R1-21)
 **Depends on:** D5, D14, D20
 **Status:** captured
+
+## D25: Multi-bot, single JVM deployment model
+
+**Choice:** Multiple Discord bot accounts running in a single JVM process. Each character has its own bot token, Gateway WebSocket connection, Discord user identity, and full agent stack. Characters share the JVM for LLM queue management, memory stores, and resource efficiency. Each character appears as a separate Discord user with its own username and avatar.
+**Alternatives:**
+- Multi-bot, multi-process — one JVM per character. Zero code changes but loses shared resource management (LLM rate limiting, memory store connections, cross-character pacing coordination)
+- Single bot, channel-scoped personalities — one bot account switches personality per channel. Characters can't interact (one bot = one Discord identity), the illusion breaks visibly
+**Rationale:** Multi-bot single JVM gives the best balance: characters are fully independent Discord identities (separate usernames, avatars, message attribution) while sharing expensive resources (LLM API connections, memory store connections). Characters see each other's messages naturally through Discord — no special cross-character wiring needed. WackyManor demonstrates this pattern: shared CDI services + agentId-scoped operations = multi-character in one process.
+**Trade-offs:** Requires multiple Discord bot tokens and Developer Portal setups. More Gateway WebSocket connections per process. Each bot must be invited to the server separately.
+**Sources:** WackyManor ScenarioOrchestrator (shared services, per-agentId scoping), Discord API (one token = one Gateway session)
+**Exploration:** quick
+**Depends on:** D9
+**Status:** captured
+
+## D26: CharacterContext record + stateless ChatAgencyLoop
+
+**Choice:** Extract all per-character mutable state from `ChatAgencyLoop` into a `CharacterContext` record. `ChatAgencyLoop` becomes stateless — `tick()` reads character identity, system prompt, need state, and other per-character state from the `CharacterContext` stored in `AgencyContext`. `ChatCharacterManager` (CDI `@ApplicationScoped`) holds a `Map<String, CharacterContext>` and orchestrates all characters.
+
+**CharacterContext holds:**
+- `agentId`, `tenantId`, `systemPrompt`
+- `Supplier<AgentDescriptor>` (per-character descriptor from registry)
+- `BotIdentityDetector` (per-character Discord user ID)
+- `NeedState` (per-character needs — SOCIAL, CURIOSITY, EXPRESSION)
+- `IdleReflectionTrigger` (per-character reflection state)
+- `Set<String> participatedThreadIds` (per-character thread tracking)
+- `int consecutiveIdleTicks`, `Instant lastReflectionTimestamp`
+
+**ChatCharacterManager responsibilities:**
+- On startup: read all `AgentDescriptor` entries from `AgentRegistry` with the configured tenancyId, create a `CharacterContext` per descriptor, wire each to its Discord bot token from config
+- Per tick: set the appropriate `CharacterContext` into `AgencyContext` before calling `tick()`
+- Hold the shared `OutputGovernor` (D27) for cross-character pacing
+
+**Alternatives:**
+- N independent ChatAgencyLoop instances — keeps mutable per-character state in the loop, duplicates shared service references, approach B territory
+- Central tick loop iterating over characters — doesn't fit event-driven Discord model where each bot gets events independently
+**Rationale:** Mirrors WackyManor's pattern where `ScenarioOrchestrator` manages N characters, each identified by `agentId`, using shared CDI services with agentId-scoped operations. Separating character state from loop logic makes the loop reusable and testable — one loop instance serves all characters. The `ChatCharacterManager` is the quarkmind-chat equivalent of WackyManor's `ScenarioOrchestrator`.
+**Trade-offs:** Requires refactoring ChatAgencyLoop to remove instance fields (`agentId`, `tenantId`, `systemPrompt`, `consecutiveIdleTicks`, `lastReflectionTimestamp`, `participatedThreadIds`). All tests that set these fields need updating.
+**Exploration:** quick
+**Depends on:** D25
+**Status:** captured
+
+## D27: Shared OutputGovernor per server for cross-character pacing
+
+**Choice:** One `OutputGovernor` instance per Discord server (scoped by tenantId), shared across all characters in that server. Enforces a global minimum interval between any two character actions in the same server. Character A posts → Character B must wait the minimum interval before posting. Individual character pacing (`ChatChannelPacing`) still applies per-character on top.
+**Alternatives:**
+- Turn-taking coordinator — assigns "who speaks next" based on priority and fairness. More sophisticated but over-constrains natural conversation flow and adds significant complexity
+- No cross-character pacing — characters might respond simultaneously, creating awkward double-posts. Simplest but worst UX
+**Rationale:** The shared governor prevents the worst multi-character UX problem (simultaneous responses) with minimal complexity. It's a simple extension of the existing `OutputGovernor` — instead of per-character, it's per-server. The per-character `ChatChannelPacing` layer still handles individual character behavior within the global constraint.
+**Trade-offs:** Characters may be delayed when another character just posted. Acceptable — a brief delay feels natural; simultaneous posting feels broken.
+**Exploration:** quick
+**Depends on:** D25, D26
+**Status:** captured
+
+## D28: Per-character DiscordEventSource — own Gateway connection
+
+**Choice:** Each `CharacterContext` gets its own `DiscordEventSource` wrapping its own `DiscordInboundConnector` (its own bot token → its own Gateway WebSocket). `ChatCharacterManager` creates all connections on startup. Each character's Gateway events drive its own agency tick independently. This is the natural extension of the current single-character model.
+**Alternatives:**
+- Shared connector with filtered events — not possible with Discord. Each bot token requires its own Gateway session. One WebSocket per bot is a Discord API requirement, not a design choice.
+**Rationale:** Discord's API model requires one Gateway session per bot token. Each character IS a separate bot. The current single-character model already has one DiscordEventSource — multi-character simply creates N of them, each with its own bot token.
+**Trade-offs:** N Gateway WebSocket connections per JVM. For 2-3 characters this is negligible. At scale (10+ characters), connection management becomes a concern, but that's beyond v2 scope.
+**Exploration:** quick
+**Depends on:** D25
+**Status:** captured
+
+## D29: Multi-descriptor YAML + per-character bot tokens in config
+
+**Choice:** One `descriptors.yaml` with N `AgentDescriptor` entries (already supported by `ClasspathYamlDescriptorRegistrar`). Each descriptor's `agentId` maps to a bot token in `application.yaml` via Quarkus config:
+
+```yaml
+quarkmind:
+  chat:
+    characters:
+      luna:
+        token: ${DISCORD_TOKEN_LUNA}
+        channels: general,lounge
+      rex:
+        token: ${DISCORD_TOKEN_REX}
+        channels: general,workshop
+```
+
+`ChatCharacterManager` reads all descriptors from the registry, matches each `agentId` to its config block, and creates the character stack. A character without a matching token config is skipped with a warning.
+**Alternatives:**
+- Separate config directory per character — more filesystem structure to manage, no clear benefit
+- Database-driven registration — hot-reloadable but adds persistence dependency beyond v2 scope
+**Rationale:** Extends D12's configuration-driven deployment naturally. `ClasspathYamlDescriptorRegistrar` already loads multiple descriptors from one YAML file. The per-character config block is standard Quarkus `@ConfigMapping` pattern. No new infrastructure needed.
+**Trade-offs:** Adding a character requires: (1) add descriptor to YAML, (2) add config block with bot token, (3) invite the bot to the Discord server. Three steps, all configuration.
+**Exploration:** quick
+**Depends on:** D12, D25
+**Status:** captured
+
+## D30: CharacterContext in AgencyContext map
+
+**Choice:** `CharacterContext` is placed into the `AgencyContext` map via `context.put("character", characterContext)` before each `tick()` call. `ChatAgencyLoop.tick()` reads it with `context.getAs("character", CharacterContext.class)`. The `AgencyLoop.tick(AgencyContext)` interface signature stays unchanged. `ChatCharacterManager` sets the right `CharacterContext` before each character's tick.
+**Alternatives:**
+- CharacterContext as constructor param — creates N loop instances (approach B), duplicates shared service references
+- Direct parameter on tick() — breaks `AgencyLoop` interface, requires quarkmind-core SPI change
+**Rationale:** `AgencyContext` is already a heterogeneous map (`put`/`getAs` pattern). Adding `CharacterContext` follows the established pattern — perception is already passed this way (`context.put("perception", perception)`). No interface changes, no quarkmind-core SPI changes. The manager is responsible for populating the right context before each tick.
+**Trade-offs:** Runtime type safety — `getAs` returns null if the key is missing or the type doesn't match. Acceptable — the manager always sets it, and a null check at the top of `tick()` guards against misconfiguration.
+**Exploration:** quick
+**Depends on:** D26
+**Status:** captured
