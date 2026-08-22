@@ -49,15 +49,15 @@
 
 ## D5: Assertion strategy
 
-**Choice:** Assert selectively — hard-assert ≥70% rush/air accuracy (already proven), report all other metrics informationally. ONNX-specific thresholds added when model integration is validated.
+**Choice:** Assert selectively — hard-assert ≥70% rush/air accuracy on Drools-only config (already proven), report ONNX-only and cascade metrics informationally. ONNX-specific thresholds added when model integration is validated.
 **Alternatives:**
 - Hard-assert all thresholds now — premature without ONNX model validation history.
 - Informational only — loses regression protection on the Drools tier.
-**Rationale:** The Drools tier already meets the 70% rush/air bar. Protecting that baseline catches regressions. Other metrics are exploratory until the cascade is validated across multiple runs.
+**Rationale:** The Drools tier already meets the 70% rush/air bar. Protecting that baseline catches regressions. ONNX-only and cascade configs are new — no baseline exists to assert against. Other metrics are exploratory until the cascade is validated across multiple runs.
 **Trade-offs:** Weaker assertions initially — tightened incrementally.
 **Sources:** PatternClassificationCalibrationTest assertions
 **Exploration:** quick
-**Status:** captured
+**Status:** revised (review clarified assertion scope per config)
 
 ## D6: Cascade validation loop approach
 
@@ -80,4 +80,28 @@
 **Trade-offs:** Larger issue scope. Acceptable — the wiring is prerequisite, not optional.
 **Sources:** neocortex StrategyClassifierOnnxTest.java (model input shapes), sc2egset_extractor.py (feature definitions)
 **Exploration:** quick
+**Status:** captured
+
+## D8: Race detection from replays
+
+**Choice:** Plumb enemy race from replay metadata into the cascade. IEM10 games carry matchup strings (PvT, PvZ, PvP) — extract opponent race and pass to CascadingPatternClassifier for per-race model selection. AI Arena replays are all PvP (Protoss opponents).
+**Alternatives:**
+- Infer race from scouted units — fragile early-game, unnecessary when metadata is available.
+**Rationale:** Race is known metadata in replays. In live games, race is always known from the lobby. No inference needed.
+**Trade-offs:** None — race is always available in both replay and live contexts.
+**Sources:** IEM10JsonSimulatedGame.enumerate() (provides matchup), ScoutingCalibrationTest grouping by matchup
+**Exploration:** quick
+**Depends on:** D7 (race-aware routing is part of the feature extractor rewrite)
+**Status:** captured
+
+## D9: Shared test infrastructure
+
+**Choice:** Extract deriveGroundTruth(), replay loading, and ClassificationResult into a shared ReplayClassificationTestSupport utility class. Both PatternClassificationCalibrationTest and the new CascadeValidationCalibrationTest use it.
+**Alternatives:**
+- Accept duplication — simpler short-term, diverges over time.
+**Rationale:** Ground truth derivation and replay loading are non-trivial logic that must stay consistent across test classes. Extraction prevents drift.
+**Trade-offs:** Refactoring existing test class (minor).
+**Sources:** PatternClassificationCalibrationTest.java (deriveGroundTruth, classifyGame, ClassificationResult)
+**Exploration:** quick
+**Depends on:** D2 (new test class consumes the extracted utility)
 **Status:** captured
