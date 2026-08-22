@@ -100,9 +100,38 @@ WarpGateResearch, BlinkTech, Charge, AdeptPiercingAttack.
 | [134..267] | 134 | Opponent features (scouting-masked, then mean) |
 | [268] | 1 | has_vision flag (1.0 if scouting in window) |
 
+### Data Availability (R1-02)
+
+The 134-feature vector requires data beyond what `GameState` currently carries:
+
+**Available now:**
+- Building counts — from `GameState.buildings` / `GameState.enemyBuildings`
+- Unit counts — from `GameState.units` / `GameState.enemyUnits`
+- Basic economy (minerals, vespene, supply) — from `GameState`
+
+**Requires extraction from replay data:**
+- Economy stats (13) — IEM10 JSON carries all 13 fields in `PlayerStats` tracker
+  events. Extend `IEM10JsonSimulatedGame.applyPlayerStats()` to extract them into
+  a new `PlayerEconomyStats` record on `GameState`. For AI Arena binary replays,
+  `ReplaySimulatedGame` already processes `PlayerStats` — extend similarly.
+- Upgrade flags (15) — IEM10 JSON carries `UpgradeEvent` tracker events. Add
+  `UpgradeEvent` processing to `IEM10JsonSimulatedGame` and track active upgrades
+  in a `Set<String>` on `GameState`. For AI Arena binary replays, process
+  `UpgradeCompleteEvent` from Scelight tracker events.
+
+**Live SC2 (future, not in #213 scope):**
+- Economy stats available via SC2 API `ScoreDetails` — wire through
+  `ObservationTranslator` → `GameStateTranslator`. Separate issue.
+- Upgrades available via SC2 API `UpgradeId` — separate issue.
+
+**Opponent economy/upgrades in replay context:** Both players' full stats are
+available in replay tracker data (no fog of war). The scouting mask still applies
+to opponent features — it models what the classifier would see in a live game.
+
 ### Temporal Windowing
 
 - 10 windows of 30 seconds each (max_windows=10, window_seconds=30)
+- At minute 1: 2 windows populated, 8 zero-padded
 - At minute 2: 4 windows populated, 6 zero-padded
 - At minute 3: 6 windows populated, 4 zero-padded
 - At minute 4: 8 windows populated, 2 zero-padded
@@ -110,10 +139,9 @@ WarpGateResearch, BlinkTech, Charge, AdeptPiercingAttack.
 - Zero-padded windows are handled by the model's internal padding mask
 - ONNX input flattened: [10, 269] → [1, 2690]
 
-### WindowSnapshot
+### WindowSnapshot and Accumulation (R1-03)
 
-New record capturing per-second game state within a 30-second window.
-Accumulated by the classification loop in `DroolsScoutingTask` each tick.
+New record capturing a single tick's game state for temporal windowing:
 
 ```java
 public record WindowSnapshot(
@@ -123,8 +151,39 @@ public record WindowSnapshot(
 ) {}
 ```
 
-The extractor averages per-second snapshots within each window, applies the
-scouting mask to opponent features, and sets the has_vision flag.
+**Accumulation mechanism:** A new `TemporalWindowAccumulator` class manages
+snapshot collection and windowing:
+
+```java
+public class TemporalWindowAccumulator {
+    private static final int MAX_WINDOWS = 10;
+    private static final int WINDOW_SECONDS = 30;
+    private static final int TICKS_PER_WINDOW = 60; // 30s / 0.5s per tick
+
+    private final List<WindowSnapshot> tickSnapshots = new ArrayList<>();
+
+    public void addSnapshot(WindowSnapshot snapshot);
+    public List<float[]> getWindowedFeatures(); // 10 × 269, zero-padded
+    public void reset();
+}
+```
+
+- **Storage:** `TemporalWindowAccumulator` is a field on `DroolsScoutingTask`,
+  reset on game start.
+- **Tick-to-window mapping:** Index-based. Tick N falls in window
+  `N / TICKS_PER_WINDOW`. Each tick produces one snapshot. Within a window,
+  all tick snapshots are averaged to produce the 269-element feature vector.
+- **"Per-second" vs tick granularity:** Ticks fire at ~500ms intervals. The
+  training pipeline uses per-second PlayerStats. Two ticks ≈ one second — the
+  averaging within windows smooths this difference. No interpolation needed.
+- **Zero-padding:** `getWindowedFeatures()` always returns exactly 10 windows.
+  Unpopulated windows are zeroed arrays. The ONNX model's internal padding mask
+  (`temporal.abs().sum(dim=-1) == 0`) detects and ignores them.
+- **Window averaging:** The extractor receives the raw tick snapshots from the
+  accumulator, groups by window index, and computes the mean of player/opponent
+  features within each window. Scouting mask is applied to opponent features
+  before averaging. `has_vision` is 1.0 if any snapshot in the window had
+  `scoutingVisibility > 0`.
 
 ### Building/Unit Name Mapping
 
@@ -194,11 +253,59 @@ If any model is unavailable, that race's ONNX tier is skipped.
 | vs Zerg | 6 | RUSH, ROACH_RUSH, LING_BANE, MUTA_HARASS, HYDRA_PUSH, MACRO_ECONOMY |
 | vs Protoss | 7 | RUSH, PROXY, CANNON_RUSH, DT_RUSH, BLINK_STALKER, COLOSSUS_PUSH, AIR_SUPERIORITY |
 
-### Label-to-StrategyArchetype Mapping
+### Label-to-StrategyArchetype Mapping (R1-05, R1-09)
 
-Static map per race. Model labels are race-generic (e.g., "RUSH"); archetype
-enum values are race-specific (e.g., `TERRAN_MARINE_RUSH`). Add new
-`StrategyArchetype` values where no direct mapping exists for consolidated labels.
+The ONNX models output coarse consolidated labels (e.g., "RUSH"). The Drools tier
+tracks fine-grained archetypes (e.g., `TERRAN_MARINE_RUSH`). The mapping must
+resolve this without confidence fragmentation.
+
+**Approach: ONNX labels map to the broadest existing archetype per race.** When
+the ONNX tier resolves, its confidence replaces (not accumulates alongside)
+any Drools confidence for archetypes in the same consolidation group. This
+prevents fragmentation — a single archetype represents the classification.
+
+**Mapping table:**
+
+| Race | ONNX Label | Maps to StrategyArchetype | Notes |
+|------|-----------|--------------------------|-------|
+| Terran | RUSH | TERRAN_MARINE_RUSH | Broadest early Terran rush |
+| Terran | BANSHEE_HARASS | TERRAN_BANSHEE_HARASS | Direct match |
+| Terran | AIR_SUPERIORITY | TERRAN_AIR_SUPERIORITY | **New enum value** |
+| Terran | MECH_PUSH | TERRAN_MECH_PUSH | **New enum value** |
+| Terran | BIO_TIMING | TERRAN_BIO_TIMING | **New enum value** |
+| Zerg | RUSH | ZERG_ZERGLING_RUSH | Broadest early Zerg rush |
+| Zerg | ROACH_RUSH | ZERG_ROACH_RUSH | Direct match |
+| Zerg | LING_BANE | ZERG_LING_BANE | **New enum value** |
+| Zerg | MUTA_HARASS | ZERG_MUTA_HARASS | **New enum value** |
+| Zerg | HYDRA_PUSH | ZERG_HYDRA_PUSH | **New enum value** |
+| Zerg | MACRO_ECONOMY | ZERG_MACRO | Existing |
+| Protoss | RUSH | PROTOSS_GATEWAY_RUSH | Broadest early Protoss rush |
+| Protoss | PROXY | PROTOSS_PROXY_GATE | Existing |
+| Protoss | CANNON_RUSH | PROTOSS_CANNON_RUSH | **New enum value** |
+| Protoss | DT_RUSH | PROTOSS_DT_RUSH | Existing |
+| Protoss | BLINK_STALKER | PROTOSS_BLINK_STALKER | **New enum value** |
+| Protoss | COLOSSUS_PUSH | PROTOSS_COLOSSUS_PUSH | **New enum value** |
+| Protoss | AIR_SUPERIORITY | PROTOSS_AIR_SUPERIORITY | **New enum value** |
+
+**New StrategyArchetype enum values (10):** All tagged with their race and
+`GamePhase.EARLY` or `GamePhase.MID` as appropriate, `ArchetypeCategory` matching
+the strategy type. All switch expressions over `StrategyArchetype` must be updated
+in the same commit (sealed-type exhaustiveness rule).
+
+**Confidence fragmentation prevention:** When the ONNX tier fires and maps to
+e.g. `TERRAN_MARINE_RUSH`, the cascade merges its confidence via `Math::max`
+into the cumulative map at that key. Because both Drools and ONNX now target the
+same archetype key, confidence accumulates rather than fragmenting. The Drools
+rules that fire for specific rush indicators (proxy barracks, reaper harass)
+may produce confidence on different fine-grained archetypes — but the ONNX
+mapping targets the broadest match, which the cumulative max-merge handles
+correctly.
+
+**StrategyTaxonomy interaction (R1-14):** ONNX assessments bypass the taxonomy.
+The taxonomy governs which Drools `SignatureSpec` rules are active per game phase.
+The ONNX tier classifies from raw features independently — it does not consult
+the taxonomy. The `PatternAssessment` output carries `AssessmentSource.ONNX` so
+consumers can distinguish the source if needed.
 
 ### classify() Signature Change
 
@@ -222,13 +329,26 @@ for that race, ONNX tier is skipped.
 - Accumulate `WindowSnapshot` instances each tick for temporal windowing
 - Pass `StrategyFeatures` (two-tensor map) instead of the old single-key map
 
-### Configuration
+### Configuration (R1-08)
+
+Neocortex model loading via `InferenceModelProducer`:
 
 ```properties
-quarkmind.classifier.onnx.model.vs-terran=strategy-vs-terran
-quarkmind.classifier.onnx.model.vs-zerg=strategy-vs-zerg
-quarkmind.classifier.onnx.model.vs-protoss=strategy-vs-protoss
+# Model paths — resolved by neocortex inference-quarkus
+casehub.inference.models.strategy-vs-terran.model-path=models/strategy/strategy_vs_terran.onnx
+casehub.inference.models.strategy-vs-zerg.model-path=models/strategy/strategy_vs_zerg.onnx
+casehub.inference.models.strategy-vs-protoss.model-path=models/strategy/strategy_vs_protoss.onnx
 ```
+
+For `%test` profile, model paths resolve to test resources:
+```properties
+%test.casehub.inference.models.strategy-vs-terran.model-path=${project.basedir}/src/test/resources/models/strategy/strategy_vs_terran.onnx
+%test.casehub.inference.models.strategy-vs-zerg.model-path=${project.basedir}/src/test/resources/models/strategy/strategy_vs_zerg.onnx
+%test.casehub.inference.models.strategy-vs-protoss.model-path=${project.basedir}/src/test/resources/models/strategy/strategy_vs_protoss.onnx
+```
+
+Raw tensor models do not use tokenizers — `tokenizerPath` is omitted (the
+`InferenceModelConfig` treats it as optional for non-NLP models).
 
 ---
 
@@ -260,7 +380,9 @@ behavioral change.
    ONNX always resolves. Skipped if model unavailable.
 3. **Cascade** — default thresholds (Drools 0.7, ONNX 0.5). Production routing.
 
-`cascadingClassifier.reset()` between modes to clear cumulative state.
+`cascadingClassifier.reset()` between every game AND between modes to clear
+cumulative state. The classifier has persistent state (`cumulativeConfidence`,
+`lastLlmFallbackFrame`) that would contaminate subsequent games without reset.
 
 **Output tables:**
 
@@ -291,10 +413,41 @@ Accuracy at minute 4:
   Δ Cascade vs Drools-only: +N%
 ```
 
+**AI Arena separate reporting (R1-04):**
+
+AI Arena replays (29 games, all PvP) are reported separately from IEM10 games.
+Bot strategies are fixed build orders — accuracy should be significantly higher.
+
+```
+AI Arena Bot Validation (PvP, 29 games):
+Mode         | Min 3 Acc | Min 4 Acc | Min 5 Acc
+Drools-only  | ...       | ...       | ...
+ONNX-only    | ...       | ...       | ...
+Cascade      | ...       | ...       | ...
+```
+
 **Assertions:**
 - Hard: Drools-only rush accuracy ≥ 70% at minute 3
 - Hard: Drools-only air-threat accuracy ≥ 70% at minute 3 (if samples exist)
-- Informational: all other metrics
+- Hard: AI Arena cascade accuracy ≥ 80% at minute 4 (bot builds are predictable)
+- Informational: all other metrics including overall accuracy across all archetypes
+
+**Deferred criterion (R1-06):** The issue's "≥ 60% top-1 accuracy across all
+archetypes at minute 4" is reported informationally but not hard-asserted. The
+IEM10 dataset is from 2016 — meta has shifted significantly, and the model was
+trained on modern replays. Asserting cross-era accuracy is premature until the
+baseline is established and analyzed.
+
+**ReplayValidationHarness (R1-10):** The issue text mentions the harness, but
+`ReplayValidationHarness` validates economic divergence (EmulatedGame vs ground
+truth). Classification accuracy validation is a different concern — it compares
+classifier predictions against ground-truth strategy labels. The two tests share
+replay loading but serve different purposes. The harness is not used here because
+classification validation doesn't need economic divergence tracking.
+
+**Pre-integration verification (R1-13):** Before merging, run
+`mvn test -pl quarkmind-sc2 -Preport` to confirm the classifier changes don't
+regress replay validation accuracy.
 
 ### Output
 
@@ -384,6 +537,7 @@ From the issue, adjusted for current state:
 - [ ] CascadingPatternClassifier routes to per-race ONNX models
 - [ ] Drools-only rush accuracy ≥ 70% at minute 3 (hard-asserted)
 - [ ] Drools-only air-threat accuracy ≥ 70% at minute 3 (hard-asserted, if samples exist)
+- [ ] AI Arena cascade accuracy ≥ 80% at minute 4 (hard-asserted)
 - [ ] ONNX-only and cascade accuracy reported per matchup at minutes 1–5
 - [ ] Tier hit rate report showing classification resolution distribution across tiers
 - [ ] Latency benchmark: < 10ms p99 for full cascade on CPU
