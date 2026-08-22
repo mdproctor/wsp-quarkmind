@@ -24,3 +24,5 @@ flyway-next-v: unknown
   - [ ] Batch 3: Orchestration
     - [ ] Task 4: ChatCharacterManager + multi-character test
 - [ ] casehubio/quarkmind#283 — Phase 5: personality generator wizard (D12 future)
+- [ ] casehubio/quarkmind#284 — DiscordGatewayMessageHistory buffer eviction
+- [ ] casehubio/quarkmind#285 — DiscordIdentityDetector unbounded botMessageIds
