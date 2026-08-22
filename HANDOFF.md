@@ -1,20 +1,22 @@
-# QuarkMind Handover — 2026-08-17
+# QuarkMind Handover — 2026-08-22
 
 ## Last Session
 
-Completed QuarkVille skeleton (#273) — all 8 plan tasks done: protocol types, server with WebSocket endpoint + scheduled game tick + PerceptionBuilder, agent client (VilleAgencyLoop + VilleWorldBridge proving quarkmind-core SPIs), Godot 4 visual client, end-to-end integration tests. Code review caught a thread-safety issue (IntentQueue accessed from WebSocket handler + scheduler threads — replaced with ConcurrentLinkedDeque). Branch squashed and merged to main. Then opened #213 (IEM10 replay validation) but discovered it depends on #212 (three-tier cascade) which is still open.
+Design session for #213 (IEM10 replay validation & accuracy benchmarking). Brainstormed, wrote spec, ran two design reviews (spec + plan), wrote implementation plan. ONNX models landed from neocortex mid-session — three per-race models (vs_terran/vs_zerg/vs_protoss, 269 temporal × 10 windows + 6 map features). Design reviews caught three real bugs: tick rate is ~1s not 500ms (TICKS_PER_WINDOW = 30 not 60), z-score normalization corrupts zero-padded windows (breaks model's padding mask), availability flags must be computed pre-normalization. All fixed in spec and plan. Only 5 new StrategyArchetype values needed (not 10 — most map to existing values).
 
 ## Immediate Next Step
 
-Complete #212 (three-tier confidence cascade — Drools → ONNX → LLM routing) in a separate session first. Then return to branch `issue-213-iem10-replay-validation` to resume #213 with all dependencies met. Run `/work continue` on this branch.
+Run `/work continue` on branch `issue-213-iem10-replay-validation`. Execute the plan at `plans/2026-08-22-cascade-validation.md` — 7 tasks across 3 batches, starting with Task 1 (extend GameState with economy stats + upgrades). The plan has full code and step-by-step instructions. GameState constructor has ~38 callers that need the 4 new trailing parameters — consider a static factory method with defaults.
 
-## Blocked by
+## Cross-Module
 
-- #212 — Three-tier cascade not wired. #213's comparison baselines (Drools-only vs ONNX-only vs cascade) and tier hit rate analysis require the cascade. #211 (ONNX classifier) is already closed.
+**Enabled:**
+- neocortex — three ONNX strategy classifier models deployed (casehubio/neocortex#202), quarkmind consumption side ready to wire
 
 ## References
 
-- Slot 129 created for #279 (quarkmind-discord) — parallel work ready
-- Spec: `specs/issue-273-quarkville/2026-08-16-quarkville-design.md`
-- Diary: `docs/blog/2026-08-16-quarkville-the-game-server-that-doesnt-know-its-players-are-ai.md`
-- Protocols for #213: `sc2data-train-times-require-calibration`, `replay-tag-prefix-per-source`, `protobuf-roundtrip-must-include-ocraft-parsing`
+- Spec: `specs/issue-213-iem10-replay-validation/2026-08-22-cascade-validation-design.md`
+- Plan: `plans/2026-08-22-cascade-validation.md`
+- Decisions: `specs/issue-213-iem10-replay-validation/decisions.md`
+- Diary: `docs/blog/2026-08-22-mdp01-the-model-that-expects-silence.md`
+- Garden: GE-20260822-b33f5c (ONNX padding mask normalization gotcha — committed locally, push failed)
