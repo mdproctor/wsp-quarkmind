@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-213-iem10-replay-validation
-state: scaffolded
+state: active
 project-sha: 702f363917cdc0f3a1761f2022df6adcb073324f
 date: 2026-08-17
 issue-repo: casehubio/quarkmind
