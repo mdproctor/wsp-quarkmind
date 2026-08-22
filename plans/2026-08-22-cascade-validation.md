@@ -142,11 +142,25 @@ public record GameState(
 
 Update the compact constructor to copy the sets. Update ALL existing callers of the GameState constructor to pass `PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of()` for the new fields. Use `ide_find_references` on the GameState constructor to find all call sites.
 
-- [ ] **Step 5: Wire economy stats into IEM10JsonSimulatedGame**
+- [ ] **Step 5: Add economy/upgrade storage to SimulatedGame base class**
+
+Add protected fields to `SimulatedGame`:
+- `PlayerEconomyStats playerEconomy = PlayerEconomyStats.EMPTY`
+- `PlayerEconomyStats enemyEconomy = PlayerEconomyStats.EMPTY`
+- `Set<String> playerUpgrades = new HashSet<>()`
+- `Set<String> enemyUpgrades = new HashSet<>()`
+
+Add protected setters. Update `snapshot()` to include these in the `GameState`
+constructor call. Reset in the existing `reset()` method.
+
+- [ ] **Step 6: Wire economy stats into IEM10JsonSimulatedGame**
 
 In `IEM10JsonSimulatedGame.applyPlayerStats()`, extract the additional 9 economy
 fields from the JSON PlayerStats tracker event (they exist in the data but are
-currently discarded). Store them on the SimulatedGame so `snapshot()` includes them.
+currently discarded). Call the base class setters to store them.
+
+Add `UpgradeEvent` processing: when a tracker event with `_event == "UpgradeEvent"`
+appears, add the upgrade name to the appropriate player's upgrade set.
 
 Also add `UpgradeEvent` tracker event processing: when an `UpgradeEvent` appears
 in the JSON, add the upgrade name to a `Set<String>` tracked per player.
@@ -212,8 +226,8 @@ class TemporalWindowAccumulatorTest {
     @Test
     void twoMinutesOfTicks_populatesFourWindows() {
         var acc = new TemporalWindowAccumulator();
-        // 2 minutes = 120 seconds = 240 ticks at 500ms
-        for (int i = 0; i < 240; i++) {
+        // 2 minutes = 120 seconds ≈ 120 ticks at ~1s per tick
+        for (int i = 0; i < 120; i++) {
             var player = new float[134];
             player[0] = 1.0f; // one building
             var opponent = new float[134];
@@ -232,7 +246,7 @@ class TemporalWindowAccumulatorTest {
     @Test
     void scoutingMask_appliedToOpponentFeatures() {
         var acc = new TemporalWindowAccumulator();
-        for (int i = 0; i < 60; i++) { // one window
+        for (int i = 0; i < 30; i++) { // one window
             var player = new float[134];
             var opponent = new float[134];
             opponent[53] = 10.0f; // 10 marines
@@ -284,7 +298,7 @@ import java.util.List;
 public class TemporalWindowAccumulator {
     static final int MAX_WINDOWS = 10;
     static final int WINDOW_SECONDS = 30;
-    static final int TICKS_PER_WINDOW = 60; // 30s / 0.5s per tick
+    static final int TICKS_PER_WINDOW = 30; // 30s / ~1s per tick (SC2Data.LOOPS_PER_TICK=22, ~22.4 loops/s)
     static final int FEATURES_PER_PLAYER = 134;
     static final int FEATURES_PER_WINDOW = 2 * FEATURES_PER_PLAYER + 1; // 269
 
@@ -373,6 +387,10 @@ public record MapCharacteristics(
     public static MapCharacteristics forMap(String mapName) {
         return CATALOG.getOrDefault(mapName, DEFAULT);
     }
+
+    // For replay validation: map name is not available in MapInfo.
+    // Use DEFAULT for replays. For live SC2, derive from SC2 API map name.
+    // Future: compute from MapInfo geometry (expansion count, start-to-start distance).
 }
 ```
 
@@ -472,7 +490,7 @@ git -C /Users/mdproctor/claude/casehub/quarkmind commit -m "feat(#213): feature 
 - Consumes: `TemporalWindowAccumulator.getWindowedFeatures()` → `List<float[]>` (10 × 269)
 - Consumes: `MapCharacteristics.toArray(boolean, boolean)` → `float[6]`
 - Consumes: `norm_stats.json` resource for z-score normalization
-- Produces: `StrategyFeatures(Map<String, float[][]> tensors)` — `"temporal"` → `[1][2690]`, `"map"` → `[1][6]`
+- Produces: `StrategyFeatures(Map<String, float[][]> tensors)` — top-level type in `io.quarkmind.plugin.scouting`, `"temporal"` → `[1][2690]`, `"map"` → `[1][6]`
 
 - [ ] **Step 1: Write failing tests**
 
@@ -491,8 +509,8 @@ class StrategyFeatureExtractorTest {
     void extract_producesCorrectTensorDimensions() {
         var extractor = new StrategyFeatureExtractor();
         var accumulator = new TemporalWindowAccumulator();
-        // Populate 6 windows (3 minutes)
-        for (int i = 0; i < 360; i++) {
+        // Populate 6 windows (3 minutes ≈ 180 ticks at ~1s/tick)
+        for (int i = 0; i < 180; i++) {
             accumulator.addSnapshot(new WindowSnapshot(
                 new float[134], new float[134], 0.5f));
         }
@@ -510,7 +528,7 @@ class StrategyFeatureExtractorTest {
     void extract_normalizesTemporalFeatures() {
         var extractor = new StrategyFeatureExtractor();
         var accumulator = new TemporalWindowAccumulator();
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < 30; i++) {
             var player = new float[134];
             player[0] = 1.0f; // one building
             accumulator.addSnapshot(new WindowSnapshot(
@@ -528,7 +546,7 @@ class StrategyFeatureExtractorTest {
     void extract_hasVisionFlagNotNormalized() {
         var extractor = new StrategyFeatureExtractor();
         var accumulator = new TemporalWindowAccumulator();
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < 30; i++) {
             accumulator.addSnapshot(new WindowSnapshot(
                 new float[134], new float[134], 1.0f));
         }
@@ -543,7 +561,7 @@ class StrategyFeatureExtractorTest {
     void extract_mapFeaturesIncludeAvailabilityFlags() {
         var extractor = new StrategyFeatureExtractor();
         var accumulator = new TemporalWindowAccumulator();
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < 30; i++) {
             var player = new float[134];
             player[0] = 1.0f;
             accumulator.addSnapshot(new WindowSnapshot(
@@ -565,6 +583,10 @@ Run: `mvn test -pl quarkmind-sc2 -Dtest=StrategyFeatureExtractorTest -q`
 Expected: FAIL — method signatures don't match
 
 - [ ] **Step 3: Rewrite StrategyFeatureExtractor**
+
+Move `StrategyFeatures` out of `StrategyFeatureExtractor` into its own top-level
+file at `io.quarkmind.plugin.scouting.StrategyFeatures`. It crosses component
+boundaries (used by both extractor and classifier).
 
 Replace the entire class body. The new `extract()` takes windowed features
 (from `TemporalWindowAccumulator.getWindowedFeatures()`) and map characteristics.
@@ -591,17 +613,25 @@ public class StrategyFeatureExtractor {
             System.arraycopy(windowedFeatures.get(w), 0,
                 temporal, w * 269, 269);
         }
-        // 2. Apply z-score normalization to temporal features
-        //    Skip has_vision indices (268, 268+269, 268+2*269, ...)
-        for (int i = 0; i < 2690; i++) {
-            if (i % 269 == 268) continue; // has_vision — not normalized
-            if (normStd[i % 269] > 0) {
-                temporal[i] = (temporal[i] - normMean[i % 269]) / normStd[i % 269];
-            }
-        }
-        // 3. Compute availability flags
+        // 2. Compute availability flags BEFORE normalization (R1-04)
         boolean hasPlayer = hasNonZeroBlock(temporal, 0, 134);
         boolean hasOpponent = hasNonZeroBlock(temporal, 134, 268);
+        // 3. Apply z-score normalization — ONLY to populated windows (R1-03)
+        //    Zero-padded windows must stay all-zero for the model's padding mask
+        for (int w = 0; w < 10; w++) {
+            int base = w * 269;
+            boolean isPopulated = false;
+            for (int f = 0; f < 269; f++) {
+                if (temporal[base + f] != 0.0f) { isPopulated = true; break; }
+            }
+            if (!isPopulated) continue; // skip zero-padded windows
+            for (int f = 0; f < 269; f++) {
+                if (f == 268) continue; // has_vision — not normalized
+                if (normStd[f] > 0) {
+                    temporal[base + f] = (temporal[base + f] - normMean[f]) / normStd[f];
+                }
+            }
+        }
         // 4. Build map features
         float[] mapFeatures = map.toArray(hasPlayer, hasOpponent);
 
@@ -837,7 +867,14 @@ CascadeResult cascadeResult = cascadingClassifier.classify(
 ```
 
 Add a `resolveEnemyRace(CaseContext)` helper that reads enemy race from
-`CaseContext` key `game.enemy.race`.
+`CaseContext` key `game.enemy.race`. Also add an `ENEMY_RACE` constant to
+`QuarkMindCaseFile` and populate it during game initialization:
+- In `GameStateTranslator.translate()` — derive from the first scouted enemy
+  unit's type via `UnitType.race()`, or from the SC2 lobby data in live games.
+- In replay test harnesses — set from the matchup metadata (IEM10 carries
+  matchup strings like "PvT"; AI Arena is always PvP).
+- For the validation test in Task 6 — pass race directly from the game entry's
+  matchup, bypassing CaseContext (test-only path).
 
 - [ ] **Step 3: Copy ONNX model artifacts to test resources**
 
@@ -906,12 +943,17 @@ Expected: PASS — same behavior
 
 The test has one main method: `validateCascadeAccuracy()`.
 
-For each mode (DROOLS_ONLY, ONNX_ONLY, CASCADE):
+Construct a `TemporalWindowAccumulator` and `StrategyFeatureExtractor` locally
+in the test (these are plain objects, not CDI beans). For each mode:
   - Configure thresholds on the classifier
   - For each of 59 games:
-    - `cascadingClassifier.reset()`
-    - Run classification to minutes 1, 2, 3, 4, 5
-    - At each minute, compare top prediction to ground truth
+    - `cascadingClassifier.reset()` AND `accumulator.reset()`
+    - Run game tick-by-tick, building `WindowSnapshot` from `GameState` each tick
+      and feeding to the accumulator
+    - At each target minute (1-5), extract `StrategyFeatures` from the
+      accumulator and call `cascadingClassifier.classify()` with the game's
+      enemy race (from matchup metadata)
+    - Compare top prediction to ground truth
     - Record result per matchup
 
 Print tables to stdout: per-mode accuracy, tier hit rates (cascade mode),
