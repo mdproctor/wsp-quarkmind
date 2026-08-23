@@ -171,15 +171,9 @@ class LlmComplianceWorkerFactoryTest {
 
     @Test
     void summarise_unitAddsAndRemovals_renderedCorrectly() {
-        var baseline = new GameState(450, 200, 46, 38,
-            List.of(unit(UnitType.STALKER), unit(UnitType.STALKER), unit(UnitType.ZEALOT)),
-            List.of(building(BuildingType.NEXUS), building(BuildingType.GATEWAY)),
-            List.of(), List.of(), List.of(), List.of(), List.of(), 1200, null);
-        var current = new GameState(280, 150, 62, 52,
-            List.of(unit(UnitType.STALKER), unit(UnitType.STALKER), unit(UnitType.STALKER),
-                    unit(UnitType.STALKER), unit(UnitType.ZEALOT), unit(UnitType.SENTRY)),
-            List.of(building(BuildingType.NEXUS), building(BuildingType.NEXUS), building(BuildingType.GATEWAY)),
-            List.of(), List.of(), List.of(), List.of(), List.of(), 1650, null);
+        var baseline = new GameState(450, 200, 46, 38, List.of(unit(UnitType.STALKER), unit(UnitType.STALKER), unit(UnitType.ZEALOT)), List.of(building(BuildingType.NEXUS), building(BuildingType.GATEWAY)), List.of(), List.of(), List.of(), List.of(), List.of(), 1200, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
+        var current = new GameState(280, 150, 62, 52, List.of(unit(UnitType.STALKER), unit(UnitType.STALKER), unit(UnitType.STALKER),
+                    unit(UnitType.STALKER), unit(UnitType.ZEALOT), unit(UnitType.SENTRY)), List.of(building(BuildingType.NEXUS), building(BuildingType.NEXUS), building(BuildingType.GATEWAY)), List.of(), List.of(), List.of(), List.of(), List.of(), 1650, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
 
         String result = LlmComplianceWorkerFactory.summariseForCompliance(baseline, current, "Build more Stalkers");
 
@@ -194,10 +188,7 @@ class LlmComplianceWorkerFactoryTest {
 
     @Test
     void summarise_noChanges_changesShowsNone() {
-        var state = new GameState(400, 200, 46, 38,
-            List.of(unit(UnitType.STALKER)),
-            List.of(building(BuildingType.NEXUS)),
-            List.of(), List.of(), List.of(), List.of(), List.of(), 1200, null);
+        var state = new GameState(400, 200, 46, 38, List.of(unit(UnitType.STALKER)), List.of(building(BuildingType.NEXUS)), List.of(), List.of(), List.of(), List.of(), List.of(), 1200, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
 
         String result = LlmComplianceWorkerFactory.summariseForCompliance(state, state, "Do something");
 
@@ -207,11 +198,8 @@ class LlmComplianceWorkerFactoryTest {
 
     @Test
     void summarise_emptyArmy_handledGracefully() {
-        var baseline = new GameState(400, 200, 46, 38,
-            List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 1200, null);
-        var current = new GameState(300, 150, 54, 44,
-            List.of(unit(UnitType.STALKER), unit(UnitType.STALKER)),
-            List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 1650, null);
+        var baseline = new GameState(400, 200, 46, 38, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 1200, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
+        var current = new GameState(300, 150, 54, 44, List.of(unit(UnitType.STALKER), unit(UnitType.STALKER)), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 1650, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
 
         String result = LlmComplianceWorkerFactory.summariseForCompliance(baseline, current, "Build units");
 
@@ -747,12 +735,10 @@ void nonVerifiable_withBaselineAndDispatcher_dispatchesLlm() {
     var evaluator = new CoachingComplianceEvaluator(commitments, recorder, locationResolver, dispatcher);
 
     var advice = new CoachingAdvice("Improve your macro", CoachingDomain.BUILD, null, 200);
-    var baselineState = new GameState(400, 200, 46, 38, List.of(), List.of(),
-        List.of(), List.of(), List.of(), List.of(), List.of(), 100, null);
+    var baselineState = new GameState(400, 200, 46, 38, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 100, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     commitments.put(CoachingDomain.BUILD, new OpenCommitment("corr-1", "worker-1", advice, 100, baselineState));
 
-    var currentState = new GameState(300, 150, 54, 44, List.of(), List.of(),
-        List.of(), List.of(), List.of(), List.of(), List.of(), 400, null);
+    var currentState = new GameState(300, 150, 54, 44, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 400, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     evaluator.evaluate(currentState, 400);
 
     verify(dispatcher).dispatch(any(), eq(currentState));
@@ -772,8 +758,7 @@ void nonVerifiable_withoutBaseline_degradesToNeutral() {
     var advice = new CoachingAdvice("Improve your macro", CoachingDomain.BUILD, null, 200);
     commitments.put(CoachingDomain.BUILD, new OpenCommitment("corr-1", "worker-1", advice, 100, null));
 
-    var currentState = new GameState(300, 150, 54, 44, List.of(), List.of(),
-        List.of(), List.of(), List.of(), List.of(), List.of(), 400, null);
+    var currentState = new GameState(300, 150, 54, 44, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 400, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     evaluator.evaluate(currentState, 400);
 
     verify(dispatcher, never()).dispatch(any(), any());
@@ -788,12 +773,10 @@ void nonVerifiable_withoutDispatcher_degradesToNeutral() {
     var evaluator = new CoachingComplianceEvaluator(commitments, recorder, locationResolver);
 
     var advice = new CoachingAdvice("Improve your macro", CoachingDomain.BUILD, null, 200);
-    var baselineState = new GameState(400, 200, 46, 38, List.of(), List.of(),
-        List.of(), List.of(), List.of(), List.of(), List.of(), 100, null);
+    var baselineState = new GameState(400, 200, 46, 38, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 100, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     commitments.put(CoachingDomain.BUILD, new OpenCommitment("corr-1", "worker-1", advice, 100, baselineState));
 
-    var currentState = new GameState(300, 150, 54, 44, List.of(), List.of(),
-        List.of(), List.of(), List.of(), List.of(), List.of(), 400, null);
+    var currentState = new GameState(300, 150, 54, 44, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 400, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     evaluator.evaluate(currentState, 400);
 
     verify(recorder).record("corr-1", "worker-1", "NEUTRAL", advice);
@@ -875,8 +858,7 @@ class LlmComplianceIT {
     @Test
     void fullCycle_nonVerifiableAdvice_llmEvaluatesCompliance() throws InterruptedException {
         var advice = new CoachingAdvice("Improve your macro", CoachingDomain.BUILD, null, 200);
-        var triggerState = new GameState(400, 200, 46, 38, List.of(), List.of(),
-            List.of(), List.of(), List.of(), List.of(), List.of(), 100, null);
+        var triggerState = new GameState(400, 200, 46, 38, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 100, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
 
         broker.onCoachingCompleted(new CoachingCompleted(
             "test-worker", "coaching", 100, advice,
@@ -887,9 +869,7 @@ class LlmComplianceIT {
         var commitment = commitments.values().iterator().next();
         assertNotNull(commitment.baselineState());
 
-        var currentState = new GameState(300, 150, 54, 44,
-            List.of(new Unit("u1", UnitType.STALKER, new Point2d(10, 10))),
-            List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 400, null);
+        var currentState = new GameState(300, 150, 54, 44, List.of(new Unit("u1", UnitType.STALKER, new Point2d(10, 10))), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 400, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
 
         evaluator.evaluate(currentState, 400);
 

@@ -362,9 +362,7 @@ Add to `MultiFactorDominanceAssessorTest.java`. First, add a helper to construct
 private static GameState gameStateWithMap(int minerals, int vespene, int supply, int supplyUsed,
         List<Unit> myUnits, List<Building> myBuildings,
         List<Unit> enemyUnits, List<Building> enemyBuildings, MapInfo mapInfo) {
-    return new GameState(minerals, vespene, supply, supplyUsed,
-        myUnits, myBuildings, enemyUnits, enemyBuildings,
-        List.of(), List.of(), List.of(), 5000, mapInfo);
+    return new GameState(minerals, vespene, supply, supplyUsed, myUnits, myBuildings, enemyUnits, enemyBuildings, List.of(), List.of(), List.of(), 5000, mapInfo, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
 }
 
 private static MapInfo mapWithExpansions(List<ExpansionLocation> expansions) {

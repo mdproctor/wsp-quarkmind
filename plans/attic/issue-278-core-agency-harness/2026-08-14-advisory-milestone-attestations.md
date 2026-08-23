@@ -690,9 +690,7 @@ class AdvisoryMilestoneOutcomeRecorderTest {
     // --- helpers ---
 
     private static GameState gameStateAtFrame(long frame) {
-        return new GameState(200, 100, 15, 6, List.of(), List.of(),
-            List.of(), List.of(), List.of(), List.of(), List.of(),
-            frame, null);
+        return new GameState(200, 100, 15, 6, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), frame, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     }
 
     static class RecordingOutcomeRecorder implements OutcomeRecorder {

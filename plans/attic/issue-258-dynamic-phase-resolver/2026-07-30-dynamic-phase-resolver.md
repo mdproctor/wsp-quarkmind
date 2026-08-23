@@ -43,9 +43,7 @@
 // In GameStateTest.java — add test method
 @Test
 void gameTimeMinutes_convertsFrameToMinutes() {
-    GameState state = new GameState(0, 0, 0, 0,
-        List.of(), List.of(), List.of(), List.of(), List.of(),
-        List.of(), List.of(), (long)(5.0 * 60 * 22.4), null);
+    GameState state = new GameState(0, 0, 0, 0, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), (long)(5.0 * 60 * 22.4), null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     assertThat(state.gameTimeMinutes()).isCloseTo(5.0, within(0.01));
 }
 ```
@@ -140,9 +138,7 @@ class TimeBasedPhaseResolverTest {
     })
     void resolve_mapsTimeToPhase(double minutes, GamePhase expected) {
         long frame = (long) (minutes * 60 * SC2Data.GAME_LOOPS_PER_SECOND);
-        GameState state = new GameState(0, 0, 0, 0,
-            List.of(), List.of(), List.of(), List.of(), List.of(),
-            List.of(), List.of(), frame, null);
+        GameState state = new GameState(0, 0, 0, 0, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), frame, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
         assertThat(resolver.resolve(state)).isEqualTo(expected);
     }
 }
@@ -223,9 +219,7 @@ class StateBasedPhaseResolverTest {
     private final StateBasedPhaseResolver resolver = new StateBasedPhaseResolver();
 
     static GameState state(long frame, int supplyUsed, List<Building> buildings) {
-        return new GameState(0, 0, 200, supplyUsed,
-            List.of(), buildings, List.of(), List.of(), List.of(),
-            List.of(), List.of(), frame, null);
+        return new GameState(0, 0, 200, supplyUsed, List.of(), buildings, List.of(), List.of(), List.of(), List.of(), List.of(), frame, null, PlayerEconomyStats.EMPTY, PlayerEconomyStats.EMPTY, Set.of(), Set.of());
     }
 
     static Building building(BuildingType type) {
