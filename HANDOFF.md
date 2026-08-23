@@ -1,22 +1,22 @@
-# QuarkMind Handover — 2026-08-22
+# QuarkMind Handover — 2026-08-23
 
 ## Last Session
 
-Implementation session for #213 (cascade validation). Completed Task 1 of 7: extended GameState with economy stats and upgrade tracking. Created PlayerEconomyStats record (13 fields), updated 71 constructor call sites via IntelliJ SSR, wired dual-player economy extraction into both IEM10 JSON and Scelight binary replay parsers, added UpgradeEvent processing. Fixed pre-existing OutcomeRecorder compilation errors. 69 unit tests pass; pre-existing Quarkus CDI errors (QhorusDashboardService, MeterRegistry) block @QuarkusTest execution but are unrelated to this work.
+Completed Tasks 2–5 of the cascade validation plan (#213). Built the full ONNX feature pipeline: temporal windowing (10×30s windows, 269 features), z-score normalization from neocortex stats, per-race model routing (3 models, 5/6/7 classes), and wired DroolsScoutingTask with real WindowSnapshot accumulation per tick. All production code for the cascade is landed — 4 commits, 219 related tests passing.
 
 ## Immediate Next Step
 
-Run `/work continue` on branch `issue-213-iem10-replay-validation`. Execute the plan at `plans/2026-08-22-cascade-validation.md` starting at Task 2 (feature infrastructure — WindowSnapshot, TemporalWindowAccumulator, MapCharacteristics, FeatureIndexMaps, norm_stats.json). All greenfield creation — no existing callers to update.
+Run `/work continue` on branch `issue-213-iem10-replay-validation`. Execute the plan at `plans/2026-08-22-cascade-validation.md` starting at Task 6 (extract ReplayClassificationTestSupport + CascadeValidationCalibrationTest). Task 6 is a `@QuarkusTest` that runs 59 replay games through three cascade modes (Drools-only, ONNX-only, cascade) at minutes 1–5. Task 7 adds latency benchmarks and commits the results snapshot.
 
 ## Cross-Module
 
 **Enabled:**
-- neocortex — three ONNX strategy classifier models deployed (casehubio/neocortex#202), quarkmind consumption side ready to wire in Task 4–5
+- neocortex — three ONNX strategy classifier models deployed (casehubio/neocortex#202), quarkmind consumption fully wired (Tasks 2–5 complete)
 
 ## References
 
 - Spec: `specs/issue-213-iem10-replay-validation/2026-08-22-cascade-validation-design.md`
 - Plan: `plans/2026-08-22-cascade-validation.md`
 - Decisions: `specs/issue-213-iem10-replay-validation/decisions.md`
-- Diary: `docs/blog/2026-08-22-mdp02-seventy-one-places-to-change.md`
-- Garden: GE-20260822-a5d8f2 (SSR strips FQN gotcha), GE-20260822-150983 (SSR bulk constructor technique)
+- Diary: `docs/blog/2026-08-23-mdp01-teaching-the-cascade-to-see-races.md` (workspace)
+- Garden: GE-20260823-7b17ad (TensorClassifier softmax gotcha)
