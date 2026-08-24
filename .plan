@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-222-temporal-replay-matching
-state: scaffolded
+state: active
 project-sha: 035e397c5c77a07217e3c850d71f6e2deb9a46c7
 date: 2026-08-24
 issue-repo: casehubio/quarkmind
@@ -13,3 +13,13 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#222 — Issue #222 ← active
+  - [ ] Batch 1: Sampling Foundation
+    - [ ] Task 1: TimelineObservation domain record
+    - [ ] Task 2: TimelineSampler + GameTickExecutor wiring
+  - [ ] Batch 2: Storage Pipeline
+    - [ ] Task 3: CaseFile keys + schema extensions
+    - [ ] Task 4: Retention extensions — store timeline
+  - [ ] Batch 3: Live Query
+    - [ ] Task 5: TemporalPrediction trend + confidence logic
+    - [ ] Task 6: TemporalCbrTask plugin task
+    - [ ] Task 7: Integration + calibration tests
