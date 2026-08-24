@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-222-temporal-replay-matching
-state: active
+state: closing:review
 project-sha: 035e397c5c77a07217e3c850d71f6e2deb9a46c7
 date: 2026-08-24
 issue-repo: casehubio/quarkmind
@@ -11,15 +11,9 @@ design-repo: project
 design-section-hashes: 4d2cc5ab:## §1 Introduction and Goals|4f6b26ef:## §2 Constraints|39b76cb9:## §3 Context and Scope|74aa736f:## §4 Solution Strategy|9ca8de62:## §5 Building Block View|f1938c56:## §6 Runtime View|65807a21:## §7 Deployment View|a03d508f:## §8 Crosscutting Concepts|b2e1b57c:## §9 Journeys and Chapters|598f3a04:## §10 Architectural Decisions|1f604475:## §11 Quality Requirements|af5f260f:## §12 Risks and Technical Debt|42d51385:## §13 Glossary
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#222 — Issue #222 ← active
-  - [ ] Batch 1: Sampling Foundation
-    - [ ] Task 1: TimelineObservation domain record
-    - [ ] Task 2: TimelineSampler + GameTickExecutor wiring
-  - [ ] Batch 2: Storage Pipeline
-    - [ ] Task 3: CaseFile keys + schema extensions
-    - [ ] Task 4: Retention extensions — store timeline
-  - [ ] Batch 3: Live Query
-    - [ ] Task 5: TemporalPrediction trend + confidence logic
-    - [ ] Task 6: TemporalCbrTask plugin task
-    - [ ] Task 7: Integration + calibration tests
+  - [ ] Batch 1: Batch 2
+    - [ ] Task 1: Storage Pipeline:Task 3: CaseFile keys + schema extensions:done
+    - [ ] Task 2: Storage Pipeline:Task 4: Retention extensions — store timeline:done
