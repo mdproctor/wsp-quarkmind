@@ -24,7 +24,12 @@
 - `SC2GameCbrCase.CBR_TYPE` = `"sc2-strategy"` for all schema/retention operations
 - DTW warping constraint: `SakoeChibaBand(3)` — ±90s temporal shift
 - Timeline sample interval: 672 game loops (~30 game-seconds)
-- Own-side fields only (minerals via `gs.minerals()`, supply via `gs.supplyUsed()`, workers via `gs.myUnits()` filter) — `PlayerEconomyStats` is `EMPTY` during live games
+- Own-side fields only (minerals via `gs.minerals()`, supply via `gs.supplyUsed()`, workers via `gs.myUnits()` filter) — `PlayerEconomyStats` is `EMPTY` during live games. Issue #222 mentions enemy economy curves, but live-game fog-of-war makes them unreliable (D2 decision). A follow-up issue should add enemy-side temporal matching for replay-only retrieval mode.
+- `TemporalCbrTask` ID is `"temporal-cbr.predict"` — not in `QuarkMindCaseHub.PHASE_ORDER`, so it runs after all known phases (scouting → strategy-routing → strategy → tactics → economics → summarisation → temporal-cbr). Predictions arrive for the *next* tick's consumers.
+- No consumer reads temporal predictions in this iteration. A follow-up issue will wire at least one consumer (strategy adaptation or coaching). This is acceptable for Tier 3 validation.
+- Follow existing import patterns from `SC2StrategyRouterTask.java` — packages are `io.casehub.neocortex.memory.cbr.*` (not `.api.cbr`), `io.casehub.annotation.CaseType`, `io.quarkmind.agency.task.TaskDefinition`
+- `CbrQuery` uses `CbrQuery.of()` factory + `.withWeights()` / `.withMinSimilarity()` chaining — no builder pattern
+- `SC2CbrRetentionObserver` uses constructor injection exclusively — add new dependencies as constructor parameters, not `@Inject` fields
 
 ---
 
@@ -63,7 +68,7 @@ class TimelineObservationTest {
 
         var obs = TimelineObservation.from(gs);
 
-        assertEquals(15120.0 / 22.4 / 60.0, obs.minute(), 0.001);
+        assertEquals(15120.0 / SC2Data.GAME_LOOPS_PER_SECOND / 60.0, obs.minute(), 0.001);
         assertEquals(16, obs.ourWorkers());
         assertEquals(350, obs.ourMinerals());
         assertEquals(44 - 16, obs.ourArmySupply()); // supplyUsed - workers
@@ -478,7 +483,7 @@ void buildForGameEnriched_withTimeline_includesTimelineFeature() {
     assertTrue(cbrCase.features().containsKey("timeline"));
     var timelineVal = cbrCase.features().get("timeline");
     assertInstanceOf(FeatureValue.StructListVal.class, timelineVal);
-    var observations = ((FeatureValue.StructListVal) timelineVal).value();
+    var observations = ((FeatureValue.StructListVal) timelineVal).items();
     assertEquals(3, observations.size());
     // Verify first observation
     var first = observations.get(0);
@@ -557,7 +562,7 @@ This requires injecting `TimelineSampler` into the test — the observer already
 
 - [ ] **Step 6: Wire TimelineSampler into SC2CbrRetentionObserver**
 
-Add `@Inject TimelineSampler timelineSampler;` field to `SC2CbrRetentionObserver`.
+Add `TimelineSampler timelineSampler` as a constructor parameter to `SC2CbrRetentionObserver` (which uses constructor injection exclusively — see existing `@Inject` constructor at line 59). Store as a field.
 
 In `onOutcome()`, after the `EnrichedGameData enrichment = ...` construction (around line 195), replace the `buildForGameEnriched` call:
 
@@ -903,9 +908,11 @@ Expected: compilation error — `TemporalCbrTask` does not exist
 ```java
 package io.quarkmind.agent.cbr;
 
-import io.casehub.neocortex.memory.api.cbr.*;
+import io.casehub.annotation.CaseType;
+import io.casehub.neocortex.memory.MemoryDomain;
+import io.casehub.neocortex.memory.cbr.*;
+import io.quarkmind.agency.task.TaskDefinition;
 import io.quarkmind.agent.QuarkMindCaseFile;
-import io.quarkmind.agent.TaskDefinition;
 import io.quarkmind.domain.*;
 import io.quarkmind.plugin.summarisation.SummarisationLifecycle;
 import io.quarkmind.plugin.summarisation.TacticalPosture;
@@ -914,16 +921,20 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
-@io.casehub.core.CaseType("starcraft-game")
+@CaseType("starcraft-game")
 public class TemporalCbrTask implements TaskDefinition {
 
     static final long QUERY_INTERVAL_FRAMES = 2688; // ~2 min at 22.4 loops/s
     private static final int TOP_K = 5;
     private static final double MIN_SIMILARITY = 0.3;
+    private static final MemoryDomain DOMAIN = new MemoryDomain("quarkmind");
 
     @Inject TimelineSampler timelineSampler;
     @Inject CbrCaseMemoryStore cbrStore;
@@ -945,6 +956,7 @@ public class TemporalCbrTask implements TaskDefinition {
     }
 
     @Override public String getId() { return "temporal-cbr.predict"; }
+    @Override public String getName() { return "Temporal CBR Prediction"; }
 
     @Override
     public Set<String> requires() {
@@ -960,12 +972,12 @@ public class TemporalCbrTask implements TaskDefinition {
     }
 
     @Override
-    public boolean activateIf() {
-        return timelineSampler.getTimeline().size() >= 4;
+    public Predicate<CaseContext> activateIf() {
+        return ctx -> timelineSampler.getTimeline().size() >= 4;
     }
 
     @Override
-    public void execute(io.quarkmind.agency.context.CaseContext context) {
+    public void execute(CaseContext context) {
         var gameState = (GameState) context.get(QuarkMindCaseFile.GAME_STATE);
         if (gameState.gameFrame() - lastQueryFrame < QUERY_INTERVAL_FRAMES) return;
         lastQueryFrame = gameState.gameFrame();
@@ -973,30 +985,26 @@ public class TemporalCbrTask implements TaskDefinition {
         var timeline = timelineSampler.getTimeline();
         var phaseSequence = phases.stream().map(TacticalPosture::posture).toList();
         var archetype = (String) context.get(QuarkMindCaseFile.STRATEGY_ROUTED_ARCHETYPE);
-        var matchup = deriveMatchup(context);
+        // Derive matchup from enemy race — same pattern as SC2StrategyRouterTask
+        var enemyRace = (String) context.get(QuarkMindCaseFile.ENEMY_RACE);
+        var matchup = enemyRace != null ? "Pv" + enemyRace.charAt(0) : null;
 
-        // Build query features
+        // Build query — use CbrQuery.of() factory, not builder
         var queryFeatures = new HashMap<String, FeatureValue>();
         queryFeatures.put("timeline", toStructListVal(timeline));
         queryFeatures.put("phase_sequence", FeatureValue.of(phaseSequence));
         if (archetype != null) queryFeatures.put("enemy_archetype", FeatureValue.of(archetype));
         if (matchup != null) queryFeatures.put("matchup", FeatureValue.of(matchup));
 
-        var query = CbrQuery.builder()
-                .tenantId("quarkmind")
-                .domain(io.casehub.neocortex.memory.api.MemoryDomain.OPERATIONAL)
-                .caseType(SC2GameCbrCase.CBR_TYPE)
-                .features(Map.copyOf(queryFeatures))
-                .weights(Map.of("timeline", 0.50, "phase_sequence", 0.30,
+        var query = CbrQuery.of("default", DOMAIN, Path.of("quarkmind/strategy/cases"),
+                        SC2GameCbrCase.CBR_TYPE, Map.copyOf(queryFeatures), TOP_K)
+                .withWeights(Map.of("timeline", 0.50, "phase_sequence", 0.30,
                         "enemy_archetype", 0.10, "matchup", 0.10))
-                .topK(TOP_K)
-                .minSimilarity(MIN_SIMILARITY)
-                .build();
+                .withMinSimilarity(MIN_SIMILARITY);
 
         var results = cbrStore.retrieveSimilar(query, SC2GameCbrCase.class);
         if (results.isEmpty()) return;
 
-        // Extract predictions via DTW alignment re-run on top results
         var prediction = extractPrediction(timeline, results, phaseSequence);
         if (prediction != null) {
             context.set(QuarkMindCaseFile.TEMPORAL_PREDICTION, prediction);
@@ -1005,9 +1013,99 @@ public class TemporalCbrTask implements TaskDefinition {
         }
     }
 
-    // extractPrediction: re-run DtwSimilarity.compute() on each result's timeline,
-    // find alignment point, compute lookahead trends, aggregate predictions.
-    // See spec §7 for full algorithm.
+    TemporalPrediction extractPrediction(
+            List<TimelineObservation> queryTimeline,
+            List<ScoredCbrCase<SC2GameCbrCase>> results,
+            List<String> queryPhases) {
+
+        // Build query observations as List<Map<String,FeatureValue>> for DtwSimilarity
+        var queryObs = queryTimeline.stream()
+                .map(t -> Map.<String, FeatureValue>of(
+                        "minute", FeatureValue.of(t.minute()),
+                        "our_workers", FeatureValue.of(t.ourWorkers()),
+                        "our_minerals", FeatureValue.of(t.ourMinerals()),
+                        "our_army_supply", FeatureValue.of(t.ourArmySupply())))
+                .toList();
+
+        // Get the TimeSeries schema field for DtwSimilarity.compute()
+        var schema = SC2CbrSchemaRegistrar.buildStrategySchema();
+        var tsField = (FeatureField.TimeSeries) schema.fields().stream()
+                .filter(f -> f.name().equals("timeline")).findFirst().orElseThrow();
+
+        // Re-run DTW on each result to get alignment paths
+        Map<String, Integer> phaseVotes = new HashMap<>();
+        List<Double> transitionTimes = new ArrayList<>();
+        List<List<TimelineObservation>> lookaheads = new ArrayList<>();
+
+        for (var scored : results) {
+            var caseFeatures = scored.cbrCase().features();
+            if (!caseFeatures.containsKey("timeline")) continue;
+
+            var caseTimeline = ((FeatureValue.StructListVal) caseFeatures.get("timeline")).items();
+            // DtwSimilarity.compute() is a static method — no instance needed
+            var dtwResult = DtwSimilarity.compute(
+                    queryObs, caseTimeline, tsField,
+                    new WarpingConstraint.SakoeChibaBand(3), Double.MAX_VALUE);
+
+            // Find alignment point: last query step maps to step s_k in past game
+            var alignment = dtwResult.alignment();
+            if (alignment.isEmpty()) continue;
+            int sk = alignment.get(alignment.size() - 1).caseIndex();
+
+            // Lookahead: past game steps after s_k (next 4 steps = ~2 min)
+            int lookaheadEnd = Math.min(caseTimeline.size(), sk + 5);
+            if (sk + 1 >= caseTimeline.size()) continue; // past game ended at alignment
+
+            var lookahead = new ArrayList<TimelineObservation>();
+            for (int i = sk + 1; i < lookaheadEnd; i++) {
+                var obs = caseTimeline.get(i);
+                lookahead.add(new TimelineObservation(
+                        ((FeatureValue.NumberVal) obs.get("minute")).value().doubleValue(),
+                        ((FeatureValue.NumberVal) obs.get("our_workers")).value().intValue(),
+                        ((FeatureValue.NumberVal) obs.get("our_minerals")).value().intValue(),
+                        ((FeatureValue.NumberVal) obs.get("our_army_supply")).value().intValue()));
+            }
+            lookaheads.add(lookahead);
+
+            // Phase prediction from matched case's phase_sequence
+            if (caseFeatures.containsKey("phase_sequence")) {
+                var casePhases = ((FeatureValue.StringListVal) caseFeatures.get("phase_sequence")).value();
+                // Find phase at alignment point timestamp and the next distinct phase
+                double alignMinute = ((FeatureValue.NumberVal) caseTimeline.get(sk).get("minute")).value().doubleValue();
+                // Walk phase sequence to find transition after alignment
+                for (int i = 0; i < casePhases.size() - 1; i++) {
+                    if (!casePhases.get(i).equals(casePhases.get(i + 1))) {
+                        String nextPhase = casePhases.get(i + 1);
+                        phaseVotes.merge(nextPhase, 1, Integer::sum);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (lookaheads.isEmpty()) return null;
+
+        // Aggregate trends from all lookaheads (use first non-empty)
+        var bestLookahead = lookaheads.get(0);
+        var economyTrend = TemporalPrediction.computeEconomyTrend(bestLookahead);
+        var armyTrend = TemporalPrediction.computeArmyTrend(bestLookahead);
+
+        // Majority phase vote
+        var bestPhase = phaseVotes.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("UNKNOWN");
+        int agreeCount = phaseVotes.getOrDefault(bestPhase, 0);
+
+        double confidence = TemporalPrediction.computeConfidence(
+                results.get(0).score(), agreeCount, results.size());
+
+        return new TemporalPrediction(
+                bestPhase, economyTrend, armyTrend,
+                bestLookahead.isEmpty() ? 0 :
+                        bestLookahead.get(bestLookahead.size() - 1).minute() - queryTimeline.get(queryTimeline.size() - 1).minute(),
+                confidence, results.size(), results.get(0).score());
+    }
 
     private FeatureValue toStructListVal(List<TimelineObservation> timeline) {
         return FeatureValue.of(timeline.stream()
@@ -1021,9 +1119,13 @@ public class TemporalCbrTask implements TaskDefinition {
 }
 ```
 
-The `extractPrediction` method is the core logic — re-runs `DtwSimilarity.compute()` on each result, extracts alignment paths, computes lookahead trends using `TemporalPrediction.computeEconomyTrend()` and `computeArmyTrend()`, finds majority phase prediction, and aggregates confidence via `TemporalPrediction.computeConfidence()`.
-
-Check how `SC2StrategyRouterTask` derives `matchup` from context — likely from `ENEMY_RACE` and race detection.
+Key API details verified against `SC2StrategyRouterTask.java`:
+- `CbrQuery.of("default", DOMAIN, Path.of(...), caseType, features, topK)` + `.withWeights()` + `.withMinSimilarity()`
+- `MemoryDomain` constructed as `new MemoryDomain("quarkmind")`
+- `activateIf()` returns `Predicate<CaseContext>`, not `boolean`
+- `DtwSimilarity.compute()` is a static method returning `DtwResult(score, List<AlignmentPair>)`
+- `ScoredCbrCase.cbrCase().features()` gives access to stored case features
+- `FeatureValue.StructListVal.items()` (not `.value()`) for the observation list
 
 - [ ] **Step 4: Run tests — verify they pass**
 
