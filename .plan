@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-279-quarkmind-discord
-state: active
+state: closing:review
 project-sha: slot-creation
 date: 2026-08-17
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
 
+evidence-era: true
 ## Queue
 - [x] casehubio/quarkmind#279 — Issue #279
 - [x] casehubio/quarkmind#280 — Phase 2: memory integration (D5 four-layer memory)
