@@ -15,13 +15,7 @@ flyway-next-v: unknown
 - [x] casehubio/quarkmind#279 — Issue #279
 - [x] casehubio/quarkmind#280 — Phase 2: memory integration (D5 four-layer memory)
 - [x] casehubio/quarkmind#281 — Phase 3: personality growth pipeline (D6 Layer 3)
-- [ ] casehubio/quarkmind#282 — Phase 4: multi-character per server (D9 v2) ← active
-  - [x] Batch 1: Deps
-    - [x] Task 1: Update blocks dependency
-  - [x] Batch 2: Foundation
-    - [x] Task 2: CharacterContext + stateless loop + blocks wiring
-  - [x] Batch 3: Multi-char
-    - [x] Task 3: ChatCharacterManager orchestration
-- [ ] casehubio/quarkmind#283 — Phase 5: personality generator wizard (D12 future)
-- [ ] casehubio/quarkmind#284 — DiscordGatewayMessageHistory buffer eviction
+- [x] casehubio/quarkmind#282 — Phase 4: multi-character per server (D9 v2)
+- [x] casehubio/quarkmind#283 — Phase 5: personality generator wizard (D12 future)
+- [ ] casehubio/quarkmind#284 — DiscordGatewayMessageHistory buffer eviction ← active
 - [ ] casehubio/quarkmind#285 — DiscordIdentityDetector unbounded botMessageIds
