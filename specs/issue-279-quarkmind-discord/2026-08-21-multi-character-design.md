@@ -1,37 +1,55 @@
-# QuarkMind Chat — Multi-Character Per Server
+# QuarkMind Chat — Multi-Character Per Server + Blocks Integration
 
-**Date:** 2026-08-21
-**Status:** Draft
+**Date:** 2026-08-21 (revised 2026-08-25)
+**Status:** Draft (R2)
 **Issue:** #282
-**Decisions:** See `decisions.md` (D25–D30)
+**Decisions:** See `decisions.md` (D25–D35)
 **Depends on:** quarkmind-discord design (D1–D24)
 
 ## Overview
 
-Extend quarkmind-chat to support multiple characters per Discord server. Each character is a separate Discord bot account with its own personality, memory, needs, and identity, running in a single JVM process. Characters see each other through direct Gateway connections that include bot messages (the existing `DiscordInboundConnector` filters bot messages and cannot be used). A shared pacing governor prevents simultaneous responses.
+Extend quarkmind-chat to support multiple characters per Discord server, wired to the blocks social cognition stack. Each character is a separate Discord bot account with its own personality, memory, and identity, running in a single JVM process. Characters see each other through direct Gateway connections that include bot messages. The blocks `InnerLifeOrchestrator` replaces all custom proactive behavioral logic; `DriveOrchestrator` replaces `NeedState`; `CivilityConstraint` chain replaces `OutputGovernor`.
 
-This follows WackyManor's proven pattern (`casehub/examples/wacky-manor`): shared CDI services + agentId-scoped operations = multi-character in one process. WackyManor's `ScenarioOrchestrator` manages N characters via `agentId`-scoped calls to shared services (`AgentRegistry`, `CaseMemoryStore`, `DispositionSignalStore`). QuarkMind chat adapts this to event-driven Discord execution.
+This follows WackyManor's proven pattern: shared CDI services + agentId-scoped operations = multi-character in one process. All blocks orchestrators use `agentId:tenantId` keying internally — multi-agent was designed in from the start.
 
 ## Architecture
 
 ### Deployment Model (D25)
 
 Multiple Discord bot accounts in a single JVM. Each character has:
-- Its own Discord bot token and Gateway WebSocket connection
+- Its own Discord bot token and Gateway WebSocket connection (D28)
 - Its own `AgentDescriptor` (personality, disposition, goals, constraints)
 - Its own memory space (scoped by `agentId` in `CaseMemoryStore`)
-- Its own need state (SOCIAL, CURIOSITY, EXPRESSION)
 - Its own identity detector (knows its own Discord user ID)
 
 Characters share:
+- `InnerLifeOrchestrator` — proactive behavioral layer (per-agent state internally)
+- `DriveOrchestrator` — four drives per agent (per-agent state internally)
 - `LlmRequestQueue` — rate limiting and priority routing across all characters
 - `CaseMemoryStore` / `GraphCaseMemoryStore` — one store, per-agent isolation via `agentId`
-- `OutputGovernor` — cross-character pacing per server (D27)
-- `ObjectMapper`, `ChatPerceptionBridge` — stateless, reusable
+- `ChatPerceptionBridge`, `ObjectMapper` — stateless, reusable
 
-### CharacterContext (D26)
+### Two-Path Execution Model (D31)
 
-Per-character mutable state extracted from `ChatAgencyLoop` into a dedicated class:
+The chat agent has two distinct paths:
+
+**Reactive path (message wake — someone talks to/mentions the bot):**
+1. Feed conversation events to `innerLifeOrchestrator.observe(event, descriptor)`
+2. Get `driveOrchestrator.currentDrives(agentId, tenantId)` for prompt enrichment
+3. Build conversation context, recall memories, call LLM → respond
+4. `innerLifeOrchestrator.observeResponse(descriptor)` — records that the agent responded
+5. Ingest memory via `ChatMemoryFacade`
+
+**Proactive path (heartbeat wake — agent decides whether to speak unprompted):**
+1. `innerLifeOrchestrator.tick(descriptor, channelContext)` → `Initiated(content, channelHint, score)` or `Silent(reason)`
+2. If `Initiated`: dispatch as `ChatIntent.Send` — the content comes from InnerLifeOrchestrator's internal LLM motivation call
+3. If `Silent`: no action
+
+`InnerLifeOrchestrator` internally handles: drive ticking, civility constraints (pacing), reflection, content quality evaluation, and the proactive LLM call. `ChatAgencyLoop` retains the reactive LLM call for direct conversation responses where conversation-aware context (threads, @mentions, memory recall) is needed.
+
+### CharacterContext (D26, revised D34)
+
+Per-character identity and perception state — no behavioral state (blocks manages that internally per-agent):
 
 ```java
 public class CharacterContext {
@@ -40,98 +58,96 @@ public class CharacterContext {
     private final String systemPrompt;
     private final Supplier<AgentDescriptor> descriptorSupplier;
     private final BotIdentityDetector identityDetector;
-    private final NeedState needState;
-    private final IdleReflectionTrigger reflectionTrigger;
     private final Set<String> participatedThreadIds;
-    private int consecutiveIdleTicks;
-    private Instant lastReflectionTimestamp;
-    // Per-character WorldBridge, EventSource, MessageHistory (see Per-Character Gateway)
     private final ChatWorldBridge worldBridge;
 }
 ```
 
-Note: `CharacterContext` is a mutable class, not a record — `consecutiveIdleTicks` and `lastReflectionTimestamp` are mutated per tick.
-
-`ChatAgencyLoop` becomes stateless — `tick()` reads the `CharacterContext` from `AgencyContext` via `context.getAs("character", CharacterContext.class)` (D30). The loop no longer holds `agentId`, `tenantId`, `systemPrompt`, `consecutiveIdleTicks`, `lastReflectionTimestamp`, or `participatedThreadIds` as instance fields.
+Simplified from the original D26 — `NeedState`, `IdleReflectionTrigger`, `consecutiveIdleTicks`, and `lastReflectionTimestamp` are removed. `InnerLifeOrchestrator` and `DriveOrchestrator` manage all behavioral state per-agent via `ConcurrentHashMap<String, AgentState>` keyed by `agentId:tenantId`.
 
 ### ChatCharacterManager
 
-CDI `@ApplicationScoped` bean with `@Observes StartupEvent` that manages all characters. Analogous to WackyManor's `ScenarioOrchestrator` (`casehub/examples/wacky-manor`).
+CDI `@ApplicationScoped` bean that manages all characters. Analogous to WackyManor's `ScenarioOrchestrator`.
 
 ```java
 @ApplicationScoped
 public class ChatCharacterManager {
     @Inject AgentRegistry agentRegistry;
-    @Inject ChatMemoryFacade memoryFacade;      // shared, agentId-scoped
-    @Inject LlmRequestQueue llmQueue;           // shared rate limiter
+    @Inject ChatMemoryFacade memoryFacade;
+    @Inject LlmRequestQueue llmQueue;
     @Inject ObjectMapper mapper;
     @Inject ChatPerceptionBridge perceptionBridge;
+    @Inject InnerLifeOrchestrator innerLifeOrchestrator;
+    @Inject DriveOrchestrator driveOrchestrator;
 
-    private ChatAgencyLoop agencyLoop;           // single shared instance, constructed programmatically
+    private ChatAgencyLoop agencyLoop;
     private final Map<String, CharacterContext> characters = new ConcurrentHashMap<>();
-    private OutputGovernor sharedGovernor;       // cross-character pacing (D27)
-
-    void onStart(@Observes StartupEvent evt) { ... }
 }
 ```
 
-`ChatAgencyLoop` is constructed programmatically by the manager (not CDI-managed) — it takes only shared, stateless dependencies. Per-character state flows through `AgencyContext`.
+`ChatAgencyLoop` is constructed programmatically by the manager — it takes shared dependencies including `InnerLifeOrchestrator` and `DriveOrchestrator`. Per-character state flows through `AgencyContext` via `CharacterContext`.
 
-**Startup responsibilities (`onStart`):**
+**Startup (`onStart`):**
 1. Read character config from Quarkus `@ConfigMapping` — each entry has `agentId`, `token`, `channels`
-2. For each configured character, look up `AgentDescriptor` from `AgentRegistry` via `agentRegistry.findById(agentId, tenantId)`
-3. Create `CharacterContext` with per-character `NeedState`, `IdleReflectionTrigger`, `DiscordIdentityDetector`
-4. Create per-character `DiscordGateway` connection with the character's bot token (D28) — NOT `DiscordInboundConnector` (see Per-Character Gateway)
+2. For each configured character, look up `AgentDescriptor` from `AgentRegistry`
+3. Create `CharacterContext` with per-character `DiscordIdentityDetector`, system prompt, world bridge
+4. Create per-character `DiscordGateway` connection with the character's bot token (D28)
 5. Wire each character's Gateway events to its `DiscordGatewayMessageHistory` and `DiscordEventSource`
-6. Construct shared `ChatAgencyLoop` with shared dependencies (`llmQueue`, `mapper`, `perceptionBridge`, `memoryFacade`)
+6. Construct shared `ChatAgencyLoop` with shared dependencies
 
 **Per-tick flow:**
 1. Character's `DiscordEventSource` fires (message or heartbeat)
-2. Character's `ChatWorldBridge` builds `ChatPerception` from its `DiscordGatewayMessageHistory`
-3. Manager creates `AgencyContext` with the character's `NeedState`, puts `CharacterContext` and `ChatPerception`
-4. Shared `OutputGovernor.tryAcquire()` atomically checks AND records — if denied, skip this tick
-5. `agencyLoop.tick(context)` runs — reads `CharacterContext` for identity, prompt, memory scoping
-6. Intents dispatched via the character's `ChatWorldBridge`
-
-**Concurrency model:** Each character's Gateway events fire on separate virtual threads. Same-character ticks are serialized by the `ChoreographedDriver` event dispatch model (single-threaded per driver instance). Cross-character ticks are concurrent — the shared `OutputGovernor` uses atomic `tryAcquire()` (not separate allow/record) to prevent TOCTOU races. When `tryAcquire()` returns false, the tick proceeds but skips intent dispatch (observation and memory still run).
+2. Character's `ChatWorldBridge` builds `ChatPerception`
+3. Manager creates `AgencyContext`, puts `CharacterContext` and `ChatPerception` (D30)
+4. `agencyLoop.tick(context)` runs — reads `CharacterContext` for identity, prompt, memory scoping
+5. On message wake: reactive path (ChatAgencyLoop calls LLM, checks drives for prompt context)
+6. On heartbeat wake: proactive path (ChatAgencyLoop calls `innerLifeOrchestrator.tick()`)
+7. Intents dispatched via the character's `ChatWorldBridge`
 
 ### Per-Character Gateway (D28)
 
-Each character needs its own Discord Gateway connection because Discord requires one WebSocket session per bot token. The `ChatCharacterManager` creates per-character:
+Each character needs its own Discord Gateway connection (one WebSocket per bot token — Discord API requirement). **NOT `DiscordInboundConnector`** — the connector filters bot messages (`author.bot == true`), which would prevent characters from seeing each other.
 
-- `DiscordGateway` — direct Gateway connection with the character's bot token. **NOT `DiscordInboundConnector`** — the connector filters out bot messages (`author.bot == true` at line 124), which would prevent characters from seeing each other. Direct Gateway access receives ALL messages including other bots.
-- `DiscordGatewayMessageHistory` — accumulates Gateway events for this bot (all messages, including from other characters)
+Per character:
+- `DiscordGateway` — direct Gateway connection with the character's bot token
+- `DiscordGatewayMessageHistory` — accumulates all messages including from other characters
 - `DiscordEventSource` — receives events from the Gateway listener
-- `DiscordIdentityDetector` — knows this bot's Discord user ID, used to filter the character's OWN messages from perception (a character shouldn't perceive its own output as external input)
+- `DiscordIdentityDetector` — knows this bot's Discord user ID, filters own messages from perception
 - `ChatWorldBridge` — uses this bot's message history and identity detector
 
-The per-character `GatewayEventListener` wired by `ChatCharacterManager`:
+The per-character `GatewayEventListener`:
 1. Receives all `MESSAGE_CREATE` events (no bot filter)
-2. Converts to `ReceivedMessage` and calls `messageHistory.accumulate()`
-3. Fires `eventSource.onMessage()` for messages not from this character's own bot (filtered by `identityDetector.botUserId()`)
+2. Accumulates into `messageHistory`
+3. Fires `eventSource.onMessage()` for messages not from this character's own bot
 
-This means Character A's listener accumulates Character B's messages into its history (so A can see B's posts) but does NOT fire a wake event for A's own messages.
+### Drive-Enriched Reactive Prompts (D32)
 
-### Cross-Character Pacing (D27)
+The reactive LLM prompt replaces `Needs: SOCIAL=X, CURIOSITY=Y, EXPRESSION=Z` with drive state from `DriveOrchestrator`:
 
-One `OutputGovernor` per server (tenantId), shared across all characters. Prevents multiple characters from responding simultaneously.
+```
+Drives: CURIOSITY=0.7, COMPETENCE=0.5, AFFILIATION=0.8, AUTONOMY=0.3
+```
 
-The existing three-layer pacing from D7 becomes four layers:
-1. **Server-wide governor** (new) — minimum interval between any two character actions in the same server
-2. **Per-character output governor** (existing) — per-character action frequency cap
-3. **Proactive decision gate** (existing) — per-character social context evaluation
-4. **Channel-aware pacing** (existing) — per-character channel activity scaling
+`driveOrchestrator.currentDrives(agentId, tenantId)` returns a `DriveProfile` with the current drive intensities. The four drives (CURIOSITY, COMPETENCE, AFFILIATION, AUTONOMY) are richer than the original three needs — they compose mood, narrative modulation, and disposition internally.
 
-The server-wide governor is the only new layer. A character must pass BOTH the server-wide check AND its own per-character check before acting.
+### Cross-Character Pacing (D27, revised D33)
 
-**Thread safety:** `OutputGovernor.allow()` + `recordAction()` is a TOCTOU race under concurrent character ticks. Replace with a single atomic `boolean tryAcquire()` that checks AND records in one synchronized operation. The existing separate `allow()`/`recordAction()` pattern is safe for single-character (one tick at a time) but breaks with concurrent multi-character ticks.
+`CivilityConstraint` chain replaces `OutputGovernor`. `InnerLifeOrchestrator` runs the constraint chain internally for proactive initiation. The three-layer pacing from D7 maps to `CivilityConstraint` implementations:
+
+| Original layer | Blocks replacement |
+|---|---|
+| Global output governor (D7 layer 1) | `MaxPerWindowConstraint` |
+| Minimum interval (D7 layer 1) | `MinimumGapConstraint` |
+| Proactive decision gate (D7 layer 2) | `ConsecutiveInitiationCooldownConstraint` + InnerLifeOrchestrator internal evaluation |
+| Channel-aware pacing (D7 layer 3) | InnerLifeOrchestrator channel context evaluation |
+
+For cross-character shared pacing (D27), a single `MinimumGapConstraint` instance shared across all characters achieves the server-wide pacing. If the built-in constraint doesn't support shared-state across agents (each sees one agent's `InitiationContext`), a custom `SharedMinimumGapConstraint` CDI bean may be needed — verify during implementation.
 
 ### Configuration (D29)
 
-Character configuration uses standard Quarkus `@ConfigMapping`:
+Character configuration via Quarkus `@ConfigMapping`:
 
 ```yaml
-# application.yaml
 quarkmind:
   chat:
     tenant-id: my-server
@@ -144,72 +160,100 @@ quarkmind:
         channels: general,workshop
 ```
 
-Each character's `agentId` in the config must match an `AgentDescriptor.agentId()` in `META-INF/eidos/descriptors.yaml`. The descriptor defines personality (disposition axes, style profile, briefing, goals, constraints). The config defines operational parameters (bot token, watched channels).
-
-A single-character deployment is a special case: one entry in the `characters` map. Backwards-compatible with D12.
+Each `agentId` in config must match an `AgentDescriptor.agentId()` in `META-INF/eidos/descriptors.yaml`. Single-character deployment is a special case: one entry in the `characters` map.
 
 ## Changes Required
 
-### quarkmind-chat-agent (primary changes)
+### quarkmind-chat-agent — modified
 
 | Class | Change |
 |-------|--------|
-| `ChatAgencyLoop` | Remove instance fields (`agentId`, `tenantId`, `systemPrompt`, `consecutiveIdleTicks`, `lastReflectionTimestamp`, `participatedThreadIds`, `descriptorSupplier`, `dispositionActivator`). Read from `CharacterContext` in `AgencyContext`. Remove setter methods. |
-| `CharacterContext` | **New class.** Holds all per-character mutable state. |
-| `ChatCharacterManager` | **New class.** Manages N characters, creates per-character stacks, holds shared `OutputGovernor`. |
-| `ChatWorldBridge` | No structural change — already parameterized. One instance per character created by manager. |
+| `ChatAgencyLoop` | Remove per-character instance fields. Read from `CharacterContext` in `AgencyContext`. Add `InnerLifeOrchestrator` and `DriveOrchestrator` as constructor params. Implement two-path execution (reactive/proactive). |
+| `ChatWorldBridge` | No structural change — already parameterized. One instance per character. |
 | `ChatMemoryFacade` | No change — already takes `agentId`/`tenantId` as method params. |
-| `ChatNeedDefinitions` | No structural change — one instance per character, configured from per-character descriptor. |
-| `ChatChannelPacing` | No change — one instance per character. |
-| `LlmReflectionSynthesizer` | No change — stateless, takes `agentId` as param. |
-| `DispositionAwareReflectionSynthesizer` | No change — delegates to synthesizer and activator with `agentId`. |
-| `LlmReflectionDispositionActivator` | **Refactor.** Currently holds mutable `volatile List<DispositionValue> dispositionProfile` — per-character state. Change to `Map<String, List<DispositionValue>>` keyed by `agentId`. `updateProfile()` becomes `updateProfile(String agentId, ...)`. `onReflection(agentId, ...)` already receives `agentId` — look up profile per call. This makes the activator genuinely shareable across characters. |
 
-### quarkmind-chat-agent/discord (per-character instances)
+### quarkmind-chat-agent — new classes
+
+| Class | Purpose |
+|-------|---------|
+| `CharacterContext` | Per-character identity + perception state (D26/D34) |
+| `ChatCharacterManager` | Manages N characters, creates per-character stacks (D26) |
+| `CharacterConfig` | Per-character config record (`agentId`, `token`, `channels`) |
+
+### quarkmind-chat-agent — deleted (D35)
+
+| Class | Replaced by |
+|-------|-------------|
+| `ChatNeedDefinitions` | `DriveOrchestrator` (blocks) |
+| `LlmReflectionDispositionActivator` | `TraitPressureSource` impls (blocks) |
+| `DispositionAwareReflectionSynthesizer` | `InnerLifeOrchestrator` reflection (blocks) |
+| `LlmReflectionSynthesizer` | `InnerLifeOrchestrator` reflection (blocks) |
+| `ChatChannelPacing` | `CivilityConstraint` chain (blocks) |
+
+### quarkmind-chat-agent/discord
 
 | Class | Change |
 |-------|--------|
-| `DiscordEventSource` | No structural change — one instance per character. |
-| `DiscordGatewayMessageHistory` | No structural change — one instance per character. |
-| `DiscordIdentityDetector` | No structural change — one instance per character with its own `botUserId`. |
+| `DiscordEventSource` | No structural change — one instance per character |
+| `DiscordGatewayMessageHistory` | No structural change — one instance per character |
+| `DiscordIdentityDetector` | No structural change — one instance per character |
 
 ### quarkmind-core
 
 | Class | Change |
 |-------|--------|
-| `OutputGovernor` | Replace `allow()` + `recordAction()` with atomic `boolean tryAcquire()`. Make thread-safe for shared cross-character use. |
+| `OutputGovernor` | No change — stays for SC2. No longer used by quarkmind-chat. |
+| `IdleReflectionTrigger` | No change — stays for SC2. No longer used by quarkmind-chat. |
+| `NeedState` | No change — stays for SC2. No longer used by quarkmind-chat. |
 | `AgencyContext` | No change — `CharacterContext` goes in the existing map. |
-| `AgencyLoop` | No change — `tick(AgencyContext)` signature unchanged. |
 
 ### Tests
 
 | Test | Change |
 |------|--------|
-| `ChatAgencyLoopTest` | Update to put `CharacterContext` in `AgencyContext` instead of using setter methods. |
-| `ChatAgentEndToEndTest` | Update to use `CharacterContext`. |
-| `ChatCharacterManagerTest` | **New test.** Multi-character lifecycle: startup creates N contexts, tick dispatches to correct character, shared governor enforces pacing. |
-| `DispositionAwareReflectionSynthesizerTest` | Minor — verify agentId flows correctly through `CharacterContext`. |
+| `ChatAgencyLoopTest` | Major rewrite — use `CharacterContext` in `AgencyContext`, mock `InnerLifeOrchestrator`/`DriveOrchestrator`, test reactive/proactive paths |
+| `ChatAgentEndToEndTest` | Update to use `CharacterContext` and blocks orchestrators |
+| `ChatCharacterManagerTest` | **New.** Multi-character lifecycle: startup creates N contexts, tick dispatches to correct character |
+| `LlmReflectionSynthesizerTest` | **Deleted** — class deleted |
+| `LlmReflectionDispositionActivatorTest` | **Deleted** — class deleted |
+| `DispositionAwareReflectionSynthesizerTest` | **Deleted** — class deleted |
+
+### Dependencies — pom.xml
+
+`quarkmind-chat-agent` gains dependency on `casehub-blocks` for:
+- `InnerLifeOrchestrator`
+- `DriveOrchestrator`
+- `CivilityConstraint`
+- `ImportanceScorer`
+- `PersonalityEvolutionOrchestrator`
+- `TraitPressureSource`
+- `NarrativeOrchestrator`
+- `GoalProposalOrchestrator`
 
 ## What Does NOT Change
 
 - `ChatPerception`, `ChatIntent`, `WakeReason` (protocol types) — character-agnostic
 - `ChatDeltaReport`, `AttentionClassifier`, `ChatObservationRenderer` (quarkmind-core) — stateless
-- `PersonalityEvolutionPipeline`, `IdleReflectionTrigger` (quarkmind-core) — already parameterized or per-instance
 - `CaseMemoryStore`, `GraphCaseMemoryStore` (neocortex) — already scoped by `agentId`
 - `AgentDescriptor`, `AgentRegistry` (eidos) — already supports multiple descriptors
 - `ReflectionOrchestrator` (neocortex) — already takes `agentId` as parameter
 
 ## Known Debt
 
-`DiscordGatewayMessageHistory` accumulates messages without eviction — the buffer grows indefinitely. With N characters, each holding its own buffer, this is amplified. The `CopyOnWriteArrayList` backing structure copies the entire array on every `add()`. This is existing debt (pre-dates multi-character) but should be addressed: add a `drain(Instant before)` method or switch to a bounded deque. Filed separately from this issue.
+- `DiscordGatewayMessageHistory` accumulates messages without eviction — buffer grows indefinitely. With N characters, each holding its own buffer, this is amplified (#284).
+- `DiscordIdentityDetector.botMessageIds` is an unbounded `ConcurrentHashMap.newKeySet()` — grows indefinitely as the bot sends messages (#285).
 
 ## References
 
-- WackyManor `ScenarioOrchestrator` — multi-character orchestration pattern (shared services, agentId-scoped operations, virtual threads)
-- WackyManor `CharacterState` — per-character mutable state record
+- WackyManor `ScenarioOrchestrator` — multi-character orchestration pattern
+- WackyManor `CharacterState` — per-character mutable state
 - WackyManor `ProfileAwareDescriptorRegistrar` — profile-aware multi-descriptor loading
+- blocks `InnerLifeOrchestrator` — proactive behavioral compositor (`io.casehub.blocks.agentic.social`)
+- blocks `DriveOrchestrator` — drive architecture (`io.casehub.blocks.agentic.social.drive`)
+- blocks `CivilityConstraint` — pacing constraint chain (`io.casehub.blocks.agentic.social`)
+- blocks `NarrativeOrchestrator` — narrative identity (`io.casehub.blocks.agentic.social.narrative`)
+- blocks `GoalProposalOrchestrator` — autonomous goals (`io.casehub.blocks.agentic.social.goal`)
 - `ClasspathYamlDescriptorRegistrar` (casehub-eidos) — loads N descriptors from one YAML
 - GE-20260820-c19b68 — CbrQuery lacks producerAgentId filter (memory isolation by agentId)
-- GE-20260811-3bf675 — AgentDescriptorRegistrar producer pattern
 - D1–D24 in `decisions.md` — quarkmind-discord design decisions this extends
-- blocks `WorldObservationProvider` (blocks#127) — available SPI for structured observation rendering
+- D25–D35 in `decisions.md` — multi-character + blocks integration decisions
