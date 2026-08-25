@@ -17,5 +17,5 @@ flyway-next-v: unknown
 - [x] casehubio/quarkmind#281 — Phase 3: personality growth pipeline (D6 Layer 3)
 - [x] casehubio/quarkmind#282 — Phase 4: multi-character per server (D9 v2)
 - [x] casehubio/quarkmind#283 — Phase 5: personality generator wizard (D12 future)
-- [ ] casehubio/quarkmind#284 — DiscordGatewayMessageHistory buffer eviction ← active
-- [ ] casehubio/quarkmind#285 — DiscordIdentityDetector unbounded botMessageIds
+- [x] casehubio/quarkmind#284 — DiscordGatewayMessageHistory buffer eviction
+- [x] casehubio/quarkmind#285 — DiscordIdentityDetector unbounded botMessageIds
