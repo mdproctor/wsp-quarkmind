@@ -1,0 +1,22 @@
+# Work Plan — issue-279-quarkmind-discord
+
+## State
+branch: issue-279-quarkmind-discord
+state: closing:review
+project-sha: slot-creation
+date: 2026-08-17
+issue-repo: casehubio/quarkmind
+covers: 279
+design-repo: project
+design-section-hashes: 
+flyway-next-v: unknown
+
+evidence-era: true
+## Queue
+- [x] casehubio/quarkmind#279 — Issue #279
+- [x] casehubio/quarkmind#280 — Phase 2: memory integration (D5 four-layer memory)
+- [x] casehubio/quarkmind#281 — Phase 3: personality growth pipeline (D6 Layer 3)
+- [x] casehubio/quarkmind#282 — Phase 4: multi-character per server (D9 v2)
+- [x] casehubio/quarkmind#283 — Phase 5: personality generator wizard (D12 future)
+- [x] casehubio/quarkmind#284 — DiscordGatewayMessageHistory buffer eviction
+- [x] casehubio/quarkmind#285 — DiscordIdentityDetector unbounded botMessageIds
