@@ -8,3 +8,4 @@
 | [2026-08-14-mdp02-autonomous-minds-virtual-worlds.md](2026-08-14-mdp02-autonomous-minds-virtual-worlds.md) | 2026-08-14 | QuarkMind restructure: multi-module split, agency framework extraction from SC2, five world stubs |
 | [2026-08-23-mdp01-teaching-the-cascade-to-see-races.md](2026-08-23-mdp01-teaching-the-cascade-to-see-races.md) | 2026-08-23 | Wiring the ONNX cascade: 269-feature temporal windows, per-race model routing, softmax testing gotcha |
 | [2026-08-24-mdp01-dtw-doesnt-do-what-you-think.md](2026-08-24-mdp01-dtw-doesnt-do-what-you-think.md) | 2026-08-24 | DTW forces full endpoint alignment — subsequence lookahead needs timestamp matching. Temporal CBR pipeline wired end-to-end. |
+| [2026-08-25-mdp01-closing-the-loop-on-cbr-learning.md](2026-08-25-mdp01-closing-the-loop-on-cbr-learning.md) | 2026-08-25 | CBR epic #214 DoD closure — learning curve trend tests and commentary-CBR integration |
