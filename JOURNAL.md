@@ -1,1 +1,1 @@
-# Design Journal — issue-222-temporal-replay-matching
+# Design Journal — issue-231-commentary-feedback-trust
