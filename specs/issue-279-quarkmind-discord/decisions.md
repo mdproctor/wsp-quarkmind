@@ -487,3 +487,98 @@ quarkmind:
 **Exploration:** quick
 **Depends on:** D26
 **Status:** captured
+
+## D31: InnerLifeOrchestrator as proactive behavioral layer
+
+**Choice:** `InnerLifeOrchestrator` (`io.casehub.blocks.agentic.social.InnerLifeOrchestrator`, CDI `@ApplicationScoped`) replaces all custom proactive behavioral logic in quarkmind-chat. The chat agent has two paths:
+
+**Reactive path (message wake):** ChatAgencyLoop handles directly — feed events to `innerLifeOrchestrator.observe()`, get `driveOrchestrator.currentDrives()` for prompt enrichment, call LLM, respond, call `innerLifeOrchestrator.observeResponse()`.
+
+**Proactive path (heartbeat wake):** `innerLifeOrchestrator.tick(descriptor, channelContext)` → `Initiated(content, channelHint, score)` or `Silent(reason)`. If `Initiated`, dispatch as `ChatIntent.Send`.
+
+`InnerLifeOrchestrator` internally manages: drive ticking, civility constraints (pacing), reflection, content quality evaluation, and the proactive LLM motivation call. All per-agent via `agentId:tenantId` keying in `ConcurrentHashMap<String, AgentState>`.
+
+**Alternatives:**
+- InnerLifeOrchestrator for both paths — it evaluates whether to respond to direct messages too. More radical — removes all LLM logic from ChatAgencyLoop. The reactive path needs conversation-specific context (threads, @mentions) that InnerLifeOrchestrator may not model.
+- Keep custom behavioral code — builds throwaway implementations that blocks already provides better.
+**Rationale:** The reactive/proactive split maps to the agent's two wake modes (MESSAGE vs HEARTBEAT). Reactive responses need conversation-aware context (thread history, @mention parsing, memory recall) that ChatAgencyLoop already provides. InnerLifeOrchestrator provides the "should I speak unprompted?" decision with drives, civility, and reflection — exactly what the heartbeat path needs. WackyManor's integration pattern is the reference: the orchestrator feeds events and reads drive state, but the world-specific loop handles response generation.
+**Trade-offs:** Two code paths for message generation (reactive LLM call + proactive InnerLifeOrchestrator initiation). The alternative is moving everything into InnerLifeOrchestrator, but that couples the blocks stack to chat-specific perception semantics.
+**Sources:** blocks InnerLifeOrchestrator API survey, WackyManor ScenarioOrchestrator integration pattern
+**Exploration:** quick
+**Depends on:** D8 (direct LLM agency loop)
+**Status:** captured
+
+## D32: DriveOrchestrator replaces NeedState
+
+**Choice:** `DriveOrchestrator` (`io.casehub.blocks.agentic.social.drive.DriveOrchestrator`, CDI `@ApplicationScoped`) replaces `NeedState` + `ChatNeedDefinitions`. Four drive axes (CURIOSITY, COMPETENCE, AFFILIATION, AUTONOMY) replace three needs (SOCIAL, CURIOSITY, EXPRESSION). Drive state is ticked internally by `InnerLifeOrchestrator`. ChatAgencyLoop reads `driveOrchestrator.currentDrives(agentId, tenantId)` to enrich the reactive LLM prompt with drive context.
+
+**Deleted:** `ChatNeedDefinitions` — no longer needed. `NeedState` stays in quarkmind-core (used by SC2) but quarkmind-chat no longer uses it.
+
+**Alternatives:**
+- Keep NeedState alongside DriveOrchestrator — two motivation systems running in parallel, confusing and redundant
+- Replace NeedState in quarkmind-core too — out of scope for #282; SC2 uses NeedState differently
+**Rationale:** DriveOrchestrator is richer than NeedState — it composes mood, narrative modulation, and disposition. Per-agent state is managed internally via `ConcurrentHashMap<String, DriveProfile>` keyed by `agentId:tenantId`. No per-character state needed in CharacterContext. The four drives (CURIOSITY, COMPETENCE, AFFILIATION, AUTONOMY) map better to social chat behavior than the original three needs.
+**Trade-offs:** `AgencyContext` no longer carries `NeedState` for chat ticks. Tests that assert on NeedState values need updating.
+**Exploration:** quick
+**Depends on:** D31
+**Status:** captured
+
+## D33: CivilityConstraint chain replaces OutputGovernor for chat pacing
+
+**Choice:** `CivilityConstraint` chain (`MinimumGapConstraint`, `MaxPerWindowConstraint`, `ConsecutiveInitiationCooldownConstraint`) replaces `OutputGovernor` for quarkmind-chat. InnerLifeOrchestrator runs the constraint chain internally for proactive initiation. For cross-character shared pacing (D27), a single `MinimumGapConstraint` instance shared across all characters in a server achieves the same effect as the planned shared OutputGovernor — `InitiationContext` carries per-agent state, the constraint checks global timing.
+
+**Deleted from quarkmind-chat usage:** `OutputGovernor` stays in quarkmind-core (used by SC2) but quarkmind-chat no longer uses it. `ChatChannelPacing` is also superseded by `CivilityConstraint` chain.
+
+**Alternatives:**
+- Keep OutputGovernor for cross-character pacing, CivilityConstraint for per-character — two pacing systems is confusing
+- Build a custom CivilityConstraint impl for cross-character — may be needed if the built-in constraints don't cover the shared-timing case
+**Rationale:** CivilityConstraint is designed for exactly this purpose — "should this agent speak now?" with composable constraints. The chain pattern (MinimumGapConstraint + MaxPerWindowConstraint) directly replaces OutputGovernor's window + interval logic. Using one system for all pacing is cleaner.
+**Trade-offs:** If CivilityConstraint doesn't support a shared-state constraint across agents (each constraint sees one agent's InitiationContext), a custom `SharedMinimumGapConstraint` may be needed. Verify during implementation.
+**Exploration:** quick
+**Depends on:** D27, D31
+**Status:** captured
+
+## D34: CharacterContext simplified — no behavioral state
+
+**Choice:** `CharacterContext` holds only identity and perception state, not behavioral state. InnerLifeOrchestrator, DriveOrchestrator, and PersonalityEvolutionOrchestrator all manage per-agent state internally via agentId keying.
+
+**CharacterContext fields (revised from D26):**
+- `agentId`, `tenantId`, `systemPrompt`
+- `Supplier<AgentDescriptor>` (per-character descriptor from registry)
+- `BotIdentityDetector` (per-character Discord user ID)
+- `Set<String> participatedThreadIds` (per-character thread tracking)
+
+**Removed from D26:** `NeedState` (DriveOrchestrator), `IdleReflectionTrigger` (InnerLifeOrchestrator), `consecutiveIdleTicks` (InnerLifeOrchestrator), `lastReflectionTimestamp` (InnerLifeOrchestrator).
+
+**Alternatives:**
+- Keep behavioral state in CharacterContext alongside blocks orchestrators — dual state management, risk of divergence
+**Rationale:** The blocks orchestrators are designed for multi-agent with internal per-agent state management. Duplicating that state in CharacterContext would create two sources of truth. CharacterContext should hold only what blocks can't know — the character's identity, system prompt, and platform-specific identity detector.
+**Trade-offs:** CharacterContext becomes a very thin class. Could be a record instead of a mutable class (no mutable fields left except `participatedThreadIds` which is a mutable Set). Consider making it a record with a mutable `Set` field.
+**Exploration:** quick
+**Depends on:** D26, D31, D32
+**Status:** captured
+
+## D35: Deleted quarkmind-chat-agent classes
+
+**Choice:** The following classes in `quarkmind-chat-agent` are deleted as part of the blocks integration:
+
+| Class | Replaced by |
+|-------|-------------|
+| `ChatNeedDefinitions` | `DriveOrchestrator` (blocks) |
+| `LlmReflectionDispositionActivator` | `TraitPressureSource` impls (blocks) |
+| `DispositionAwareReflectionSynthesizer` | `InnerLifeOrchestrator` reflection (blocks) |
+| `LlmReflectionSynthesizer` | `InnerLifeOrchestrator` reflection (blocks) |
+| `ChatChannelPacing` | `CivilityConstraint` chain (blocks) |
+
+**Kept in quarkmind-core (used by SC2):**
+- `OutputGovernor` — not deleted, just no longer used by quarkmind-chat
+- `IdleReflectionTrigger` — not deleted, just no longer used by quarkmind-chat
+- `NeedState` — not deleted, just no longer used by quarkmind-chat
+
+**Alternatives:**
+- Keep as adapters wrapping blocks — unnecessary indirection for v2
+**Rationale:** These classes were custom implementations of capabilities that blocks now provides. Keeping them alongside blocks creates maintenance burden and confusion. Pre-release platform — breaking changes are free.
+**Trade-offs:** Tests for deleted classes (`LlmReflectionSynthesizerTest`, `LlmReflectionDispositionActivatorTest`, `DispositionAwareReflectionSynthesizerTest`, `ChatNeedDefinitionsTest` if it exists, `ChatChannelPacingTest` if it exists) are also deleted. New tests validate the blocks integration.
+**Exploration:** quick
+**Depends on:** D31, D32, D33
+**Status:** captured
