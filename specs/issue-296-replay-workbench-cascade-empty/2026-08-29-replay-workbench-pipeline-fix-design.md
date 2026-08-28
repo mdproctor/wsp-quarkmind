@@ -56,7 +56,7 @@ return new CascadeResult(assessments, llmTriggered);
 
 `FALLBACK_CONFIDENCE = 0.35` — just above `DISPATCH_THRESHOLD` (0.3). This is a constant, not configurable — the fallback is a safety net with intentionally low influence.
 
-`hasVisibleEnemies(evidence)` returns true when the evidence list is non-empty (Drools produced markers, just none strong enough) OR when the method receives a separate boolean signal. The simplest approach: add an `int enemyCount` parameter to `classify()` from the scouting task, which already has `enemies.size()`. `hasVisibleEnemies` is then `enemyCount > 0`.
+`enemyCount > 0` is the fallback gate. Add an `int enemyCount` parameter to `classify()` from the scouting task, which already has `enemies.size()`. Evidence markers alone are not a reliable signal — expansion events can produce markers with no enemies visible.
 
 ### 2c. Generic rule weight tuning
 
