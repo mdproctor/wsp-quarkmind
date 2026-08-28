@@ -1,0 +1,15 @@
+# Work Plan — issue-296-replay-workbench-cascade-empty
+
+## State
+branch: issue-296-replay-workbench-cascade-empty
+state: scaffolded
+project-sha: 8e6b27b636f30aaaf7de01c09abfe0fef446226d
+date: 2026-08-28
+issue-repo: casehubio/quarkmind
+covers: 296
+design-repo: workspace
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#296 — Issue #296 ← active
