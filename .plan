@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-296-replay-workbench-cascade-empty
-state: closing:promoted
+state: active
 project-sha: 8e6b27b636f30aaaf7de01c09abfe0fef446226d
 date: 2026-08-28
 issue-repo: casehubio/quarkmind
