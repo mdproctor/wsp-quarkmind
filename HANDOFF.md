@@ -2,17 +2,30 @@
 
 ## Last Session
 
-Implemented cascade COMPOSITION_UNKNOWN fallback (#296) — three race-specific fallback archetypes at 0.35 confidence, per-unit YAML weight tuning, and layered test infrastructure (L1-L4 isolation + composition tests with committed JSON replay fixtures). Calibration harness proves 0% empty assessments when enemies visible (57% real classifications, 43% fallback). Fixed Quinoa/Vite dev mode — all six blocks-ui custom elements now register and the workbench panel renders with four tabs. Live demo at 6:21 game time shows workbench with "No pattern data" — the CaseHub engine fires 495+ CaseContextChanged events but DroolsScoutingTask never executes. No scouting log output at any level. The engine→plugin dispatch gap is the remaining blocker.
+Debugged and fixed the engine→plugin dispatch gap (#296). Two root causes found and fixed:
 
-## Immediate Next Step
+1. **JQ trigger prefix mismatch** — All 8 JQ trigger expressions in `QuarkMindCaseHub` used `.working["game.frame"]` but the engine's `JQExpressionEngine.evaluate()` runs JQ against `context.layer("working").asJsonNode()` — the working layer data directly, no `"working"` wrapper. Changed all triggers to `.[\"game.frame\"]` etc.
 
-Debug why DroolsScoutingTask doesn't execute during replay game ticks. The engine's CaseContextChanged events fire every 500ms but no plugin tasks activate. Check: is `QuarkMindCaseFile.READY` set in the case context? Is `GameTickExecutor.execute()` calling `caseEngine.createAndSolve()`? Is there a settlement timeout suppressing task execution silently?
+2. **Engine settlement tracker unwired** — `SignalSettlementTracker.recordCompletion()` and `QuiescenceTracker.onWorkerCompleted()` both have zero callers in the engine. Worker completion is never signalled, so `signalAndAwait` always times out when any binding fires. Bypassed by executing tick plugins inline in `signalAndAwaitSync` via `TickOrchestratorWorker.executeInline()`, then signalling the engine with enriched data (fire-and-forget) for advisory/commentary bindings. Removed tick-decision binding/worker from CaseDefinition.
+
+Also fixed: `CommentaryTriggerBuilder` reading `ARMY` (List\<Unit\>) as Integer (masked by null ctx), and `CbrCase.withOutcome` API migration (upstream `Double` → `Confidence` type change).
+
+Verified end-to-end: Playwright screenshot shows **ZERG_ROACH_RUSH (66%)** with counter recommendations in the Pattern tab during live replay at 9:33 game time. `WorkbenchPipelineIT` (3 tests) and `WorkbenchRenderTest` (5 tests including full-pipeline screenshot) all pass.
+
+## Remaining Work
+
+**Strategy panel empty in live demo** — `StrategySelectionPublished` CDI event fires (test proves it), but in live replay the event fires before the WebSocket client connects (28s gap). Fix: either re-fire on every tick or cache latest strategy event and push to new WebSocket clients on connect (WorkbenchBroadcaster already caches `latestStrategy` — check if `pushSnapshot` sends it).
+
+**Moment detection crash** — `summarisation.moment-detection` plugin throws `UnsupportedOperationException` during inline execution (`MutableMapCaseContext` likely missing a method the plugin needs). This breaks the plugin chain after strategy but before economics. Investigate which `CaseContext` method is unsupported and fix.
+
+**Coaching/Commentary panels** — require `ChatModel` (LLM) bean. Advisory/commentary workers dispatch via engine bindings but fail with "Bridge type mismatch: expected java.util.Map but received null" in replay mode without LLM configured. These panels populate only with an LLM provider (e.g. quarkus-langchain4j-anthropic).
+
+**Engine bugs to file upstream** — (1) `SignalSettlementTracker.recordCompletion()` never called; (2) `QuiescenceTracker.onWorkerCompleted()` never called; (3) dev mode HTTP routing broken (all REST endpoints return 404 in mock profile, works in replay profile).
 
 ## References
 
-- `specs/issue-296-replay-workbench-cascade-empty/2026-08-29-replay-workbench-pipeline-fix-design.md` — design spec
-- `plans/2026-08-29-replay-workbench-pipeline-fix.md` — implementation plan (all tasks complete)
-- `quarkmind-sc2/.../CascadingPatternClassifier.java` — fallback + unknownForRace
-- `quarkmind-sc2/.../PipelineCalibrationTest.java` — calibration harness (@Tag diagnostic)
-- `quarkmind-sc2/.../GameTickExecutor.java` — start investigation here
-- `quarkmind-sc2/.../AgentOrchestrator.java:112` — gameTick() scheduler entry point
+- `quarkmind-sc2/.../QuarkMindCaseHub.java` — inline tick execution, fixed JQ triggers
+- `quarkmind-sc2/.../TickOrchestratorWorker.java` — new `executeInline()` public method
+- `quarkmind-sc2/.../WorkbenchPipelineIT.java` — 3 tests (pattern, strategy, WebSocket)
+- `quarkmind-sc2/.../WorkbenchRenderTest.java` — Playwright tests including full-pipeline screenshot
+- `quarkmind-sc2/.../CommentaryTriggerBuilder.java` — ARMY List→int fix
