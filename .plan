@@ -13,9 +13,9 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#296 — Issue #296 ← active
-  - [ ] Batch 1: Foundation
-    - [ ] Task 1: Add COMPOSITION_UNKNOWN fallback
-    - [ ] Task 2: Per-unit weight tuning
+  - [x] Batch 1: Foundation
+    - [x] Task 1: Add COMPOSITION_UNKNOWN fallback
+    - [x] Task 2: Per-unit weight tuning
   - [ ] Batch 2: Layer tests
     - [ ] Task 3: L1 Drools evidence replay test
     - [ ] Task 4: L2 cascade replay test
