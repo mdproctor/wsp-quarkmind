@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-296-replay-workbench-cascade-empty
-state: active
+state: transitioning
 project-sha: 8e6b27b636f30aaaf7de01c09abfe0fef446226d
 date: 2026-08-28
 issue-repo: casehubio/quarkmind
@@ -14,5 +14,5 @@ evidence-era: true
 
 ## Queue
 - [x] casehubio/quarkmind#296 — Issue #296
-- [ ] casehubio/quarkmind#298 — Replay engine static positions ← active
-- [ ] casehubio/quarkmind#299 — Replay smoke tests
+- [x] casehubio/quarkmind#298 — Replay engine static positions
+- [x] casehubio/quarkmind#299 — Replay smoke tests
