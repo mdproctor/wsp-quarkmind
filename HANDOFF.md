@@ -1,23 +1,50 @@
-# QuarkMind Handover — 2026-08-25
+# HANDOFF — quarkmind
 
 ## Last Session
 
-Implemented #282 (multi-character per server + blocks integration). Revised spec and plan to wire blocks social cognition stack (InnerLifeOrchestrator, DriveOrchestrator, CivilityConstraint) instead of custom behavioral code. Extracted per-character state into CharacterContext, made ChatAgencyLoop stateless with two-path execution (reactive LLM + proactive InnerLifeOrchestrator). Deleted 5 custom classes replaced by blocks. Created ChatCharacterManager for multi-character orchestration. 144 tests green.
+Completed #296 (workbench tabs). All four tabs show live data with TDD coverage. Discovered #298 (static enemy positions in replay) and filed #299 (smoke tests). Advanced .plan to #298.
 
-## Current State
+## Next: #298 — Replay engine static positions
 
-- Branch `issue-279-quarkmind-discord` — #279-#281 closed, #282 complete, #283 next
-- Plan: position 4/7 (all #282 tasks done), #283 remains
-- Slot-local blocks jar updated manually (GE-20260803-b9e2af applies)
+**Root cause:** `ReplayEngine` extracts enemy unit positions from tracker birth events but never applies position updates from subsequent tracker snapshots. All enemy units stay at their creation position.
 
-## Immediate Next Step
+**Evidence:**
+```
+Frame 42: 16 enemies — DRONE at (127.0, 162.0)
+Frame 62: 20 enemies — same DRONE still at (127.0, 162.0)
+NO units changed position in 20 frames
+```
 
-Run `work next` to advance to #283 (personality generator wizard, D12 future). This is standalone — LLM-powered wizard for creating character descriptor YAML. Needs brainstorming.
+**What to fix:**
+1. SC2 replay tracker data contains periodic `NNet.Replay.Tracker.SUnitPositionsEvent` entries with updated positions for all units. The replay parser needs to apply these.
+2. Check `ReplayEngine.java` and the replay parser (`s2protocol` or Scelight-based) for how unit state is tracked per loop.
+3. After fix: enemy units should move on-screen during replay playback.
+
+**After fix — recalibrate (#299 smoke tests first):**
+- Write smoke test: assert enemy positions change across 10 frames
+- Write smoke tests for each pipeline stage (pattern, strategy, moments, commentary, WebSocket)
+- Re-run calibration suite: `PatternClassificationCalibrationTest`, `ScoutingCalibrationTest`, `MapControlCalibrationTest`
+- Review posture/timing/threat results with real movement data
+
+**What's NOT broken:** Pattern classification by type/count (70% accuracy target valid). Only spatial features are affected.
+
+## Branch state
+
+Branch `issue-296-replay-workbench-cascade-empty` has uncommitted upstream compat fixes (CLAUDE.md auto-update). The branch will need a new name for #298 work, or continue on the same branch if scope overlaps.
+
+**Test compilation:** Main sources compile. Test sources have remaining `ScoredCbrCase` and `SC2CbrRetentionObserverTest` errors from upstream API changes — fix those before running full test suite.
+
+## .plan
+
+```
+[x] #296 — Workbench tabs (done)
+[ ] #298 — Replay engine static positions ← active
+[ ] #299 — Replay smoke tests
+```
 
 ## References
 
-- Spec: `specs/issue-279-quarkmind-discord/2026-08-21-multi-character-design.md` (R2)
-- Decisions: `specs/issue-279-quarkmind-discord/decisions.md` (D1–D35)
-- Plan: `plans/2026-08-21-multi-character.md` (all tasks complete)
-- Plan review: `/Users/mdproctor/reviews/casehub-slots/issue-282-multi-character-plan-20260825-143655/responses/reviewer-1.md` (R1-01 through R1-15 — scope gaps noted for end-to-end wiring)
-- Debt: #284 (buffer eviction), #285 (identity detector unbounded set)
+- `quarkmind-sc2/.../replay/ReplayEngine.java` — replay loop, unit state
+- `quarkmind-sc2/.../replay/ReplayCommandExtractor.java` — replay event parsing
+- Issue #298: https://github.com/casehubio/quarkmind/issues/298
+- Issue #299: https://github.com/casehubio/quarkmind/issues/299
