@@ -10,19 +10,9 @@ covers: 296
 design-repo: workspace
 design-section-hashes: 
 flyway-next-v: none
-
 evidence-era: true
+
 ## Queue
-- [ ] casehubio/quarkmind#296 — Issue #296 ← active
-  - [x] Batch 1: Foundation
-    - [x] Task 1: Add COMPOSITION_UNKNOWN fallback
-    - [x] Task 2: Per-unit weight tuning
-  - [x] Batch 2: Layer tests
-    - [x] Task 3: L1 Drools evidence replay test
-    - [x] Task 4: L2 cascade replay test
-    - [x] Task 5: L4 workbench enricher test
-  - [x] Batch 3: Composition
-    - [x] Task 6: L1+L2 composition test
-    - [x] Task 7: Fix WorkbenchPipelineIT
-  - [x] Batch 4: Calibration
-    - [x] Task 8: Pipeline calibration harness
+- [x] casehubio/quarkmind#296 — Issue #296
+- [ ] casehubio/quarkmind#298 — Replay engine static positions ← active
+- [ ] casehubio/quarkmind#299 — Replay smoke tests
