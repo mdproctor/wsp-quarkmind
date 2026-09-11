@@ -29,7 +29,9 @@ The DRL posture rules operate in two phases:
 
 **Pre-confirmation phase** (no base building ever observed at a non-starting location): Uses the existing suspected-only logic. Posture = MACRO if suspected expansion exists, ALL_IN if units seen but no suspected expansion. Identical to current behavior.
 
-**Post-confirmation phase** (at least one confirmed expansion has been observed): Confirmed tier takes precedence. Posture = MACRO if any confirmed expansion is alive, ALL_IN if all confirmed expansions are destroyed/absent. The suspected tier is ignored for posture classification.
+**Post-confirmation phase** (at least one confirmed expansion has been observed): Confirmed tier takes precedence. Posture is resolved directly in Java — `MACRO` if any confirmed expansion is alive, `ALL_IN` if all confirmed expansions are retracted. The DRL expansion rules are bypassed for posture classification in this phase because posture is deterministic from the confirmed expansion state alone — the DRL's dependency on `unitEvents` (which empties after 3 minutes due to `seenUnitTags` permanence) makes it unreliable for late-game posture resolution.
+
+The suspected tier continues to feed pattern classification (strategy archetypes), where permanent historical evidence is correct — an enemy who expanded and then sacrificed is not a rusher. Posture and pattern classification intentionally diverge: posture reflects current tactical state (retractable), pattern classification reflects historical strategic evidence (permanent).
 
 The transition from pre-confirmation to post-confirmation is one-way — once building data exists, it's the authoritative source.
 
@@ -50,36 +52,43 @@ A confirmed expansion persists until we observe the expansion location without t
 
 ### ScoutingSessionManager
 
+**New constant:**
+```java
+public static final float CONFIRMED_EXPANSION_DISTANCE = 25f;
+```
+
+Tighter than `EXPANSION_DISTANCE_THRESHOLD` (50 tiles) because once we observe the actual enemy main base building, we have its exact position rather than a heuristic estimate. Flagged for calibration per `sc2data-spatial-constants-require-calibration.md`.
+
 **New fields:**
 ```java
 private final Map<String, Point2d> confirmedExpansions = new LinkedHashMap<>();
 private boolean hasEverConfirmed = false;
+private Point2d confirmedMainBase = null;
 ```
 
-`confirmedExpansions` maps building tag → position for each confirmed expansion building. `hasEverConfirmed` tracks whether the post-confirmation phase has been entered.
+`confirmedExpansions` maps building tag → position for each confirmed expansion building. `hasEverConfirmed` tracks whether the post-confirmation phase has been entered. `confirmedMainBase` records the actual enemy main base position once observed — used for precise expansion classification (see `processBuildings` below).
 
-**New method: `processBuildings(List<Building> enemyBuildings, Point2d estimatedEnemyBase)`**
+**New method: `processBuildings(List<Building> enemyBuildings, Point2d estimatedEnemyBase, List<Unit> friendlyUnits, List<Building> friendlyBuildings)`**
 
-Called each tick after `processFrame()`. Logic:
+Called each tick between `evict()` and `buildRuleUnit()` within the `if (needsCep)` block. Logic:
 
 1. For each enemy building with a base type (`NEXUS`, `HATCHERY`, `COMMAND_CENTER`, `LAIR`, `HIVE`, `ORBITAL_COMMAND`, `PLANETARY_FORTRESS`):
-   - If position is NOT within `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase` (i.e., it's not the main base):
-     - Add to `confirmedExpansions` by tag
-     - Set `hasEverConfirmed = true`
+   - If `confirmedMainBase` is null AND position is within `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase`:
+     - Set `confirmedMainBase = building.position()` (refine the main base estimate from the actual building)
+   - Else if `confirmedMainBase` is not null AND position is beyond `CONFIRMED_EXPANSION_DISTANCE` of `confirmedMainBase`:
+     - Add to `confirmedExpansions` by tag, set `hasEverConfirmed = true`
+   - Else if `confirmedMainBase` is null AND position is beyond `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase`:
+     - Add to `confirmedExpansions` by tag, set `hasEverConfirmed = true` (expansion seen before main base)
 
 2. For each previously confirmed expansion (iterate `confirmedExpansions`):
    - If the building tag is NOT in the current `enemyBuildings` list:
-     - Check if we have vision of the expansion location (any friendly unit or building within a vision radius — use `NEAR_BASE_DISTANCE` or a new constant)
+     - Check if we have vision of the expansion location via `hasVisionOf(location, friendlyUnits, friendlyBuildings)`
      - If we have vision AND the building is absent → retract (remove from `confirmedExpansions`)
      - If we don't have vision → keep (sticky)
 
-**Updated `buildRuleUnit()`:**
+`buildRuleUnit()` is **unchanged** — it always populates `expansionEvents` from `expansionBuffer`. The DRL expansion rules continue to operate on suspected (Tier 1) data. Post-confirmation posture bypasses DRL entirely (see §DroolsScoutingTask changes below).
 
-Populate `expansionEvents` differently based on tier:
-- If `hasEverConfirmed`: populate from `confirmedExpansions` (non-empty = MACRO)
-- If `!hasEverConfirmed`: populate from `expansionBuffer` (existing behavior)
-
-**Updated `reset()`:** Clear `confirmedExpansions` and reset `hasEverConfirmed`.
+**Updated `reset()`:** Clear `confirmedExpansions`, reset `hasEverConfirmed`, and clear `confirmedMainBase`.
 
 **New testability accessors:**
 ```java
@@ -89,15 +98,35 @@ public boolean hasEverConfirmed() { return hasEverConfirmed; }
 
 ### DroolsScoutingTask
 
-**Updated `execute()`:** After calling `mgr.processFrame(enemies, gameTimeMs, ourNexus, estimatedBase)`, also call:
+**Updated `execute()`:** Two changes within the `if (needsCep)` block:
+
+**1. processBuildings call** — between `evict()` and `buildRuleUnit()`:
 ```java
+sessionManager.processFrame(enemies, gameTimeMs, ourNexus, estimatedBase);
+sessionManager.evict(gameTimeMs);
+// NEW: Tier 2 building-based expansion detection
 GameState gameState = ctx.getAs(QuarkMindCaseFile.GAME_STATE, GameState.class);
 if (gameState != null) {
-    sessionManager.processBuildings(gameState.enemyBuildings(), estimatedBase);
+    sessionManager.processBuildings(gameState.enemyBuildings(), estimatedBase,
+                                    gameState.myUnits(), gameState.myBuildings());
 }
+data = sessionManager.buildRuleUnit();
 ```
 
-No changes to the DRL rules — the two-tier logic is handled entirely in `ScoutingSessionManager.buildRuleUnit()` by choosing which data source populates `expansionEvents`.
+**2. Post-confirmation posture bypass** — replace the current posture resolution:
+```java
+// Post-confirmation: posture is deterministic from confirmed expansion state.
+// Bypasses DRL because unitEvents empties after 3 min (seenUnitTags permanence),
+// making the DRL expansion rules unreliable for late-game posture.
+if (sessionManager.hasEverConfirmed()) {
+    cachedPosture = sessionManager.confirmedExpansionCount() > 0 ? "MACRO" : "ALL_IN";
+} else if (data != null && !data.getPostureDecisions().isEmpty()) {
+    cachedPosture = data.getPostureDecisions().get(0);
+}
+String posture = cachedPosture;
+```
+
+No changes to the DRL rules — the two-tier logic is handled by the Java posture bypass. The DRL expansion rules continue to operate on `expansionBuffer` data for build-order classification and pattern evidence.
 
 ### SpatialCalibrationTest
 
@@ -109,6 +138,14 @@ No changes to the DRL rules — the two-tier logic is handled entirely in `Scout
 3. Spawn friendly unit near the expansion location (vision → retraction fires)
 4. Assert posture transitions: UNKNOWN → MACRO → ALL_IN
 
+**New test: `macroRevertsToAllInOnExpansionSacrificeLateGame()`:** SimulatedGame scenario:
+1. Spawn enemy Nexus at expansion location (confirmed expansion → MACRO)
+2. Run for 200+ ticks (past the 3-minute unit buffer eviction window — unitBuffer is empty)
+3. Remove the expansion building (sacrifice)
+4. Spawn friendly unit near the expansion location (vision → retraction fires)
+5. Assert posture transitions: UNKNOWN → MACRO → ALL_IN
+6. Verify transition occurs despite empty unitBuffer (post-confirmation Java bypass)
+
 **New test: `macroStableWhenExpansionPersists()`:** SimulatedGame scenario:
 1. Spawn enemy Nexus at expansion location → MACRO
 2. Run 900 ticks with the building present
@@ -116,7 +153,7 @@ No changes to the DRL rules — the two-tier logic is handled entirely in `Scout
 
 ### Protocol update
 
-Update `strategy-attack-under-unknown-posture.md` to reflect that MACRO → ALL_IN is now possible when a confirmed expansion is destroyed.
+The protocol `strategy-attack-under-unknown-posture.md` referenced in the original spec does not exist (also referenced in #300 spec). A new protocol needs to be created describing posture semantics — including the new MACRO → ALL_IN transition when confirmed expansions are retracted. This is a separate task to be tracked as a GitHub issue.
 
 ## Testing Strategy
 
@@ -128,10 +165,13 @@ Update `strategy-attack-under-unknown-posture.md` to reflect that MACRO → ALL_
 - `processBuildings` retracts confirmed expansion when building absent + vision available
 - `processBuildings` retains confirmed expansion when building absent + no vision (fog)
 - `hasEverConfirmed` transitions pre→post confirmation on first building confirmation
-- `buildRuleUnit()` uses confirmed tier when `hasEverConfirmed`, suspected tier otherwise
+- `confirmedMainBase` is set from the first base-type building within `EXPANSION_DISTANCE_THRESHOLD` of enemy base estimate
+- Expansions classified relative to `confirmedMainBase` using tighter `CONFIRMED_EXPANSION_DISTANCE`
+- `buildRuleUnit()` always uses `expansionBuffer` (unchanged)
 
 **SpatialCalibrationTest additions:**
-- `macroRevertsToAllInOnExpansionSacrifice` — UNKNOWN → MACRO → ALL_IN
+- `macroRevertsToAllInOnExpansionSacrifice` — UNKNOWN → MACRO → ALL_IN (within unit buffer window)
+- `macroRevertsToAllInOnExpansionSacrificeLateGame` — UNKNOWN → MACRO → ALL_IN (after 3-min eviction, verifies Java bypass)
 - `macroStableWhenExpansionPersists` — MACRO stays MACRO
 
 ### Integration tests (@QuarkusTest)
@@ -163,14 +203,14 @@ ScoutingSessionManager.processBuildings()  ← NEW
   │ retraction check (vision + building absent)
   │
 ScoutingSessionManager.buildRuleUnit()
-  │ if hasEverConfirmed: expansionEvents ← confirmedExpansions
-  │ else:                expansionEvents ← expansionBuffer (existing)
+  │ expansionEvents ← expansionBuffer (always, unchanged)
   ▼
 DroolsScoutingTask.drl
   │ "Expansion: Macro" / "Expansion: All-In" rules ← unchanged
   ▼
 DroolsScoutingTask.execute()
-  │ cachedPosture logic ← unchanged
+  │ if hasEverConfirmed: posture ← Java bypass (confirmedExpansions state)
+  │ else:                posture ← DRL postureDecisions + cachedPosture
   │ ENEMY_POSTURE written to CaseFile
   ▼
 MomentDetectionTask → GamePhaseSummariser → TacticalPosture
@@ -183,7 +223,7 @@ To determine if we have vision of an expansion location, check whether any frien
 
 ```java
 private boolean hasVisionOf(Point2d location, List<Unit> friendlyUnits, List<Building> friendlyBuildings) {
-    float visionRange = 11.0f; // approximate Protoss unit vision range in map units
+    float visionRange = 9.0f; // conservative: Stalker vision range (most common combat unit)
     for (Unit u : friendlyUnits) {
         if (u.position().distanceTo(location) < visionRange) return true;
     }
@@ -198,7 +238,7 @@ The `visionRange` constant should be calibrated from replay data (per protocol `
 
 ## Known Limitations
 
-1. **Vision range is approximate.** Different units have different vision ranges in SC2 (Observer: 11, Stalker: 10, Probe: 8). Using a single constant is an approximation. Acceptable for this purpose — the question is "can we see the expansion location?", not "what is the exact vision boundary?"
+1. **Vision range is approximate.** Different units have different vision ranges in SC2 (Observer: 11, Stalker: 10, Probe: 8). Using a single conservative constant (9.0, Stalker range) may delay retraction when only Observers are present, but avoids premature retraction when low-vision units (Probes at 8) are the only units nearby. False retraction (premature ALL_IN) is worse than delayed retraction (stale MACRO).
 
 2. **Building type detection scope.** Only base-type buildings are checked (Nexus/Hatchery/CC and their upgrades). Proxy structures (forward Pylon, proxy Barracks) are not tracked as expansions. This is correct — proxy aggression is a different signal than economic expansion.
 
@@ -211,7 +251,7 @@ The `visionRange` constant should be calibrated from replay data (per protocol `
 - `DroolsScoutingTask.drl` — "Expansion: Macro" and "Expansion: All-In" rules
 - `Building.java` — domain record with tag, type, position, health
 - `BuildingType.java` — enum with base types (NEXUS, HATCHERY, COMMAND_CENTER, etc.)
-- Protocol `strategy-attack-under-unknown-posture.md` — posture semantics (needs update)
-- Protocol `sc2data-spatial-constants-require-calibration.md` — calibration methodology for vision range
+- Protocol for posture semantics — needs creation (GitHub issue to be filed; referenced in both #300 and #305 specs)
+- Protocol `sc2data-spatial-constants-require-calibration.md` — calibration methodology for vision range and `CONFIRMED_EXPANSION_DISTANCE`
 - Issue #300 — posture persistence (cachedPosture fix)
 - Issue #304 — ALL_IN calibration (expansion heuristic false-positive finding)
