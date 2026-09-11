@@ -9,3 +9,15 @@
 **Sources:** `DroolsScoutingTask.java:249-251`, `ScoutingSessionManager.java:50-105`, protocol `strategy-attack-under-unknown-posture.md`
 **Exploration:** deep-analysis
 **Status:** captured
+
+## D2: Military posture vocabulary placement
+
+**Choice:** Rely on existing TacticalPosture cascade — fix inputs (D1 + timing threshold calibration), let improvements cascade through `ENEMY_POSTURE → MomentDetectionTask → GamePhaseSummariser → TacticalPosture`. No new vocabulary in scouting. Verify cascade accuracy with calibration tests.
+**Alternatives:**
+- Add AGGRESSIVE/DEFENSIVE to ENEMY_POSTURE — expand scouting posture vocabulary using army-near-base events. Creates a second source of truth for military posture alongside TacticalPosture, conflating build-order classification with army-movement classification.
+**Rationale:** The architecture already separates economic posture (scouting layer: ALL_IN/MACRO) from military posture (summarisation layer: EARLY_AGGRESSION/DEFENSIVE_HOLD/MID_SKIRMISH/EARLY_MACRO). The TacticalPosture pipeline is the heavily-consumed system (strategy DRL, dominance DRL, CBR, commentary, advisory triggers). Duplicating military posture into scouting would violate layer separation with no consumer benefit.
+**Trade-offs:** Requires verifying the cascade works correctly with real movement data — if TacticalPosture quality doesn't improve automatically, a follow-up may be needed on GamePhaseSummariser's spatial sensitivity.
+**Depends on:** D1 (posture persistence — TacticalPosture receives ENEMY_POSTURE as input via MomentDetectionTask)
+**Sources:** `TacticalPosture.java`, `GamePhaseSummariser.java`, `DominanceWeightAdjustment.drl`, `StarCraftStrategy.drl`, `QuarkMindCapabilityTag.java`
+**Exploration:** deep-analysis
+**Status:** captured
