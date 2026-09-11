@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-302-verify-posture-cascade
-state: scaffolded
+state: closing:promoted
 project-sha: 467829a8bac1fadf8b2bcaec1a386036c4d92ec2
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
@@ -11,5 +11,6 @@ design-repo: workspace
 design-section-hashes: 
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
 - [x] casehubio/quarkmind#302 — Issue #302
