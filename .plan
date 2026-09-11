@@ -13,3 +13,9 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#305 — Issue #305 ← active
+  - [ ] Batch 1: Core
+    - [ ] Task 1: processBuildings with confirmed expansion tracking
+  - [ ] Batch 2: Wiring
+    - [ ] Task 2: DroolsScoutingTask posture bypass
+  - [ ] Batch 3: Verification
+    - [ ] Task 3: SpatialCalibrationTest pivot scenarios
