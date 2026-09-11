@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-305-macro-allin-pivot
-state: scaffolded
+state: active
 project-sha: dcced9613b069fd62cde580feb08d69cc1f15851
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
@@ -13,9 +13,9 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#305 — Issue #305 ← active
-  - [ ] Batch 1: Core
-    - [ ] Task 1: processBuildings with confirmed expansion tracking
-  - [ ] Batch 2: Wiring
-    - [ ] Task 2: DroolsScoutingTask posture bypass
-  - [ ] Batch 3: Verification
-    - [ ] Task 3: SpatialCalibrationTest pivot scenarios
+  - [x] Batch 1: Core
+    - [x] Task 1: processBuildings with confirmed expansion tracking
+  - [x] Batch 2: Wiring
+    - [x] Task 2: DroolsScoutingTask posture bypass
+  - [x] Batch 3: Verification
+    - [x] Task 3: SpatialCalibrationTest pivot scenarios
