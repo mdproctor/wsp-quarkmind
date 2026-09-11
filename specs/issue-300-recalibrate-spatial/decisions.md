@@ -21,3 +21,14 @@
 **Sources:** `TacticalPosture.java`, `GamePhaseSummariser.java`, `DominanceWeightAdjustment.drl`, `StarCraftStrategy.drl`, `QuarkMindCapabilityTag.java`
 **Exploration:** deep-analysis
 **Status:** captured
+
+## D3: EnemyPostureClassifiedEvent cleanup
+
+**Choice:** Remove dead event — delete `EnemyPostureClassifiedEvent`, remove the `@Inject Event<>` field and `fire()` call from `DroolsScoutingTask`
+**Alternatives:**
+- Keep for future wiring — ARC42STORIES.MD mentions a `StrategyTrustObserver` consumer, but that class doesn't exist. Strategy routing works via `ScoutingIntelBroker` + `TacticalPosture` instead.
+**Rationale:** Dead code is noise. Zero `@Observes` consumers exist. If a future design needs a posture event, it can be re-added with the correct semantics and consumers.
+**Trade-offs:** None — no consumer code is affected.
+**Sources:** `EnemyPostureClassifiedEvent.java`, `DroolsScoutingTask.java:74,277`, `ARC42STORIES.MD:836`
+**Exploration:** quick
+**Status:** captured
