@@ -32,3 +32,15 @@
 **Sources:** `EnemyPostureClassifiedEvent.java`, `DroolsScoutingTask.java:74,277`, `ARC42STORIES.MD:836`
 **Exploration:** quick
 **Status:** captured
+
+## D4: Calibration methodology
+
+**Choice:** Replay-driven SpatialCalibrationTest — a single new calibration test that replays AI Arena/IEM10 datasets and measures three metrics per replay: (1) posture UNKNOWN rate after first classification (should be near zero with D1 fix), (2) timing attack detection rate when army crosses NEAR_BASE_DISTANCE, (3) TacticalPosture transition count and stability. Run under `@Tag("benchmark")` alongside existing calibration tests.
+**Alternatives:**
+- Per-feature separate tests — individual calibration tests for posture, timing, and TacticalPosture. More granular but runs the same replays three times for what is fundamentally one measurement pass.
+**Rationale:** One replay pass collecting all spatial metrics is more efficient and shows the correlation between features (does posture persistence improve TacticalPosture quality?). The existing calibration tests (scouting, map control, pattern classification) already pass and are unaffected — this test covers the new spatial dimensions that #298 enables.
+**Trade-offs:** Single test is less granular on failure — if it fails, you need to inspect which metric broke. Acceptable for calibration tests where the output is a printed report, not a binary pass/fail.
+**Depends on:** D1 (posture persistence — the UNKNOWN rate metric only makes sense after the fix)
+**Sources:** `ScoutingCalibrationTest.java`, `MapControlCalibrationTest.java`, `PatternClassificationCalibrationTest.java`
+**Exploration:** quick
+**Status:** captured
