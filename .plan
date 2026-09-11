@@ -1,0 +1,15 @@
+# Work Plan — issue-303-summariser-spatial-audit
+
+## State
+branch: issue-303-summariser-spatial-audit
+state: scaffolded
+project-sha: dcced9613b069fd62cde580feb08d69cc1f15851
+date: 2026-09-11
+issue-repo: casehubio/quarkmind
+covers: 303
+design-repo: workspace
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#303 — Issue #303 ← active
