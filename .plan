@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-305-macro-allin-pivot
-state: closing:review
+state: closing:promoted
 project-sha: dcced9613b069fd62cde580feb08d69cc1f15851
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
