@@ -50,6 +50,40 @@ A confirmed expansion persists until we observe the expansion location without t
 
 ## Changes Required
 
+### ObservationTranslator (prerequisite)
+
+The real SC2 profile (`%sc2`) does not populate `enemyBuildings` in `GameState`. `ObservationTranslator.translate()` maps ALL enemy observations to `Unit` records in `enemyUnits` and passes `List.of()` for `enemyBuildings`. Without this fix, `gameState.enemyBuildings()` is empty in production, making Tier 2 non-functional.
+
+**Fix:** Separate enemy observations the same way self observations are already separated (mirroring lines 113-119):
+
+```java
+// Current:
+List<Unit> enemies = enemyUnits.stream()
+    .map(ObservationTranslator::toUnit)
+    .toList();
+// ... later: List.of() for enemyBuildings
+
+// Fixed:
+List<Unit> enemies = enemyUnits.stream()
+    .filter(u -> !isBuilding(toUnitsEnum(u)))
+    .map(ObservationTranslator::toUnit)
+    .toList();
+
+List<Building> enemyBuildings = enemyUnits.stream()
+    .filter(u -> isBuilding(toUnitsEnum(u)))
+    .map(ObservationTranslator::toBuilding)
+    .toList();
+```
+
+Then pass `enemyBuildings` instead of `List.of()` in the `GameState` constructor call.
+
+**Downstream impact:** `ENEMY_UNITS` (populated from `state.enemyUnits()` via `GameStateTranslator`) will no longer include buildings. Consumers affected:
+- `DroolsScoutingTask`: `enemies` list used for army size, nearest threat, `processFrame()`. Buildings had `UnitType.UNKNOWN` and didn't match any DRL rules — no functional impact on rule firing. Army size and threat position become more accurate without buildings.
+- `MomentDetectionTask`, `BasicScoutingTask`, `DroolsTacticsTask`: all read `ENEMY_UNITS` — removing buildings from the unit list is semantically correct (buildings aren't army units).
+- `buildSnapshot` feature extraction: `gs.enemyBuildings()` loop (`DroolsScoutingTask.java:~290`) was previously empty in the `%sc2` profile — now correctly populated. This fixes a pre-existing gap in enemy building feature counts.
+
+This is a clean separation that makes the real SC2 profile consistent with mock/replay profiles.
+
 ### ScoutingSessionManager
 
 **New constant:**
@@ -72,12 +106,14 @@ private Point2d confirmedMainBase = null;
 
 Called each tick between `evict()` and `buildRuleUnit()` within the `if (needsCep)` block. Logic:
 
-1. For each enemy building with a base type (`NEXUS`, `HATCHERY`, `COMMAND_CENTER`, `LAIR`, `HIVE`, `ORBITAL_COMMAND`, `PLANETARY_FORTRESS`):
-   - If `confirmedMainBase` is null AND position is within `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase`:
-     - Set `confirmedMainBase = building.position()` (refine the main base estimate from the actual building)
-   - Else if `confirmedMainBase` is not null AND position is beyond `CONFIRMED_EXPANSION_DISTANCE` of `confirmedMainBase`:
+1. Filter enemy buildings to base types only (`NEXUS`, `HATCHERY`, `COMMAND_CENTER`, `LAIR`, `HIVE`, `ORBITAL_COMMAND`, `PLANETARY_FORTRESS`).
+
+1a. **Main base identification** (if `confirmedMainBase` is null): Among all base-type buildings within `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase`, select the one **closest** to `estimatedEnemyBase` as `confirmedMainBase`. This makes identification deterministic regardless of list iteration order — when multiple base buildings are visible in the same tick (e.g., main base at (224,224) and natural at (200,200) both within 50 tiles of the estimate), the closest is always the main base.
+
+1b. **Expansion classification** — for each remaining base-type building:
+   - If `confirmedMainBase` is not null AND position is beyond `CONFIRMED_EXPANSION_DISTANCE` of `confirmedMainBase`:
      - Add to `confirmedExpansions` by tag, set `hasEverConfirmed = true`
-   - Else if `confirmedMainBase` is null AND position is beyond `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase`:
+   - If `confirmedMainBase` is null AND position is beyond `EXPANSION_DISTANCE_THRESHOLD` of `estimatedEnemyBase`:
      - Add to `confirmedExpansions` by tag, set `hasEverConfirmed = true` (expansion seen before main base)
 
 2. For each previously confirmed expansion (iterate `confirmedExpansions`):
@@ -165,9 +201,15 @@ The protocol `strategy-attack-under-unknown-posture.md` referenced in the origin
 - `processBuildings` retracts confirmed expansion when building absent + vision available
 - `processBuildings` retains confirmed expansion when building absent + no vision (fog)
 - `hasEverConfirmed` transitions pre→post confirmation on first building confirmation
-- `confirmedMainBase` is set from the first base-type building within `EXPANSION_DISTANCE_THRESHOLD` of enemy base estimate
+- `confirmedMainBase` is set to the **closest** base-type building within `EXPANSION_DISTANCE_THRESHOLD` of enemy base estimate (deterministic when multiple candidates visible)
+- When main base and natural visible simultaneously, closest to estimate wins regardless of list order
 - Expansions classified relative to `confirmedMainBase` using tighter `CONFIRMED_EXPANSION_DISTANCE`
 - `buildRuleUnit()` always uses `expansionBuffer` (unchanged)
+
+**ObservationTranslator tests:**
+- Enemy buildings are separated from enemy units (not in `enemyUnits`, present in `enemyBuildings`)
+- `GameState.enemyBuildings()` populated with correct building types and positions
+- Self-unit separation behavior unchanged (regression guard)
 
 **SpatialCalibrationTest additions:**
 - `macroRevertsToAllInOnExpansionSacrifice` — UNKNOWN → MACRO → ALL_IN (within unit buffer window)
@@ -192,6 +234,10 @@ Re-run `SpatialCalibrationTest` with the updated `processBuildings()` call. Expe
 ```
 Game tick
   │
+  ▼
+ObservationTranslator.translate()  ← PREREQUISITE FIX
+  │ enemyUnits = non-building enemy observations
+  │ enemyBuildings = building enemy observations (was List.of())
   ▼
 ScoutingSessionManager.processFrame()
   │ unit buffer (first-seen, 3-min window) ← unchanged
@@ -246,6 +292,8 @@ The `visionRange` constant should be calibrated from replay data (per protocol `
 
 ## References
 
+- `ObservationTranslator.java:122-137` — enemy building separation (prerequisite fix)
+- `GameStateTranslator.java:61` — ENEMY_UNITS populated from state.enemyUnits()
 - `ScoutingSessionManager.java` — expansion buffer and unit heuristic (fix target)
 - `DroolsScoutingTask.java:249-254` — cachedPosture and posture resolution
 - `DroolsScoutingTask.drl` — "Expansion: Macro" and "Expansion: All-In" rules
