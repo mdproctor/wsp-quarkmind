@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-300-recalibrate-spatial
-state: active
+state: closing:promoted
 project-sha: ea5e7058d852f8bcaae88f498f7e778598817524
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
@@ -11,11 +11,6 @@ design-repo: workspace
 design-section-hashes: 4d2cc5ab:## §1 Introduction and Goals|4f6b26ef:## §2 Constraints|39b76cb9:## §3 Context and Scope|74aa736f:## §4 Solution Strategy|9ca8de62:## §5 Building Block View|f1938c56:## §6 Runtime View|65807a21:## §7 Deployment View|a03d508f:## §8 Crosscutting Concepts|b2e1b57c:## §9 Journeys and Chapters|598f3a04:## §10 Architectural Decisions|1f604475:## §11 Quality Requirements|af5f260f:## §12 Risks and Technical Debt|42d51385:## §13 Glossary
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
-- [ ] casehubio/quarkmind#300 — Issue #300 ← active
-  - [x] Batch 1: Posture+cleanup
-    - [x] Task 1: Posture persistence fix
-    - [x] Task 2: Remove dead event
-  - [x] Batch 2: Calibration
-    - [x] Task 3: SpatialCalibrationTest
-    - [x] Task 4: Threshold tuning+docs
+- [x] casehubio/quarkmind#300 — Issue #300
