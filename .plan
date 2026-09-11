@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-304-allin-replay-calibration
-state: closing:review
+state: closing:promoted
 project-sha: 3801589551ccc96e2437cb7b047c55b42a272ffd
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
