@@ -2,49 +2,26 @@
 
 ## Last Session
 
-Completed #296 (workbench tabs). All four tabs show live data with TDD coverage. Discovered #298 (static enemy positions in replay) and filed #299 (smoke tests). Advanced .plan to #298.
+Completed #300 (spatial recalibration). Fixed ENEMY_POSTURE stickiness — posture now caches the last DRL classification instead of reverting to UNKNOWN after the 3-minute unit buffer eviction. Removed dead `EnemyPostureClassifiedEvent` (zero consumers). Created `SpatialCalibrationTest` measuring posture UNKNOWN rate, army-near-base events, and posture transitions across 59 replays. Baseline: 0% UNKNOWN, 36-82 army events/replay, thresholds confirmed correct. Updated protocol and ARC42.
 
-## Next: #298 — Replay engine static positions
+Filed epic #301 with 4 follow-up issues (#302-#305) for cascade verification, ALL_IN calibration, and MACRO→ALL_IN pivot detection.
 
-**Root cause:** `ReplayEngine` extracts enemy unit positions from tracker birth events but never applies position updates from subsequent tracker snapshots. All enemy units stay at their creation position.
+## What's Next
 
-**Evidence:**
-```
-Frame 42: 16 enemies — DRONE at (127.0, 162.0)
-Frame 62: 20 enemies — same DRONE still at (127.0, 162.0)
-NO units changed position in 20 frames
-```
+Epic #301 — Spatial intelligence post-recalibration follow-ups:
 
-**What to fix:**
-1. SC2 replay tracker data contains periodic `NNet.Replay.Tracker.SUnitPositionsEvent` entries with updated positions for all units. The replay parser needs to apply these.
-2. Check `ReplayEngine.java` and the replay parser (`s2protocol` or Scelight-based) for how unit state is tracked per loop.
-3. After fix: enemy units should move on-screen during replay playback.
+| # | Title | Scale | Complexity | Blocked by |
+|---|-------|-------|------------|------------|
+| #302 | Verify TacticalPosture cascade with timing/rush replays | S | Low | — |
+| #304 | ALL_IN replay calibration — posture persistence e2e | S | Low | — |
+| #303 | GamePhaseSummariser spatial sensitivity audit | M | Med | #302 |
+| #305 | Detect MACRO→ALL_IN pivot (expansion sacrifice) | M | High | — |
 
-**After fix — recalibrate (#299 smoke tests first):**
-- Write smoke test: assert enemy positions change across 10 frames
-- Write smoke tests for each pipeline stage (pattern, strategy, moments, commentary, WebSocket)
-- Re-run calibration suite: `PatternClassificationCalibrationTest`, `ScoutingCalibrationTest`, `MapControlCalibrationTest`
-- Review posture/timing/threat results with real movement data
-
-**What's NOT broken:** Pattern classification by type/count (70% accuracy target valid). Only spatial features are affected.
-
-## Branch state
-
-Branch `issue-296-replay-workbench-cascade-empty` has uncommitted upstream compat fixes (CLAUDE.md auto-update). The branch will need a new name for #298 work, or continue on the same branch if scope overlaps.
-
-**Test compilation:** Main sources compile. Test sources have remaining `ScoredCbrCase` and `SC2CbrRetentionObserverTest` errors from upstream API changes — fix those before running full test suite.
-
-## .plan
-
-```
-[x] #296 — Workbench tabs (done)
-[ ] #298 — Replay engine static positions ← active
-[ ] #299 — Replay smoke tests
-```
+#302 and #304 are independent quick wins — start with either.
 
 ## References
 
-- `quarkmind-sc2/.../replay/ReplayEngine.java` — replay loop, unit state
-- `quarkmind-sc2/.../replay/ReplayCommandExtractor.java` — replay event parsing
-- Issue #298: https://github.com/casehubio/quarkmind/issues/298
-- Issue #299: https://github.com/casehubio/quarkmind/issues/299
+- Spec: `docs/specs/issue-300-recalibrate-spatial/2026-09-11-spatial-recalibration-design.md`
+- Decisions: `docs/specs/issue-300-recalibrate-spatial/decisions.md`
+- Landing commit: `467829a`
+- Epic: https://github.com/casehubio/quarkmind/issues/301
