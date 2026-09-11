@@ -13,3 +13,9 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#300 — Issue #300 ← active
+  - [ ] Batch 1: Posture+cleanup
+    - [ ] Task 1: Posture persistence fix
+    - [ ] Task 2: Remove dead event
+  - [ ] Batch 2: Calibration
+    - [ ] Task 3: SpatialCalibrationTest
+    - [ ] Task 4: Threshold tuning+docs
