@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-231-human-feedback-trust
-state: scaffolded
+state: active
 project-sha: 86ea77db1934c09db637a8a35dc691306ced78a2
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
@@ -12,8 +12,4 @@ design-section-hashes:
 flyway-next-v: none
 
 ## Queue
-- [ ] casehubio/quarkmind#231 — Issue #231 ← active
-  - [ ] Batch 1: Backend
-    - [ ] Task 1: CommentaryFeedbackHandler + trust policy + WebSocket wiring
-  - [ ] Batch 2: Frontend
-    - [ ] Task 2: Feedback buttons on commentary entries
+- [x] casehubio/quarkmind#231 — Issue #231
