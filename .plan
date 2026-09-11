@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-231-human-feedback-trust
-state: active
+state: closing:review
 project-sha: 86ea77db1934c09db637a8a35dc691306ced78a2
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
@@ -11,5 +11,6 @@ design-repo: workspace
 design-section-hashes: 
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
 - [x] casehubio/quarkmind#231 — Issue #231
