@@ -12,10 +12,4 @@ design-section-hashes:
 flyway-next-v: none
 
 ## Queue
-- [ ] casehubio/quarkmind#305 — Issue #305 ← active
-  - [x] Batch 1: Core
-    - [x] Task 1: processBuildings with confirmed expansion tracking
-  - [x] Batch 2: Wiring
-    - [x] Task 2: DroolsScoutingTask posture bypass
-  - [x] Batch 3: Verification
-    - [x] Task 3: SpatialCalibrationTest pivot scenarios
+- [x] casehubio/quarkmind#305 — Issue #305
