@@ -68,3 +68,15 @@
 **Sources:** `AgentOrchestrator.java:112` (ConcurrentExecution.SKIP), `InlineCommentaryDispatcher.java:77` (existing synchronous execute method)
 **Exploration:** quick
 **Status:** captured
+
+## D7: Narrative dispatch path — extend InlineCommentaryDispatcher
+
+**Choice:** Extend `InlineCommentaryDispatcher` to handle both reactive and narrative commentary. Add a second execution path that uses `CommentaryWorkerFactory.buildNarrativeSystemPrompt()` instead of the reactive prompt. Same class, same ChatModel wiring, two prompt builders.
+**Alternatives:**
+- Separate `InlineNarrativeDispatcher` — duplicates ChatModel wiring, CDI event firing, and synchronous/async paths for no benefit
+**Rationale:** `InlineCommentaryDispatcher` already has the ChatModel, CDI `Event<CommentaryCompleted>` firing, and the synchronous path. Narrative is the same operation with a different prompt. The current narrative path via `caseHub.signal()` is broken (settlement tracker never signals completion — workers never execute). Moving narrative to the inline dispatcher fixes this and enables sync mode.
+**Trade-offs:** InlineCommentaryDispatcher grows in responsibility (both commentary types). Acceptable — both are "call ChatModel with a prompt, fire CommentaryCompleted."
+**Sources:** `GameTickExecutor.java:116-117` (comment: engine worker dispatch is broken), `GameTickExecutor.java:127-133` (narrative via caseHub.signal), `InlineCommentaryDispatcher.java:28-106` (existing reactive-only inline dispatcher), `CommentaryWorkerFactory` (has both reactive and narrative prompt builders)
+**Exploration:** quick
+**Depends on:** D6 (synchronization mechanism)
+**Status:** captured
