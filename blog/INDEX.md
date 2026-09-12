@@ -13,3 +13,4 @@
 | [2026-09-11-mdp01-does-the-cascade-see-the-army.md](2026-09-11-mdp01-does-the-cascade-see-the-army.md) | 2026-09-11 | TacticalPosture cascade verification — 6/59 replays produce DEFENSIVE_HOLD when enemy army reaches the base |
 | [2026-09-11-mdp02-when-the-expansion-dies.md](2026-09-11-mdp02-when-the-expansion-dies.md) | 2026-09-11 | Two-tier expansion detection — MACRO→ALL_IN pivot when enemy sacrifices expansion, sticky-until-contradicted fog-of-war |
 | [2026-09-12-mdp01-teaching-the-audience-to-talk-back.md](2026-09-12-mdp01-teaching-the-audience-to-talk-back.md) | 2026-09-12 | Per-event commentary feedback buttons — timing-quality and accuracy trust dimensions for LLM worker routing |
+| [2026-09-12-mdp02-frame-rate-sync-commentary.md](2026-09-12-mdp02-frame-rate-sync-commentary.md) | 2026-09-12 | Synchronized replay commentary — ConcurrentExecution.SKIP as sync primitive, frame rate observation resolution, three runtime-switchable modes |
