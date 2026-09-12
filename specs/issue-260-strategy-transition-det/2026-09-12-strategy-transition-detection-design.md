@@ -306,6 +306,10 @@ public void reset() {
 }
 ```
 
+### Evidence disappearance mitigation
+
+When enemy visibility is lost (scout dies), two mechanisms prevent false transitions: (1) `mergeCumulative` applies uniform decay to ALL archetypes — if no new evidence arrives, all decay at the same rate and relative ordering is preserved; (2) `TRANSITION_MIN_CONFIDENCE = 0.4` ensures the "to" archetype needs substantial cumulative evidence, which noise alone cannot produce.
+
 ## Section 4: DroolsScoutingTask Integration
 
 After getting `CascadeResult` from the classifier (line ~320), check for a transition:
@@ -340,6 +344,14 @@ Event<StrategyTransitionPublished> strategyTransitionPublished;
 ### Why enrichment happens here, not in the classifier
 
 The classifier returns a raw `StrategyTransition` with `path = null`. `DroolsScoutingTask` enriches it by looking up the `TransitionPath` from `StrategyTaxonomy`. This keeps the classifier free of CDI dependencies — it remains a testable POJO with constructor injection for thresholds.
+
+### Relationship to SC2StrategyRouterTask pivot detection
+
+`SC2StrategyRouterTask` independently reads the current best pattern assessment from `ScoutingIntelBroker`, detects archetype changes, and increments `pivotCount` for strategy routing. This is strategy selection — "which counter-strategy should WE play?" The transition event drives coaching — "the opponent is switching to mech, here's advice." A single archetype change produces one router pivot (via pattern assessment) and one transition event (via transition detection). They serve different downstream effects and should remain independent.
+
+### Relationship to TECH_TRANSITION_DETECTED
+
+`TECH_TRANSITION_DETECTED` fires from `MomentDetectionTask.drl` when a `BuildOrder` intel event has a non-UNKNOWN value — an early warning from what they're building. `STRATEGY_TRANSITION` fires when the dominant archetype shifts in cumulative classification — a confirmed transition from what they have. Build order detection fires earlier (Factory scouted), composition classification fires later (enough Tanks observed). Both are coaching-relevant and both map to `CoachingUrgencyTier.STRATEGIC`. The existing `CoachingTriggerBuilder.canFire()` cooldown prevents rapid-fire coaching for closely-spaced moments of the same tier.
 
 ## Section 5: Consumer Wiring
 
@@ -515,18 +527,21 @@ Extend `PatternClassificationCalibrationTest`:
 
 - #243 spec — strategy taxonomy infrastructure (parent, transitions deferred to this issue)
 - `CascadingPatternClassifier.java:52-53` — `cumulativeConfidence` EnumMap
-- `CascadingPatternClassifier.java:294-305` — `mergeCumulative()` decay + update
+- `CascadingPatternClassifier.java:55-60` — existing temporal state (LLM fallback tracking)
+- `CascadingPatternClassifier.java:294-305` — `mergeCumulative()` decay + update (uniform decay)
 - `CascadeResult.java:6` — existing record shape
 - `DroolsScoutingTask.java:304-335` — pattern classification block (transition wiring point)
 - `DroolsScoutingTask.java:389-398` — `publishIntel()` method
 - `ScoutingIntelPayload.java:9-42` — sealed interface with existing variants
 - `ScoutingIntelType.java:3-10` — existing enum values
-- `MomentDetectionTask.drl:49-57` — existing `TECH_TRANSITION_DETECTED` rule (similar pattern)
+- `MomentDetectionTask.drl:49-57` — existing `TECH_TRANSITION_DETECTED` rule (complementary signal)
+- `CoachingTriggerBuilder.java:56-60` — `canFire()` cooldown preventing rapid-fire coaching
 - `CoachingTriggerBuilder.java:63-70` — moment-to-tier mapping
 - `AdvisoryTriggerBuilder.java:61-68` — moment-to-trigger mapping
 - `WorkbenchEnricher.java:30-39` — existing CDI observer pattern
 - `SC2CbrRetentionObserver.java:84-94` — existing event collection pattern
 - `SC2GameCbrCase.java:44-87` — enriched builder with features map
+- `SC2StrategyRouterTask.java:117-216` — pivot detection (parallel, independent concern)
 - `StrategyTaxonomy.java:22-213` — existing loader and API
 - `strategy-taxonomy.yaml:1-39` — existing YAML schema
 - `QuarkMindCaseFile.java:35-60` — existing CaseFile key constants
