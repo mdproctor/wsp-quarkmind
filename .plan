@@ -1,0 +1,15 @@
+# Work Plan — issue-260-strategy-transition-det
+
+## State
+branch: issue-260-strategy-transition-det
+state: scaffolded
+project-sha: 161fd7a249e7585ab905e7acd30336f0c22555d0
+date: 2026-09-12
+issue-repo: casehubio/quarkmind
+covers: 260
+design-repo: workspace
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#260 — Issue #260 ← active
