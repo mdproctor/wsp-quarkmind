@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-290-sync-replay-commentary
-state: scaffolded
+state: active
 project-sha: 0cef2fabc3adac3be2e9e46415bf20909da52414
 date: 2026-09-12
 issue-repo: casehubio/quarkmind
@@ -13,9 +13,9 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#290 — Issue #290 ← active
-  - [ ] Batch 1: Dispatcher
-    - [ ] Task 1: Extend InlineCommentaryDispatcher with narrative + sync
-  - [ ] Batch 2: SpeedSync
-    - [ ] Task 2: Wire speed multiplier + sync mode in GameTickExecutor
-  - [ ] Batch 3: QAEndpoint
-    - [ ] Task 3: Add sync mode QA endpoint + runtime override
+  - [x] Batch 1: Dispatcher
+    - [x] Task 1: Extend InlineCommentaryDispatcher with narrative + sync
+  - [x] Batch 2: SpeedSync
+    - [x] Task 2: Wire speed multiplier + sync mode in GameTickExecutor
+  - [x] Batch 3: QAEndpoint
+    - [x] Task 3: Add sync mode QA endpoint + runtime override
