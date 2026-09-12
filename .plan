@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-231-human-feedback-trust
-state: closing:review
+state: closing:promoted
 project-sha: 86ea77db1934c09db637a8a35dc691306ced78a2
 date: 2026-09-11
 issue-repo: casehubio/quarkmind
