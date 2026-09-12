@@ -1,0 +1,15 @@
+# Work Plan — issue-290-sync-replay-commentary
+
+## State
+branch: issue-290-sync-replay-commentary
+state: scaffolded
+project-sha: 0cef2fabc3adac3be2e9e46415bf20909da52414
+date: 2026-09-12
+issue-repo: casehubio/quarkmind
+covers: 290
+design-repo: workspace
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#290 — Issue #290 ← active
