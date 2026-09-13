@@ -23,3 +23,16 @@
 **Sources:** SC2 game engine — Faster speed = 22.4 game loops/second (replay-index.md), existing IEM10JsonSimulatedGame frame arithmetic
 **Exploration:** quick
 **Status:** captured
+
+## D3: Training example output format — game-state-centric JSON
+
+**Choice:** Each training example is a structured JSON record with: `game_state` (army comp, economy, tech, supply, map control, recent events), `phase` (game phase tag), `phase_transition` (boolean + description), `commentary` (aligned caster text), `metadata` (tournament, players, map, matchup, frame range, VOD URL, segment type). Schema mirrors `GameStateTranslator.toMap()` output so training input matches inference input.
+**Alternatives:**
+- Conversation-format (chat-style) — system/user/assistant messages, ready for SFT but opinionated about target model
+- Raw paired text — linearized game state → commentary string, simplest but loses structure
+**Rationale:** Preserves full structure — can always flatten to chat or raw text for specific training runs, but can't recover structure from flattened text. JSON schema can evolve across phases without breaking earlier data.
+**Trade-offs:** Requires a schema definition and Python extraction code that mirrors GameStateTranslator logic. More work upfront than raw text.
+**Sources:** GameStateTranslator.toMap() — existing game state serialisation, LoL19-21 — linearized key-value pairs (~540 tokens average input)
+**Exploration:** quick
+**Depends on:** D2 (timestamp alignment provides frame range for each example)
+**Status:** captured
