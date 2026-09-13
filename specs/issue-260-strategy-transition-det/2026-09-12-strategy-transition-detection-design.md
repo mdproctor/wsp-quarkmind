@@ -19,6 +19,12 @@ Archetypes are detected independently per tick via `CascadingPatternClassifier`.
 | Trigger mechanics | Dominant-swap with hysteresis | Prevents flip-flopping. Requires new dominant to exceed min confidence AND gap margin over old dominant. |
 | Initial YAML coverage | All three matchups (PvT, PvZ, PvP) | ~15-24 paths. YAML authoring is mechanical once the schema is defined. |
 
+SETTLED: Strong consistency for `prevDominant` tracking — only updated on first-dominant or when a qualifying transition fires (from R1-02).
+SETTLED: No backward-compatibility constructor on `CascadeResult` — all callers use three-arg form (from R1-03).
+SETTLED: CDI event firing inside `publishIntel()` for all intel-derived events (from R1-07).
+SETTLED: `TransitionPath` carries only `displayName` + `coachingAdvice` — no `from`/`to` duplication (from R1-08).
+SETTLED: CaseFile key is `agent.intel.enemy.strategy.transition` under the enemy-intel namespace (from R1-11).
+
 ## Section 1: Domain Model
 
 ### StrategyTransition
@@ -40,14 +46,12 @@ In `io.quarkmind.domain`. Plain Java — no framework dependencies. `path` is `n
 
 ```java
 public record TransitionPath(
-    StrategyArchetype from,
-    StrategyArchetype to,
     String displayName,
     String coachingAdvice
 ) {}
 ```
 
-In `io.quarkmind.domain`. Loaded from YAML at startup. Represents a known, expected transition path with curated coaching text.
+In `io.quarkmind.domain`. Loaded from YAML at startup. Represents a known, expected transition with curated coaching text. The `from` and `to` archetypes are the map key in `StrategyTaxonomy.transitionPaths` and are carried by the parent `StrategyTransition` — `TransitionPath` carries only the value-add fields to avoid duplication and divergence.
 
 ### StrategyTransitionPublished
 
@@ -55,15 +59,15 @@ In `io.quarkmind.domain`. Loaded from YAML at startup. Represents a known, expec
 public record StrategyTransitionPublished(StrategyTransition transition) {}
 ```
 
-In `io.quarkmind.agent.plugin`. CDI event record — parallel to `PatternAssessmentPublished`. Fired by `DroolsScoutingTask` when `CascadeResult` contains a transition.
+In `io.quarkmind.agent.plugin`. CDI event record — parallel to `PatternAssessmentPublished`. Fired by `publishIntel()` when a `TransitionDetected` payload is dispatched.
 
 ### New CaseFile key
 
 ```java
-public static final String STRATEGY_TRANSITION = "agent.intel.strategy.transition";
+public static final String STRATEGY_TRANSITION = "agent.intel.enemy.strategy.transition";
 ```
 
-Added to `QuarkMindCaseFile`. Namespace `agent.intel.*` — agent-derived intelligence data, consistent with `GAME_PHASE`, `ENEMY_POSTURE`, etc.
+Added to `QuarkMindCaseFile`. Namespace `agent.intel.enemy.*` — enemy-derived intelligence data, consistent with `ENEMY_ARMY_SIZE` (`agent.intel.enemy.army.size`), `ENEMY_BUILD_ORDER` (`agent.intel.enemy.build`), `ENEMY_POSTURE` (`agent.intel.enemy.posture`), etc. Placed under `agent.intel.enemy.strategy.*` to distinguish unambiguously from `agent.strategy.*` (our strategy decisions).
 
 ### New ScoutingIntelPayload variant
 
@@ -185,12 +189,12 @@ The remaining ~10 paths follow the same pattern — EARLY→MID and MID→LATE w
 ### Validation
 
 `StrategyTaxonomy.init()` validates each transition entry at startup:
-- `from` and `to` must be valid `StrategyArchetype` enum values
+- YAML `from` and `to` must be valid `StrategyArchetype` enum values
 - `from.phase().ordinal()` must be `<=` `to.phase().ordinal()` (no late→early transitions)
 - `displayName` and `coachingAdvice` must be non-empty
 - No duplicate `from→to` pairs
 
-Fail-fast on invalid data — consistent with existing archetype validation.
+Fail-fast on invalid data — consistent with existing archetype validation. The validated `from`/`to` are used to construct the `TransitionKey` map key; `TransitionPath` receives only `displayName` and `coachingAdvice`.
 
 ### StrategyTaxonomy API addition
 
@@ -231,34 +235,35 @@ static final double TRANSITION_GAP_MARGIN = 0.15;
 
 ### Detection logic
 
-Added to `classify()` after `mergeCumulative()` and `applyRevisions()` complete — the cumulative confidence map is fully updated for this tick.
+Added to `classify()` after `mergeCumulative()` and `applyRevisions()` complete. Detection runs after rule-based evidence accumulation but before ONNX inference — transitions are driven by stable cumulative evidence rather than single-tick model predictions. ONNX contributions from prior ticks are already reflected in cumulative via the merge+decay cycle.
 
 ```java
 StrategyArchetype currentDominant = findDominant(cumulativeConfidence);
 StrategyTransition transition = null;
 
 if (currentDominant != null && currentDominant != prevDominant) {
-    double currentConf = cumulativeConfidence.getOrDefault(currentDominant, 0.0);
-    double prevConf = prevDominant != null
-        ? cumulativeConfidence.getOrDefault(prevDominant, 0.0) : 0.0;
-
-    if (prevDominant != null
-            && currentConf >= TRANSITION_MIN_CONFIDENCE
-            && currentConf > prevConf + TRANSITION_GAP_MARGIN) {
-        transition = new StrategyTransition(
-            prevDominant, currentDominant,
-            prevConf, currentConf,
-            frame, null);
+    if (prevDominant == null) {
+        prevDominant = currentDominant;
+    } else {
+        double currentConf = cumulativeConfidence.getOrDefault(currentDominant, 0.0);
+        double prevConf = cumulativeConfidence.getOrDefault(prevDominant, 0.0);
+        if (currentConf >= TRANSITION_MIN_CONFIDENCE
+                && currentConf > prevConf + TRANSITION_GAP_MARGIN) {
+            transition = new StrategyTransition(
+                prevDominant, currentDominant,
+                prevConf, currentConf,
+                frame, null);
+            prevDominant = currentDominant;
+        }
     }
-    prevDominant = currentDominant;
 }
 ```
 
 Key behaviours:
 - **First dominant** (`prevDominant == null`): sets `prevDominant` but does NOT fire a transition. Initial classification is not a transition event.
 - **Same dominant**: no-op.
-- **Different dominant, below threshold**: updates `prevDominant` without firing. The new archetype becomes dominant but without enough confidence to be coaching-relevant.
-- **Different dominant, above threshold with gap**: fires transition.
+- **Different dominant, below threshold**: `prevDominant` unchanged. The new archetype must prove itself via a qualifying transition before becoming the reference point. This prevents noise-level dominant fluctuations from corrupting the "from" field of future transitions.
+- **Different dominant, above threshold with gap**: fires transition, updates `prevDominant`.
 
 `findDominant()` — static helper returning the archetype with the highest cumulative confidence, or `null` if the map is empty or all confidences are at/below `NOISE_FLOOR`:
 
@@ -276,6 +281,23 @@ static StrategyArchetype findDominant(EnumMap<StrategyArchetype, Double> cumulat
 }
 ```
 
+### Transition threading through classify()
+
+The `transition` variable is computed once (after `mergeCumulative()` and `applyRevisions()`), then threaded through every return path in `classify()`:
+
+- LLM prior result return: `new CascadeResult(assessments, false, transition)`
+- Tier 1 Drools return: `new CascadeResult(assessments, false, transition)`
+- Tier 2 ONNX return: `new CascadeResult(assessments, false, transition)`
+- Final return (Tier 3 LLM trigger): `new CascadeResult(assessments, llmTriggered, transition)`
+
+The wrapper `classify(…, enemyCount)` preserves transition when constructing the unknown-archetype fallback:
+
+```java
+return new CascadeResult(List.of(unknownAssessment), result.llmTriggered(), result.transition());
+```
+
+There is no two-arg constructor — the compiler enforces that every `CascadeResult` construction explicitly passes a transition value (`null` when no transition occurred this tick).
+
 ### CascadeResult extension
 
 ```java
@@ -287,14 +309,10 @@ public record CascadeResult(
     public CascadeResult {
         assessments = List.copyOf(assessments);
     }
-
-    public CascadeResult(List<PatternAssessment> assessments, boolean llmTriggered) {
-        this(assessments, llmTriggered, null);
-    }
 }
 ```
 
-The two-arg constructor preserves binary compatibility with existing callers (tests, non-transition code paths). The `transition` field is `null` when no transition occurred this tick.
+All callers use the three-arg constructor. Existing non-transition code paths pass `null` for `transition`. There is no backward-compatibility constructor — breaking existing callers forces explicit transition handling at every call site.
 
 ### reset()
 
@@ -312,7 +330,9 @@ When enemy visibility is lost (scout dies), two mechanisms prevent false transit
 
 ## Section 4: DroolsScoutingTask Integration
 
-After getting `CascadeResult` from the classifier (line ~320), check for a transition:
+### Transition handling
+
+After getting `CascadeResult` from the classifier, check for a transition:
 
 ```java
 CascadeResult cascadeResult = cascadingClassifier.classify(...);
@@ -328,8 +348,26 @@ if (cascadeResult.transition() != null) {
 
     ctx.set(QuarkMindCaseFile.STRATEGY_TRANSITION, enriched);
     publishIntel(new ScoutingIntelPayload.TransitionDetected(enriched));
-    if (strategyTransitionPublished != null) {
-        strategyTransitionPublished.fire(new StrategyTransitionPublished(enriched));
+}
+```
+
+### publishIntel() extension
+
+CDI event firing for `StrategyTransitionPublished` is consolidated inside `publishIntel()`, parallel to the existing `PatternAssessmentPublished` pattern. This maintains a single pattern for "dispatch an intel payload and also fire a CDI event for observers":
+
+```java
+private void publishIntel(ScoutingIntelPayload payload) {
+    if (broker.isSubscribed(payload.type())) {
+        broker.update(payload);
+    }
+    broker.level1Bus().publish(new LevelEvent<>(payload, lastFrame, LEVEL_1, "default"));
+    dispatchToAdvisory(payload);
+    if (payload instanceof PatternAssessmentPayload pa && patternAssessmentPublished != null) {
+        patternAssessmentPublished.fire(new PatternAssessmentPublished(pa.assessments()));
+    }
+    if (payload instanceof ScoutingIntelPayload.TransitionDetected td
+            && strategyTransitionPublished != null) {
+        strategyTransitionPublished.fire(new StrategyTransitionPublished(td.transition()));
     }
 }
 ```
@@ -340,6 +378,34 @@ New CDI event field in `DroolsScoutingTask`:
 @Inject
 Event<StrategyTransitionPublished> strategyTransitionPublished;
 ```
+
+### produces() declaration
+
+`STRATEGY_TRANSITION` added to the `produces()` set, declaring this task writes the key:
+
+```java
+@Override
+public Set<String> produces() {
+    return Set.of(
+        QuarkMindCaseFile.ENEMY_ARMY_SIZE,
+        QuarkMindCaseFile.ENEMY_BUILD_ORDER,
+        QuarkMindCaseFile.TIMING_ATTACK_INCOMING,
+        QuarkMindCaseFile.ENEMY_POSTURE,
+        QuarkMindCaseFile.GAME_PHASE,
+        QuarkMindCaseFile.SCOUTING_FINAL_ASSESSMENT,
+        QuarkMindCaseFile.STRATEGY_TRANSITION);
+}
+```
+
+### Broker subscription
+
+No `ScoutingIntelConsumer` subscribes to `STRATEGY_TRANSITION`. This is by design — transition data flows to consumers via:
+1. **CaseContext** (`ctx.set`) — for task pipeline reads
+2. **L1 bus** — for `MomentDetectionTask` Drools rules → coaching pipeline
+3. **CDI events** (`StrategyTransitionPublished`) — for CBR and workbench observers
+4. **Advisory dispatch** — for real-time advisory messages
+
+The broker's `latest` map (synchronous read via `broker.current()`) is not needed because no downstream task reads transitions synchronously. This differs from `PATTERN_ASSESSMENT`, where `SC2StrategyRouterTask` reads the latest assessment from the broker for strategy routing. If a future consumer needs synchronous access, it can implement `ScoutingIntelConsumer` and add `STRATEGY_TRANSITION` to its `subscribedIntelTypes()`.
 
 ### Why enrichment happens here, not in the classifier
 
@@ -376,29 +442,62 @@ end
 
 Salience 155 places it between "Tech Transition Detected" (160) and "Army Shift" (150) — strategy-level transitions are more significant than army count shifts but at the same level as build order changes.
 
-**CoachingTriggerBuilder.mapMomentToTier()** — add to switch:
+**CoachingTriggerBuilder.mapMomentToTier()** — convert to exhaustive switch, add `STRATEGY_TRANSITION`:
 
 ```java
-case STRATEGY_TRANSITION -> CoachingUrgencyTier.STRATEGIC;
+static CoachingUrgencyTier mapMomentToTier(GameMomentType type) {
+    return switch (type) {
+        case NEXUS_UNDER_ATTACK, BATTLE_STARTED, BUILDING_LOST -> CoachingUrgencyTier.CRISIS;
+        case TECH_TRANSITION_DETECTED, ARMY_SHIFT, POSTURE_CHANGE,
+             FIRST_CONTACT, STRATEGY_TRANSITION -> CoachingUrgencyTier.STRATEGIC;
+        case ECONOMIC_CRISIS, SUPPLY_BLOCK -> CoachingUrgencyTier.ECONOMIC;
+        case BATTLE_ENDED, SCOUT_LOST, GAME_ENDING -> null;
+    };
+}
 ```
 
-**AdvisoryTriggerBuilder.mapMomentTypeToTrigger()** — add to switch:
+**AdvisoryTriggerBuilder.mapMomentTypeToTrigger()** — convert to exhaustive switch, add `STRATEGY_TRANSITION`:
 
 ```java
-case STRATEGY_TRANSITION -> STRATEGIC_TRIGGER;
+private static String mapMomentTypeToTrigger(GameMomentType type) {
+    return switch (type) {
+        case NEXUS_UNDER_ATTACK, BATTLE_STARTED -> CRISIS_TRIGGER;
+        case TECH_TRANSITION_DETECTED, STRATEGY_TRANSITION -> STRATEGIC_TRIGGER;
+        case ECONOMIC_CRISIS, SUPPLY_BLOCK -> ECONOMIC_TRIGGER;
+        case ARMY_SHIFT, POSTURE_CHANGE, FIRST_CONTACT, BUILDING_LOST,
+             BATTLE_ENDED, SCOUT_LOST, GAME_ENDING -> null;
+    };
+}
 ```
 
-**CoachingWorkerFactory.buildUserMessage()** — when the input map contains a transition (via CaseContext snapshot), append a transition section:
+Both switches are converted from `default -> null` to exhaustive form (no `default` arm). The compiler will enforce that any future `GameMomentType` value is explicitly handled — new values produce a compile error rather than silently falling into a default.
 
-```
-STRATEGY TRANSITION: Marine Rush → Bio Timing (confidence: 0.35 → 0.62)
-COACHING: They're adding Medivacs to their Marines — transition from rush to bio timing.
-         Get Stalkers and Colossus tech to splash bio balls before they mass up.
-COUNTERS FOR NEW STRATEGY:
-  - Stalker + Colossus: "Get Colossus tech — splash damage shreds bio balls"
+**CoachingWorkerFactory.buildUserMessage()** — add transition section after existing trigger handling, before game state:
+
+```java
+Object transitionObj = input.get(QuarkMindCaseFile.STRATEGY_TRANSITION);
+if (transitionObj instanceof StrategyTransition transition) {
+    sb.append("\nSTRATEGY TRANSITION: ")
+      .append(transition.from().name()).append(" → ").append(transition.to().name())
+      .append(" (confidence: ")
+      .append(String.format("%.2f", transition.fromConfidence()))
+      .append(" → ").append(String.format("%.2f", transition.toConfidence()))
+      .append(")\n");
+    if (transition.path() != null) {
+        sb.append("COACHING: ").append(transition.path().coachingAdvice()).append("\n");
+    }
+    if (taxonomy != null) {
+        var counters = taxonomy.countersFor(transition.to());
+        if (counters != null) {
+            appendCounters(sb, "COUNTERS FOR NEW STRATEGY", counters.strongCounters());
+        }
+    }
+}
 ```
 
-The coaching advice comes from `TransitionPath.coachingAdvice()` when the path is known. For unknown transitions (path is null), the section omits the COACHING line and the LLM receives only the from/to archetypes with counter data for the `to` archetype — consistent with the existing counter-enrichment pattern.
+The transition section appends alongside the existing pattern assessment section — both are relevant context for the LLM. When the transition path is unknown (`path == null`), the COACHING line is omitted and the LLM receives only the from/to archetypes with counter data for the `to` archetype. Counter enrichment uses `taxonomy.countersFor(transition.to())`, consistent with the existing counter-enrichment pattern in the trigger's `patternAssessment` handling. If the `to` archetype has no counters for the player's race, the counters section is omitted (same as existing behaviour for unknown archetypes).
+
+The `buildUserMessage()` method receives `Map<String, Object> input` — a snapshot of `CaseContext` values. `STRATEGY_TRANSITION` is set on the context by `DroolsScoutingTask.execute()` before the coaching worker runs, so it is available in the input map as a `StrategyTransition` record.
 
 ### 5b. Workbench
 
@@ -433,12 +532,14 @@ record TransitionPayload(
 **SC2CbrRetentionObserver** — collect transitions alongside moments:
 
 ```java
-private final List<StrategyTransition> transitions = new ArrayList<>();
+private final List<StrategyTransition> transitions = new CopyOnWriteArrayList<>();
 
 void onStrategyTransition(@Observes StrategyTransitionPublished event) {
     transitions.add(event.transition());
 }
 ```
+
+Thread-safe via `CopyOnWriteArrayList`, consistent with the existing `moments` and `phases` collections (`SC2CbrRetentionObserver.java:52-53`). The CDI `@Observes` callback runs on the CDI event thread while `onOutcome()` runs on the game-end thread — concurrent access requires a thread-safe collection.
 
 Clear in `onGameStarted()`. In `onOutcome()`, add transition features to `EnrichedGameData`:
 
@@ -472,6 +573,8 @@ This enriches the existing `SC2GameCbrCase` features map — no schema change to
 - `resetClearsPrevDominant` — after reset, next dominant is treated as first (no transition)
 - `cascadeResultCarriesTransition` — verify CascadeResult.transition() is non-null when transition fires
 - `cascadeResultTransitionNull_whenNoTransition` — verify null on normal ticks
+- `prevDominantUnchanged_whenBelowThreshold` — verify that a noise-level dominant change does NOT update prevDominant, so subsequent real transitions have the correct "from" field
+- `wrapperPreservesTransition` — verify `classify(…, enemyCount)` unknown-archetype fallback preserves transition from inner result
 
 **`StrategyTaxonomyTest`** — extend existing test class:
 - `transitionPathLookup_knownPath` — returns TransitionPath with coaching advice
@@ -516,12 +619,9 @@ Extend `PatternClassificationCalibrationTest`:
 
 **Sealed interface update:** `ScoutingIntelPayload` permits clause must add `TransitionDetected`.
 
-**Switch exhaustiveness:** All switch expressions over `ScoutingIntelType` and `GameMomentType` must add the new enum values. Known locations:
-- `CoachingTriggerBuilder.mapMomentToTier()` — add `STRATEGY_TRANSITION`
-- `AdvisoryTriggerBuilder.mapMomentTypeToTrigger()` — add `STRATEGY_TRANSITION`
-- `ScoutingIntelBroker` (if it switches on `ScoutingIntelType`)
+**Switch exhaustiveness:** `CoachingTriggerBuilder.mapMomentToTier()` and `AdvisoryTriggerBuilder.mapMomentTypeToTrigger()` currently use `default -> null`, which silently swallows new enum values. Both switches are converted to exhaustive form (no `default` arm, all unhandled cases explicitly enumerated as `-> null`) as part of this change — see §5a. This ensures the compiler enforces explicit handling of every `GameMomentType` value, including `STRATEGY_TRANSITION`. `ScoutingIntelBroker` uses a map, not a switch, and requires no changes.
 
-**CascadeResult callers:** Existing callers use the two-arg constructor and never read `transition()`. The compatibility constructor preserves this. New code in `DroolsScoutingTask` uses the three-arg result.
+**CascadeResult callers:** All existing callers of `CascadeResult` (four return paths in `classify()`, one in the wrapper `classify(…, enemyCount)`, plus tests) must be updated to use the three-arg constructor. There is no backward-compatibility constructor — the compiler catches every call site.
 
 ## References
 
@@ -532,13 +632,16 @@ Extend `PatternClassificationCalibrationTest`:
 - `CascadeResult.java:6` — existing record shape
 - `DroolsScoutingTask.java:304-335` — pattern classification block (transition wiring point)
 - `DroolsScoutingTask.java:389-398` — `publishIntel()` method
+- `DroolsScoutingTask.java:351-359` — `produces()` method
 - `ScoutingIntelPayload.java:9-42` — sealed interface with existing variants
 - `ScoutingIntelType.java:3-10` — existing enum values
 - `MomentDetectionTask.drl:49-57` — existing `TECH_TRANSITION_DETECTED` rule (complementary signal)
 - `CoachingTriggerBuilder.java:56-60` — `canFire()` cooldown preventing rapid-fire coaching
-- `CoachingTriggerBuilder.java:63-70` — moment-to-tier mapping
-- `AdvisoryTriggerBuilder.java:61-68` — moment-to-trigger mapping
+- `CoachingTriggerBuilder.java:63-70` — moment-to-tier mapping (converted to exhaustive)
+- `AdvisoryTriggerBuilder.java:61-68` — moment-to-trigger mapping (converted to exhaustive)
+- `CoachingWorkerFactory.java:159-186` — `buildUserMessage()` method
 - `WorkbenchEnricher.java:30-39` — existing CDI observer pattern
+- `SC2CbrRetentionObserver.java:52-53` — existing thread-safe collections (`CopyOnWriteArrayList`)
 - `SC2CbrRetentionObserver.java:84-94` — existing event collection pattern
 - `SC2GameCbrCase.java:44-87` — enriched builder with features map
 - `SC2StrategyRouterTask.java:117-216` — pivot detection (parallel, independent concern)
