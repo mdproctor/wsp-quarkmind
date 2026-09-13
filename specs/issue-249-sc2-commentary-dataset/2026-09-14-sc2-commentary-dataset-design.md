@@ -241,7 +241,7 @@ The schema intentionally mirrors `GameStateTranslator.toMap()` field names so th
 
 SC2EGSet replays contain full information for both players (observer perspective). For training data, we include the full opponent state — this matches what a caster sees (they have observer view). At inference time in QuarkMind, the opponent state is partial (fog of war), but the model can learn to commentate on what is known and speculate on what isn't.
 
-## 7. Event-Driven Segmentation with Game-Phase Context (clarifying questions)
+## 7. Event-Driven Segmentation with Game-Phase Context
 
 ### Event detection
 
