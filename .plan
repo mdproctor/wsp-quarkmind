@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-249-sc2-commentary-dataset
-state: scaffolded
+state: active
 project-sha: 2e1f78e8a8093dd4e889715853bc1a55c95d4a03
 date: 2026-09-13
 issue-repo: casehubio/quarkmind
@@ -13,12 +13,12 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#249 — Issue #249 ← active
-  - [ ] Batch 1: Game-State-Extraction
-    - [ ] Task 1: Project scaffold + SC2EGSet JSON parser
-    - [ ] Task 2: Game state extractor
-  - [ ] Batch 2: Subtitle-Pipeline
-    - [ ] Task 3: VTT parser + subtitle downloader
-    - [ ] Task 4: Tournament catalog IEM10
-  - [ ] Batch 3: Alignment-Segmentation-Pipeline
-    - [ ] Task 5: Timestamp alignment + event-driven segmentation
-    - [ ] Task 6: Pipeline orchestrator + first dataset output
+  - [x] Batch 1: Game-State-Extraction
+    - [x] Task 1: Project scaffold + SC2EGSet JSON parser
+    - [x] Task 2: Game state extractor
+  - [x] Batch 2: Subtitle-Pipeline
+    - [x] Task 3: VTT parser + subtitle downloader
+    - [x] Task 4: Tournament catalog IEM10
+  - [x] Batch 3: Alignment-Segmentation-Pipeline
+    - [x] Task 5: Timestamp alignment + event-driven segmentation
+    - [x] Task 6: Pipeline orchestrator + first dataset output
