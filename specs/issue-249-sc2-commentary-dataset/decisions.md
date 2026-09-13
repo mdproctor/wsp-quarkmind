@@ -36,3 +36,18 @@
 **Exploration:** quick
 **Depends on:** D2 (timestamp alignment provides frame range for each example)
 **Status:** captured
+
+## D4: Epic phasing — three-phase batched epic
+
+**Choice:** Structure #249 as a three-phase epic with sub-issues, tracked as batches in the `.plan`:
+- Phase 1 (Foundation): tournament catalog for 3-5 tournaments, manual VOD matching + manual game-start timestamps for ~50 games, subtitle extraction, replay JSON parsing, event-driven segmentation with phase tags, first batch of training examples. Deliverable: ~50 validated aligned pairs spanning full game arcs.
+- Phase 2 (Automation): automated VOD matching within playlists (YouTube API + composite key), automated game-start detection (audio landmark), expand to ~500 games. Deliverable: semi-automated pipeline, hours not days per tournament.
+- Phase 3 (Scale + Integration): full SC2EGSet coverage where VODs exist, quality scoring, integration with QuarkMind commentary pipeline (few-shot examples, prompt templates). Deliverable: production-grade dataset + pipeline integration.
+**Alternatives:**
+- Two-phase (compressed) — merge Phase 1+2, automate upfront. Higher initial risk if methodology assumptions are wrong.
+- Four-phase (stretched) — split Phase 1 into catalog-only + first examples. More checkpoints but slower to first useful output.
+**Rationale:** Phase 1 validates the methodology with minimal tooling investment. Phase 2 invests in automation only after the approach is proven. Phase 3 is the payoff. Each phase is an independent sub-issue that can be picked up in a separate session.
+**Trade-offs:** Phase 1 includes manual work that Phase 2 automates — some effort is "throwaway." Acceptable because the manual work validates the pipeline design.
+**Sources:** LoL19-21 — started with 220 games (LoL19) before scaling to 650 (LoL19-21)
+**Exploration:** quick
+**Status:** captured
