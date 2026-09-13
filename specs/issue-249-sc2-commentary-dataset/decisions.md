@@ -51,3 +51,15 @@
 **Sources:** LoL19-21 — started with 220 games (LoL19) before scaling to 650 (LoL19-21)
 **Exploration:** quick
 **Status:** captured
+
+## D5: Game state extraction — Python reimplementation
+
+**Choice:** Write a lightweight Python extractor that reads SC2EGSet tracker events and produces structured snapshots (army comp, economy, tech, supply, map control, recent events). SC2EGSet JSON already has `PlayerStatsEvent` (minerals, gas, workers), `UnitBornEvent`/`UnitDiedEvent` (army composition), `UpgradeEvent` (tech) — no protobuf/MPQ parsing needed.
+**Alternatives:**
+- Call Java from Python — use `IEM10JsonSimulatedGame` + `GameStateTranslator` via subprocess/GraalPy. Guarantees exact parity with inference-time state but heavyweight dependency for a one-time pipeline.
+**Rationale:** The SC2EGSet JSON is already structured — the Python extractor is straightforward. Exact parity with Java `GameStateTranslator` isn't critical for training data; close-enough representations are sufficient for learning commentary patterns.
+**Trade-offs:** Minor divergence between training-time and inference-time game state representation. Acceptable because the model learns commentary patterns, not exact state formats.
+**Sources:** IEM10JsonSimulatedGame.java — existing SC2EGSet JSON parsing, GameStateTranslator.toMap() — target schema reference
+**Exploration:** quick
+**Depends on:** D3 (output format defines the target schema the extractor must produce)
+**Status:** captured
