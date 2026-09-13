@@ -13,3 +13,9 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#260 — Issue #260 ← active
+  - [ ] Batch 1: Foundation
+    - [ ] Task 1: Domain records and enum values
+    - [ ] Task 2: YAML transitions and taxonomy
+  - [ ] Batch 2: Detection
+    - [ ] Task 3: CascadeResult and classifier detection
+    - [ ] Task 4: Scouting task and consumer wiring
