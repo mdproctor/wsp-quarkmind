@@ -13,3 +13,12 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#249 — Issue #249 ← active
+  - [ ] Batch 1: Game-State-Extraction
+    - [ ] Task 1: Project scaffold + SC2EGSet JSON parser
+    - [ ] Task 2: Game state extractor
+  - [ ] Batch 2: Subtitle-Pipeline
+    - [ ] Task 3: VTT parser + subtitle downloader
+    - [ ] Task 4: Tournament catalog IEM10
+  - [ ] Batch 3: Alignment-Segmentation-Pipeline
+    - [ ] Task 5: Timestamp alignment + event-driven segmentation
+    - [ ] Task 6: Pipeline orchestrator + first dataset output
