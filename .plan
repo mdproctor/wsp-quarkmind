@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-307-iem10-vod-curation
-state: active
+state: closing:promoted
 project-sha: fabd28419ee91d6e20361934eee6a7ee19a93deb
 date: 2026-09-14
 issue-repo: casehubio/quarkmind
@@ -11,5 +11,6 @@ design-repo: workspace
 design-section-hashes: 
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#307 — Issue #307 ← active
