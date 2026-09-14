@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-249-sc2-commentary-dataset
-state: active
+state: closing:promoted
 project-sha: 2e1f78e8a8093dd4e889715853bc1a55c95d4a03
 date: 2026-09-13
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo: workspace
 design-section-hashes: 
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#249 — Issue #249 ← active
   - [x] Batch 1: Game-State-Extraction
