@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-307-iem10-vod-curation
-state: scaffolded
+state: active
 project-sha: fabd28419ee91d6e20361934eee6a7ee19a93deb
 date: 2026-09-14
 issue-repo: casehubio/quarkmind
