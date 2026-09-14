@@ -1,0 +1,13 @@
+# Work Plan — quarkmind
+
+## Queue
+- [ ] casehubio/quarkmind#308 — Filter Beacon map markers from GameStateExtractor ← active
+- [ ] casehubio/quarkmind#309 — SC2 commentary dataset Phase 1c: quality improvements
+
+## State
+branch: quarkmind
+state: active
+issue-repo: casehubio/quarkmind
+covers: casehubio/quarkmind#308
+Current: casehubio/quarkmind#308 — Filter Beacon map markers from GameStateExtractor
+date: 2026-09-14
