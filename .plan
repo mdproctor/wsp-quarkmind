@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-310-sc2-commentary-phase2-3
-state: closing:review
+state: closing:promoted
 project-sha: b2cb236076971aa60cea3da5dff85740548c185d
 date: 2026-09-14
 issue-repo: casehubio/quarkmind
