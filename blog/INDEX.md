@@ -16,3 +16,4 @@
 | [2026-09-12-mdp02-frame-rate-sync-commentary.md](2026-09-12-mdp02-frame-rate-sync-commentary.md) | 2026-09-12 | Synchronized replay commentary — ConcurrentExecution.SKIP as sync primitive, frame rate observation resolution, three runtime-switchable modes |
 | [2026-09-13-mdp01-detecting-the-pivot.md](2026-09-13-mdp01-detecting-the-pivot.md) | 2026-09-13 | Temporal archetype transition detection with hysteresis — detecting when the enemy pivots strategy, not just what they're doing now |
 | [2026-09-14-mdp01-replay-to-caster-alignment.md](2026-09-14-mdp01-replay-to-caster-alignment.md) | 2026-09-14 | Building a commentary training dataset — replay-to-caster transcript alignment pipeline for SC2 |
+| [2026-09-14-mp01-commentary-dataset-scales-up.md](2026-09-14-mp01-commentary-dataset-scales-up.md) | 2026-09-14 | Scaling the commentary dataset from 30 games to full SC2EGSet — automated VOD matching, quality scoring, and FewShotRetriever integration |
