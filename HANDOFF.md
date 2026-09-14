@@ -2,26 +2,22 @@
 
 ## Last Session
 
-Completed #300 (spatial recalibration). Fixed ENEMY_POSTURE stickiness — posture now caches the last DRL classification instead of reverting to UNKNOWN after the 3-minute unit buffer eviction. Removed dead `EnemyPostureClassifiedEvent` (zero consumers). Created `SpatialCalibrationTest` measuring posture UNKNOWN rate, army-near-base events, and posture transitions across 59 replays. Baseline: 0% UNKNOWN, 36-82 army events/replay, thresholds confirmed correct. Updated protocol and ARC42.
+Two issues this session. Landed #249 (commentary training dataset pipeline framework) — 6 Python modules in `quarkmind-dataset/`, 28 tests, design spec, diary entry. Then started #307 (IEM10 VOD curation) — found all 7 ESL YouTube VODs covering 30 games, downloaded audio, began Whisper ASR transcription (3/7 complete at session end, 4 running in background).
 
-Filed epic #301 with 4 follow-up issues (#302-#305) for cascade verification, ALL_IN calibration, and MACRO→ALL_IN pivot detection.
+Built `estimate_offsets.py` to find game-start timestamps from transcript cues automatically, and `curate_iem10.py` to batch-update the match YAML.
 
-## What's Next
+## Resume — #307
 
-Epic #301 — Spatial intelligence post-recalibration follow-ups:
-
-| # | Title | Scale | Complexity | Blocked by |
-|---|-------|-------|------------|------------|
-| #302 | Verify TacticalPosture cascade with timing/rush replays | S | Low | — |
-| #304 | ALL_IN replay calibration — posture persistence e2e | S | Low | — |
-| #303 | GamePhaseSummariser spatial sensitivity audit | M | Med | #302 |
-| #305 | Detect MACRO→ALL_IN pivot (expansion sacrifice) | M | High | — |
-
-#302 and #304 are independent quick wins — start with either.
+1. Check `/tmp/iem10-subs/` for 7 VTT files — if missing (reboot cleared `/tmp/`), re-run Whisper
+2. Run `python3 src/curate_iem10.py` to estimate all 30 game-start offsets
+3. Copy VTTs to a persistent location
+4. Run end-to-end pipeline → validate output → `work end`
 
 ## References
 
-- Spec: `docs/specs/issue-300-recalibrate-spatial/2026-09-11-spatial-recalibration-design.md`
-- Decisions: `docs/specs/issue-300-recalibrate-spatial/decisions.md`
-- Landing commit: `467829a`
-- Epic: https://github.com/casehubio/quarkmind/issues/301
+- Branch: `issue-307-iem10-vod-curation`
+- `.plan` — queue state
+- `JOURNAL.md` — design journal
+- `quarkmind-dataset/src/curate_iem10.py` — batch offset estimation
+- `quarkmind-dataset/catalog/matches/2016_IEM_10_Taipei.yaml` — 30 matches (offsets TBD)
+- `docs/specs/issue-249-sc2-commentary-dataset/` — design spec + decisions
