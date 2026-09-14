@@ -10,4 +10,4 @@ date: 2026-09-14
 
 ## Queue
 - [x] casehubio/quarkmind#308 — Filter Beacon map markers from GameStateExtractor
-- [ ] casehubio/quarkmind#309 — SC2 commentary dataset Phase 1c: quality improvements ← active
+- [x] casehubio/quarkmind#309 — SC2 commentary dataset Phase 1c: quality improvements
