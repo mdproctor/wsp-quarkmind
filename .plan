@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-306-retrain-onnx-spatial
-state: active
+state: paused
 project-sha: d44a7a625b0f3008667fb3b24f8b4eb512275cac
 date: 2026-09-14
 issue-repo: casehubio/quarkmind
