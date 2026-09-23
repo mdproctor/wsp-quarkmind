@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-306-retrain-onnx-spatial
-state: paused
+state: active
 project-sha: d44a7a625b0f3008667fb3b24f8b4eb512275cac
 date: 2026-09-14
 issue-repo: casehubio/quarkmind
@@ -13,3 +13,18 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#306 — Issue #306 ← active
+  - [ ] Batch 1: Foundation
+    - [ ] Task 1: SC2Data techTier fix and classification helpers
+    - [ ] Task 2: FeatureIndexMaps constants and supply_costs.json
+  - [ ] Batch 2: Per-Tick Extraction
+    - [ ] Task 3: buildSnapshot spatial and ratio features
+  - [ ] Batch 3: Windowed Assembly
+    - [ ] Task 4: TemporalWindowAccumulator two-phase assembly
+    - [ ] Task 5: StrategyFeatureExtractor 298-feature update
+  - [ ] Batch 4: Python Extraction
+    - [ ] Task 6: sc2egset_extractor position tracking and spatial features
+    - [ ] Task 7: feature_engineering two-phase window assembly
+    - [ ] Task 8: normalize and dataset and export_onnx updates
+  - [ ] Batch 5: Validation
+    - [ ] Task 9: FeatureAlignmentTest
+    - [ ] Task 10: Train models and OnnxClassificationCalibrationTest
