@@ -26,5 +26,5 @@ flyway-next-v: none
     - [x] Task 7: feature_engineering two-phase window assembly
     - [x] Task 8: normalize and dataset and export_onnx updates
   - [ ] Batch 5: Validation
-    - [ ] Task 9: FeatureAlignmentTest
+    - [x] Task 9: FeatureAlignmentTest
     - [ ] Task 10: Train models and OnnxClassificationCalibrationTest
