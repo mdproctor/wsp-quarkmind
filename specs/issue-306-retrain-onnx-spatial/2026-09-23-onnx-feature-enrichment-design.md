@@ -54,10 +54,14 @@ Inter-player (1 feature):
 
 **Fog-of-war treatment for spatial features:**
 
-Spatial features use **binary visibility**, not continuous scaling. This differs from count features (which are scaled by `scoutingVisibility`):
+Spatial features use **binary visibility**, not continuous scaling. This differs from count features (which are scaled by continuous `scoutingVisibility`):
 
 - **Java inference:** Spatial aggregates are computed from `GameState.enemyUnits()` and `GameState.enemyBuildings()`, which contain only visible units. When no opponent is visible, spatial features are naturally zero. The continuous `scoutingVisibility` scalar is NOT applied to opponent spatial or ratio features — only to count/stat/upgrade features (indices 0–133).
-- **Python training:** The binary `scouting_mask` (0 or 1 per second) applies to all opponent features. When mask = 0, opponent spatial features are zero. When mask = 1, spatial features are computed from all units (full replay data). This matches the training distribution where masked seconds are fully hidden.
+- **Python training:** The `scouting_mask` from `fog_of_war.generate_scouting_mask()` is **continuous** (ramps from 0 → 0.3–0.5 at first scout → increasing toward 1.0 with each visit). Count/stat/upgrade features (indices 0–133) continue using this continuous mask. Spatial and ratio features (indices 134–143) require a **derived binary mask**:
+  ```python
+  spatial_mask = (scouting_mask > 0).astype(np.float32)  # 0 or 1
+  ```
+  When `spatial_mask = 0`: opponent spatial/ratio features are zero. When `spatial_mask = 1`: spatial/ratio features are computed from all units (full replay data). The continuous mask is semantically correct for counts (partial visibility ≈ scaled count) but meaningless for positions (a centroid × 0.3 is a nonsensical location).
 
 Rationale: scaling a centroid position by a continuous visibility factor (e.g., 0.3) produces a nonsensical location — 30% of the way from the origin. Binary visibility (full value or zero) is the only semantically meaningful treatment for positions.
 
@@ -92,6 +96,8 @@ Per player (4 features × 2 players = 8):
 **Tech buildings** (prerequisite/tech-enabling buildings): all buildings with a non-empty `SC2Data.techTier()` that are not production buildings. Examples: Spawning Pool, Roach Warren, Hydralisk Den, Spire (Zerg); Engineering Bay, Armory, Ghost Academy (Terran); Cybernetics Core, Twilight Council, Templar Archives (Protoss).
 
 Note: Spawning Pool, Roach Warren, Hydralisk Den, and Spire are **prerequisite** buildings in Zerg — they unlock unit types but do not produce units. Larvae are produced at Hatchery/Lair/Hive. The production/tech split captures production capacity growth vs tech investment separately.
+
+**Opponent delta noise:** Opponent count features are scaled by `scoutingVisibility` (Java) or `scouting_mask` (Python) before window averaging. When visibility changes between windows, opponent deltas capture visibility change mixed with real composition change (e.g., a scout dying between windows produces a phantom supply drop). Player deltas are unaffected (full self-visibility). Opponent deltas are therefore noisier than player deltas. The model can learn to discount this noise — opponent deltas are still informative on average — but they should not be expected to be as clean as player deltas.
 
 ### 3. Structural Ratio Features (6 per window)
 
@@ -135,7 +141,7 @@ New layout per window (298 features):
 - `FEATURES_PER_WINDOW = 2 × 148 + 1 (army_gap) + 1 (has_vision) = 298`
 
 **Two-phase computation:**
-1. **Tick averaging (per-tick features 0–143):** The accumulator averages `WindowSnapshot.playerFeatures[0:144]` across all ticks in a window. Opponent per-tick features (spatial and ratios at indices 134–143) are NOT scaled by `scoutingVisibility` — only count/stat/upgrade features (indices 0–133) are scaled. Spatial and ratio features are computed from visible units and use binary visibility inherently.
+1. **Tick averaging (per-tick features 0–143):** The accumulator averages `WindowSnapshot.playerFeatures[0:144]` across all ticks in a window. For opponent features: count/stat/upgrade features (indices 0–133) are scaled by the continuous `scoutingVisibility`. Spatial and ratio features (indices 134–143) are NOT scaled by `scoutingVisibility` — in Java, they are computed from visible units only (inherently binary); in Python, a derived binary mask (`scouting_mask > 0`) is applied instead of the continuous mask.
 2. **Window assembly (per-window features 144–147, 292–297):** After tick averaging, the accumulator computes deltas by comparing the current window's averaged counts with the previous window's. `army_gap` is computed from the averaged player and opponent centroids. `has_vision` is set based on whether any tick in the window had `scoutingVisibility > 0`.
 
 Per-tick features (spatial + ratios) are grouped before per-window features (deltas) within each player block, so the averaging loop cleanly covers indices 0–143 without touching delta slots.
@@ -201,10 +207,14 @@ Spatial features use map-relative normalization (÷ map diagonal or [0,1] by map
 
 **Python — neocortex (training path):**
 
-1. **`sc2egset_extractor.py`** — Extract unit positions from `UnitBornEvent` and `UnitPositionsEvent` tracker events. Maintain a position map (unit tag → (x, y)) updated on each position event. Compute per-second spatial aggregates (centroid, spread, distances, proxy score) and ratio features. `N_FEATURES_PER_PLAYER` updates from 134 to 144 (per-second/per-tick features only — deltas are computed at window assembly).
+1. **`sc2egset_extractor.py`** — Extract unit positions from `UnitBornEvent` and `UnitPositionsEvent` tracker events. Maintain a position map (unit tag → (x, y)) updated on each position event. Compute per-second spatial aggregates (centroid, spread, distances, proxy score) and ratio features. Export two constants:
+   - `N_FEATURES_PER_PLAYER = 148` — the per-player block width in the window vector. This is the constant that `model.py`, `normalize.py`, and `dataset.py` import for the encoder split, normalization indices, and dropout boundaries.
+   - `N_TICK_FEATURES_PER_PLAYER = 144` — the per-second feature count used by the extractor's own per-second arrays and by `feature_engineering.py` for the tick-averaging phase of window assembly.
+   
+   The per-second data arrays remain 144-wide. The extractor's internal loops use `N_TICK_FEATURES_PER_PLAYER`. All downstream consumers (`model.py`, `normalize.py`, `dataset.py`) continue importing `N_FEATURES_PER_PLAYER` and get 148 — the window-level constant they need for the encoder split at `temporal[:, :, :N_PLAYER_FEATURES]`.
 
-2. **`feature_engineering.py`** — Update `build_temporal_features()` with two-phase window assembly:
-   - Average per-second features (144 per player) into window means.
+2. **`feature_engineering.py`** — Update `build_temporal_features()` with two-phase window assembly. Imports both `N_FEATURES_PER_PLAYER` (148) and `N_TICK_FEATURES_PER_PLAYER` (144) from the extractor:
+   - Average per-second features (`N_TICK_FEATURES_PER_PLAYER = 144` per player) into window means. For opponent features, apply the continuous `scouting_mask` to count/stat/upgrade features (indices 0–133) and a derived binary mask (`scouting_mask > 0`) to spatial/ratio features (indices 134–143).
    - Compute deltas (4 per player) from consecutive window means.
    - Compute `army_gap` from averaged centroids.
    - Concatenate: `[player_avg(144), player_deltas(4), opponent_avg(144), opponent_deltas(4), army_gap(1), has_vision(1)]` = 298.
@@ -223,7 +233,9 @@ Spatial features use map-relative normalization (÷ map diagonal or [0,1] by map
 
 2. **`strategy_vs_*.onnx`** — 3 retrained models placed in `quarkmind-sc2/src/test/resources/models/strategy/`.
 
-3. **`supply_costs.json`** — Generated from `SC2Data.supplyCost()` (authoritative source) as a shared artifact. A generation script dumps `{unit_type_name: supply_cost}` for all `UnitType` enum values. Both Java and Python read from this file, eliminating dual-maintenance of supply cost mappings. Placed in `quarkmind-sc2/src/main/resources/classifier/supply_costs.json` and symlinked or copied to the Python data directory.
+3. **`supply_costs.json`** — Generated from `SC2Data.supplyCost()` (authoritative source) as a shared artifact. A generation script dumps `{unit_type_name: supply_cost}` for all `UnitType` enum values, eliminating dual-maintenance of supply cost mappings. Placed in `quarkmind-sc2/src/main/resources/classifier/supply_costs.json`. 
+
+   **Cross-repo distribution:** `quarkmind-sc2` and `neocortex` are separate repositories — symlinks across repos don't work in CI (independent checkouts). The `FeatureAlignmentTest` setup step copies `supply_costs.json` from `quarkmind-sc2`'s classpath to the Python test fixture directory. The training pipeline reads it from a configurable path (defaulting to `../quarkmind-sc2/src/main/resources/classifier/supply_costs.json` for local development, overridable via `Paths.supply_costs` for CI). The alignment test verifies that the Python supply cost dict matches the JSON artifact.
 
 ### Alignment Verification
 
