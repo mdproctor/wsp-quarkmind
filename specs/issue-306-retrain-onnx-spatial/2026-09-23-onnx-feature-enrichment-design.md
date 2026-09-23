@@ -48,7 +48,7 @@ Inter-player (1 feature):
 | `army_gap` | Euclidean distance between player and opponent army centroids | ÷ map diagonal |
 
 **Edge cases:**
-- No army units: centroid = own start location, spread = 0, max_forward = 0, distances = 0.
+- No army units: all 7 spatial features = 0 (centroid, distances, spread, max_forward, proxy_building_score). A clean zero signal avoids leaking map geometry into a "no army" state and is trivially produced by both Java and Python for empty unit lists.
 - No buildings: proxy_building_score = 0.
 - No opponent units visible: opponent spatial block = zeros, `has_opponent` availability flag = 0. Model trained with modality dropout handles this.
 
@@ -94,6 +94,8 @@ Per player (4 features × 2 players = 8):
 - Protoss: Gateway, Robotics Facility, Stargate
 
 **Tech buildings** (prerequisite/tech-enabling buildings): all buildings with a non-empty `SC2Data.techTier()` that are not production buildings. Examples: Spawning Pool, Roach Warren, Hydralisk Den, Spire (Zerg); Engineering Bay, Armory, Ghost Academy (Terran); Cybernetics Core, Twilight Council, Templar Archives (Protoss).
+
+**Prerequisite fix:** `SC2Data.techTier()` currently omits `CYBERNETICS_CORE` — it falls to the default branch and returns empty. Cybernetics Core gates Stalkers, Sentries, Adepts, WarpGate research, and all Protoss T2+ paths. Without this fix, building a Cybernetics Core would not register in `delta_tech_buildings`, silently dropping the first and most significant Protoss tech transition. Fix: add `case CYBERNETICS_CORE -> OptionalInt.of(1)` to the Protoss T1 tier in `SC2Data.techTier()`. This is a prerequisite for this spec's tech building classification.
 
 Note: Spawning Pool, Roach Warren, Hydralisk Den, and Spire are **prerequisite** buildings in Zerg — they unlock unit types but do not produce units. Larvae are produced at Hatchery/Lair/Hive. The production/tech split captures production capacity growth vs tech investment separately.
 
