@@ -2,33 +2,62 @@
 
 ## Last Session
 
-Completed Task 9 (FeatureAlignmentTest) for #306 — the alignment test found and fixed three bugs in the Python extractor (sc2egset_extractor.py):
+Completed Task 9 (FeatureAlignmentTest) and partially completed Task 10 (OnnxClassificationCalibrationTest) for #306.
 
-1. **UnitBorn buildings uncounted**: Starting bases (Nexus/CC/Hatchery) arrive via UnitBorn, but the extractor only counted buildings from UnitInit events. Starting buildings were invisible in the feature vector.
-2. **UnitInit+UnitDone double-counting**: Building counts incremented on both UnitInit and UnitDone events — every constructed building was counted twice.
-3. **supply_costs.json path wrong**: Default path was `casehub/quarkmind-sc2/...` instead of `casehub/quarkmind/quarkmind-sc2/...`. The extractor fell back to hardcoded defaults (most units = 2 supply), causing a 2x army_supply_ratio divergence.
+### Task 9 — FeatureAlignmentTest (complete)
 
-Also made two Java changes to enable alignment testing:
-- Added `MapInfo` to `SimulatedGame` (protected field) and `IEM10JsonSimulatedGame` (extracts start positions from first base UnitBorn events, map dimensions from metadata)
-- Added enemy building tracking to `IEM10JsonSimulatedGame` for UnitBorn and UnitInit events
+Found and fixed 3 Python extractor bugs via the alignment test:
+1. **UnitBorn buildings uncounted**: Starting bases missed because UnitBorn handler didn't track BUILDING_IDX
+2. **UnitInit+UnitDone double-counting**: Building counts incremented on both events
+3. **supply_costs.json path wrong**: Default path was missing the `quarkmind/` directory; fell back to hardcoded defaults (most units = 2 supply)
 
-Fixed a circular import in neocortex (`sc2egset_extractor` ↔ `feature_engineering`) by making the `feature_engineering` import lazy inside `build_samples_from_replays()`.
+Also fixed a circular import (`sc2egset_extractor` ↔ `feature_engineering`) — made the `feature_engineering` import lazy inside `build_samples_from_replays()`.
 
-Player features match within 1e-3 tolerance. Opponent features have expected timing differences (logged but not asserted) due to the ~6 game-loop sampling offset between Java ticks and Python seconds.
+Java changes: added MapInfo to `SimulatedGame`/`IEM10JsonSimulatedGame` and enemy building tracking for UnitBorn/UnitInit.
+
+### Task 10 — Train + Calibrate (in progress)
+
+**Written:** `OnnxClassificationCalibrationTest.java` — compiles, awaiting retrained models.
+
+**Background process running:** `prepare_real_data.py --force` is re-extracting all 71 SC2EGSet ZIPs with 298 features. PID 9806 (check with `ps aux | grep prepare_real_data`). IEM10 Taipei completed with 298 features; remaining 70 ZIPs are processing.
+
+**Python venv:** `/Users/mdproctor/claude/casehub/neocortex/.venv` with `--system-site-packages`. Has torch 2.14.0, onnx 1.22.0, onnxruntime 1.27.0, scikit-learn 1.9.1.
 
 ## Immediate Next Step
 
-Task 10: Train models and OnnxClassificationCalibrationTest. Requires Python environment with torch/ONNX. Steps:
-1. Run Python test suite (`pytest`) in neocortex to verify the extractor fixes
-2. Regenerate training data with enriched features (`sc2egset_extractor --zip`)
-3. Run `normalize.py` to compute new norm_stats
-4. Train all 3 matchup models via `run_pipeline.py`
-5. Copy ONNX models + norm_stats.json to quarkmind-sc2 test resources
-6. Write `OnnxClassificationCalibrationTest`
+When `prepare_real_data.py` finishes (check `ps aux | grep prepare_real_data`):
+
+1. **Normalize:**
+   ```bash
+   PYTHONPATH=/Users/mdproctor/claude/casehub/neocortex \
+   /Users/mdproctor/claude/casehub/neocortex/.venv/bin/python3 \
+   -m evaluation.strategy_classifier.normalize --sources sc2egset
+   ```
+
+2. **Train:**
+   ```bash
+   PYTHONPATH=/Users/mdproctor/claude/casehub/neocortex \
+   /Users/mdproctor/claude/casehub/neocortex/.venv/bin/python3 \
+   -m evaluation.strategy_classifier.run_pipeline --data combined
+   ```
+
+3. **Deploy models:** Copy ONNX files from `neocortex/evaluation/strategy_classifier/output/` to `quarkmind-sc2/src/test/resources/models/strategy/`
+
+4. **Convert norm_stats:** Copy the new `norm_stats.json` to `quarkmind-sc2/src/main/resources/classifier/norm_stats.json`
+
+5. **Run calibration test:**
+   ```bash
+   mvn test -pl quarkmind-sc2 -Pbenchmark -Dtest=OnnxClassificationCalibrationTest
+   ```
+
+6. **Run alignment test** to confirm the new norm_stats still works:
+   ```bash
+   mvn test -pl quarkmind-sc2 -Dtest=FeatureAlignmentTest
+   ```
 
 ## Cross-Module
 
-Neocortex repo: 4 commits on branch `issue-345-goal-cognition` (Tasks 6-8 from previous session + extractor bugfixes from this session). These need verification with `pytest` before training.
+Neocortex repo: 5 commits on branch `issue-345-goal-cognition` (Tasks 6-8 from previous session + extractor bugfixes + circular import fix). Background extraction is overwriting per-tournament data in `data/sc2egset/`.
 
 ## References
 
