@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-306-retrain-onnx-spatial
-state: active
+state: closing:promoted
 project-sha: d44a7a625b0f3008667fb3b24f8b4eb512275cac
 date: 2026-09-14
 issue-repo: casehubio/quarkmind
@@ -12,5 +12,6 @@ design-section-hashes: 4d2cc5ab:## §1 Introduction and Goals|4f6b26ef:## §2 Co
 flyway-next-v: none
 task10: done
 
+evidence-era: true
 ## Queue
 - [x] casehubio/quarkmind#306 — Issue #306
