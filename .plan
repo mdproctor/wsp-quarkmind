@@ -3,7 +3,7 @@
 ## State
 branch: issue-317-blizzard-ladder-restore
 state: active
-project-sha: fee674bf5095af74697615c1bfe84af09816ae4a
+project-sha: 8f74f337
 date: 2026-09-28
 issue-repo: casehubio/quarkmind
 covers: 317
@@ -21,7 +21,7 @@ flyway-next-v: none
     - [x] Task 4: UpgradeType enum + SC2Data upgrade times
     - [x] Task 5: Extend AbilityMapping
   - [ ] Batch 3: Feature Extractor
-    - [ ] Task 6: Core extractor with production queues
+    - [x] Task 6: Core extractor with production queues
     - [ ] Task 7: Morph-death + WarpGate auto-morph
     - [ ] Task 8: Economy reconstruction
   - [ ] Batch 4: Validation + Bulk
