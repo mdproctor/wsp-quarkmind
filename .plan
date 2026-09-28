@@ -13,3 +13,17 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#317 — Issue #317 ← active
+  - [ ] Batch 1: Docker Oracle
+    - [ ] Task 1: Fix Docker paths + extract SC2 headless
+    - [ ] Task 2: Oracle sampler + restoration
+  - [ ] Batch 2: abilLink Discovery
+    - [ ] Task 3: Discover human abilLinks from oracle
+    - [ ] Task 4: UpgradeType enum + SC2Data upgrade times
+    - [ ] Task 5: Extend AbilityMapping
+  - [ ] Batch 3: Feature Extractor
+    - [ ] Task 6: Core extractor with production queues
+    - [ ] Task 7: Morph-death + WarpGate auto-morph
+    - [ ] Task 8: Economy reconstruction
+  - [ ] Batch 4: Validation + Bulk
+    - [ ] Task 9: Oracle validation test
+    - [ ] Task 10: JSON input + batch runner + ONNX retrain
