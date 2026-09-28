@@ -2,61 +2,69 @@
 
 ## Last Session
 
-Closed #312 (ONNX class imbalance), #313 (ground truth alignment), #314 (eval mode export). Branch `issue-312-onnx-class-imbalance` landed on main as 2 squashed commits.
+Branch `issue-317-blizzard-ladder-restore`, issue #317. Designed and began implementing a Java-native pipeline to extract ONNX classifier features from 151K stripped Blizzard ladder replays.
 
-### Key change: quarkmind-classifier module
+### What was done
 
-Moved the entire SC2 strategy classifier training pipeline from `neocortex/evaluation/strategy_classifier/` to `quarkmind/quarkmind-classifier/`. Zero neocortex dependencies — the pipeline was SC2-domain code misplaced in the ML repo. This eliminates cross-repo coordination for all future training work.
+1. **Brainstorming + design** — explored 3 approaches (Docker/SC2 headless, EmulatedGame physics, Java-native deterministic). Landed on Java-native with Docker oracle validation. Key insight: game events in stripped replays contain player commands, and calibrated SC2Data constants can deterministically reconstruct unit births, building placements, upgrades, and economy — no SC2 engine needed.
 
-- Flat layout: `src/`, `tests/`, `docker/sc2-restore/`
-- Imports rewritten: `evaluation.strategy_classifier.X` → `src.X`
-- Config paths: relative from module root (CWD = `quarkmind-classifier/`)
-- Own `pyproject.toml` and `.venv`
+2. **Decision review** (standard, 3 rounds, 13 issues) — reviewer identified that AbilityMapping only covers ~24 of 53 unit types, zero buildings, zero upgrades. abilLink discovery (Phase 2) is the critical path. Also surfaced: morph-death semantics, WarpGate auto-morph, production queue tracking, building double-counting.
 
-### Training improvements applied
+3. **Spec review** (standard, 3 rounds, 26 issues) — added production queue state (§3a-2), 10 morph types including Archon merge (§3a-3), WarpGate auto-morph (§3a-4), 3-tier economy model (§3b), string-name mapping layer (§3c-1).
 
-- `train.py`: class weight cap 5.0 → 15.0
-- `normalize.py`: oversampling floor 50 → 500 samples/class
-- `run_pipeline.py`: `export_model.eval()` before ONNX export
+4. **Implementation — Batch 1 complete (Docker Oracle)**
+   - Fixed `docker/sc2-restore/run.sh` and `setup.sh` — paths now location-independent (relative to script dir)
+   - Extracted SC2 v4.9.3 headless (Base75025, 3.9GB) from existing ZIP
+   - Built `sample_oracle.py` — stratified 198 replays (33 per matchup)
+   - Launched oracle restoration via Podman — **118/198 complete when session ended, container still running**
 
-### Ground truth fix (#313)
+5. **Implementation — Batch 2 partial (abilLink Discovery)**
+   - Created `UpgradeType` enum — 15 classifier-tracked upgrades with `pythonName` matching Python pipeline's UPGRADES list
+   - Added `SC2Data.upgradeTimeInLoops()` — wiki-derived estimates, to be refined from oracle calibration
+   - Built `AbilityDiscoveryCalibrationTest` — cross-references oracle game events with tracker events. Initial run on 118 replays shows strong signals (Drone=193/0, DarkTemplar=170/15) but lookback window needs refinement for lower-frequency units and upgrades
 
-Terran rush threshold tightened: `marines >= 5 && < 4min` → `marines >= 8 && < 3min`. Standard bio openings no longer misclassified as rushes. Calibration gate raised 40% → 60%.
+### Key validation results (from brainstorming)
 
-### Neocortex cleanup
+- **Stripped replays parse via Scelight** — `.backup` fallback in RepParserEngine works
+- **ReplayCommandExtractor works on stripped replays** — 21 intents + 24 movement orders from a 4.9.3 ladder replay
+- **abilLink constants from 2023+ work on 2019 replays** — no patch version mismatch
+- **Docker restoration works for 4.9.3** — 5/5 test replays restored, tracker events confirmed (50,749 bytes)
+- **4.10.1 blocked** — needs Base75800, we only have Base75689 (v4.10.0)
 
-`evaluation/strategy_classifier/` removed from neocortex git tracking. Committed to neocortex main (not pushed). ONNX dependency retained — used by `inference-runtime` module.
+### Oracle restoration status
 
-### Data incident
+Container `7b5d314c9a75` running in Podman. 118/198 complete at session end. Checkpoint-safe — already-restored replays are skipped on restart. Output: `quarkmind-classifier/data/replay_packs/blizzard_ladder/4.9.3_oracle/restored/`
 
-`rm -rf` accidentally deleted intermediate `sc2egset/` per-tournament NPZ files during the move. `combined/` training data (152M) and `replay_packs/` (13G raw replays) survived. Issue #316 tracks regeneration of intermediates. Current ONNX models are unaffected.
+To check progress:
+```bash
+ls quarkmind-classifier/data/replay_packs/blizzard_ladder/4.9.3_oracle/restored/ | wc -l
+```
+
+To restart if container stopped:
+```bash
+podman run --rm --platform linux/amd64 \
+  -v $PWD/quarkmind-classifier/data/sc2_headless/4.9.3/SC2.4.9.3/StarCraftII:/opt/StarCraftII:ro \
+  -v $PWD/quarkmind-classifier/data/replay_packs/blizzard_ladder/4.9.3_oracle/input:/data/input:ro \
+  -v $PWD/quarkmind-classifier/data/replay_packs/blizzard_ladder/4.9.3_oracle/restored:/data/output \
+  sc2-restore:latest --input /data/input --output /data/output --workers 2
+```
 
 ## What's Next
 
 | Item | Scale | Complexity | Notes |
 |------|-------|------------|-------|
-| #316 — Process new datasets + regenerate intermediates | M | Med | 6 tournament packs downloaded but unprocessed. 3 are ZIPs (DreamHack Dallas, ESW, FEL Cracow), HSC XXVII has 61 replays, HSC XXVIII/XXIX directories empty (re-download). Run each through `prepare_replay_pack.py`, then normalize + retrain. |
-| Blizzard ladder restoration (230K replays) | L | High | 13G raw replays in `data/replay_packs/blizzard_ladder/`. Stripped `.backup` format — needs Docker/SC2 headless tracker restoration. Requires x86_64 Linux VM (QEMU ~43s/replay impractical). Best source for rare archetypes. |
-| Push neocortex cleanup | XS | Low | `git -C neocortex push origin main` — classifier removal commit is local only. |
+| Refine AbilityDiscoveryCalibrationTest lookback window | S | Med | Current modal matching catches noise — needs tighter window for buildings/upgrades, possibly filter by hasTargetPoint. Run with full 198 oracle set. |
+| T5: Extend AbilityMapping with discovered abilLinks | M | Med | Add ReplayCommand variants (BuildCommand, UpgradeCommand, MorphCommand, CancelCommand), populate abilLink constants from discovery output |
+| T6-T8: StrippedReplayFeatureExtractor (Batch 3) | L | High | Core extractor with production queues, morph-death semantics, WarpGate auto-morph, 3-tier economy |
+| T9-T10: Validation + Bulk Processing (Batch 4) | M | Med | Oracle validation test, prepare_replay_pack.py JSON input, bulk Java runner, ONNX retrain |
 
-## Training Pipeline (new location)
+## Artifacts
 
-All commands run from `quarkmind-classifier/`:
-
-```bash
-# Setup
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-
-# Test
-PYTHONPATH=. .venv/bin/python3 -m pytest tests/ -v
-
-# Train (requires data in data/combined/)
-PYTHONPATH=. .venv/bin/python3 -m src.run_pipeline --data combined
-```
-
-## References
-
-- Design spec: `specs/issue-312-onnx-class-imbalance/2026-09-27-move-classifier-to-quarkmind-design.md`
-- Plan: `plans/2026-09-27-move-classifier-to-quarkmind.md`
-- Issue #316: regenerate sc2egset intermediates
-- Standing rule: never `rm -rf` data directories — always `mv`
+| Path | What |
+|------|------|
+| `specs/issue-317-blizzard-ladder-restore/2026-09-28-blizzard-ladder-restore-design.md` | Design spec (reviewed, 3 rounds) |
+| `specs/issue-317-blizzard-ladder-restore/decisions.md` | 7 decisions (D1-D7, reviewed, 3 rounds) |
+| `plans/2026-09-28-blizzard-ladder-restore.md` | Implementation plan (4 batches, 10 tasks) |
+| `specs/issue-317-blizzard-ladder-restore/pipeline.state` | Brainstorming pipeline state |
+| Decision review: `/Users/mdproctor/reviews/casehub-quarkmind/issue-317-decision-20260928-034545/` | |
+| Spec review: `/Users/mdproctor/reviews/casehub-quarkmind/issue-317-spec-20260928-043626/` | |
