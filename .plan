@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-317-blizzard-ladder-restore
-state: scaffolded
+state: active
 project-sha: 8af361630ab838d49c327215b81e77a2e1bbda8b
 date: 2026-09-28
 issue-repo: casehubio/quarkmind
