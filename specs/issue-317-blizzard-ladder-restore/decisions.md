@@ -8,7 +8,8 @@
 - EmulatedGame full physics simulation — fast but combat divergence risks mixing two ground truths in training data
 **Rationale:** Stripped replays contain game events (player commands) which are deterministic inputs. Combined with SC2Data calibrated train/build times (validated by SC2TrainTimeCalibrationTest), unit births and economy are exactly reconstructable without running SC2. A small Docker-restored oracle set validates the Java pipeline before bulk processing. Every divergence fix also hardens EmulatedGame.
 **Trade-offs:** Requires building a new Java pipeline component (StrippedReplayFeatureExtractor). Combat deaths won't be reconstructed — accepted because classifier targets early-game strategy archetypes where build order, not combat outcomes, is the primary signal.
-**Sources:** SC2TrainTimeCalibrationTest.java, ReplayCommandExtractor.java, ReplaySimulatedGame.java, RepParserEngine.java (lines 104-114: .backup fallback), prepare_replay_pack.py
+**Hardening loop:** Oracle divergences aren't just validation failures — they're EmulatedGame calibration bugs. Each fix hardens SC2Data constants, AbilityMapping, and train/build time calibration for ALL EmulatedGame consumers (agent loop, coaching mode, replay validation), not just the classifier pipeline. The oracle set is a regression test suite that grows with every patch version processed.
+**Sources:** SC2TrainTimeCalibrationTest.java, ReplayCommandExtractor.java, ReplaySimulatedGame.java, RepParserEngine.java (lines 104-114: .backup fallback), prepare_replay_pack.py, StrippedReplayParseTest.java (validates stripped replay parsing)
 **Exploration:** deep-analysis
 **Status:** captured
 
