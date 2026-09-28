@@ -35,8 +35,8 @@ Terran rush threshold tightened: `marines >= 5 && < 4min` → `marines >= 8 && <
 
 | Item | Scale | Complexity | Notes |
 |------|-------|------------|-------|
-| #316 — Regenerate sc2egset intermediates | S | Low | Run `prepare_real_data.py` against replay_packs/. Needed before re-normalization. |
-| Acquire rare archetype training data | M | Med | SC2ReplayStats ladder data or Blizzard ladder replay restoration. Targets TECH_RUSH and AIR_SUPERIORITY gaps. |
+| #316 — Process new datasets + regenerate intermediates | M | Med | 6 tournament packs downloaded but unprocessed. 3 are ZIPs (DreamHack Dallas, ESW, FEL Cracow), HSC XXVII has 61 replays, HSC XXVIII/XXIX directories empty (re-download). Run each through `prepare_replay_pack.py`, then normalize + retrain. |
+| Blizzard ladder restoration (230K replays) | L | High | 13G raw replays in `data/replay_packs/blizzard_ladder/`. Stripped `.backup` format — needs Docker/SC2 headless tracker restoration. Requires x86_64 Linux VM (QEMU ~43s/replay impractical). Best source for rare archetypes. |
 | Push neocortex cleanup | XS | Low | `git -C neocortex push origin main` — classifier removal commit is local only. |
 
 ## Training Pipeline (new location)
