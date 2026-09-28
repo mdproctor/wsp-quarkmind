@@ -17,8 +17,8 @@ flyway-next-v: none
     - [x] Task 1: Fix Docker paths + extract SC2 headless
     - [x] Task 2: Oracle sampler + restoration
   - [ ] Batch 2: abilLink Discovery
-    - [ ] Task 3: Discover human abilLinks from oracle
-    - [ ] Task 4: UpgradeType enum + SC2Data upgrade times
+    - [x] Task 3: Discover human abilLinks from oracle
+    - [x] Task 4: UpgradeType enum + SC2Data upgrade times
     - [ ] Task 5: Extend AbilityMapping
   - [ ] Batch 3: Feature Extractor
     - [ ] Task 6: Core extractor with production queues
