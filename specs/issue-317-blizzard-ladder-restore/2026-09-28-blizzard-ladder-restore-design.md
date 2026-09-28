@@ -118,6 +118,21 @@ The classifier uses 134 features. The discovery must map abilLinks for:
 | Morphs (Zerg) | ~8 types | 0 (Baneling, Ravager, Lurker, BroodLord, Lair, Hive, etc.) | ~8 |
 | WarpGate warp-in | 5+ types | Partially (abilLink=170 known, unit selection unknown) | ~5 |
 
+### 2b-1. Feature coverage analysis (D6)
+
+Systematic mapping of the 134 classifier features to their reconstruction source:
+
+| Feature group | Count | Tracker event source | Java pipeline reconstruction | Accuracy |
+|---------------|-------|---------------------|------------------------------|----------|
+| Unit counts | 53 | UnitBorn + UnitDied | Train commands + SC2Data.trainTimeInLoops() | Exact for births; deaths missing (overcounts at minute 5+) |
+| Building counts | 53 | UnitInit + UnitDone | Build commands + SC2Data.buildTimeInLoops() | Exact (buildings rarely destroyed early-game) |
+| Economy stats | 13 | PlayerStats | Derived: starting resources - build costs + mining model | Approximate (mining model divergence) |
+| Upgrade flags | 15 | Upgrade | Research commands + SC2Data.upgradeTimeInLoops() | Exact |
+
+**After D4 abilLink discovery completes:** all 134 features are reconstructable. Economy stats are the only approximate category — the Java pipeline uses EmulatedGame's mining rate model which is calibrated but not identical to SC2's internal economy simulation.
+
+**Before D4 completes (current state):** only ~24 of 53 unit types can be extracted (AbilityMapping gaps block buildings, upgrades, and unmapped units). This is why Phase 2 is the critical path.
+
 ### 2c. AbilityMapping extension
 
 Extend `AbilityMapping` (or create `HumanAbilityMapping`) with the discovered mappings. Support both bot and human abilLink vocabularies — the existing bot mappings remain valid for AI Arena replays.
@@ -186,10 +201,13 @@ For each oracle replay, compare:
 ### 4b. Feature-level comparison
 
 Compare extracted temporal features at each time window (minutes 2, 3, 4, 5):
-- Unit count vectors: exact match (no combat = no deaths = same counts)
-- Building count vectors: exact match
-- Upgrade flags: exact match
-- Economy stats: within tolerance (mining model approximation)
+- **Unit birth events:** exact match on type and loop (deterministic from commands + SC2Data timings)
+- **Building placement events:** exact match on type and loop
+- **Upgrade events:** exact match on type and loop
+- **Unit count vectors (minutes 2-3):** exact match expected — combat is rare before minute 3
+- **Unit count vectors (minutes 4-5):** overcounted vs oracle (Java pipeline has no combat deaths). Report divergence magnitude but do not assert match — this is a known, accepted limitation
+- **Building/upgrade count vectors:** exact match at all windows (buildings and upgrades are not destroyed in most early-game scenarios)
+- **Economy stats:** within tolerance (mining model approximation — Java uses EmulatedGame's economic model, SC2 uses its own)
 
 ### 4c. Divergence-driven hardening
 

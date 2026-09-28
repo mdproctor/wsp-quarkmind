@@ -1,17 +1,18 @@
 # Decisions — issue-317-blizzard-ladder-restore
 
-## D1: Restoration strategy — cloud VM primary, Java pipeline secondary
+## D1: Restoration strategy — Java-native pipeline with Docker oracle validation
 
-**Choice:** Use a cloud x86_64 VM with Docker/SC2 headless to restore all 151K replays with full tracker events. Develop the Java-native command-to-features pipeline as a secondary hardening effort, validated against cloud-restored ground truth.
+**Choice:** Build a Java-native command-to-features pipeline that reconstructs all 134 classifier features from game event commands. Validated against a local Docker/SC2 headless oracle set. No cloud VM available — all compute is local.
 **Alternatives:**
-- Java-native only (original) — can reconstruct only ~18% of classifier features (unit training timing for the 24 unit types mapped in AbilityMapping); insufficient for training
-- EmulatedGame for early-game features — requires solving the building/upgrade abilLink discovery first (see D7)
-**Rationale:** The classifier uses 134 features per player (53 buildings, 53 units, 13 economic stats, 15 upgrades), all derived from tracker events (D6). Game events alone can produce partial unit birth timing for ~24 of 53 mapped unit types via AbilityMapping — zero building counts, zero economic stats, zero upgrades. A cloud x86_64 VM processes replays at 2-4/second (per issue #317), completing all 151K replays in ~10-21 hours for ~$5-20 of compute. This produces complete, accurate training data without new code.
-**Trade-offs:** Requires cloud VM provisioning (one-time DevOps). Doesn't directly harden EmulatedGame — but the Java pipeline development as a secondary effort preserves that benefit. Combat deaths are reconstructed by the full SC2 engine, so unit counts are accurate (unlike game-event-only extraction where deaths are missing).
-**Hardening loop (preserved):** The local Docker oracle set (D2) provides the ground truth that D4's abilLink discovery needs. The full cloud-restored dataset then serves as validation ground truth for the Java pipeline at scale. The Java pipeline development — extending AbilityMapping for human replay abilLinks, building StrippedReplayFeatureExtractor — proceeds in parallel, validated against cloud-restored data. Every divergence fix still hardens EmulatedGame for all consumers (agent loop, coaching mode, replay validation).
-**Sources:** Issue #317 (cloud VM timing: 2-4 replays/s), sc2egset_extractor.py (134 features), AbilityMapping.java (24 unit types mapped, zero buildings/upgrades), ReplayValidationHarness.java (buildings injected from tracker GT)
+- Cloud x86_64 VM (review recommendation) — produces complete data in ~21 hours for ~$5-20, but no cloud access is available
+- Docker/SC2 headless for all 151K replays locally — proven but ~50s/replay under ARM64 emulation = months of compute
+- EmulatedGame full physics simulation — deferred until abilLink discovery completes (D4/D7)
+**Rationale:** The Java-native pipeline requires extending AbilityMapping to cover all human replay abilLinks — currently only ~24 of 53 unit types mapped, zero buildings, zero upgrades. This abilLink discovery work (D4) is foundational infrastructure that benefits EmulatedGame, coaching mode, replay validation, and all future human replay processing regardless of this issue. Once AbilityMapping has full coverage, the pipeline reconstructs all deterministic features (unit births, building placements, upgrades, economy) using calibrated SC2Data constants. The ~200-replay Docker oracle set provides ground truth for calibration and validation.
+**Trade-offs:** Requires substantial abilLink discovery effort before bulk processing can begin. Combat deaths are not reconstructed — unit counts at late-game time windows (minute 5+) will overcount vs reality. Acceptable because the classifier targets early-game strategy archetypes where build order is the primary signal.
+**Hardening loop:** Oracle divergences fix SC2Data constants, AbilityMapping, and EmulatedGame calibration — benefiting all consumers, not just the classifier.
+**Sources:** SC2TrainTimeCalibrationTest.java, sc2egset_extractor.py (134 features), AbilityMapping.java (coverage gaps documented in D4), StrippedReplayParseTest.java (validates stripped replay parsing)
 **Exploration:** deep-analysis
-**Status:** revised (R1-02, R1-03: corrected feature coverage analysis and VM timing)
+**Status:** revised (R1-02, R1-03, self-review: re-aligned with no-cloud constraint)
 
 ## D2: Oracle set composition
 
