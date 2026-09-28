@@ -44,7 +44,7 @@ Stripped .SC2Replay (game events only, no tracker events)
                                                        game_json
                                                            │
                                               prepare_replay_pack.py pipeline
-                                              (existing, unchanged)
+                                              (modified: --format json input)
 ```
 
 ### Key components
@@ -54,7 +54,6 @@ Stripped .SC2Replay (game events only, no tracker events)
 - `GameEventStream` — extracts game events from any parseable replay
 - `ReplayCommandExtractor` — produces `ReplayCommandStream` (TimedIntents + UnitOrders)
 - `SC2Data` — calibrated train/build times, unit costs (validated by SC2TrainTimeCalibrationTest)
-- `prepare_replay_pack.py` — Python feature engineering pipeline (consumes game_json)
 - Docker tooling — `docker/sc2-restore/` (Dockerfile, restore_tracker.py, run.sh, setup.sh)
 
 **New (all in `quarkmind-sc2` module):**
@@ -70,6 +69,7 @@ Stripped .SC2Replay (game events only, no tracker events)
 **Modified (in `quarkmind-classifier`):**
 - `docker/sc2-restore/run.sh` — update paths from neocortex to quarkmind-classifier
 - `docker/sc2-restore/setup.sh` — update paths from neocortex to quarkmind-classifier
+- `prepare_replay_pack.py` — add JSON input support. The existing `_process_one_replay()` calls `sc2reader.load_replay()` expecting `.SC2Replay` files. The Java pipeline emits JSON files. A new worker path (e.g. `--format json` flag) reads JSON directly and calls `extract_replay()` — the core function already accepts a `game_json: dict`. Minimal change to the entry point, not the extraction logic.
 
 ## Phase 1: Oracle Restoration (~3 hours)
 
@@ -128,9 +128,9 @@ Systematic mapping of the 134 classifier features to their reconstruction source
 
 | Feature group | Count | Tracker event source | Java pipeline reconstruction | Accuracy |
 |---------------|-------|---------------------|------------------------------|----------|
-| Unit counts | 53 | UnitBorn + UnitDied | Train commands + SC2Data.trainTimeInLoops() | Exact for births; deaths missing (overcounts at minute 4+). Cancel commands detected and suppressed (§3a). |
+| Unit counts | 53 | UnitBorn + UnitDied | Train commands + SC2Data.trainTimeInLoops() via building production queue (§3a-2). `trainCount()` for multi-spawn (Zergling = 2). Morph deaths reconstructed (§3a-3). | Exact for births and morph deaths; combat deaths missing (overcounts at minute 4+). Cancel commands detected and suppressed (§3a). |
 | Building counts | 53 | UnitInit + UnitDone + UnitDied | Build commands + SC2Data.buildTimeInLoops() | Exact for construction starts/completions; destruction not reconstructed (overcounts when buildings destroyed). Double-counted per Python pipeline semantics (§3a-1). |
-| Economy stats | 13 | PlayerStats | Derived: cumulative spending (exact) + mining model (approximate) — see §3b for per-stat breakdown | Mixed: 8 stats exact, 5 stats approximate (§3b) |
+| Economy stats | 13 | PlayerStats | Derived: cumulative spending (exact) + mining model (approximate) — see §3b for per-stat breakdown | Mixed: 7 stats exact, 4 stats approximate, 2 stats overcount (§3b) |
 | Upgrade flags | 15 | Upgrade | Research commands + SC2Data.upgradeTimeInLoops(UpgradeType) | Exact (new UpgradeType enum + calibrated times) |
 
 **String-name mapping:** The `game_json` output uses SC2-native string names (e.g. `"BarracksReactor"`, `"HellionTank"`, `"WarpGate"`) matching the Python pipeline's BUILDINGS/UNITS lists exactly — NOT Java enum `.name()` values. The 7 building types absent from `BuildingType` enum (BarracksReactor, BarracksTechLab, FactoryReactor, FactoryTechLab, StarportReactor, StarportTechLab, WarpGate) and the unit name divergences (Java `HELLBAT` → Python `HellionTank`, Java `VIKING` → Python `VikingFighter`) are handled by a string-name mapping table keyed by abilLink (§3c-1). `FeatureIndexMaps.java` already documents these gaps.
@@ -146,7 +146,7 @@ Extend the existing `AbilityMapping` class with discovered mappings. The existin
 1. **Building abilLinks** — place commands for all 53 building types (including add-ons and WarpGate morph), mapped to SC2-native string names
 2. **Upgrade abilLinks** — research commands for all 15 tracked upgrades, mapped to `UpgradeType` values
 3. **Cancel abilLinks** — cancel commands for train, build, and research, mapped to the pending event they cancel
-4. **Morph abilLinks** — Zerg morphs (Baneling, Ravager, Lurker, BroodLord, Lair, Hive, Overseer, GreaterSpire)
+4. **Morph abilLinks** — Zerg morphs (Baneling, Ravager, Lurker, BroodLord, Lair, Hive, Overseer, GreaterSpire). Each morph emits UnitDied for the source unit and UnitBorn/UnitInit for the target (§3a-3). Drone→Building morph also emits source death — critical for Zerg worker count accuracy.
 5. **WarpGate warp-in** — abilLink=170: verify whether `abilCmdIndex` distinguishes unit types during discovery. If yes, add per-index mappings. If no, design a fallback (tech tree inference from available buildings) or accept as a quantified limitation.
 
 New dispatch entries use the same `ReplayCommand` abstraction. Existing bot replay mappings remain unchanged.
@@ -167,14 +167,55 @@ A Java class (`quarkmind-sc2/.../replay/StrippedReplayFeatureExtractor`) that:
 1. Accepts a stripped replay `Path`
 2. Parses game events via `GameEventStream.events()`
 3. Runs `AbilityMapping` (extended) to classify all command types (train, build, upgrade, morph, warp-in, cancel)
-4. Simulates deterministic game state:
-   - Unit births: `command_loop + SC2Data.trainTimeInLoops(unitType)`
+4. Simulates deterministic game state with per-building production queue tracking (see §3a-2):
+   - Unit births: queued through building production state. Birth loop = `queueCompletionLoop + SC2Data.trainTimeInLoops(unitType)` where `queueCompletionLoop` is the later of `command_loop` or the building's current `busyUntil` loop. Emit `SC2Data.trainCount(unitType)` UnitBorn events per command (Zergling = 2, all others = 1).
    - Building starts: `command_loop` (UnitInit equivalent)
    - Building completions: `command_loop + SC2Data.buildTimeInLoops(buildingType)` (UnitDone equivalent)
    - Upgrades: `command_loop + SC2Data.upgradeTimeInLoops(upgradeType)`
+   - Morphs: emit UnitDied for source unit at `command_loop`, emit UnitBorn/UnitInit for target at `command_loop + morphTime`. Source unit death is deterministic from the command — distinct from combat deaths (§3a-3).
    - Cancel commands: remove the pending scheduled event (UnitBorn, UnitDone, or Upgrade) for the cancelled action. Emit a synthetic UnitDied for buildings where UnitInit was already emitted (matching the Python pipeline's UnitInit → UnitDied cancel sequence).
    - Economy: derived from build order costs and worker count (starting economy → subtract costs → track workers) — see §3b
 5. Emits `game_json` dict matching the structure `sc2reader_to_game_json()` produces, using SC2-native string names — see §3c-1
+
+### 3a-2. Building production queue state
+
+The naive formula `command_loop + trainTimeInLoops()` assumes every train command starts production immediately. Buildings have a production queue (max 5 items). When a building is already training a unit, queued commands start only after the current production completes. Without queue tracking, queued units appear in features far too early (e.g. a queued Marine appears ~24 seconds early per queue depth).
+
+The extractor maintains per-building production state, analogous to `EmulatedGame.PhysicsState.buildingTrainingUntil` and `buildingQueues`:
+
+```
+Map<String, Long> buildingBusyUntil   — tag → loop when current production completes
+Map<String, Deque<UnitType>> queues   — tag → queued unit types (max 5)
+```
+
+For each train command on building tag `B` at `command_loop`:
+1. If `B` is not busy: start immediately. Birth loop = `command_loop + trainTimeInLoops(unitType)`. Set `buildingBusyUntil[B] = birthLoop`.
+2. If `B` is busy: birth loop = `buildingBusyUntil[B] + trainTimeInLoops(unitType)`. Update `buildingBusyUntil[B]` to new completion.
+
+| Command | Building state | Birth loop |
+|---------|---------------|------------|
+| Marine 1 at loop 500 | Idle | 500 + 650 = 1150 |
+| Marine 2 at loop 600 | Busy until 1150 | 1150 + 650 = 1800 |
+| Marine 3 at loop 700 | Busy until 1800 | 1800 + 650 = 2450 |
+
+Building tag identification uses `AbilityMapping`'s selection state — the selected building tag at command time identifies which production building to queue on.
+
+### 3a-3. Morph-death semantics
+
+Every morph command deterministically kills the source unit and creates the target unit. Unlike combat deaths (non-deterministic, deferred), morph deaths are reconstructable from commands:
+
+| Morph | Source UnitDied | Target UnitBorn/UnitInit | Feature impact |
+|-------|-----------------|--------------------------|----------------|
+| Zergling → Baneling | UnitDied(Zergling) at command_loop | UnitBorn(Baneling) at command_loop + morphTime | Zergling count -1, Baneling count +1 |
+| Roach → Ravager | UnitDied(Roach) | UnitBorn(Ravager) | Roach -1, Ravager +1 |
+| Corruptor → BroodLord | UnitDied(Corruptor) | UnitBorn(BroodLord) | Corruptor -1, BroodLord +1 |
+| Hydralisk → Lurker | UnitDied(Hydralisk) | UnitBorn(Lurker) | Hydralisk -1, Lurker +1 |
+| Drone → Building | UnitDied(Drone) at command_loop | UnitInit(Building) at command_loop | Worker count -1, building +1 |
+| Hatchery → Lair | UnitDied(Hatchery) | UnitInit(Lair) | Hatchery -1, Lair +1 |
+| Lair → Hive | UnitDied(Lair) | UnitInit(Hive) | Lair -1, Hive +1 |
+| Overlord → Overseer | UnitDied(Overlord) | UnitBorn(Overseer) | Overlord -1, Overseer +1 |
+
+The Drone→Building morph is particularly significant: without source-unit death, every Zerg building built adds a phantom worker to `WorkersActiveCount` and phantom supply to `FoodUsed`. By minute 5, a typical Zerg player has built 4-8 buildings from Drones — that's 4-8 phantom workers without morph-death handling.
 
 ### 3a-1. Building double-counting semantic
 
@@ -192,10 +233,10 @@ The feature meaning is "building activity events" (cumulative init + done), not 
 
 Economy stats (PlayerStats equivalent) fall into three accuracy tiers:
 
-**Tier 1 — Exact from commands (8 stats):**
+**Tier 1 — Exact from commands (7 stats):**
 | Stat | Algorithm |
 |------|-----------|
-| `scoreValueFoodMade` | Initial supply (15 all races) + `SC2Data.supplyBonus(buildingType)` for each completed supply building (Pylon +8, SupplyDepot +8, Overlord +8, Hatchery +6, etc.) |
+| `scoreValueFoodMade` | Initial supply (15 all races) + building supply via `SC2Data.supplyBonus(buildingType)` (Pylon +8, SupplyDepot +8, Hatchery/Lair/Hive +6) + **unit supply** (Overlord +8, Overseer +8 per birth). Morph-death handling (§3a-3) ensures Overlord→Overseer transition correctly transfers supply: UnitDied(Overlord) removes 8, UnitBorn(Overseer) adds 8 = net 0. Note: `supplyBonus(BuildingType)` does not cover unit-based supply providers — the extractor tracks Overlord/Overseer supply separately. Supply loss from destroyed supply providers is a known limitation (overcounts at minutes 4-5 if Pylons/Overlords die). |
 | `scoreValueMineralsUsedCurrentArmy` | Cumulative `SC2Data.mineralCost(unitType)` for all army unit train commands |
 | `scoreValueMineralsUsedCurrentEconomy` | Cumulative mineral cost for workers + gas buildings |
 | `scoreValueMineralsUsedCurrentTechnology` | Cumulative mineral cost for tech buildings + upgrades |
@@ -218,10 +259,10 @@ Use the same constants as EmulatedGame's economy model for consistency.
 **Tier 3 — Overcounts without death tracking (2 stats):**
 | Stat | Algorithm | Divergence source |
 |------|-----------|------------------|
-| `scoreValueFoodUsed` | Cumulative `SC2Data.supplyCost(unitType)` for living units | Overcounts: no death subtraction. ±0 at minute 2-3, growing divergence at 4-5. |
-| `scoreValueWorkersActiveCount` | Workers trained - workers lost | Overcounts: worker deaths not tracked. |
+| `scoreValueFoodUsed` | Cumulative `SC2Data.supplyCost(unitType)` for living units | Overcounts: no combat death subtraction. Morph deaths ARE subtracted (§3a-3). ±0 at minute 2-3, growing divergence at 4-5. |
+| `scoreValueWorkersActiveCount` | Workers trained - workers lost | Overcounts: combat worker deaths not tracked. Drone→Building morph deaths ARE tracked (§3a-3). |
 
-**Validation tolerance (Phase 4):** Tier 1 stats: zero divergence. Tier 2 stats: ≤20% relative divergence per stat averaged across oracle set. Tier 3 stats: report divergence magnitude, accept for early-game windows (minutes 2-3); flag but accept for later windows. If any Tier 2 stat exceeds 30% divergence on >10% of oracle replays, the mining model requires refinement.
+**Validation tolerance (Phase 4):** Tier 1 stats: zero divergence (FoodMade may have small divergence at minutes 4-5 if supply providers destroyed — report separately). Tier 2 stats: ≤20% relative divergence per stat averaged across oracle set. Tier 3 stats: report divergence magnitude, accept for early-game windows (minutes 2-3); flag but accept for later windows. If any Tier 2 stat exceeds 30% divergence on >10% of oracle replays, the mining model requires refinement.
 
 Combat deaths are NOT reconstructed — unit counts are strictly additive (births only). This is acceptable for early-game classification (minutes 2-5) where combat is minimal. For later time windows, unit counts will be higher than reality (no deaths subtracted). The labelling pipeline (which determines strategy archetype from build order, not unit counts) is unaffected.
 
@@ -291,7 +332,7 @@ Compare extracted temporal features at each time window (minutes 2, 3, 4, 5):
 - **Building count vectors (minutes 2-3):** near-exact match expected — building destruction is uncommon in the first 3 minutes. Report any divergence (likely from proxy strategies, cannon rushes, or worker harassment killing gas buildings)
 - **Building count vectors (minutes 4-5):** may diverge for games with building destruction. Report divergence magnitude; accept as a limitation analogous to unit death overcounting
 - **Upgrade count vectors:** exact match at all windows (upgrades cannot be destroyed once completed)
-- **Economy stats:** per §3b tolerance tiers — Tier 1 (8 stats): zero divergence. Tier 2 (4 stats): ≤20% relative divergence. Tier 3 (2 stats): report magnitude
+- **Economy stats:** per §3b tolerance tiers — Tier 1 (7 stats): zero divergence (FoodMade may diverge at minutes 4-5 if supply providers destroyed). Tier 2 (4 stats): ≤20% relative divergence. Tier 3 (2 stats): report magnitude
 
 ### 4c. Divergence-driven hardening
 
@@ -371,4 +412,5 @@ The following items are deferred and will be filed as GitHub issues:
 - `prepare_replay_pack.py` — Python feature engineering pipeline
 - `StrippedReplayParseTest.java` — validates stripped replay parsing (created this session)
 - `docker/sc2-restore/restore_tracker.py` — Docker restoration pipeline
+- `docs/protocols/sc2data-train-times-require-calibration.md` (PP-20260522-572156) — calibration protocol for SC2Data timing constants
 - Decision review: `/Users/mdproctor/reviews/casehub-quarkmind/issue-317-decision-20260928-034545/`
