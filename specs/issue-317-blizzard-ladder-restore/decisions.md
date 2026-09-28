@@ -8,7 +8,7 @@
 - EmulatedGame for early-game features — requires solving the building/upgrade abilLink discovery first (see D7)
 **Rationale:** The classifier uses 134 features per player (53 buildings, 53 units, 13 economic stats, 15 upgrades), all derived from tracker events (D6). Game events alone can produce partial unit birth timing for ~24 of 53 mapped unit types via AbilityMapping — zero building counts, zero economic stats, zero upgrades. A cloud x86_64 VM processes replays at 2-4/second (per issue #317), completing all 151K replays in ~10-21 hours for ~$5-20 of compute. This produces complete, accurate training data without new code.
 **Trade-offs:** Requires cloud VM provisioning (one-time DevOps). Doesn't directly harden EmulatedGame — but the Java pipeline development as a secondary effort preserves that benefit. Combat deaths are reconstructed by the full SC2 engine, so unit counts are accurate (unlike game-event-only extraction where deaths are missing).
-**Hardening loop (preserved):** Cloud-restored replays provide the ground truth oracle set that D4 needs. The Java pipeline development — extending AbilityMapping for human replay abilLinks, building StrippedReplayFeatureExtractor — proceeds in parallel, validated against cloud-restored data. Every divergence fix still hardens EmulatedGame for all consumers (agent loop, coaching mode, replay validation).
+**Hardening loop (preserved):** The local Docker oracle set (D2) provides the ground truth that D4's abilLink discovery needs. The full cloud-restored dataset then serves as validation ground truth for the Java pipeline at scale. The Java pipeline development — extending AbilityMapping for human replay abilLinks, building StrippedReplayFeatureExtractor — proceeds in parallel, validated against cloud-restored data. Every divergence fix still hardens EmulatedGame for all consumers (agent loop, coaching mode, replay validation).
 **Sources:** Issue #317 (cloud VM timing: 2-4 replays/s), sc2egset_extractor.py (134 features), AbilityMapping.java (24 unit types mapped, zero buildings/upgrades), ReplayValidationHarness.java (buildings injected from tracker GT)
 **Exploration:** deep-analysis
 **Status:** revised (R1-02, R1-03: corrected feature coverage analysis and VM timing)
@@ -50,7 +50,7 @@
 - Upgrade research: all 15 tracked upgrades (zero currently mapped)
 - Terran production: Factory, Starport, all add-ons (only CC and Barracks mapped)
 - Zerg morphs: Baneling, Ravager, Lurker, Brood Lord, Lair, Hive (zero mapped)
-- WarpGate warp-in: currently treated as movement (abilLink=170), but produces units
+- WarpGate warp-in: currently treated as movement (abilLink=170), but produces units. Note: once WarpGate research completes mid-game, Protoss Gateway production shifts entirely to WarpGate warp-in — making the effective Protoss unit coverage lower than 10 types for mid-game replays
 **Trade-offs:** AbilityMapping extension is a substantial discovery exercise. This work is non-blocking for training data production (cloud VM path), but required for the Java-native pipeline to become viable.
 **Sources:** AbilityMapping.java (lines 21-24 comment, abilLink constants), AbilityDiscoveryTest pattern
 **Exploration:** quick
