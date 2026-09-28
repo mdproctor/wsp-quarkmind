@@ -9,7 +9,11 @@ Branch `issue-317-blizzard-ladder-restore`, issue #317. Completed Batch 3 (Featu
 
 ## Immediate Next Step
 
-Task 9 (Batch 4): Oracle validation test — compare Java pipeline output against Docker-restored oracle replays. Per-replay divergence report for unit births, buildings, upgrades. Economy divergence per tier tolerance. Then Task 10: JSON input for Python pipeline + bulk processing.
+All 10 tasks complete. Ready for `work end`. Before closing:
+- Run bulk extraction on 151K replays via `BulkFeatureExtractor` (requires runtime, not a code task)
+- Feed through Python pipeline with `--format json` flag
+- Retrain ONNX models
+- Consider filing follow-up issues for: (1) expanding AbilityMapping coverage beyond 24% UnitBorn, (2) Zerg morph abilLinks, (3) additional upgrade types
 
 ## References
 
