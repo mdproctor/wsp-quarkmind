@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-317-blizzard-ladder-restore
-state: closing:pushed
+state: closing:merged
 project-sha: 5d88632d
 date: 2026-09-28
 issue-repo: casehubio/quarkmind
