@@ -214,8 +214,26 @@ Every morph command deterministically kills the source unit and creates the targ
 | Hatchery → Lair | UnitDied(Hatchery) | UnitInit(Lair) | Hatchery -1, Lair +1 |
 | Lair → Hive | UnitDied(Lair) | UnitInit(Hive) | Lair -1, Hive +1 |
 | Overlord → Overseer | UnitDied(Overlord) | UnitBorn(Overseer) | Overlord -1, Overseer +1 |
+| Spire → GreaterSpire | UnitDied(Spire) | UnitInit(GreaterSpire) | Spire -1, GreaterSpire +1 |
+| HighTemplar + HighTemplar → Archon | UnitDied(HighTemplar) × 2 at command_loop | UnitBorn(Archon) at command_loop + morphTime | HighTemplar -2, Archon +1 |
+
+**Archon merge** is structurally unique: it consumes **2 source units** (HighTemplar + HighTemplar, DarkTemplar + DarkTemplar, or one of each) and produces 1 Archon. The merge abilLink is the same regardless of source composition — source unit types are determined from selection state at command time. The extractor emits 2 UnitDied events (one per source) and 1 UnitBorn(Archon). Archon merges are common in PvT and PvZ (2-6 per game); without source deaths, 4-12 phantom HighTemplar/DarkTemplar would accumulate.
 
 The Drone→Building morph is particularly significant: without source-unit death, every Zerg building built adds a phantom worker to `WorkersActiveCount` and phantom supply to `FoodUsed`. By minute 5, a typical Zerg player has built 4-8 buildings from Drones — that's 4-8 phantom workers without morph-death handling.
+
+### 3a-4. Upgrade-triggered auto-morphs
+
+WarpGateResearch completion triggers an automatic transformation of **all existing Gateways** into WarpGates. This is not a player-initiated command — it's a side effect of upgrade completion. SC2 tracker events show UnitDied(Gateway) + UnitInit(WarpGate) + UnitDone(WarpGate) for each existing Gateway.
+
+The Python pipeline tracks Gateway (building index 38) and WarpGate (building index 39) as **separate features**. Without handling this auto-morph, the Gateway feature would persist at 3-5 while WarpGate stays at 0 — the exact inverse of ground truth. This affects all Protoss matchups (PvT, PvZ, PvP — roughly half the dataset).
+
+**Mechanism:** The extractor tracks WarpGateResearch completion loop (`command_loop + upgradeTimeInLoops(WARP_GATE_RESEARCH)`). When that loop is reached during event replay, it iterates all tracked buildings for the player, finds those with string name `"Gateway"`, and for each:
+1. Emits UnitDied(Gateway) — decrements building_counts by 1
+2. Emits UnitInit(WarpGate) + UnitDone(WarpGate) — increments building_counts by 2 (§3a-1 double-counting)
+
+This uses the building list already maintained for production queue state (§3a-2). The upgrade completion loop is scheduled alongside the Upgrade event emission.
+
+ASSUMPTION: WarpGateResearch is the only SC2 upgrade that triggers automatic building morphs. No other upgrade transforms existing buildings.
 
 ### 3a-1. Building double-counting semantic
 
