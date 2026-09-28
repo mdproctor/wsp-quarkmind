@@ -1,1 +1,1 @@
-# Design Journal — issue-317-blizzard-ladder-restore
+# Design Journal — issue-320-abilitymapping-misidentified-units
