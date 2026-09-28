@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-317-blizzard-ladder-restore
-state: active
+state: closing:review
 project-sha: 5d88632d
 date: 2026-09-28
 issue-repo: casehubio/quarkmind
@@ -11,19 +11,6 @@ design-repo: workspace
 design-section-hashes: 
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
-- [ ] casehubio/quarkmind#317 — Issue #317 ← active
-  - [x] Batch 1: Docker Oracle
-    - [x] Task 1: Fix Docker paths + extract SC2 headless
-    - [x] Task 2: Oracle sampler + restoration
-  - [x] Batch 2: abilLink Discovery
-    - [x] Task 3: Discover human abilLinks from oracle
-    - [x] Task 4: UpgradeType enum + SC2Data upgrade times
-    - [x] Task 5: Extend AbilityMapping
-  - [x] Batch 3: Feature Extractor
-    - [x] Task 6: Core extractor with production queues
-    - [x] Task 7: Morph-death + WarpGate auto-morph
-    - [x] Task 8: Economy reconstruction
-  - [x] Batch 4: Validation + Bulk
-    - [x] Task 9: Oracle validation test
-    - [x] Task 10: JSON input + batch runner + ONNX retrain
+- [x] casehubio/quarkmind#317 — Issue #317
