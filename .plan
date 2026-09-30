@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-329-archon-morph-source-fix
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo:
 design-section-hashes: 
 flyway-next-v: 
 
+evidence-era: true
 ## Queue
 - [x] casehubio/quarkmind#329 — Issue #329
 - [ ] casehubio/quarkmind#330 — Discover building morph abilLinks ← active
