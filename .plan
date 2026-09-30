@@ -1,0 +1,15 @@
+# Work Plan — issue-323-expand-upgradetype-enum
+
+## State
+branch: issue-323-expand-upgradetype-enum
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 323
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#323 — Issue #323 ← active

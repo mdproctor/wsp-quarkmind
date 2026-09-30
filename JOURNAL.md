@@ -1,1 +1,1 @@
-# Design Journal — issue-329-archon-morph-source-fix
+# Design Journal — issue-323-expand-upgradetype-enum
