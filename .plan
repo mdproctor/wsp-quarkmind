@@ -12,4 +12,7 @@ design-section-hashes:
 flyway-next-v: 
 
 ## Queue
-- [ ] casehubio/quarkmind#329 — Issue #329 ← active
+- [x] casehubio/quarkmind#329 — Issue #329
+- [ ] casehubio/quarkmind#330 — Discover building morph abilLinks ← active
+- [ ] casehubio/quarkmind#331 — Re-calibrate morph times from replay data
+- [ ] casehubio/quarkmind#325 — Add CreepTumor and special building types to UnitInit coverage
