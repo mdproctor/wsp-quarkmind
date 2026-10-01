@@ -13,3 +13,6 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#333 — Issue #333 ← active
+
+## Deferred
+- [ ] Calibrate Baneling, Lurker, BroodLord morph times (S / Low) [casehubio/quarkmind] — blocked on ZvZ replays with tracker events — AI Arena replays are Protoss-focused, ladder replays are stripped. MorphTimeCalibrationTest exists and will calibrate when data is available.
