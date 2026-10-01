@@ -1,11 +1,9 @@
-_branch=issue-323-expand-upgradetype-enum
 report_init=done
-<<<<<<< Updated upstream
 code_review_attempt=1
 last_yielded=squash
-=======
->>>>>>> Stashed changes
 code_review=done
+code_review_produced=0
+_branch=issue-325-creeptumor-special-building-unitinit
 branch_audit_conformance=done
 branch_audit_coherence=done
 branch_audit_structure=done
@@ -13,17 +11,6 @@ branch_audit_robustness=done
 loose_ends=done
 forcing_function=done
 sweep_config=done
-<<<<<<< Updated upstream
-sweep_selected=none
-review_pass=done
-promote=done
-report_promote=done
-promote_pass=done
-trajectory_attempt=1
-trajectory=done
-trajectory_produced=0
-=======
->>>>>>> Stashed changes
 forage=done
 protocol=done
 update_claude_md=done
@@ -36,7 +23,6 @@ report_promote=done
 review_pass=done
 promote_pass=done
 trajectory_attempt=1
-last_yielded=notes
 trajectory=done
 trajectory_produced=0
 rebase=done
@@ -45,6 +31,7 @@ squash_attempt=1
 squash=done
 squash_produced=1
 report_squash=done
+land=done
 report_land=done
 push_pass=done
 merge_pass=done
@@ -54,25 +41,3 @@ report_close_issues=done
 verify=done
 report_verify=done
 upstream_push=done
-<<<<<<< Updated upstream
-=======
-checkout_main=done
-cleanup_stack=done
-cleanup=done
-report_scaffold=done
-arc42_scan_attempt=1
-arc42_scan=done
-write_marker=done
-session_rename_attempt=1
-session_rename=done
-garden_feedback_attempt=1
-garden_feedback=done
-notes_attempt=1
-notes=done
-promote_plan_next=done
-cleanup_pass=done
-delete_progress=done
-report_render=done
-_final_gate_attempt=4
-land=done
->>>>>>> Stashed changes
