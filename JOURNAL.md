@@ -1,1 +1,1 @@
-# Design Journal — issue-323-expand-upgradetype-enum
+# Design Journal — issue-325-creeptumor-special-building-unitinit
