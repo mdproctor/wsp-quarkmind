@@ -1,0 +1,15 @@
+# Work Plan — issue-333-morph-time-calibration
+
+## State
+branch: issue-333-morph-time-calibration
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 333
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#333 — Issue #333 ← active
