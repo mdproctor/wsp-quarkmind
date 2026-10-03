@@ -2,25 +2,34 @@
 
 ## Last Session
 
-Closed #329, #330, #331 from epic #318. Landed as `72cb7399` on main (3 commits after squash).
+Closed #337 (version-aware abilLink dispatch) and #338 (selection-state-aware abilLink discovery). Both landed on main.
 
 What was built:
-- #329 fix: Archon morph source now resolved from selection unitLink — DarkTemplar merges correctly identified (was hardcoded to HighTemplar). Added `tagToUnitLink` tracking in `AbilityMapping.onSelection()` with subgroup zipping.
-- #330 partial: CC building morphs dispatched (abilLink=120, idx=1→OrbitalCommand, idx=0→PlanetaryFortress). Zerg building morphs undiscoverable from available data.
-- #331 partial: Overseer (269→267, n=13) and Ravager (269→271, n=62) morph times calibrated via `MorphTimeCalibrationTest`. Baneling/Lurker/BroodLord blocked on ZvZ replay data.
+- `AbilityProfile` enum + `AbilityDispatch` functional interface — N-tier version dispatch with sparse lambda overrides
+- `V4_9_3` (baseBuild ≤ 75689) and `HSC_2025` (baseBuild > 75689) profiles
+- 17 total HSC_2025 overrides: 5 morph, 6 upgrade migration, 3 conflict resolution, 3 additional from selection-state discovery
+- Both callers (StrippedReplayFeatureExtractor, ReplayCommandExtractor) wired with baseBuild from replay header
+- Selection-state-aware discovery test (selectionSize==1 filtering)
+- Accuracy: 65.9% → 78.6% (858 → 1023 of 1302 upgrade events across 179 replays)
 
-Key finding: bot replays don't emit building morph CmdEvents (bots use API calls). Zerg morph calibration also blocked — AI Arena dataset is Protoss-focused.
+Key finding: abilLink 177 collision — CyberneticsCore (WarpGateResearch) and TwilightCouncil (BlinkTech) share the same abilLink in tournament replays. Same issue with abilLink 195 across Zerg buildings. Building-type-aware dispatch needed for the last 1.4% to 80%.
 
-## Follow-Up Issues Filed
+Also fixed pre-existing compilation errors from upstream neocortex/ledger API changes.
 
-- #332 — Discover Zerg building morph abilLinks (Lair, Hive, GreaterSpire). Needs ZvZ human replays.
-- #333 — Calibrate Baneling, Lurker, BroodLord morph times. Same data dependency.
+## Active Branch
+
+None — on main. Both issues closed and stamped.
 
 ## Immediate Next Step
 
-Continue epic #318 — #325 (CreepTumor + special building types) is the highest-impact remaining gap (959 missing events), independent of the ZvZ data blocker.
+No queued work. Potential directions:
+- Building-type-aware AbilityDispatch (add unitLink parameter to disambiguate 177/195 collisions)
+- Start work on a different issue
 
 ## References
 
-- Diagnostic tests: `BuildingMorphDiscoveryTest.java`, `MorphTimeCalibrationTest.java`
-- Previous session handover: `git show 4391501:HANDOFF.md`
+- Diary: `blog/2026-10-03-mdp01-version-dispatch.md`
+- Design spec: `specs/issue-337-version-aware-abillink-dispatch/`
+- Validation test: `AbilityDiscoveryCalibrationTest#validateUpgradeDetectionAccuracy`
+- Discovery test: `TournamentAbilLinkDiscoveryTest#discoverTournamentUpgradeAbilLinks`
+- Previous session handover: `git show HEAD~1:HANDOFF.md`
