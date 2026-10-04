@@ -13,9 +13,9 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#351 — Issue #351 ← active
-  - [ ] Batch 1: Diagnostic infrastructure
-    - [ ] Task 1: Per-upgrade-type accuracy report
-  - [ ] Batch 2: Discovery and overrides
-    - [ ] Task 2: Run discovery diagnostics and categorize gaps
-    - [ ] Task 3: Add abilLink overrides for recoverable upgrades
-    - [ ] Task 4: Document gaps and enforce threshold
+  - [x] Batch 1: Diagnostic infrastructure
+    - [x] Task 1: Per-upgrade-type accuracy report
+  - [x] Batch 2: Discovery and overrides
+    - [x] Task 2: Run discovery diagnostics and categorize gaps
+    - [x] Task 3: Add abilLink overrides for recoverable upgrades
+    - [x] Task 4: Document gaps and enforce threshold
