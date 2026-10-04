@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-351-push-upgrade-detection-95pct
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo:
 design-section-hashes: 
 flyway-next-v: 
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#351 — Issue #351 ← active
   - [x] Batch 1: Diagnostic infrastructure
