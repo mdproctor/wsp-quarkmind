@@ -1,0 +1,15 @@
+# Work Plan — issue-351-push-upgrade-detection-95pct
+
+## State
+branch: issue-351-push-upgrade-detection-95pct
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 351
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#351 — Issue #351 ← active
