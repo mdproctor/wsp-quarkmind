@@ -2,34 +2,15 @@
 
 ## Last Session
 
-Closed #337 (version-aware abilLink dispatch) and #338 (selection-state-aware abilLink discovery). Both landed on main.
-
-Filed epic #339 (Full ONNX Coverage) with 5 phases (#340-#344). Filed two future issues: #345 (build orders as adaptive plans) and #346 (strategy workbench UI).
-
-What was built:
-- `AbilityProfile` enum + `AbilityDispatch` — N-tier version dispatch with sparse lambda overrides
-- 17 HSC_2025 overrides (morph, upgrade, conflict resolution)
-- Selection-state-aware discovery test (selectionSize==1 filtering)
-- Accuracy: 65.9% → 78.6% (858 → 1023 of 1302 upgrade events across 179 replays)
-- Also fixed pre-existing neocortex/ledger API compilation errors
-
-Key strategic insights captured:
-- Stripped replay datasets need reconstitution through EmulatedGame — emulation fidelity is Phase 0, not an afterthought
-- Phase 4 (#344) is the convergence point: AI-vs-AI with AI Arena bots feeds both ONNX training and CBR case generation
-- Build orders are plans (#345) — same structure as CaseHub's case/commitment model with CBR-driven adaptive transitions
-
-## Active Branch
-
-None — on main.
+Decomposed epic #339 into 16 child issues (#347-#362) across 5 phases. Updated epic and phase issues with corrected gap analysis — mining model already done, ResearchIntent gap added. Implemented and closed #350: extended AbilityDispatch with unitLink parameter for building-type disambiguation. Upgrade detection 78.6% → 87.7%. Key discovery: tournament replays use per-race generic research abilLinks (177 Protoss, 195 Zerg) alongside building-specific variants. Filed soredium#408 for work-end orchestrator step_done loop bug.
 
 ## Immediate Next Step
 
-Start epic #339. Phase 0 (#340, EmulatedGame fidelity baseline) and Phase 1 (#341, feature extraction completeness) can run in parallel.
+Start #351 (P1-2: push upgrade detection to ≥95%). Remaining gap is a long tail — EvolveGroovedSpines 35%, EvolveMuscularAugments 39%, Burrow 60%. Wider replay datasets (HSC XXVIII/XXIX) and control-group tracking may help.
 
 ## References
 
-- Epic: `https://github.com/casehubio/quarkmind/issues/339`
-- Build orders: `https://github.com/casehubio/quarkmind/issues/345`
-- Strategy workbench: `https://github.com/casehubio/quarkmind/issues/346`
-- Diary: `blog/2026-10-03-mdp01-version-dispatch.md`
-- Previous session handover: `git show HEAD~1:HANDOFF.md`
+- `quarkmind-sc2/.../AbilityProfile.java` — HSC_2025 overrides with unitLink dispatch
+- `quarkmind-sc2/.../BuildingUnitLinkDiscoveryTest.java` — diagnostic tests
+- `blog/2026-10-04-mdp01-building-disambiguation.md` — session diary
+- Previous handover: `git show HEAD~1:HANDOFF.md`
