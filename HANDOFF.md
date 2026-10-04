@@ -2,15 +2,19 @@
 
 ## Last Session
 
-Decomposed epic #339 into 16 child issues (#347-#362) across 5 phases. Updated epic and phase issues with corrected gap analysis — mining model already done, ResearchIntent gap added. Implemented and closed #350: extended AbilityDispatch with unitLink parameter for building-type disambiguation. Upgrade detection 78.6% → 87.7%. Key discovery: tournament replays use per-race generic research abilLinks (177 Protoss, 195 Zerg) alongside building-specific variants. Filed soredium#408 for work-end orchestrator step_done loop bug.
+Closed #351 (P1-2: upgrade detection accuracy). Started at 87.7%, ended at 100% gameplay accuracy (759/759 events across 118 oracle replays, patch 4.9.3). Three phases: fixed over-detection from duplicate abilLink mappings (WarpGateResearch +43, Charge +7, PunisherGrenades +12) → 97.8%; discovered abilLink 191 (HydraliskDen alt) via per-replay CmdEvent dump diagnostic → 99.7%; found abilLinks 608 (DarkShrine) and 69 (FleetBeacon) → 100%. Filed #363 (stress-test across patch versions) as prerequisite for #352 (ONNX expansion).
 
-## Immediate Next Step
+## Decisions
 
-Start #351 (P1-2: push upgrade detection to ≥95%). Remaining gap is a long tail — EvolveGroovedSpines 35%, EvolveMuscularAugments 39%, Burrow 60%. Wider replay datasets (HSC XXVIII/XXIX) and control-group tracking may help.
+- AbiLinks 608/69 based on 1 data point each — threshold assertion at 99% not 100%
+- Stress-test (#363) before ONNX expansion (#352) — validate detection reliability before wiring into classifier
+- Blizzard replay API key available; SC2EGSet (17,930 replays) largely untouched
 
 ## References
 
-- `quarkmind-sc2/.../AbilityProfile.java` — HSC_2025 overrides with unitLink dispatch
-- `quarkmind-sc2/.../BuildingUnitLinkDiscoveryTest.java` — diagnostic tests
-- `blog/2026-10-04-mdp01-building-disambiguation.md` — session diary
-- Previous handover: `git show HEAD~1:HANDOFF.md`
+| What | Where |
+|------|-------|
+| Gap docs | `docs/upgrade-detection-gaps.md` |
+| Diagnostic | `AbilityDiscoveryCalibrationTest.dumpAllCmdEventsNearMissedUpgrades` |
+| Garden entry | `GE-20261004-d738a8` — temporal filter technique |
+| Epic queue | #363 (stress-test) → #352 (ONNX expansion) |
