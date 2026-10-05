@@ -1,0 +1,15 @@
+# Work Plan — issue-348-divergence-regression-test
+
+## State
+branch: issue-348-divergence-regression-test
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 348
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#348 — Issue #348 ← active
