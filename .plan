@@ -1,0 +1,15 @@
+# Work Plan — issue-367-oracle-accuracy-baseline
+
+## State
+branch: issue-367-oracle-accuracy-baseline
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 367
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#367 — Issue #367 ← active
