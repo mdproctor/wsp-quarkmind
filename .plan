@@ -1,0 +1,15 @@
+# Work Plan — issue-378-reconstituted-replay-fidelity-audit
+
+## State
+branch: issue-378-reconstituted-replay-fidelity-audit
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 378
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#378 — Issue #378 ← active
