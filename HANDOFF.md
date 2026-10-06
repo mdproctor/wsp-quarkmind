@@ -2,19 +2,41 @@
 
 ## Last Session
 
-Closed #351 (P1-2: upgrade detection accuracy). Started at 87.7%, ended at 100% gameplay accuracy (759/759 events across 118 oracle replays, patch 4.9.3). Three phases: fixed over-detection from duplicate abilLink mappings (WarpGateResearch +43, Charge +7, PunisherGrenades +12) → 97.8%; discovered abilLink 191 (HydraliskDen alt) via per-replay CmdEvent dump diagnostic → 99.7%; found abilLinks 608 (DarkShrine) and 69 (FleetBeacon) → 100%. Filed #363 (stress-test across patch versions) as prerequisite for #352 (ONNX expansion).
+Branch `issue-367-oracle-accuracy-baseline` — **landed on main** (4 squashed commits, ff-merge).
 
-## Decisions
+### What was built
 
-- AbiLinks 608/69 based on 1 data point each — threshold assertion at 99% not 100%
-- Stress-test (#363) before ONNX expansion (#352) — validate detection reliability before wiring into classifier
-- Blizzard replay API key available; SC2EGSet (17,930 replays) largely untouched
+1. **Oracle accuracy baseline (#367)** — `OracleAccuracyBaselineTest` measuring StrippedReplayFeatureExtractor accuracy across 118 oracle replays. T1-T4 observability tier model. Calibrated MULE abilLink (171→90), suppressed WarpGate phantom UnitInit.
+
+2. **CmdEvent detection gap investigation (#374)** — Root cause found: Blizzard's ladder replay API downloads contain only ~43% of production CmdEvents. The production building multiplier is the correct compensating mechanism, not a hack. `CmdEventGapDiagnosticTest` documents the evidence.
+
+3. **TrackerEventFeatureExtractor (#377)** — Reads UnitBorn/UnitInit/UnitDone/UnitDied/Upgrade/PlayerStats directly from restored replay tracker events. 100% ground-truth accuracy by definition. Auto-detecting `ReplayFeatureExtractor` wrapper routes to tracker path when available, falls back to stripped path. Separate `gameCommands` array for movement/order data from CmdEvents.
+
+4. **Comparison report** — `TrackerVsStrippedComparisonTest`: tracker=29,625 vs stripped=23,150 UnitBorn events (78.1%). Major stripped distortions eliminated: Baneling 0%→100%, Sentry 910%→100%, Probe 74.7%→100%.
+
+### Issues closed
+
+| # | Title | Resolution |
+|---|-------|------------|
+| 367 | Oracle accuracy baseline | Done |
+| 373 | Unit/building extraction accuracy | Done (multiplier deferred as correct) |
+| 374 | CmdEvent detection gap | Root cause: Blizzard API data limitation |
+| 375 | Baneling morph detection | Superseded by #377 |
+| 376 | Per-type accuracy metric | Superseded by #377 |
+| 377 | TrackerEventFeatureExtractor | Done |
+
+### Suggested next work
+
+**EmulatedGame physics calibration** — the replay validation harness now compares against ground truth instead of ~78% approximation. Running `DivergenceBaselineReportTest` will surface real emulator divergences previously masked by extraction noise.
 
 ## References
 
 | What | Where |
 |------|-------|
-| Gap docs | `docs/upgrade-detection-gaps.md` |
-| Diagnostic | `AbilityDiscoveryCalibrationTest.dumpAllCmdEventsNearMissedUpgrades` |
-| Garden entry | `GE-20261004-d738a8` — temporal filter technique |
-| Epic queue | #363 (stress-test) → #352 (ONNX expansion) |
+| Commits on main | `08e746c3`, `217b2eea`, `2b8e3dd7`, `2e74afb9` |
+| TrackerEventFeatureExtractor | `quarkmind-sc2/.../replay/TrackerEventFeatureExtractor.java` |
+| ReplayFeatureExtractor | `quarkmind-sc2/.../replay/ReplayFeatureExtractor.java` |
+| Comparison test | `TrackerVsStrippedComparisonTest.java` |
+| CmdEvent gap diagnostic | `CmdEventGapDiagnosticTest.java` |
+| Oracle accuracy baseline | `OracleAccuracyBaselineTest.java` |
+| Baseline report | `docs/benchmarks/oracle-accuracy-baseline.md` |
