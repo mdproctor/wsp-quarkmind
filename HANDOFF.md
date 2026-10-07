@@ -2,49 +2,41 @@
 
 ## Last Session
 
-Branch `issue-368-abilityprofile-expansion` — **closed as not needed**, diagnostic tests landed on main (`3efe9a14`).
+Branch `issue-380-restoration-coverage-audit` — **closed**, landed on main as `c07c8c8f` (3 squashed commits from 7).
 
 ### What happened
 
-Investigated #368 (AbilityProfile expansion for intermediate SC2 patches). Built 5 diagnostic tests. Found two things:
+Completed three issues from the Phase 2.5 epic (#366):
 
-1. **Infeasible:** Intermediate patches (IEM 2018 baseBuild=60321, ASUS ROG 2020 baseBuild=82457) use generic abilLinks (177, 195, 157) shared across all races and buildings. No linear offset works (brute-force best: 1.5-6.0%). Selection-based unitLink dispatch fails — players issue research via hotkeys without selecting the building.
+**#380 — Restoration coverage audit:**
+- New `RestorationCoverageAuditTest` (`@Tag("report")`) scans all 13 replay datasets (152,109 replays)
+- Results: 632 (0.4%) route through TrackerEventFeatureExtractor (ground-truth), 151,477 (99.6%) use StrippedReplayFeatureExtractor fallback
+- Report at `docs/benchmarks/restoration-coverage.md`
 
-2. **Unnecessary:** `ReplayFeatureExtractor.java` auto-routes full replays to `TrackerEventFeatureExtractor` (ground truth). All intermediate patch replays have tracker events. Only stripped Blizzard ladder replays (all patch 4.9.3) use `StrippedReplayFeatureExtractor`.
+**#371 — Cross-patch regression suite:**
+- Extended `DivergenceRegressionTest` with economy MAPE category and cross-patch baselines
+- Calibrated for AI Arena (79% units), IEM PyeongChang (22%), ASUS ROG (22%)
 
-### Decisions
+**#381 — Race hardcoding fix:**
+- `ReplayValidationHarness` hardcoded `ProtossRaceModel` — two-line fix tripled accuracy (15% → 46.8%)
 
-- #368 closed with detailed diagnostic evidence
-- #366 epic acceptance criteria updated: "AbilityProfile expanded" → "intermediate patches validated via TrackerEventFeatureExtractor"
+### Current accuracy baselines (5-min checkpoint, 118 oracle replays)
 
-### Epic #366 state
-
-| # | Issue | Status |
-|---|-------|--------|
-| 367, 369, 370, 373, 374, 376, 378 | Baseline + extraction improvements | **Closed** |
-| **368** | AbilityProfile expansion | **Closed (not needed)** |
-| 371 | Cross-patch regression suite | **Open** — next priority |
-| 372 | Re-reconstitute training data | **Open** — blocked on #371 |
-| 379 | EmulatedGame accuracy baseline | **Open** — independent |
-
-### Accuracy summary (training data quality)
-
-| Extractor | Used for | Accuracy |
-|-----------|----------|----------|
-| TrackerEventFeatureExtractor | Full replays (all tournament datasets) | 100% (ground truth) |
-| StrippedReplayFeatureExtractor | Stripped ladder replays (4.9.3 only) | 99.7% upgrades, ~78% units/buildings (CmdEvent gap) |
-
-Training data uses TrackerEventFeatureExtractor for all full replays. The 78% unit/building gap in StrippedReplayFeatureExtractor only affects stripped ladder replays.
+| Category | Value | Notes |
+|----------|-------|-------|
+| Units | 46.8% | Post-race-fix |
+| Buildings | 100.0% | Harness-synced from GT |
+| Upgrades | 0.0% | No ResearchIntents applied |
+| Economy | 375.8% MAPE | Measured across all races |
 
 ### Suggested next work
 
-**#371 (Cross-patch regression suite)** — validate TrackerEventFeatureExtractor ≥99% across all 4 categories and all patch eras. This is the formal gate for ONNX retraining (#343).
+`work start #372` — Re-reconstitute training data (pipeline execution, ~2 hours).
 
 ## References
 
 | What | Where |
 |------|-------|
-| Commit on main | `3efe9a14` |
-| Diagnostic tests | `CrossPatchUpgradeAccuracyTest`, `AbilLinkOffsetCalibrationTest`, `CrossPatchAbilLinkDiscoveryTest`, `AbilLinkEnumerationTest` |
-| #368 closing comment | Full diagnostic findings and reasoning |
-| ReplayFeatureExtractor auto-routing | `quarkmind-sc2/.../replay/ReplayFeatureExtractor.java` (30 lines) |
+| Commits on main | `c07c8c8f` (3 squashed) |
+| Coverage report | `docs/benchmarks/restoration-coverage.md` |
+| Epic status | `casehubio/quarkmind#366` |
