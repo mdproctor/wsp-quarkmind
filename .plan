@@ -1,0 +1,15 @@
+# Work Plan — issue-380-restoration-coverage-audit
+
+## State
+branch: issue-380-restoration-coverage-audit
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 380
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#380 — Issue #380 ← active
