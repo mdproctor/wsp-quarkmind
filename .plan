@@ -1,0 +1,15 @@
+# Work Plan — issue-382-automate-sc2-ai-games-unlock
+
+## State
+branch: issue-382-automate-sc2-ai-games-unlock
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 382
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#382 — Issue #382 ← active
