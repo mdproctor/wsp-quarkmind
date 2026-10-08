@@ -2,41 +2,18 @@
 
 ## Last Session
 
-Branch `issue-380-restoration-coverage-audit` — **closed**, landed on main as `c07c8c8f` (3 squashed commits from 7).
+Closed #382 (multi-game SC2 automation) and #383 (Quarkus build fix). Built MultiGameController, fixed drools-quarkus incompatibility, CDI wiring, Flyway V54 collision, SC2 launch args. Played 10 automated SC2 games (0W 10L vs VERY_EASY). Discovered sc2replaystats needs 1v1 ladder replays (not vs-AI) — pivoted to Spawning Tool as primary replay data source. Downloaded HSC XXVIII (88 replays), HSC XXIX (54 partial). Filed epic #384 with 5 child issues for emulator-driven reconstitution pipeline.
 
-### What happened
+## Immediate Next Step
 
-Completed three issues from the Phase 2.5 epic (#366):
-
-**#380 — Restoration coverage audit:**
-- New `RestorationCoverageAuditTest` (`@Tag("report")`) scans all 13 replay datasets (152,109 replays)
-- Results: 632 (0.4%) route through TrackerEventFeatureExtractor (ground-truth), 151,477 (99.6%) use StrippedReplayFeatureExtractor fallback
-- Report at `docs/benchmarks/restoration-coverage.md`
-
-**#371 — Cross-patch regression suite:**
-- Extended `DivergenceRegressionTest` with economy MAPE category and cross-patch baselines
-- Calibrated for AI Arena (79% units), IEM PyeongChang (22%), ASUS ROG (22%)
-
-**#381 — Race hardcoding fix:**
-- `ReplayValidationHarness` hardcoded `ProtossRaceModel` — two-line fix tripled accuracy (15% → 46.8%)
-
-### Current accuracy baselines (5-min checkpoint, 118 oracle replays)
-
-| Category | Value | Notes |
-|----------|-------|-------|
-| Units | 46.8% | Post-race-fix |
-| Buildings | 100.0% | Harness-synced from GT |
-| Upgrades | 0.0% | No ResearchIntents applied |
-| Economy | 375.8% MAPE | Measured across all races |
-
-### Suggested next work
-
-`work start #372` — Re-reconstitute training data (pipeline execution, ~2 hours).
+#389 — finish HSC XXIX download, then #385 — run emulator accuracy baselines against the new 2025-2026 tournament replays.
 
 ## References
 
 | What | Where |
 |------|-------|
-| Commits on main | `c07c8c8f` (3 squashed) |
-| Coverage report | `docs/benchmarks/restoration-coverage.md` |
-| Epic status | `casehubio/quarkmind#366` |
+| Epic | #384 (emulator → reconstitution → ONNX training pipeline) |
+| Replay data sources | CLAUDE.md § SC2 Replay Data Sources |
+| Spawning Tool packs | `https://lotv.spawningtool.com/replaypacks/` |
+| Replay datasets | `quarkmind-classifier/data/replay_packs/` (152K+ replays) |
+| Commits on main | `f48a52e7` (3 squashed from 8) |
