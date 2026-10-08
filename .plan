@@ -1,0 +1,15 @@
+# Work Plan — issue-384-emulator-reconstitution-pipeline
+
+## State
+branch: issue-384-emulator-reconstitution-pipeline
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 384
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#384 — Issue #384 ← active
