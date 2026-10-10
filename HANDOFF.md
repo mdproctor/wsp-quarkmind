@@ -2,18 +2,14 @@
 
 ## Last Session
 
-Closed #382 (multi-game SC2 automation) and #383 (Quarkus build fix). Built MultiGameController, fixed drools-quarkus incompatibility, CDI wiring, Flyway V54 collision, SC2 launch args. Played 10 automated SC2 games (0W 10L vs VERY_EASY). Discovered sc2replaystats needs 1v1 ladder replays (not vs-AI) — pivoted to Spawning Tool as primary replay data source. Downloaded HSC XXVIII (88 replays), HSC XXIX (54 partial). Filed epic #384 with 5 child issues for emulator-driven reconstitution pipeline.
+Shipped #394 — vespene income model for EmulatedGame. Tiered gas rates in SC2Data (38/38/20 gas/min per worker), implicit worker budgeting (3 per completed gas building, deducted from mineral counts largest-base-first), PlayerState double-precision vespene field, playbook vespene assertions. Code review caught a silent economyTracker deletion from ide_replace_member — restored and captured as garden entry GE-20261010-9f5d9b.
 
 ## Immediate Next Step
 
-#389 — finish HSC XXIX download, then #385 — run emulator accuracy baselines against the new 2025-2026 tournament replays.
+#398 (M/Med) — Terran SCV count below target. Builds on #394's gas income foundation. Production throughput ceiling with 2 CCs; potential fixes: second OC morph, smarter supply depot timing.
 
 ## References
 
-| What | Where |
-|------|-------|
-| Epic | #384 (emulator → reconstitution → ONNX training pipeline) |
-| Replay data sources | CLAUDE.md § SC2 Replay Data Sources |
-| Spawning Tool packs | `https://lotv.spawningtool.com/replaypacks/` |
-| Replay datasets | `quarkmind-classifier/data/replay_packs/` (152K+ replays) |
-| Commits on main | `f48a52e7` (3 squashed from 8) |
+- `specs/issue-394-emulatedgame-vespene-income/` — design spec and decisions
+- `plans/2026-10-10-vespene-income.md` — implementation plan
+- `blog/2026-10-10-mdp01-vespene-income.md` — diary entry
