@@ -21,3 +21,4 @@
 | [2026-09-29-mdp01-invisible-66-percent.md](2026-09-29-mdp01-invisible-66-percent.md) | 2026-09-29 | Root-caused warp-in coverage gap: SC2 rapid-fire commands use CmdUpdateTargetPointEvent (ID 104), invisible to Scelight's typed parser |
 | [2026-10-03-mdp01-version-dispatch.md](2026-10-03-mdp01-version-dispatch.md) | 2026-10-03 | Version-aware abilLink dispatch — sparse override pattern for cross-patch replay parsing, selection-state discovery, 65.9% → 78.6% accuracy |
 | [2026-10-04-mdp01-building-disambiguation.md](2026-10-04-mdp01-building-disambiguation.md) | 2026-10-04 | unitLink-aware upgrade detection — tournament abilLink disambiguation pushes accuracy from 78.6% to 87.7% |
+| [2026-10-10-mdp02-supply-queue-fidelity.md](2026-10-10-mdp02-supply-queue-fidelity.md) | 2026-10-10 | Supply consumed at training start not queue entry; energy-aware OC resolution for MULE calldowns |
