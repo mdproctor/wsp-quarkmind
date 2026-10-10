@@ -1,1 +1,1 @@
-# Design Journal — issue-399-supply-queue-fidelity
+# Design Journal — issue-365-emulator-accuracy-pipeline

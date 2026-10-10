@@ -1,0 +1,15 @@
+# Work Plan — issue-365-emulator-accuracy-pipeline
+
+## State
+branch: issue-365-emulator-accuracy-pipeline
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 364,356,360,385,386
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#365 — Issue #365 ← active
