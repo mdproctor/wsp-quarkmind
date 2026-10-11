@@ -2,53 +2,52 @@
 
 ## Last Session
 
-Working on #386 — Calibrate EmulatedGame physics from tournament ground truth. Phase 1 partially complete. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
+Working on #386 — Calibrate EmulatedGame physics from tournament ground truth. Upgrade accuracy investigation complete — 2 major bugs found and fixed. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
 
-### Completed
+### Completed This Session
 
-1. **EconomyTracker gross income** — Replaced net balance delta with gross income tracking. `mineralsCollectionRate` now reflects actual minerals mined, not income-minus-spending. `mineralsCurrent` error dropped from 71.7% to 16.5%.
+1. **Cosmetic tracker upgrade filter** — `ReplaySimulatedGame.applyUpgrade()` was counting cosmetic UpgradeComplete events (sprays, dances, skins, GameHeartActive — ~5.7 per player at loop 0). These inflated the GT denominator from ~103 real upgrades to 1195 at 5-min. Added filter matching the pattern from `OracleAccuracyBaselineTest`. Upgrade accuracy: 2.8% → 33.0%.
 
-2. **EGG phantom filtering** — Excluded `UnitType.EGG` from accuracy baseline unit counts. Removes ~73 phantom units from emulated count.
+2. **UPGRADE_NAME_MAP key alignment** — `ReplayCommandExtractor.UPGRADE_NAME_MAP` used CmdEvent ability names as keys (`CombatShield`, `ZerglingMovementSpeed`) while `AbilityMapping.dispatch()` produces SC2 internal names (`ShieldWall`, `zerglingmovementspeed`). The case-sensitive `Map.get()` silently dropped all intents for 5 upgrades. Fixed 5 entries. Upgrade accuracy: 33.0% → 58.3%.
 
-3. **Mineral sync A/B test** — Added mineral sync to harness (same as vespene), ran A/B. Result: 5% unit accuracy regression (71.7% with sync vs 76.8% without). Reverted. Key finding: mineral gate is NOT the root cause of 3% upgrade accuracy.
+3. **Per-upgrade breakdown** — Added per-upgrade-name table to `EmulatedGameAccuracyBaselineTest` output, enabling targeted diagnosis.
 
-4. **MULE verification** — Pipeline exists end-to-end (AbilityMapping → MuleCalldownIntent → TerranRaceModel.onCalldown → spawn). Tests pass. Still shows 0% at baseline — likely OC energy or intent timing issue.
+### Baseline After This Session (5-minute checkpoint, 118 oracle replays)
 
-### Baseline After Phase 1 (5-minute checkpoint, 118 oracle replays)
-
-| Metric | Before | After | Target |
-|--------|--------|-------|--------|
-| Units | 78.7% | 76.8% | ≥80% |
+| Metric | Before Session | After Session | Target |
+|--------|---------------|--------------|--------|
+| Units | 76.8% | 76.8% | ≥80% |
 | Buildings | 100% | 100% | ≥97% ✓ |
-| Upgrades | 3.4% | 2.8% | >30% |
-| mineralsCurrent error | 71.7% | 16.5% | — |
-| collectionRate error | 95.9% | 93.6% | ≤50% MAPE |
+| Upgrades | 2.8% (34/1195) | 58.3% (60/103) | >30% ✓ |
+| mineralsCurrent error | 16.5% | 12.8% | — |
 
 ### Key Findings
 
-- **Unit accuracy ~2% drop** is from EGG filter removing inflation — the old 78.7% was inflated by phantom EGGs masking under-production.
-- **Economy collection rate** still 93.6% wrong. SC2's `mineralsCollectionRate` (208K aggregate) uses a different formula/unit than our gross income delta (13K). Needs reverse-engineering from oracle PlayerStats.
-- **Upgrade 2.8%** — mineral rejection disproved by A/B test. Next hypothesis: building tag mismatch in `handleResearch()` or `ResearchIntent` extraction gap.
-- **MULE 0%** — calldown pipeline works in unit tests. Harness may not generate MuleCalldownIntents, or OC energy divergence blocks calldowns.
-- **Queen 17.2%** — extraction pipeline under-counts (145 GT vs 25 emulated). Extraction issue, not EmulatedGame physics.
+- **Upgrade accuracy was a measurement artifact** — cosmetic tracker events inflated the GT denominator 10x. True accuracy was always higher than reported.
+- **5 UPGRADE_NAME_MAP keys mismatched** — `ShieldWall` vs `CombatShield`, `PunisherGrenades` vs `ConcussiveShells`, and 3 lowercase Zerg names (`zerglingmovementspeed`, `zerglingattackspeed`, `overlordspeed`) didn't match what `AbilityMapping.dispatch()` produces.
+- **4 UpgradeType values missing from UPGRADE_NAME_MAP** — `HIGH_CAPACITY_BARRELS`, `LIBERATOR_RANGE`, `MEDIVAC_SPEED_BOOST`, `RAVEN_CORVID_REACTOR`. Minor impact (rare upgrades).
+- **Remaining 42% gap at 5 min** — partially matched upgrades (Stimpack 20%, ZerglingSpeed 50%, ShieldWall 33%) likely blocked by `handleResearch()` mineral gate — minerals aren't synced in the harness. Also ~43% of CmdEvents are missing from Blizzard API replays per `CmdEventGapDiagnosticTest`.
+- **Mineral accuracy improved as side-effect** — 16.5% → 12.8% error because correct upgrade cost deductions now track reality.
 
 ## Immediate Next Step
 
-Continue #386 — three investigation threads needed:
+Continue #386 — remaining work:
 
-1. **Economy collection rate formula** — Extract PlayerStats from oracle replays at multiple checkpoints, compare against EmulatedGame gross income to reverse-engineer what SC2's `mineralsCollectionRate` actually measures.
+1. **Batch 2, Task 3:** Calibrate upgrade timing constants from oracle replays — still uses formula-derived values that violate protocol. Won't significantly change accuracy but aligns with calibration mandate.
 
-2. **Upgrade root cause** — Add debug logging to `handleResearch()` during a baseline run to trace why research intents are rejected. Check building tag format (replay extraction tags vs harness-injected tags).
+2. **Batch 4, Task 7:** Fix Queen intent generation (145 GT vs 25 emulated at 5 min). Extraction pipeline under-counts.
 
-3. **Unit accuracy +3.2pp** — Top targets: Queen extraction (120 units missing), worker shortfall (~20% each race), MULE (69 missing).
+3. **Batch 4, Task 8:** Fix morph intent generation (Baneling 0%, Roach 35.4%).
+
+4. **Upgrade accuracy ceiling** — the ~50% match rate for `zerglingmovementspeed` and `Stimpack` may be near the ceiling given Blizzard API CmdEvent capture rate (~43%). Further improvement requires tracker-event-based upgrade extraction rather than CmdEvent-based.
 
 ## References
 
-- `specs/issue-386-calibrate-emulated-physics/` — design spec and decisions
-- `plans/2026-10-11-calibrate-emulated-physics.md` — implementation plan (Batches 1-3 done, 2 remaining)
-- `docs/benchmarks/emulated-game-accuracy-baseline.md` — current baseline data
-- EconomyTracker.java:49-69 — gross income tracking (new)
-- EmulatedGame.java:150-170 — income loop with recordIncome() wiring
-- ReplayValidationHarness.java:102 — vespene sync (mineral sync reverted)
-- EmulatedGame.java:764-806 — handleResearch() with rejection gates
+- `specs/issue-386-calibrate-emulated-physics/` — design spec
+- `plans/2026-10-11-calibrate-emulated-physics.md` — implementation plan
+- `docs/benchmarks/emulated-game-accuracy-baseline.md` — current baseline data (includes per-upgrade breakdown)
+- ReplaySimulatedGame.java:43-44 — COSMETIC_UPGRADE_PREFIXES
+- ReplaySimulatedGame.java:181 — cosmetic filter in applyUpgrade()
+- ReplayCommandExtractor.java:113-145 — fixed UPGRADE_NAME_MAP entries
+- EmulatedGameAccuracyBaselineTest.java:106-119 — per-upgrade tracking
 - #387 — paused on stack, depends on #386
