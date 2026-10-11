@@ -1,0 +1,15 @@
+# Work Plan — issue-387-reconstitute-ladder-replays
+
+## State
+branch: issue-387-reconstitute-ladder-replays
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 387
+design-repo: 
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#387 — Issue #387 ← active
