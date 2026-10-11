@@ -45,3 +45,16 @@
 **Sources:** EconomyTracker source code analysis, oracle replay PlayerStats data
 **Exploration:** quick
 **Status:** captured
+
+## D5: Upgrade calibration — replay ground truth, same pattern as train times
+
+**Choice:** Write SC2UpgradeTimeCalibrationTest using tracker UpgradeComplete events from oracle replays, following the same abilLink→event correlation pattern as SC2TrainTimeCalibrationTest
+**Alternatives:**
+- Use wiki values — faster but may have same inaccuracy as community formulas
+- Wiki then validate — good if replay coverage is sparse, but adds unnecessary intermediate step
+**Rationale:** Consistent with established calibration methodology; protocol PP-20260522-572156 explicitly warns against `seconds × 22.4` estimates
+**Trade-offs:** Requires sufficient upgrade events across oracle replays; some rare upgrades may have too few samples
+**Depends on:** D2 (upgrades in scope)
+**Sources:** SC2TrainTimeCalibrationTest.java (existing calibration pattern), PP-20260522-572156
+**Exploration:** quick
+**Status:** captured
