@@ -1,0 +1,15 @@
+# Work Plan — issue-366-reconstitution-accuracy-gate
+
+## State
+branch: issue-366-reconstitution-accuracy-gate
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 366
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#366 — Issue #366 ← active

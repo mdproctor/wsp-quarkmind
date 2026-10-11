@@ -1,1 +1,1 @@
-# Design Journal — issue-399-supply-queue-fidelity
+# Design Journal — issue-366-reconstitution-accuracy-gate
