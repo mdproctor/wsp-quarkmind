@@ -2,48 +2,39 @@
 
 ## Last Session
 
-Working on #386 — Calibrate EmulatedGame physics from tournament ground truth. Upgrade accuracy and morph intent fixes complete. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
+Closed #386 (Milestone 1 waypoint) — calibration via CmdEvent-driven validation reached its ceiling. Opened #406 (Milestone 2) — tracker-event-driven physics validation. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
 
 ### Completed This Session
 
-1. **Cosmetic tracker upgrade filter** — `ReplaySimulatedGame.applyUpgrade()` counted cosmetic UpgradeComplete events (~5.7 per player at loop 0). Added filter matching `OracleAccuracyBaselineTest` pattern. Upgrade accuracy: 2.8% → 33.0%.
+1. **Protocol: calibration milestones are waypoints** — codified the pattern: each milestone sets a numeric target, reaching it triggers assessment and replanning, not completion. `docs/protocols/calibration-milestones-are-waypoints.md`.
 
-2. **UPGRADE_NAME_MAP key alignment** — 5 entries used CmdEvent ability names instead of AbilityMapping output names (ShieldWall vs CombatShield, lowercase Zerg names). Case-sensitive Map.get() silently dropped all intents. Upgrade accuracy: 33.0% → 58.3%.
+2. **Waypoint assessment for #386** — posted closing assessment documenting: baseline at close, what improved (upgrades 0%→58.3%, buildings 95%→100%, economy error ~200%→12.8%), what didn't (unit accuracy plateaued at 76.7% due to 43% CmdEvent capture ceiling), and the methodology verdict (CmdEvent approach has reached its ceiling).
 
-3. **Unit morph fallback** — `handleMorph()` unit path used strict tag matching. Replay-derived tags never match EmulatedGame auto-generated tags. Added MORPH_SOURCE_TYPES type-based fallback (same pattern as building morph). Baneling accuracy: 0% → 100%.
+3. **Created #406** — next milestone: tracker-event-driven EmulatedGame physics validation. Feeds complete inputs from oracle tracker events to isolate physics accuracy from input completeness. Waypoint targets: units ≥95%, buildings ≥99%, upgrades ≥90%, economy MAPE ≤15%.
 
-4. **Queen intent diagnosis** — Not fixable at extraction level. 37% CmdEvent capture rate (Blizzard API limit) × 44% intent acceptance = 17% overall. Diagnostic test `QueenExtractionDiagnosticTest` added.
+### Baseline at #386 Close (5-minute checkpoint, 118 oracle replays)
 
-5. **Per-upgrade breakdown** — Added per-upgrade-name table to `EmulatedGameAccuracyBaselineTest` for targeted diagnosis.
+| Metric | Before #386 | After #386 | Milestone 1 Target |
+|--------|------------|-----------|-------------------|
+| Units | ~13% | 76.7% | ≥80% (waypoint) |
+| Buildings | 95% | 100% | ≥97% ✓ |
+| Upgrades | 0% | 58.3% | >30% ✓ |
+| mineralsCurrent error | ~200% | 12.8% | — |
 
-### Baseline After This Session (5-minute checkpoint, 118 oracle replays)
+### Key Finding
 
-| Metric | Before Session | After Session | Target |
-|--------|---------------|--------------|--------|
-| Units | 76.8% | 76.7% | ≥80% |
-| Buildings | 100% | 100% | ≥97% ✓ |
-| Upgrades | 2.8% (34/1195) | 58.3% (60/103) | >30% ✓ |
-| mineralsCurrent error | 16.5% | 12.8% | — |
+The CmdEvent-driven validation conflates input completeness with physics accuracy. At 43% CmdEvent capture rate, we cannot distinguish physics errors from missing inputs. Milestone 2 (#406) shifts to tracker-event-driven validation — feed the emulator 100% of inputs from oracle tracker events, then every remaining discrepancy is a real physics bug to fix.
 
-### Remaining Work
+### Next Steps
 
-1. **Task 3: Calibrate upgrade timings** — Low priority. Upgrade target (>30%) is met at 58.3%. Formula-derived timing constants violate protocol but don't significantly impact accuracy.
-
-2. **Unit accuracy gap (76.7% vs ≥80% target)** — Remaining 3.3pp gap is dominated by:
-   - Worker shortfall: ~953 missing (Probe -265, Drone -413, SCV -275) — CmdEvent ceiling
-   - Queen: 145→25 — CmdEvent ceiling (37%) + resource rejections
-   - Combat units (Marine, Zergling, Roach) — CmdEvent ceiling
-   - Over-production: Sentry 7→28 (4x), Stalker 51→57 — combat simulation doesn't kill them
-
-3. **Fundamental ceiling:** CmdEvent capture rate (~43% per `CmdEventGapDiagnosticTest`) limits all unit types. To exceed ~80% unit accuracy, the harness would need tracker-event-based intent injection for common unit types — a different approach than CmdEvent extraction.
+1. Start #406 — build `TrackerIntentExtractor` (tracker events → TimedIntents)
+2. Create tracker-driven validation harness
+3. Calibrate every physics constant against clean measurement
 
 ## References
 
-- ReplaySimulatedGame.java:43-44, 181 — cosmetic upgrade filter
-- ReplayCommandExtractor.java:113-145 — fixed UPGRADE_NAME_MAP entries
-- EmulatedGame.java:831-838 — MORPH_SOURCE_TYPES map
-- EmulatedGame.java:875-881 — unit morph tag fallback
-- QueenExtractionDiagnosticTest.java — Queen extraction diagnostic
-- EmulatedGameAccuracyBaselineTest.java:106-119 — per-upgrade tracking
+- docs/protocols/calibration-milestones-are-waypoints.md — waypoint pattern protocol
 - docs/benchmarks/emulated-game-accuracy-baseline.md — current baseline
+- #384 — parent epic
 - #387 — paused on stack, depends on #386
+- #406 — next milestone

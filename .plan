@@ -12,16 +12,5 @@ design-section-hashes:
 flyway-next-v: none
 
 ## Queue
-- [ ] casehubio/quarkmind#386 — Issue #386 ← active
-  - [x] Batch 1: Economy+EGG
-    - [x] Task 1: Fix EconomyTracker gross income
-    - [x] Task 2: Filter EGG phantoms
-  - [ ] Batch 2: Upgrades
-    - [ ] Task 3: Calibrate upgrade timings
-    - [x] Task 4: Fix upgrade intent generation
-  - [x] Batch 3: MULE+Baseline
-    - [x] Task 5: Verify MULE
-    - [x] Task 6: Re-run baselines and update thresholds
-  - [ ] Batch 4: Phase2-Conditional
-    - [ ] Task 7: Fix Queen intent generation
-    - [ ] Task 8: Fix morph intent generation
+- [x] casehubio/quarkmind#386 — Issue #386
+- [ ] casehubio/quarkmind#406 — Milestone 2 Tracker-event-driven EmulatedGame physics validation
