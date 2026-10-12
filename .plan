@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-386-calibrate-emulated-physics
-state: closing:pushed
+state: closing:merged
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
