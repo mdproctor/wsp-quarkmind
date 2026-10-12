@@ -2,39 +2,53 @@
 
 ## Last Session
 
-Closed #386 (Milestone 1 waypoint) — calibration via CmdEvent-driven validation reached its ceiling. Opened #406 (Milestone 2) — tracker-event-driven physics validation. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
+Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validation). Branch: `issue-406-tracker-emulated-physics`. Batches 1-2 complete (TrackerIntentExtractor + baseline test). Batch 3 (physics calibration) remaining.
 
 ### Completed This Session
 
-1. **Protocol: calibration milestones are waypoints** — codified the pattern: each milestone sets a numeric target, reaching it triggers assessment and replanning, not completion. `docs/protocols/calibration-milestones-are-waypoints.md`.
+1. **Recovered stale .plan** — #386 close left the plan in `closing:stamped` with old branch reference. Root cause filed as Hortora/soredium#442 (3 independent failures in work-end pipeline). Manually advanced queue to #406.
 
-2. **Waypoint assessment for #386** — posted closing assessment documenting: baseline at close, what improved (upgrades 0%→58.3%, buildings 95%→100%, economy error ~200%→12.8%), what didn't (unit accuracy plateaued at 76.7% due to 43% CmdEvent capture ceiling), and the methodology verdict (CmdEvent approach has reached its ceiling).
+2. **TrackerIntentExtractor** — new class in `io.quarkmind.sc2.replay` that converts oracle tracker events into `TimedIntent`s:
+   - `UnitBorn` → `TrainIntent` with back-calculated command loop (completion loop - train time)
+   - `Upgrade` → `ResearchIntent` via `UpgradeType.fromTrackerName()` (new alias for `fromPythonName`)
+   - Buildings are NOT converted to intents — the harness syncs them from ground truth
+   - Tracker path: 240 TrainIntents vs CmdEvent: 42 (471% more coverage on a single replay)
 
-3. **Created #406** — next milestone: tracker-event-driven EmulatedGame physics validation. Feeds complete inputs from oracle tracker events to isolate physics accuracy from input completeness. Waypoint targets: units ≥95%, buildings ≥99%, upgrades ≥90%, economy MAPE ≤15%.
+3. **TrackerDrivenAccuracyBaselineTest** — `@Tag("report")` test across 118 oracle replays (236 player runs):
+   - 1-min: 74.8% units, 100% buildings
+   - 3-min: 47.2% units, 100% buildings
+   - 5-min: 29.9% units, 100% buildings
+   - 7-min: 21.4% units, 100% buildings
+   - Unit accuracy degrades over time — economy model can't sustain 100% production load
+   - Report: `docs/benchmarks/tracker-driven-accuracy-baseline.md`
 
-### Baseline at #386 Close (5-minute checkpoint, 118 oracle replays)
-
-| Metric | Before #386 | After #386 | Milestone 1 Target |
-|--------|------------|-----------|-------------------|
-| Units | ~13% | 76.7% | ≥80% (waypoint) |
-| Buildings | 95% | 100% | ≥97% ✓ |
-| Upgrades | 0% | 58.3% | >30% ✓ |
-| mineralsCurrent error | ~200% | 12.8% | — |
+4. **Made `Sc2ReplayShared` public** — class and `BUILDING_NAMES`, `toUnitType`, `toBuildingType` promoted to public for cross-package access.
 
 ### Key Finding
 
-The CmdEvent-driven validation conflates input completeness with physics accuracy. At 43% CmdEvent capture rate, we cannot distinguish physics errors from missing inputs. Milestone 2 (#406) shifts to tracker-event-driven validation — feed the emulator 100% of inputs from oracle tracker events, then every remaining discrepancy is a real physics bug to fix.
+With 100% input coverage, the **economy model is the bottleneck**, not missing inputs. EmulatedGame's mineral income can't sustain the full production load from tracker intents — units get rejected due to insufficient minerals, and accuracy drops from 75% at 1-min to 21% at 7-min. Fixing the economy model (mineral income rates, worker saturation curves) is the critical path for Batch 3.
 
-### Next Steps
+### Tracker vs CmdEvent Baseline Comparison (5-min)
 
-1. Start #406 — build `TrackerIntentExtractor` (tracker events → TimedIntents)
-2. Create tracker-driven validation harness
-3. Calibrate every physics constant against clean measurement
+| Metric | CmdEvent (43% inputs) | Tracker (100% inputs) |
+|--------|----------------------|----------------------|
+| Units | 76.7% | 29.9% |
+| Buildings | 100% | 100% |
 
-## References
+Tracker is LOWER than CmdEvent because: with fewer intents, EmulatedGame spends fewer minerals and stays closer to ground truth counts. With 100% intents, it overspends and runs out of minerals, blocking subsequent production.
 
-- docs/protocols/calibration-milestones-are-waypoints.md — waypoint pattern protocol
-- docs/benchmarks/emulated-game-accuracy-baseline.md — current baseline
-- #384 — parent epic
-- #387 — paused on stack, depends on #386
-- #406 — next milestone
+### What Remains — Batch 3 (Physics Calibration)
+
+1. **Task 5: Gap analysis** — compare tracker vs CmdEvent baselines per-type, identify where EmulatedGame's economy model diverges, post analysis to #406
+2. **Task 6: Fix physics gaps** — iterative TDD cycle per gap: mineral income calibration, worker saturation curves, race-specific mechanics (Chrono Boost, MULE, Inject Larva)
+
+### Plan
+
+`plans/2026-10-12-tracker-emulated-physics.md` — 6 tasks in 3 batches. Tasks 1-4 complete.
+
+### Branch State
+
+- Branch: `issue-406-tracker-emulated-physics`
+- 5 commits ahead of main
+- Paused: #387 (reconstitute ladder replays) on pause stack
+- Soredium: #442 filed (work-end queue stall bug)
