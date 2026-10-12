@@ -13,12 +13,12 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#406 — Issue #406 ← active
-  - [ ] Batch 1: TrackerIntentExtractor
-    - [ ] Task 1: UnitBorn+BuildIntent extraction
-    - [ ] Task 2: UpgradeType.fromTrackerName+ResearchIntent
-    - [ ] Task 3: Coverage comparison test
-  - [ ] Batch 2: Validation+Baseline
-    - [ ] Task 4: TrackerDrivenAccuracyBaselineTest
+  - [x] Batch 1: TrackerIntentExtractor
+    - [x] Task 1: UnitBorn+BuildIntent extraction
+    - [x] Task 2: UpgradeType.fromTrackerName+ResearchIntent
+    - [x] Task 3: Coverage comparison test
+  - [x] Batch 2: Validation+Baseline
+    - [x] Task 4: TrackerDrivenAccuracyBaselineTest
   - [ ] Batch 3: Physics Calibration
     - [ ] Task 5: Gap analysis
     - [ ] Task 6: Fix physics gaps
