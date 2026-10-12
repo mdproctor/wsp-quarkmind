@@ -2,52 +2,48 @@
 
 ## Last Session
 
-Working on #386 — Calibrate EmulatedGame physics from tournament ground truth. Upgrade accuracy investigation complete — 2 major bugs found and fixed. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
+Working on #386 — Calibrate EmulatedGame physics from tournament ground truth. Upgrade accuracy and morph intent fixes complete. Branch: `issue-386-calibrate-emulated-physics`. Issue #387 paused on the stack (depends on #386).
 
 ### Completed This Session
 
-1. **Cosmetic tracker upgrade filter** — `ReplaySimulatedGame.applyUpgrade()` was counting cosmetic UpgradeComplete events (sprays, dances, skins, GameHeartActive — ~5.7 per player at loop 0). These inflated the GT denominator from ~103 real upgrades to 1195 at 5-min. Added filter matching the pattern from `OracleAccuracyBaselineTest`. Upgrade accuracy: 2.8% → 33.0%.
+1. **Cosmetic tracker upgrade filter** — `ReplaySimulatedGame.applyUpgrade()` counted cosmetic UpgradeComplete events (~5.7 per player at loop 0). Added filter matching `OracleAccuracyBaselineTest` pattern. Upgrade accuracy: 2.8% → 33.0%.
 
-2. **UPGRADE_NAME_MAP key alignment** — `ReplayCommandExtractor.UPGRADE_NAME_MAP` used CmdEvent ability names as keys (`CombatShield`, `ZerglingMovementSpeed`) while `AbilityMapping.dispatch()` produces SC2 internal names (`ShieldWall`, `zerglingmovementspeed`). The case-sensitive `Map.get()` silently dropped all intents for 5 upgrades. Fixed 5 entries. Upgrade accuracy: 33.0% → 58.3%.
+2. **UPGRADE_NAME_MAP key alignment** — 5 entries used CmdEvent ability names instead of AbilityMapping output names (ShieldWall vs CombatShield, lowercase Zerg names). Case-sensitive Map.get() silently dropped all intents. Upgrade accuracy: 33.0% → 58.3%.
 
-3. **Per-upgrade breakdown** — Added per-upgrade-name table to `EmulatedGameAccuracyBaselineTest` output, enabling targeted diagnosis.
+3. **Unit morph fallback** — `handleMorph()` unit path used strict tag matching. Replay-derived tags never match EmulatedGame auto-generated tags. Added MORPH_SOURCE_TYPES type-based fallback (same pattern as building morph). Baneling accuracy: 0% → 100%.
+
+4. **Queen intent diagnosis** — Not fixable at extraction level. 37% CmdEvent capture rate (Blizzard API limit) × 44% intent acceptance = 17% overall. Diagnostic test `QueenExtractionDiagnosticTest` added.
+
+5. **Per-upgrade breakdown** — Added per-upgrade-name table to `EmulatedGameAccuracyBaselineTest` for targeted diagnosis.
 
 ### Baseline After This Session (5-minute checkpoint, 118 oracle replays)
 
 | Metric | Before Session | After Session | Target |
 |--------|---------------|--------------|--------|
-| Units | 76.8% | 76.8% | ≥80% |
+| Units | 76.8% | 76.7% | ≥80% |
 | Buildings | 100% | 100% | ≥97% ✓ |
 | Upgrades | 2.8% (34/1195) | 58.3% (60/103) | >30% ✓ |
 | mineralsCurrent error | 16.5% | 12.8% | — |
 
-### Key Findings
+### Remaining Work
 
-- **Upgrade accuracy was a measurement artifact** — cosmetic tracker events inflated the GT denominator 10x. True accuracy was always higher than reported.
-- **5 UPGRADE_NAME_MAP keys mismatched** — `ShieldWall` vs `CombatShield`, `PunisherGrenades` vs `ConcussiveShells`, and 3 lowercase Zerg names (`zerglingmovementspeed`, `zerglingattackspeed`, `overlordspeed`) didn't match what `AbilityMapping.dispatch()` produces.
-- **4 UpgradeType values missing from UPGRADE_NAME_MAP** — `HIGH_CAPACITY_BARRELS`, `LIBERATOR_RANGE`, `MEDIVAC_SPEED_BOOST`, `RAVEN_CORVID_REACTOR`. Minor impact (rare upgrades).
-- **Remaining 42% gap at 5 min** — partially matched upgrades (Stimpack 20%, ZerglingSpeed 50%, ShieldWall 33%) likely blocked by `handleResearch()` mineral gate — minerals aren't synced in the harness. Also ~43% of CmdEvents are missing from Blizzard API replays per `CmdEventGapDiagnosticTest`.
-- **Mineral accuracy improved as side-effect** — 16.5% → 12.8% error because correct upgrade cost deductions now track reality.
+1. **Task 3: Calibrate upgrade timings** — Low priority. Upgrade target (>30%) is met at 58.3%. Formula-derived timing constants violate protocol but don't significantly impact accuracy.
 
-## Immediate Next Step
+2. **Unit accuracy gap (76.7% vs ≥80% target)** — Remaining 3.3pp gap is dominated by:
+   - Worker shortfall: ~953 missing (Probe -265, Drone -413, SCV -275) — CmdEvent ceiling
+   - Queen: 145→25 — CmdEvent ceiling (37%) + resource rejections
+   - Combat units (Marine, Zergling, Roach) — CmdEvent ceiling
+   - Over-production: Sentry 7→28 (4x), Stalker 51→57 — combat simulation doesn't kill them
 
-Continue #386 — remaining work:
-
-1. **Batch 2, Task 3:** Calibrate upgrade timing constants from oracle replays — still uses formula-derived values that violate protocol. Won't significantly change accuracy but aligns with calibration mandate.
-
-2. **Batch 4, Task 7:** Fix Queen intent generation (145 GT vs 25 emulated at 5 min). Extraction pipeline under-counts.
-
-3. **Batch 4, Task 8:** Fix morph intent generation (Baneling 0%, Roach 35.4%).
-
-4. **Upgrade accuracy ceiling** — the ~50% match rate for `zerglingmovementspeed` and `Stimpack` may be near the ceiling given Blizzard API CmdEvent capture rate (~43%). Further improvement requires tracker-event-based upgrade extraction rather than CmdEvent-based.
+3. **Fundamental ceiling:** CmdEvent capture rate (~43% per `CmdEventGapDiagnosticTest`) limits all unit types. To exceed ~80% unit accuracy, the harness would need tracker-event-based intent injection for common unit types — a different approach than CmdEvent extraction.
 
 ## References
 
-- `specs/issue-386-calibrate-emulated-physics/` — design spec
-- `plans/2026-10-11-calibrate-emulated-physics.md` — implementation plan
-- `docs/benchmarks/emulated-game-accuracy-baseline.md` — current baseline data (includes per-upgrade breakdown)
-- ReplaySimulatedGame.java:43-44 — COSMETIC_UPGRADE_PREFIXES
-- ReplaySimulatedGame.java:181 — cosmetic filter in applyUpgrade()
+- ReplaySimulatedGame.java:43-44, 181 — cosmetic upgrade filter
 - ReplayCommandExtractor.java:113-145 — fixed UPGRADE_NAME_MAP entries
+- EmulatedGame.java:831-838 — MORPH_SOURCE_TYPES map
+- EmulatedGame.java:875-881 — unit morph tag fallback
+- QueenExtractionDiagnosticTest.java — Queen extraction diagnostic
 - EmulatedGameAccuracyBaselineTest.java:106-119 — per-upgrade tracking
+- docs/benchmarks/emulated-game-accuracy-baseline.md — current baseline
 - #387 — paused on stack, depends on #386
