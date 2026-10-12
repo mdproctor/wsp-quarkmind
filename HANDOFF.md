@@ -2,23 +2,22 @@
 
 ## Last Session
 
-Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validation). Branch: `issue-406-tracker-emulated-physics`. 19 commits ahead of main. Pushed unit accuracy from 94.9% to 99.4% at 5-min through three complementary fixes: economy bypass, Reactor dual-training, and queue limit relaxation.
+Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validation). Branch: `issue-406-tracker-emulated-physics`. 22 commits ahead of main. Pushed unit accuracy from 99.4% to 99.5% through per-building Reactor detection, capacity-aware queue routing, and Chrono Boost extraction from game events.
 
 ### Completed This Session
 
-1. **Diagnostic infrastructure** — Added per-rejection-reason counters to `EmulatedGame.handleTrain` for tracker-driven (r- prefix) intents. `TrackerTrainDiagnosticTest` (@Tag("diagnostic")) prints per-unit-type breakdown: received/trained/building_not_found/production_blocked/insufficient_resources/queue_full/defer_overflow. Run with `mvn test -pl quarkmind-sc2 -Pdiagnostic -Dtest=TrackerTrainDiagnosticTest`.
+1. **First-principles analysis of the gap** — The previous session's HANDOFF claimed side-by-side SC2 API was required for all further progress. Analysis proved 3 of 4 blockers were solvable from replay data alone:
+   - Per-building Reactor: UnitInit position correlation (not SC2 `add_on_tag`)
+   - Chrono Boost: game events in oracle replays (not SC2 `buff_ids`)
+   - MULE/OC: misdiagnosis — MULE uses energy, not the production queue
 
-2. **Economy bypass for tracker-driven intents** (94.9% → 99.2%) — First-principles insight: tracker-driven intents represent units the real player DID produce. Resource/production checks measure economy accuracy, not physics accuracy. Changed `handleTrain` to skip `canProduce`, resource checks, and resource deduction for `autoResolved` (r- prefix) intents. Non-tracker intents (normal game path) retain all checks unchanged.
+2. **Per-building Reactor detection** (`63197567`) — Replaced type-level Reactor detection (ALL buildings of a type marked reactored) with per-building detection. When a Reactor UnitInit event arrives, `findNearestProductionBuilding` finds the parent building by position from a `productionBuildings` map that excludes add-ons. More correct but revealed that type-level detection was accidentally compensating for routing imprecision.
 
-3. **Reactor dual-training** (99.2% → 99.4%) — `ReplaySimulatedGame` detects BarracksReactor/FactoryReactor/StarportReactor UnitInit events by name suffix, recording which BuildingTypes have Reactors for each player. Harness marks ALL buildings of reactored types. `EmulatedGame.handleTrain` allows 2 concurrent training slots via `PhysicsState.buildingTrainingUntil2`. `drainBuildingQueues` fills up to `maxSlots` for reactored buildings.
+3. **Capacity-aware queue routing** (`63197567`) — Updated `shortestQueue` to use `depth = active + queue - maxSlots` (signed). Reactored buildings (maxSlots=2) have negative depth when slots are free, so they're preferred. Achieves proportional intent distribution (2:1:1 for 3 Barracks with 1 Reactor).
 
-4. **Queue limit relaxation** — Raised building queue limit from 5 to 20 for r- prefix intents. Same philosophy: the real player's building queue had room (the unit was produced).
+4. **Chrono Boost abilLink discovery** (`62c8337f`) — `ChronoBoostAbilLinkDiscoveryTest` found abilLink=716 (444 occurrences across 65 Protoss player-replays). Added to `TrackerIntentExtractor`.
 
-5. **Harness refactor** — All public `run` overloads delegate to `runInternal`. Added 5-param overload `run(groundTruth, intents, tickLimit, emulated, race)` for diagnostic EmulatedGame access. Added `playerRaceModel()` getter, `setMineralsForHarness()`, `markBuildingReactored()`, `isReactored()` to EmulatedGame.
-
-### What Was Tried But Didn't Work
-
-- **Mineral sync from GT** — Syncing minerals from pre-tick GT (like vespene is synced) made accuracy WORSE (94.9% → 90.4%). Reason: without sync, EmulatedGame accumulates extra minerals from failed intents, which compensates for economy divergence. With sync, GT minerals are lower (real player spent them successfully), so MORE intents are rejected. The economy bypass approach was the correct fix instead.
+5. **Chrono Boost extraction from game events** (`62c8337f`) — `TrackerIntentExtractor` now parses `RepContent.GAME_EVENTS` alongside tracker events. Chrono Boost CmdEvents (abilLink=716) are converted to `AbilityIntent("r-NEXUS", "CHRONO_BOOST", decodedTargetTag)`. Fixed `resolveBuilding` to try direct tag match before type-based resolution. Protoss gains at 5-min: Probe +1, Zealot +1, Stalker +1, Observer +1.
 
 ### Current Results (118 oracle replays, 236 player runs)
 
@@ -26,190 +25,151 @@ Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validati
 |---|---|---|---|
 | 1-min | 100.0% | 100% | 100% |
 | 3-min | 99.5% | 100% | 75.0% |
-| 5-min | **99.4%** | 100% | **98.1%** |
+| 5-min | **99.5%** | 100% | **98.1%** |
 | 7-min | 99.7% | 100% | **99.5%** |
 
 ### Session Progression
 
 | Step | 5-min units | Change |
 |---|---|---|
-| Start of session | 94.9% | — |
-| Economy bypass | 99.2% | +4.3pp |
-| Reactor dual-training | 99.4% | +0.2pp |
-| Queue limit relaxation | 99.4% | +0pp (helped Probe by 2) |
-
-### Waypoint Target Status
-
-| Target | Value | Status |
-|--------|-------|--------|
-| Unit accuracy ≥ 95% at 5-min | **99.4%** | **Exceeded** |
-| Building accuracy ≥ 99% | 100% | **Exceeded** |
-| Upgrade accuracy ≥ 90% | 98.1% | **Exceeded** |
-| Economy MAPE ≤ 15% | N/A | Economy diverges by design (resource checks bypassed for physics isolation) |
-| Per-type timing ≥ 95% within ±1 tick | N/A | Needs timing-specific test — candidate for side-by-side phase |
+| Start of session | 99.4% | — |
+| Per-building Reactor + capacity routing | 99.4% | neutral (more correct, same headline) |
+| Chrono Boost extraction | 99.5% | +0.1pp |
 
 ---
 
-## Next Session: Side-by-Side SC2 Calibration (Phase 3)
+## Next Session: Closing the Last 0.5% to 100%
 
-### The Problem: 39 Units Missing at 5-min (0.6%)
+### Goal: 100% unit, building, and upgrade accuracy at all checkpoints
 
-All intents succeed — 100% train rate for every unit type. The 39 missing units are trained but complete 1-2 ticks AFTER the 5-min checkpoint. The EmulatedGame's building throughput is slightly slower than real SC2 because of four missing physics features:
+### The Remaining Gap — 36 Missing Units at 5-min
 
-| Feature | Impact | What SC2 Does | What EmulatedGame Does | Data Source |
-|---------|--------|---------------|------------------------|-------------|
-| **Per-building Reactor** | ~21 units (Hellion, Widow Mine, Marine) | Specific building has Reactor → that building trains 2 concurrently | ALL buildings of that type marked as reactored (imprecise) | SC2 API: `unit.add_on_tag` links add-on to parent |
-| **Chrono Boost** | ~5 units (Probe) | Nexus Chrono Boost speeds production by 50% for 20s | Standard train speed always | SC2 API: `unit.buff_ids` contains Chrono Boost buff |
-| **Per-building queue routing** | ~8 units (mixed) | Player commands go to specific building | `shortestQueue` picks building heuristically | SC2 API: `unit.orders` shows exact production queue per building |
-| **MULE/OC interaction** | ~5 units (SCV, Reaper) | Orbital Command calldown doesn't block training | Unknown interaction | SC2 API: observe CC vs OC production behavior |
-
-### Per-Type Breakdown of Remaining Gap
-
-| Type | GT | Em | Delta | Root Cause | Fix Strategy |
+| Type | GT | Em | Delta | Root Cause | Confirmed By |
 |---|---|---|---|---|---|
-| HELLION | 52 | 39 | -13 | Factory Reactor: type-level detection marks ALL factories, but only 1 has Reactor — intents spread across buildings, wrong one gets dual-slot | Per-building Reactor from SC2 add_on_tag |
-| WIDOW_MINE | 28 | 20 | -8 | Same as Hellion — Factory queue timing | Same |
-| MARINE | 372 | 367 | -5 | Barracks queue timing — mostly fixed by Reactor, 5 remain from imprecise routing | Per-building Reactor + exact queue observation |
-| PROBE | 1421 | 1416 | -5 | Chrono Boost: Nexus produces Probes at standard speed, but real player used Chrono for ~50% faster production; queue fills up in EmulatedGame | Chrono Boost buff detection from SC2 API |
-| STALKER | 51 | 49 | -2 | Gateway queue timing edge at checkpoint | Exact queue observation |
-| PHOENIX | 8 | 6 | -2 | Stargate queue timing | Exact queue observation |
-| OBSERVER | 12 | 11 | -1 | Robotics Facility timing | Exact queue observation |
-| MEDIVAC | 9 | 8 | -1 | Starport timing | Exact queue observation |
-| ZEALOT | 53 | 52 | -1 | Gateway timing | Exact queue observation |
-| REAPER | 36 | 35 | -1 | Barracks timing | Exact queue observation |
+| HELLION | 52 | 39 | -13 | Queue timing — all catch up by 7-min (100%) | 7-min shows 0 delta |
+| WIDOW_MINE | 28 | 20 | -8 | Same as Hellion — Factory queue timing | 7-min still -8 (slower recovery) |
+| MARINE | 372 | 366 | -6 | Barracks routing imprecision | Per-building Reactor worsened from -5 to -6 |
+| PROBE | 1421 | 1417 | -4 | Insufficient Chrono Boost — only +1 of expected +5 | Energy model may reject some casts |
+| PHOENIX | 8 | 6 | -2 | Stargate queue timing | Small count magnifies delta |
+| MEDIVAC | 9 | 8 | -1 | Starport timing | Catches up by 7-min |
+| STALKER | 51 | 50 | -1 | Gateway timing | Catches up by 7-min |
+| REAPER | 36 | 35 | -1 | Barracks timing | Catches up by 7-min |
 
-### The Side-by-Side Approach
+### The Remaining Gap — Upgrades
 
-**Goal:** Run real SC2 and EmulatedGame on the same replay simultaneously, compare state tick-by-tick, fix every divergence.
-
-**Why this is the right methodology:** The remaining 0.6% gap comes from information that's NOT in tracker events but IS available through the SC2 observation API. The replay file has complete data — we just can't access it through Scelight parsing alone. The SC2 API gives us the full game state.
-
-### Existing Infrastructure
-
-QuarkMind already has everything needed — no new infrastructure required:
-
-| Component | Location | What It Does |
+| Checkpoint | Accuracy | Missing |
 |---|---|---|
-| `%replay` profile | `application-replay.properties` | Configures Quarkus for replay observation mode |
-| `QuarkusSC2Transport` | `sc2/real/QuarkusSC2Transport.java` | Connects to SC2 via protobuf WebSocket |
-| `ObservationTranslator` | `sc2/real/ObservationTranslator.java` | Converts SC2 API `ResponseObservation` → domain `GameState` |
-| `SC2BotAgent` | `sc2/real/SC2BotAgent.java` | Drives the observe/act loop with SC2 |
-| `RealSC2EngineTest` | test | Tests real SC2 connection |
-| SC2 headless | must be running locally | The SC2 game engine (no display needed) |
-| `EmulatedSC2Server` | `sc2/emulated/server/EmulatedSC2Server.java` | Speaks SC2 protocol over EmulatedGame physics — useful for protocol-level comparison |
+| 3-min | 75.0% | 1 of 4 (TunnelingClaws) |
+| 5-min | 98.1% | 2 of 103 |
+| 7-min | 99.5% | 1 of 185 |
 
-### What the SC2 API Observation Contains
+### Three Categories of Gap
 
-Per frame, the `ResponseObservation` gives:
+**Category A: Timing at checkpoint (24 units — Hellion, Medivac, Stalker, Reaper, some Marine)**
+Units are trained but complete 1-2 ticks AFTER the checkpoint. Confirmed by 7-min showing 100% for these types. The EmulatedGame trains them at the right speed, but queue entry is delayed by routing heuristics.
 
-```
-observation.raw_data.units[] — for EACH unit/building:
-  .tag             — unique ID (stable across frames)
-  .unit_type       — SC2 unit type ID
-  .pos             — (x, y, z) position
-  .build_progress  — 0.0–1.0 for buildings under construction
-  .add_on_tag      — tag of attached add-on (Reactor/TechLab), 0 if none
-  .buff_ids[]      — active buffs (Chrono Boost = buff ID 281)
-  .orders[]        — production queue entries:
-    .ability_id    — what's being produced
-    .progress      — 0.0–1.0 training progress
-  .is_powered      — Protoss: Pylon field coverage
-  .energy           — current energy (Queens, OC, Nexus)
+**Category B: Sustained throughput (8 units — WidowMine, some Marine)**
+Units never fully catch up. The EmulatedGame's throughput is genuinely slower than the real game for these types, likely because the wrong building is processing the intent.
 
-observation.player_common:
-  .minerals, .vespene, .food_used, .food_cap
-```
+**Category C: Ability coverage (4 units — Probe)**
+Chrono Boost extraction works (abilLink=716) but only recovered 1 of 5 expected Probes. The Nexus energy model is likely rejecting some casts.
 
-### Implementation Plan for Side-by-Side
+### Approaches to 100%
 
-**Step 1: Create `SideBySideCalibrationTest`**
+#### Approach 1: Calibrate Terran Train Times (Quick Win — Category A)
 
-A `@Tag("sc2")` test that:
-1. Starts SC2 in replay mode (or connects to already-running SC2)
-2. Loads one of the oracle replays
-3. Steps through frame by frame via the SC2 API
-4. At each frame, records per-building state:
-   - Building tag → has Reactor (from `add_on_tag != 0`)
-   - Building tag → has Chrono Boost (from `buff_ids` containing 281)
-   - Building tag → production queue contents (from `orders[]`)
-5. Feeds the same tracker-derived intents to EmulatedGame
-6. Compares unit counts at each minute checkpoint
-7. Reports the first divergence and full diff
+**Impact estimate: 10-15 units** — the biggest bang for the buck.
 
-**Step 2: Extract per-building Reactor mapping**
+Most Terran unit train times are uncalibrated (all set to `672 = 30s × 22.4`). The real times are shorter:
 
-Replace type-level Reactor detection with per-building detection:
-- From SC2 API: build a `Map<String, String>` of building_tag → add_on_tag
-- In `syncBuildings`, only mark specific buildings as reactored (not all of a type)
-- This fixes the imprecise routing that currently marks ALL Barracks/Factory/Starport
+| Unit | Current (loops) | Expected (loops) | Source |
+|---|---|---|---|
+| HELLION | 672 | ~470 (21s) | SC2 game data |
+| WIDOW_MINE | 672 | ~470 (21s) | SC2 game data |
+| REAPER | 672 | ~1008 (45s) | SC2 game data |
+| MEDIVAC | 672 | ~672 (30s) | Already correct |
+| SIEGE_TANK | 672 | ~717 (32s) | SC2 game data |
+| VIKING | 672 | ~672 (30s) | Already correct |
 
-**Step 3: Model Chrono Boost**
+**Why this helps even though back-calculation cancels out:** The back-calculated `commandLoop = bornLoop - trainTime` changes when `trainTime` changes. With the correct (shorter) time, intents arrive LATER — closer to their completion — which reduces the time they spend in the queue. Less queue time = fewer ticks of delay = more units complete before the checkpoint.
 
-From SC2 API buff observation:
-- When a building has Chrono Boost buff active, reduce its train time by 50%
-- In `startTraining`, if the building has Chrono Boost, use `effectiveTrainLoops * 0.67`
-- The harness needs to pass Chrono Boost state per building per tick
+**How to calibrate:**
+1. Run `SC2TrainTimeCalibrationTest` — check if it covers Terran (may need oracle replays with Terran games)
+2. If the test doesn't cover Terran, derive times from the SC2 game data files (Liquipedia has canonical values for LotV patch 4.9.3)
+3. Update `SC2Data.UNIT_TRAIN_TIMES` with calibrated values
+4. Re-run accuracy baseline
 
-Two sub-approaches:
-- **Approach A (from SC2 API):** Query buff_ids at each frame. Precise but requires running SC2.
-- **Approach B (from replay CmdEvents):** Extract Chrono Boost ability commands. 43% capture rate — enough for some replays. Could supplement with heuristic: if a Protoss Nexus produces faster than standard, Chrono was active.
+#### Approach 2: Fix Chrono Boost Energy Budget (Quick Win — Category C)
 
-**Step 4: Exact queue routing (optional, for final %)**
+**Impact estimate: 3-4 units (Probes)**
 
-From SC2 API orders, observe which specific building produces each unit. Instead of `shortestQueue`, route the intent to the EXACT building the real player used. This eliminates all queue timing mismatches.
+The Chrono Boost extraction works but most casts are rejected by the energy model. Diagnosis needed:
 
-This requires mapping UnitBorn tracker event → SC2 API building production order — correlate by timing.
+1. **Add diagnostic counters** to `ProtossRaceModel.handleAbility()` — count accepted vs rejected Chrono Boosts and the rejection reason (insufficient energy)
+2. **Check Nexus energy regen rate** — `SC2Data.CASTER_ENERGY_REGEN_PER_LOOP` might be wrong
+3. **Check starting energy** — `SC2Data.NEXUS_STARTING_ENERGY` (currently 50.0) — correct for LotV
+4. **Check multi-Nexus routing** — the `r-NEXUS` caster resolution uses `resolveBuildingAll` which tries each Nexus until one has enough energy. If the first Nexus always gets tried first, energy distribution is uneven. Consider round-robin or energy-ordered selection.
+5. **Skip energy check for tracker-driven Chrono Boost** — same principle as the economy bypass: if the CmdEvent exists, the real player DID cast it. Energy checks measure economy accuracy, not physics accuracy. For tracker-driven intents, bypass the energy check and always apply the speed multiplier.
 
-### What to Start With
+Option 5 is the most consistent with the existing philosophy (tracker intents bypass resource checks). The `AbilityIntent` from game events should be treated the same way as `TrainIntent` from tracker events — the real player did it, don't second-guess.
 
-**Recommended order:**
+**Implementation:** In `applyAbilityResolved`, when the AbilityIntent has `r-` prefix tags, skip the energy check in `model.handleAbility` — apply the Chrono Boost unconditionally. May need a new method like `model.forceAbility(state, casterTag, ability, targetTag, gameLoop)`.
 
-1. Get SC2 running locally in headless mode (check if it's already installed)
-2. Test `%replay` profile — verify it can load an oracle replay and step through frames
-3. Write `SideBySideCalibrationTest` — compare EmulatedGame vs SC2 observation at minute checkpoints
-4. Extract per-building Reactor mapping → fix type-level detection → expect Hellion/WidowMine improvement
-5. Extract Chrono Boost → model in EmulatedGame → expect Probe improvement
-6. If still <100%: extract exact queue routing from SC2 orders
+#### Approach 3: Queue Routing from Game Events (Medium — Category B)
 
-**SC2 setup notes:**
-- SC2 on macOS: install via Battle.net or use the headless Linux build via Docker
-- The oracle replays are baseBuild 4.9.3 — SC2 needs to be compatible
-- `QuarkusSC2Transport` connects to `ws://localhost:5000/sc2api` by default
-- Start SC2 with: `"/Applications/StarCraft II/Support64/SC2.app/Contents/MacOS/SC2" --listen 127.0.0.1 --port 5000`
+**Impact estimate: 5-8 units (WidowMine, Marine)**
 
-### Diagnostic Tests Available
+CmdEvents contain the selected unit when the player issued a train command. By tracking `SelectionDeltaEvent`s (which AbilityMapping already does), we can determine which specific building the player had selected when they issued each train command.
 
-| Test | Command | What It Shows |
-|---|---|---|
-| `TrackerDrivenAccuracyBaselineTest` | `mvn test -pl quarkmind-sc2 -Preport -Dtest=TrackerDrivenAccuracyBaselineTest` | Per-type accuracy at 1/3/5/7 min checkpoints |
-| `TrackerTrainDiagnosticTest` | `mvn test -pl quarkmind-sc2 -Pdiagnostic -Dtest=TrackerTrainDiagnosticTest` | Per-unit-type rejection breakdown (received/trained/reasons) |
-| `DivergenceRegressionTest` | `mvn test -pl quarkmind-sc2 -Preport -Dtest=DivergenceRegressionTest` | CmdEvent-driven path regression (unaffected by tracker changes) |
+**How:**
+1. In `TrackerIntentExtractor`, add `SelectionDeltaEvent` tracking (same pattern as `AbilityMapping.onSelection`)
+2. When extracting train intents from tracker events, cross-reference with any CmdEvent within a ±5 loop window to find which building was selected
+3. Encode the building tag in the `TrainIntent` instead of using `r-` auto-resolution
+4. EmulatedGame routes to the exact building
 
-### Branch State
+**Challenge:** Only ~43% of CmdEvents are captured in stripped replays, but oracle replays have 100% game events. For oracle replays this should work. For non-oracle replays, fall back to `r-` auto-resolution.
 
-- Branch: `issue-406-tracker-emulated-physics`
-- 19 commits ahead of main
-- Paused: #387 (reconstitute ladder replays) on pause stack
-- Soredium: #442 filed (work-end queue stall bug)
+**Complexity:** Medium — requires correlating tracker events with game events by timing, and building a selection-state tracker into the extractor.
 
-### Pre-existing Test Failures
+#### Approach 4: Uncalibrated Terran Build Times (Medium — Category A)
 
-Drools tests are failing (pre-existing, not caused by this branch): `DroolsScoutingRulesTest` (13 errors), `DroolsStrategyL2L3Test` (7 errors), `DroolsDominanceWeightStrategyTest` (5 errors), `DroolsStrategyTaskTest` (22 errors), `ReplayEngineTest` (2 errors). All are `NullPointerException` or Drools initialization failures. Not related to tracker/emulated physics work.
+If Approach 1 (train time calibration) doesn't fully close the gap, also calibrate **building** completion times. `SC2BuildTimeCalibrationTest` exists but may not cover all building types. Incorrect building completion times delay when the building is available for production, cascading into late unit births.
+
+#### Approach 5: Side-by-Side SC2 Calibration (Heavy — last resort)
+
+The previous HANDOFF's approach. Only needed for the final ~5-8 units that require exact per-building queue state from the SC2 observation API. **Do not attempt until Approaches 1-4 are exhausted.** The infrastructure exists (`QuarkusSC2Transport`, `ObservationTranslator`, `SC2BotAgent`) but requires SC2 running locally.
+
+### Recommended Order
+
+1. **Approach 2** (Chrono Boost energy bypass) — 15 minutes, +3-4 Probes
+2. **Approach 1** (Terran train time calibration) — 30-60 minutes, +10-15 units
+3. Re-assess. If < 100%, then:
+4. **Approach 3** (Queue routing from game events) — 2-4 hours, +5-8 units
+5. **Approach 5** (SC2 side-by-side) only if genuinely stuck
 
 ### Key Code Locations
 
 | File | What to read |
 |---|---|
-| `EmulatedGame.java:handleTrain` | Economy bypass + Reactor dual-slot for r- prefix intents |
-| `EmulatedGame.java:startTraining` | Dual-slot training via buildingTrainingUntil2 — Chrono Boost speed multiplier hooks here (`trainingSpeedMultiplier`) |
-| `EmulatedGame.java:drainBuildingQueues` | Multi-slot queue drain for reactored buildings |
-| `EmulatedGame.java:trackerTrainDiagnostics` | Diagnostic counters per UnitType per rejection reason |
-| `PhysicsState.java` | buildingTrainingUntil2, activeTrainingCount — second training slot mechanics |
-| `ReplaySimulatedGame.java:applyUnitInit` | Reactor detection by name suffix → `reactoredBuildingTypes` |
-| `ReplayValidationHarness.java:runInternal` | Unified harness loop — reactored type detection, building sync |
-| `ReplayValidationHarness.java:syncBuildings` | Building sync with Reactor marking — replace with per-building detection |
-| `TrackerDrivenAccuracyBaselineTest.java` | Accuracy test — 99% assertion threshold |
+| `EmulatedGame.java:shortestQueue` | Capacity-aware routing — `depth = active + queue - maxSlots` |
+| `EmulatedGame.java:resolveBuilding` | Direct tag match then type-based resolution for r- prefix tags |
+| `EmulatedGame.java:applyAbilityResolved` | Chrono Boost dispatch — caster resolution, energy check, speed multiplier |
+| `ProtossRaceModel.java:handleAbility` | Chrono Boost energy model — deducts 50 energy, sets chronoBoostedUntil |
+| `ProtossRaceModel.java:trainingSpeedMultiplier` | Returns CHRONO_BOOST_MULTIPLIER (0.5) when boost is active |
+| `ReplaySimulatedGame.java:applyUnitInit` | Per-building Reactor via position correlation + productionBuildings map |
+| `ReplayValidationHarness.java:syncBuildings` | Uses reactoredBuildingTags (per-building) not reactoredBuildingTypes |
+| `TrackerIntentExtractor.java` | Extracts train/research from tracker events + Chrono Boost from game events |
+| `ChronoBoostAbilLinkDiscoveryTest.java` | Diagnostic: abilLink=716 discovery from 65 Protoss replays |
+| `SC2Data.java:UNIT_TRAIN_TIMES` | Terran entries mostly uncalibrated at 672 (30s × 22.4) |
+| `TrackerDrivenAccuracyBaselineTest.java` | Accuracy test — 99.4% threshold, writes docs/benchmarks/ |
 | `TrackerTrainDiagnosticTest.java` | Per-unit-type rejection breakdown diagnostic |
-| `QuarkusSC2Transport.java` | SC2 API connection — used by `%replay` and `%sc2` profiles |
-| `ObservationTranslator.java` | SC2 observation → domain model — check what add-on/buff fields are mapped |
-| `SC2BotAgent.java` | Observe/act loop — reference for stepping through replay frames |
+
+### Pre-existing Test Failures
+
+Drools tests are failing (pre-existing, not caused by this branch): `DroolsScoutingRulesTest`, `DroolsStrategyL2L3Test`, `DroolsDominanceWeightStrategyTest`, `DroolsStrategyTaskTest`, `DominanceWeightRuleUnitTest`, `PatternClassificationRuleUnitTest`, `PatternClassificationCalibrationTest`, `ReplayEngineTest`. All are Drools initialization or NullPointerException failures. Not related to tracker/emulated physics work.
+
+### Branch State
+
+- Branch: `issue-406-tracker-emulated-physics`
+- 22 commits ahead of main
+- Paused: #387 (reconstitute ladder replays) on pause stack
