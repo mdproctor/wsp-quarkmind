@@ -1,8 +1,8 @@
-# Work Plan — issue-386-calibrate-emulated-physics
+# Work Plan — issue-406-tracker-emulated-physics
 
 ## State
-branch: main
-state: active
+branch: issue-406-tracker-emulated-physics
+state: closing:promoted
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -10,8 +10,8 @@ covers: 406
 design-repo: 
 design-section-hashes: 
 flyway-next-v: none
+task: Batch 3:Task 6: Fix physics gaps:done
 evidence-era: true
 
 ## Queue
-- [x] casehubio/quarkmind#386 — Issue #386
-- [ ] casehubio/quarkmind#406 — Milestone 2 Tracker-event-driven EmulatedGame physics validation
+- [x] casehubio/quarkmind#406 — Issue #406
