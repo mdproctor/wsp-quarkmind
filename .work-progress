@@ -1,7 +1,7 @@
 _branch=issue-406-tracker-emulated-physics
 report_init=done
 code_review_attempt=1
-last_yielded=squash
+last_yielded=context_resume
 code_review=done
 code_review_produced=0
 branch_audit_conformance_attempt=1
@@ -52,3 +52,8 @@ squash_attempt=1
 squash=done
 squash_produced=1
 report_squash=done
+pop_stack=done
+checkout_branches=done
+reset_wip=done
+context_resume_attempt=1
+context_resume=done
