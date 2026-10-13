@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-406-tracker-emulated-physics
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -12,6 +12,7 @@ design-section-hashes:
 flyway-next-v: none
 task: Batch 3:Task 6: Fix physics gaps:done
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#406 — Issue #406 ← active
   - [x] Batch 1: TrackerIntentExtractor
