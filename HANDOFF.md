@@ -2,17 +2,17 @@
 
 ## Last Session
 
-Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validation). Branch: `issue-406-tracker-emulated-physics`. 26 commits ahead of main. Pushed unit accuracy from 99.4% to 99.6% through Chrono Boost energy bypass, Terran train time calibration, and Phoenix calibration.
+Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validation). Branch: `issue-406-tracker-emulated-physics`. 34 commits ahead of main. Pushed accuracy from 99.6% to **99.8%** through Reactor pair detection.
 
-### Completed This Session (second session on #406)
+### Completed This Session (third session on #406)
 
-1. **Chrono Boost energy bypass** (`2ec59731`) — Added `RaceModel.forceAbility()` that applies ability effects without resource checks. `ProtossRaceModel.forceAbility()` sets `chronoBoostedUntil` directly, skipping energy validation. Used in `applyAbilityResolved` when caster has `r-` prefix. No accuracy change — energy wasn't the bottleneck; Chrono Boosts were already being applied successfully.
+1. **Root cause investigation** — Through systematic diagnostics (train funnel, tick timing, per-replay analysis, Reactor tag tracing), identified the true root cause of the remaining deficit: back-calculated `commandLoop = bornLoop - trainTime` places Reactor pair intents BEFORE the Reactor addon exists in the GT, causing sequential production (1 slot) instead of parallel (2 slots).
 
-2. **Terran train time calibration** (`639ce9b0`) — Replaced uncalibrated 672-loop default (30s) with LotV 4.9.3 values: Hellion/Hellbat/WidowMine 470 (21s), Reaper/SiegeTank/Cyclone 717 (32s), Ghost 650 (29s), Thor/Raven/Banshee/Liberator 963 (43s), Battlecruiser 1434 (64s). **Hellion +6 (39→45), WidowMine +5 (20→25). 99.5% → 99.6%.**
+2. **Reactor pair detection** (`e4c38d3f`) — When two auto-resolved intents arrive within 10 loops of each other on the same building, detected as Reactor pair and forced 2-slot concurrent production. The building is permanently marked Reactored for future intents. **99.6% → 99.8% (+10 units).**
 
-3. **Phoenix calibration** (`c1713bcc`) — Phoenix 672→560 (25s). +1 Phoenix.
+3. **Six diagnostic tests added** — TrainDiagnosticTest, TickTimingDiagnosticTest, HellionDeficitDiagnosticTest, ReactorTagTraceDiagnosticTest, HellionTickTraceDiagnosticTest, ReactorStateAtIntentTest. All `@Tag("diagnostic")`.
 
-4. **Previous session work (preserved):** Per-building Reactor detection (`63197567`), capacity-aware queue routing (`63197567`), Chrono Boost extraction from game events (`62c8337f`).
+4. **Approaches ruled out** — Reactor-first shortestQueue tiebreaker (neutral), Reactor-only candidate filtering (regressed to 98.9%), pre-tick intent application (neutral), town-hall-fallback removal (regressed to 99.4% — deferred intents lost by processDeferredTrainIntents re-deferral guard).
 
 ### Current Results (118 oracle replays, 236 player runs)
 
@@ -20,10 +20,10 @@ Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validati
 |---|---|---|---|
 | 1-min | 100.0% | 100% | 100% |
 | 3-min | 99.6% | 100% | 75.0% |
-| 5-min | **99.6%** | 100% | **98.1%** |
+| 5-min | **99.8%** | 100% | **98.1%** |
 | 7-min | 99.8% | 100% | **99.5%** |
 
-### Cumulative Progression (across both sessions)
+### Cumulative Progression (across all sessions)
 
 | Step | 5-min units | Missing | Change |
 |---|---|---|---|
@@ -34,103 +34,48 @@ Working on #406 (Milestone 2: Tracker-event-driven EmulatedGame physics validati
 | Chrono Boost extraction | 99.5% | 36 | +0.1pp |
 | Terran train time calibration | 99.6% | 26 | +0.1pp |
 | Phoenix calibration | 99.6% | 25 | +1 unit |
+| **Reactor pair detection** | **99.8%** | **16** | **+0.2pp** |
 
 ---
 
-## Next Session: 99.6% → 100%
+## Next Session: 99.8% → higher
 
-### The Remaining 25 Missing Units at 5-min
+### Remaining 16 Missing Units at 5-min
 
-| Type | GT | Em | Delta | Catches up by 7-min? | Root cause |
-|---|---|---|---|---|---|
-| HELLION | 52 | 45 | -7 | Yes (100% at 7-min) | Queue timing — intents route to wrong Factory, delay at checkpoint |
-| MARINE | 372 | 366 | -6 | Partially (-5 at 7-min) | Barracks routing — some Marines go to non-Reactored Barracks |
-| PROBE | 1421 | 1417 | -4 | Yes (100% at 7-min) | Chrono timing — boost applied but inter-Probe queue spacing differs |
-| WIDOW_MINE | 28 | 25 | -3 | No (-4 at 7-min) | Sustained throughput loss — wrong Factory assignment |
-| PHOENIX | 8 | 7 | -1 | Yes | Stargate timing at checkpoint |
-| MEDIVAC | 9 | 8 | -1 | No (-4 at 7-min) | Starport throughput — gets worse at 7-min, not better |
-| STALKER | 51 | 50 | -1 | Yes | Gateway timing |
-| REAPER | 36 | 35 | -1 | Yes | Barracks timing |
+| Type | GT | Em | Delta | 7-min trend |
+|---|---|---|---|---|
+| MARINE | 372 | 365 | -7 | -5 at 7-min (worsening) |
+| HELLION | 52 | 50 | -2 | +2 over-production at 7-min |
+| STALKER | 51 | 49 | -2 | Recovers to 100% at 7-min |
+| MEDIVAC | 9 | 8 | -1 | -4 at 7-min (worsening) |
+| REAPER | 36 | 35 | -1 | Recovers to 100% at 7-min |
+| WIDOW_MINE | 28 | 27 | -1 | -4 at 7-min (worsening) |
 
-### Two Categories
+### What We Now Know
 
-**Category A — Timing at checkpoint (16 units):** Hellion, Probe, Phoenix, Stalker, Reaper. These units ARE trained — they complete 1-2 ticks after the 5-min cutoff and show 100% by 7-min. These are the easiest wins since they need only minor timing adjustment.
+The remaining deficits fall into two categories:
+1. **Reactor timing gaps** (Stalker, remaining Hellion, Reaper): Same root cause as the fixed Hellions — Reactor pair detection may need tuning, or these have slightly different timing patterns.
+2. **Sustained throughput loss** (Marine, Medivac, WidowMine): These worsen at 7-min. The issue is `shortestQueue` distributing intents to different buildings than the real player chose. CmdEvent-based routing (Approach B) is the only remaining lever.
 
-**Category B — Sustained throughput (9 units):** Marine (partially), WidowMine, Medivac. These don't catch up by 7-min. The EmulatedGame genuinely produces fewer because intents are routed to the wrong building. The real player sent commands to specific buildings; our heuristic distributes differently.
+### Approach B: CmdEvent Selection Routing (2-4 hours)
 
-### What's Been Tried and Didn't Work
-
-- **Chrono Boost energy bypass** — Energy wasn't the bottleneck. All casts were already succeeding.
-- **Type-level Reactor** — Over-counted (marked all buildings of a type), but accidentally compensated for routing imprecision. Per-building is more correct but slightly worse on Marines.
-
-### Approaches to Close the Gap
-
-#### Approach A: Medivac Train Time Investigation (Quick — Category B)
-
-**Impact estimate: 1-4 Medivac**
-
-Medivac shows -1 at 5-min but -4 at 7-min — WORSENING over time. This suggests the train time is WRONG in the opposite direction: currently 672 but real may be LONGER (Liquipedia shows 30s = 672 for Medivac, which should be correct). Alternatively, the issue may be that Medivac's production building (Starport) has other units competing for queue time (Liberator, Viking).
-
-**Diagnosis:** Run `TrackerTrainDiagnosticTest` filtered to Medivac and check rejection reasons. If Medivacs are being deferred or queued, the issue is building competition, not train time.
-
-#### Approach B: Queue Routing from CmdEvent Selection State (Medium — Category B)
-
-**Impact estimate: 5-9 units (Marine, WidowMine, Medivac)**
-
-This is the main lever for Category B. CmdEvents in oracle replays tell us which building was selected when the player issued a train command. By cross-referencing tracker UnitBorn events with nearby CmdEvents:
-
-1. Parse `SelectionDeltaEvent`s alongside CmdEvents (existing `AbilityMapping` pattern)
-2. When a tracker UnitBorn at loop N correlates with a CmdEvent at loop N-trainTime (±tolerance), use the CmdEvent's selected building tag
-3. Encode the specific building tag in the `TrainIntent` for direct routing
-
-**Key insight:** The oracle replays have 100% game events. The 43% CmdEvent capture rate only applies to stripped/restored replays.
-
-**Complexity:** Medium — needs selection state tracking and timing correlation. Risk: CmdEvent timing might not align perfectly with tracker back-calculation.
-
-#### Approach C: Adjust Intent Spacing for Timing-at-Checkpoint (Quick — Category A)
-
-**Impact estimate: 5-10 units (Hellion, Probe, Phoenix)**
-
-The back-calculated command time uses `bornLoop - trainTime`. If we use `bornLoop - trainTime + offset` where offset is a small per-unit correction (calibrated from the systematic timing error), we can nudge units to complete earlier.
-
-**How to calibrate:** Run a diagnostic that measures, for each unit type, the average tick offset between EmulatedGame birth and ground truth birth. If Hellions consistently complete 1 tick late, subtract 1 tick from the offset.
-
-**Risk:** This is a fudge factor — it masks the real issue (queue routing) with a timing correction. It works for 5-min checkpoint but might regress at other checkpoints.
-
-#### Approach D: Per-Type Minimum Queue Depth (Quick — Category A + B)
-
-Instead of `shortestQueue` distributing evenly, guarantee that at least one intent per type always goes to the building with the most capacity. This helps Factory-produced units (Hellion, WidowMine) where a single Reactored Factory should get most intents.
-
-**Implementation:** In `handleTrain` for auto-resolved intents, if the intent's unit type is produced from a building that has a Reactor, route ALL intents of that type to the Reactored building first (until it's full), then overflow to others.
-
-### Recommended Order
-
-1. **Approach D** (Reactor-first routing) — 30 min, addresses Category B
-2. **Approach C** (timing offset) — 30 min, addresses Category A
-3. **Approach B** (CmdEvent selection routing) — 2-4 hours, ultimate fix
-4. **Approach A** (Medivac investigation) — 15 min, targeted fix
+Oracle replays have 100% game events. CmdEvents include building selection state. Cross-reference tracker UnitBorn with nearby CmdEvents to determine which building the player selected, then route the intent to that specific building.
 
 ### Key Code Locations
 
-| File | What to read |
+| File | What it does |
 |---|---|
-| `SC2Data.java:UNIT_TRAIN_TIMES` | Train times — Terran calibrated, Protoss/Zerg partially |
-| `EmulatedGame.java:shortestQueue` | Capacity-aware routing: `depth = active + queue - maxSlots` |
-| `EmulatedGame.java:handleTrain` | Auto-resolution for r- prefix intents, economy bypass |
-| `EmulatedGame.java:applyAbilityResolved` | Chrono Boost — forceAbility for r- prefix, speed multiplier |
-| `ProtossRaceModel.java` | handleAbility (energy check) + forceAbility (bypass) + trainingSpeedMultiplier |
-| `RaceModel.java:forceAbility` | Default delegates to handleAbility; Protoss overrides |
-| `ReplaySimulatedGame.java:applyUnitInit` | Per-building Reactor via position correlation |
-| `ReplayValidationHarness.java:syncBuildings` | Uses reactoredBuildingTags (per-building) |
-| `TrackerIntentExtractor.java` | Train/research from tracker + Chrono Boost from game events |
-| `TrackerDrivenAccuracyBaselineTest.java` | Accuracy test — 99.4% threshold |
+| `EmulatedGame.java:handleTrain` | Auto-resolution, Reactor pair detection, queue routing |
+| `EmulatedGame.java:shortestQueue` | Capacity-aware building selection |
+| `ReplayValidationHarness.java:syncBuildings` | GT building injection and Reactor marking |
+| `TrackerIntentExtractor.java` | Intent generation from tracker events |
 
 ### Pre-existing Test Failures
 
-Drools tests (pre-existing): `DroolsScoutingRulesTest`, `DroolsStrategyL2L3Test`, `DroolsDominanceWeightStrategyTest`, `DroolsStrategyTaskTest`, `DominanceWeightRuleUnitTest`, `PatternClassificationRuleUnitTest`, `PatternClassificationCalibrationTest`, `ReplayEngineTest`. All Drools init or NPE.
+Drools (init/NPE): `DroolsScoutingRulesTest`, `DroolsStrategyL2L3Test`, `DroolsDominanceWeightStrategyTest`, `DroolsStrategyTaskTest`, `DominanceWeightRuleUnitTest`, `PatternClassificationRuleUnitTest`, `PatternClassificationCalibrationTest`, `ReplayEngineTest`. Also `MomentDetectionTaskTest`, `GameStateRoundTripTest`.
 
 ### Branch State
 
 - Branch: `issue-406-tracker-emulated-physics`
-- 26 commits ahead of main
+- 34 commits ahead of main
 - Paused: #387 (reconstitute ladder replays) on pause stack
