@@ -1,0 +1,15 @@
+# Work Plan — issue-412-train-binary-onnx-detectors
+
+## State
+branch: issue-412-train-binary-onnx-detectors
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 412
+design-repo: project
+design-section-hashes: 
+flyway-next-v: unknown
+
+## Queue
+- [ ] casehubio/quarkmind#412 — Issue #412 ← active
