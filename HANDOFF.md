@@ -41,8 +41,8 @@ New files:
 | Version | Packs | Est. replays | Status |
 |---------|-------|-------------|--------|
 | 4.9.3 | ~300 | 148K | Done |
-| 4.9.2 | 222 | ~150K | Downloading |
-| 4.9.1 | 210 | ~150K | Next |
+| 4.9.2 | 222 | **928,214** | **Done** (65 GB in replays/, ZIPs deleted) |
+| 4.9.1 | 210 | ~150K | Downloading (auto-deletes ZIPs) |
 | 4.8.6 | 314 | ~200K | Queued |
 | 4.8.3 | 454 | ~250K | Queued |
 | 4.7.1 | 474 | ~250K | Queued |
