@@ -1,155 +1,190 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-10-14)
+## Last Session (2026-10-15)
 
-Branch: `issue-412-train-binary-onnx-detectors` (#412, on pause stack)
+Branch: `issue-412-train-binary-onnx-detectors` (#412, active)
 Paused: `issue-388-train-onnx-reconstituted-ladder` (#388, on pause stack)
 
-### What Shipped
+### What Was Done This Session
 
-**Binary ONNX detectors (#412):**
-- 23 binary detectors trained across 3 matchups, 3 game phases (early/mid/late)
-- Average 87.7% accuracy. Best: early_cheese_vs_protoss (97.3%), early_greedy_vs_terran (98.7%)
-- Weak detectors identified: rare archetypes at specific minutes lack positive samples
-- New files: `binary_catalog.py`, `train_binary.py`, `compare_detectors.py`, tests
-- ONNX files in `output/detectors/` (gitignored) with `detector_manifest.json`
+**Built and launched batch reconstitution pipeline (#412):**
 
-**CI fixed (landed on main):**
-- Added `drools-wiring-dynamic` dependency — resolved ~130 Drools rule unit test errors
-- Updated 14 test files for stale feature counts (UpgradeType 15→82), morph events, ability profiles, round-trip mappings
-- Fixed `QuarkusSC2TransportTest` race condition (async shutdown timing on slow CI)
-- Tracked webui `package-lock.json` for `npm ci` in CI
-- Excluded `quarkmind-chat` from default build (unpublished casehub-blocks SNAPSHOTs) — available via `-Pchat` profile
-- Merged and closed PR #334 (dependency management for platform 0.2-SNAPSHOT)
+The 1.57M new replays (4.9.2 + 4.9.1) can't be reconstituted to JSON all at once — 233 GB needed, only 36 GB free. Built a batch-and-recycle pipeline:
 
-**Data acquired (1.72M new replays):**
-- Blizzard 4.9.2: **928,214 replays** (65 GB, ZIPs deleted)
-- Blizzard 4.9.1: **641,922 replays** (~45 GB, ZIPs auto-deleted)
-- SC2EGSet: download started from Zenodo (71 ZIPs, 12.5 GB) — may still be running
+1. Added `blizzard_ladder_4.9.1` and `blizzard_ladder_4.9.2` datasets to `ReconstitutionExportTest.java`
+2. Added batch support: `recon.dataset`, `recon.offset`, `recon.limit`, `recon.skip-existing` system properties
+3. Added dataset filter + skip-existing to `DroolsCoarseLabelExportTest.java`
+4. New `batch_reconstitute.py` — orchestrates: Java reconstitute 150K → Python extract features → delete JSON → repeat
+5. New `merge_training_data.py` — combines chunk .npz outputs into unified dataset
+6. New `validate_improvement.py` — baseline vs expanded side-by-side comparison
+7. Fixed `prepare_replay_pack.py` to filter `.label.json` sidecars from JSON glob
 
-### Issues Resolved This Session
+**Key discovery:** The Java `DroolsCoarseLabelExportTest` labels use different archetype names than the Python pipeline expects. Bypassed this entirely by using `prepare_replay_pack.py --format json` which reads reconstituted JSON and applies its own Python rule-based labelling via `label_replay()`. This unified labelling pipeline replaced the two-step Java reconstitute + Java label approach.
 
-- #364 (Regenerate FeatureAlignmentTest fixture) — done as part of CI fix, can close
-- #316 (Regenerate sc2egset intermediate data) — SC2EGSet download started, close when processed
+**Pipeline running in background:**
+
+```
+PYTHONPATH=quarkmind-classifier .venv/bin/python3 -m src.batch_reconstitute \
+  --chunk-size 150000 --workers 8 --dataset blizzard_ladder_4.9.2 --min-disk-gb 20
+```
+
+- 2/7 chunks complete when session ended (chunks 0 and 1, 300K of 928K replays)
+- Chunk 2 was actively reconstituting (~18K files in)
+- Each cycle: ~35 min Java reconstitution + ~1 min Python extraction + cleanup
+- Total estimated: ~4-5 hours remaining for 4.9.2
+
+**Also re-processed 4.9.3 reconstituted data:**
+- Ran `prepare_replay_pack.py --format json` on existing 148K reconstituted JSONs
+- Produced `data/sc2egset/blizzard_ladder_4.9.3/` (283 MB, 958K training samples)
+- Uses same label pipeline as new data for consistency
+
+**SC2EGSet download completed (from prior session):**
+- 71/71 tournament ZIPs from Zenodo (12 GB, 17,930 replays)
+- Located in `data/sc2egset/` alongside tournament-specific directories
+- Already processed into .npz — included automatically by merge
+
+**Baseline saved:**
+- `output/detectors/detector_manifest_baseline.json` (gitignored) — the 23 detectors trained on 148K replays
+- 4 catastrophically broken (0-17% accuracy), 8 very weak (<30% precision)
+- All weak detectors suffer from rare archetype underrepresentation
+
+### Commits This Session
+
+```
+ab7000c3 wip: add validate_improvement.py for baseline vs expanded comparison
+1dcf8a1f wip: fix label.json glob filter, PYTHONPATH, chunk size default
+7ece4abb wip: add --max-replays flag and fix merge path resolution
+df7238a8 wip: add batch reconstitution pipeline for 1.57M new replays
+```
+
+---
+
+## What Needs to Happen Next — Complete Checklist
+
+### Path 1: Check if batch pipeline finished (do first)
+
+```bash
+# Check if the background pipeline is still running:
+ps aux | grep batch_reconstitute | grep -v grep
+
+# Check completed chunks:
+ls -d quarkmind-classifier/data/sc2egset/blizzard_ladder_4.9.2_chunk_* | wc -l
+# Expected: 7 chunks if 4.9.2 finished
+
+# Check if reconstituted dir is clean:
+ls quarkmind-classifier/data/reconstituted/blizzard_ladder_4.9.2/ 2>/dev/null | wc -l
+# Expected: 0 or "No such file" if cleanup completed
+```
+
+**If pipeline finished for 4.9.2:** proceed to Path 2a (run 4.9.1).
+**If pipeline crashed mid-chunk:** the script auto-skips completed chunks on re-run:
+```bash
+cd quarkmind-classifier
+PYTHONPATH=. .venv/bin/python3 -m src.batch_reconstitute \
+  --chunk-size 150000 --workers 8 --dataset blizzard_ladder_4.9.2 --min-disk-gb 20
+```
+**If pipeline still running:** wait. Each chunk takes ~35 min.
+
+### Path 2a: Run batch pipeline for 4.9.1
+
+```bash
+cd quarkmind-classifier
+PYTHONPATH=. .venv/bin/python3 -m src.batch_reconstitute \
+  --chunk-size 150000 --workers 8 --dataset blizzard_ladder_4.9.1 --min-disk-gb 20
+```
+
+642K replays → 5 chunks → ~3 hours.
+
+### Path 2b: Merge all training data
+
+After both 4.9.2 AND 4.9.1 batches complete:
+
+```bash
+cd quarkmind-classifier
+PYTHONPATH=. .venv/bin/python3 -m src.merge_training_data
+```
+
+This merges all `data/sc2egset/blizzard_ladder_*_chunk_*/` directories (new data) plus all existing tournament data in `data/sc2egset/` into `data/full/`.
+
+**Important:** Do NOT use `--include-combined`. The old `data/combined/` used a different labelling pipeline (Java HybridLabeller). The 4.9.3 data was re-processed through `prepare_replay_pack.py` and lives at `data/sc2egset/blizzard_ladder_4.9.3/` with consistent labels.
+
+### Path 3: Retrain binary detectors
+
+```bash
+cd quarkmind-classifier
+PYTHONPATH=. .venv/bin/python3 -m src.train_binary --data full
+```
+
+This reads from `data/full/{matchup}/train.npz` and trains all 23 binary detectors. Each gets an ONNX model in `output/detectors/`.
+
+### Path 4: Validate improvement
+
+```bash
+cd quarkmind-classifier
+PYTHONPATH=. .venv/bin/python3 -m src.validate_improvement
+```
+
+Compares `output/detectors/detector_manifest.json` (new) against `output/detectors/detector_manifest_baseline.json` (old, saved this session). Prints side-by-side accuracy, precision, recall with improvement deltas. Highlights weak detectors (precision < 30%).
+
+### Path 5: Close #412 or iterate
+
+If weak detectors improved significantly → close #412, proceed to detector library (#411, #414).
+If still weak → investigate: are the archetypes genuinely rare even in 1.7M replays? Consider targeted data acquisition (AI Arena bots for unconventional strategies).
+
+---
+
+## Architecture Notes for Next Session
+
+**Pipeline flow:**
+```
+.SC2Replay (stripped, no tracker events)
+  → Java ReconstitutionExportTest (StrippedReplayFeatureExtractor)
+  → reconstituted JSON (synthetic tracker events, ~148 KB/file)
+  → Python prepare_replay_pack.py --format json (rule-based labelling + feature extraction)
+  → .npz training data (~283 MB per 150K replays)
+  → train_binary.py → ONNX detectors
+```
+
+**Key scripts (all in quarkmind-classifier/src/):**
+| Script | Purpose |
+|--------|---------|
+| `batch_reconstitute.py` | Orchestrates batch-and-recycle pipeline |
+| `merge_training_data.py` | Combines chunk .npz into unified dataset |
+| `prepare_replay_pack.py` | .SC2Replay or JSON → labelled .npz (labels via `label_replay()`) |
+| `train_binary.py` | Trains binary ONNX detectors from .npz |
+| `validate_improvement.py` | Baseline vs expanded comparison |
+| `compare_detectors.py` | Binary vs multi-class accuracy comparison |
+| `binary_catalog.py` | 9 detector definitions (early/mid/late phases) |
+
+**Disk space:** ~31 GB free. Each 150K-replay chunk uses ~22 GB temporarily (reconstituted JSON) then reclaims after cleanup. The .npz outputs accumulate (~283 MB each, 12 chunks = ~3.4 GB total).
+
+**Timing benchmarks:**
+| Step | Speed | For 150K replays |
+|------|-------|-----------------|
+| Java reconstitution | 74 replays/sec | ~34 min |
+| Python feature extraction | 2,293 replays/sec | ~65 sec |
+| Maven startup overhead | — | ~90 sec per chunk |
 
 ---
 
 ## Strategic Overview — All Work Directions
 
-QuarkMind has 30 open issues across 5 distinct workstreams. Here's the map:
+(Unchanged from previous session — see sections below)
 
-### 1. ONNX Strategy Detection (active — the current focus)
-
-The pipeline: raw replays → reconstitution → feature extraction → labelling → training → ONNX export → runtime integration.
+### 1. ONNX Strategy Detection (active)
 
 | Stage | Status | Next step |
 |-------|--------|-----------|
-| **Data acquisition** | 1.72M new replays downloaded (4.9.2 + 4.9.1) | Reconstitute the new data |
-| **Reconstitution** | Pipeline works for baseBuild ≤ 75689 | Run `reconstitution_pipeline.py` on new replay packs |
-| **Multi-class training** (#388) | 87.8% vs_protoss, 84% vs_zerg, 69% vs_terran on 148K replays | Retrain on expanded dataset (~1.7M replays) |
-| **Binary detectors** (#412) | 23 detectors trained, 87.7% avg accuracy | Retrain with expanded data — weak detectors should improve |
-| **Detector library** (#411, #414) | Architecture designed (D1-D9 decisions captured) | Build after detectors are validated |
-| **Gap analysis** (#413) | Not started | Run after expanded detectors are trained |
+| **Data acquisition** | 1.72M new replays on disk + SC2EGSet (17.9K tournament) | Done |
+| **Reconstitution** | Batch pipeline built, 2/7 chunks of 4.9.2 done | Complete 4.9.2, then 4.9.1 |
+| **Multi-class training** (#388) | 87.8% vs_protoss, 84% vs_zerg, 69% vs_terran on 148K | Retrain on expanded dataset |
+| **Binary detectors** (#412) | 23 detectors, 4 broken, 8 weak | Retrain → validate |
+| **Detector library** (#411, #414) | Architecture designed | Build after detectors validated |
+| **Gap analysis** (#413) | Not started | After expanded detectors trained |
 
-**Critical path:** Reconstitute new data → retrain → validate → build detector library.
+### 2-5. Other workstreams
 
-**Issues:** #388, #412, #411, #413, #414, #357, #358, #364 (done), #316, #365
-
-### 2. Emulated Game Physics (stable — maintenance mode)
-
-EmulatedGame simulates SC2 mechanics for offline testing. 99.8% unit accuracy at 5-min checkpoint.
-
-| Issue | What | Priority |
-|-------|------|----------|
-| #401 | Calibrate mining income from dual-run results | Low — needs live SC2 |
-| #396 | Dual-run calibration framework | Low — needs live SC2 |
-| #385 | Run baseline against 2025-2026 tournament replays | Low |
-| #405 | Calibrated SCV/Overlord multiplication | Low |
-| #402 | Extend BalanceData for behavioral parameters | Low |
-| #407 | Exact replay reconstruction via building routing | Deprioritised |
-| #403 | Smoke test playbook suite | Low |
-
-**Not blocking anything.** These improve emulator fidelity but the current accuracy is sufficient.
-
-### 3. AI-vs-AI Training Loop (future — blocked on #1 and #2)
-
-Autonomous play + continuous ONNX improvement. Requires both the detector library and full-game EmulatedGame play.
-
-| Issue | What | Blocked by |
-|-------|------|------------|
-| #344 | Phase 4 epic: AI-vs-AI training loop | Everything below |
-| #359 | P4-1: EmulatedGame autonomous full-game play | EmulatedGame maturity |
-| #360 | P4-2: Feature extraction from emulated games | #359 |
-| #361 | P4-3: Continuous training loop | #360 |
-| #362 | P4-4: Domain gap validation | #361 |
-
-**Not actionable now.** Depends on the detector library and emulated game being production-ready.
-
-### 4. Framework Generalisation (architectural — independent)
-
-Extracting SC2-specific patterns into the quarkmind-core framework for reuse across game domains (QuarkVille, chat, etc.).
-
-| Issue | What | Priority |
-|-------|------|----------|
-| #408 | Promote situational awareness loop to quarkmind-core | Medium — depends on #409 |
-| #409 | Bidirectional alignment: SC2 ↔ quarkmind-core | Medium — architectural |
-
-**Can be worked on independently** when there's a natural pause in ONNX work.
-
-### 5. Coaching & Strategy (future features)
-
-| Issue | What | Priority |
-|-------|------|----------|
-| #345 | Build orders as adaptive plans | Future |
-| #346 | Strategy workbench UI | Future |
-| #315 | Integrate starcraft2.ai community analysis | Future |
-
-**Backlog.** These build on the detector library and coaching pipeline.
-
----
-
-## How to Proceed
-
-### Immediate (next session)
-
-1. **Check data downloads:**
-   - 4.9.2: done (928K replays in `data/replay_packs/blizzard_ladder/4.9.2/replays/`)
-   - 4.9.1: done (642K replays in `data/replay_packs/blizzard_ladder/4.9.1/replays/`)
-   - SC2EGSet: check `data/sc2egset/` — if empty, restart download from Zenodo
-   - Disk: only ~43 GB free. No room for 4.8.6 without cleanup.
-
-2. **Reconstitute new replays:**
-   ```
-   cd quarkmind-classifier
-   PYTHONPATH=. .venv/bin/python3 -m src.reconstitution_pipeline \
-     --recon-dir data/reconstituted --output-dir data/full --max-replays 0
-   ```
-   But first: the replay packs need to go through the reconstitution extraction (stripped extractor → reconstituted JSON → feature vectors). The pipeline reads from `data/reconstituted/`, so raw .SC2Replay files need to be processed into that format first via the Java `ReconstitutionExportTest` or the Python extractor.
-
-3. **Retrain binary detectors** with expanded `data/full/` dataset:
-   ```
-   cd quarkmind-classifier
-   PYTHONPATH=. .venv/bin/python3 -m src.train_binary --data full
-   ```
-
-4. **Close housekeeping issues:** #364 (done), #316 (in progress)
-
-### Blizzard API credentials
-
-OAuth client "sc2-replay-download" on https://develop.battle.net/access/clients (login as Poldy). Client ID: `159d5558be314bc9b7e0db0a47cf19c7`. Secret visible after login.
-
-Download script: `/tmp/download_blizzard_replays.py` (not in repo — write to /tmp/). Auto-deletes ZIPs after extraction.
-
-### Additional data sources (not yet tapped)
-
-- **AI Arena:** needs auth token from aiarena.net/profile/token/. Same patch 4.9.3. Good for rare archetypes (bots play unconventional strategies).
-- **SC2ReplayStats:** needs 10 SC2 games played + uploaded to unlock account. Parked.
-- **Blizzard 4.8.6/4.8.3/4.7.1:** ~700K more replays available but need disk space (~40 GB each).
-- **Excluded 4.10.1:** 2,837 replays on disk, needs ability profile bridging.
-
-### Reconstitution constraint
-
-Blizzard ladder replays have NO tracker events — they use `StrippedReplayFeatureExtractor`, calibrated on 4.9.3. Only patches with `baseBuild ≤ 75689` (≤ 4.10) work. `ABILITY_PROFILE_BOUNDARY = 75689` in `reconstitution_pipeline.py`.
+Unchanged. See previous HANDOFF for full details on Emulated Game Physics, AI-vs-AI Training Loop, Framework Generalisation, and Coaching & Strategy.
 
 ---
 
@@ -157,5 +192,21 @@ Blizzard ladder replays have NO tracker events — they use `StrippedReplayFeatu
 
 | Branch | Issue | State | Resume with |
 |--------|-------|-------|-------------|
-| `issue-412-train-binary-onnx-detectors` | #412 | Detectors trained, data acquired | `work resume` |
+| `issue-412-train-binary-onnx-detectors` | #412 | Batch pipeline running, 2/7 chunks done | `work continue` |
 | `issue-388-train-onnx-reconstituted-ladder` | #388 | Perspectives format fixed, trained on 148K | `work resume` |
+
+## Reference
+
+### Blizzard API credentials
+
+OAuth client "sc2-replay-download" on https://develop.battle.net/access/clients (login as Poldy). Client ID: `159d5558be314bc9b7e0db0a47cf19c7`. Secret visible after login.
+
+### Additional data sources (not yet tapped)
+
+- **AI Arena:** auth token from aiarena.net/profile/token/. Good for rare archetypes.
+- **Blizzard 4.8.6/4.8.3/4.7.1:** ~700K more replays, need disk space (~40 GB each).
+- **Excluded 4.10.1:** 2,837 replays, needs ability profile bridging.
+
+### Reconstitution constraint
+
+Blizzard ladder replays have NO tracker events — `StrippedReplayFeatureExtractor` reconstructs them from CmdEvents. Only `baseBuild ≤ 75689` (≤ 4.10) works. `ABILITY_PROFILE_BOUNDARY = 75689` in `reconstitution_pipeline.py`.
