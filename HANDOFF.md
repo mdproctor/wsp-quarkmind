@@ -1,11 +1,27 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-10-15)
+## Last Session (2026-10-15, continued)
 
 Branch: `issue-412-train-binary-onnx-detectors` (#412, active)
 Paused: `issue-388-train-onnx-reconstituted-ladder` (#388, on pause stack)
 
-### What Was Done This Session
+### What Was Done This Session (continued)
+
+**Checked pipeline status and launched end-to-end orchestration:**
+
+- 4.9.2 pipeline still running — 2/7 chunks complete, chunk 2 in progress (136K/150K JSON files)
+- Disk: 17 GB free — tight but viable (each chunk uses ~22 GB temporarily, reclaimed after cleanup)
+- Wrote `/tmp/run_full_pipeline.sh` orchestration script (PID 24360) that chains:
+  1. Wait for running 4.9.2 pipeline (PID 1642) to finish
+  2. Re-run 4.9.2 if any chunks incomplete
+  3. Run 4.9.1 batch reconstitution (642K replays, 5 chunks)
+  4. Merge all training data (`merge_training_data.py`)
+  5. Retrain all 23 binary detectors (`train_binary.py --data full`)
+  6. Validate improvement against baseline (`validate_improvement.py`)
+- Full log: `/tmp/full_pipeline.log`
+- Estimated total runtime: ~6 hours from session start
+
+### Previous Session Work
 
 **Built and launched batch reconstitution pipeline (#412):**
 
