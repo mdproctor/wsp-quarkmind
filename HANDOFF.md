@@ -1,27 +1,48 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-10-15, continued)
+## Last Session (2026-10-17)
 
-Branch: `issue-412-train-binary-onnx-detectors` (#412, active)
+Branch: `issue-412-train-binary-onnx-detectors` (#412, ready to close)
 Paused: `issue-388-train-onnx-reconstituted-ladder` (#388, on pause stack)
 
-### What Was Done This Session (continued)
+### What Was Done
 
-**Checked pipeline status and launched end-to-end orchestration:**
+**Completed full pipeline: reconstitute → train → validate (#412):**
 
-- 4.9.2 pipeline still running — 2/7 chunks complete, chunk 2 in progress (136K/150K JSON files)
-- Disk: 17 GB free — tight but viable (each chunk uses ~22 GB temporarily, reclaimed after cleanup)
-- Wrote `/tmp/run_full_pipeline.sh` orchestration script (PID 24360) that chains:
-  1. Wait for running 4.9.2 pipeline (PID 1642) to finish
-  2. Re-run 4.9.2 if any chunks incomplete
-  3. Run 4.9.1 batch reconstitution (642K replays, 5 chunks)
-  4. Merge all training data (`merge_training_data.py`)
-  5. Retrain all 23 binary detectors (`train_binary.py --data full`)
-  6. Validate improvement against baseline (`validate_improvement.py`)
-- Full log: `/tmp/full_pipeline.log`
-- Estimated total runtime: ~6 hours from session start
+1. **Reconstitution complete:** 4.9.2 (928K, 7 chunks) + 4.9.1 (642K, 5 chunks) = 1.57M replays
+2. **Merge abandoned:** merging all chunks into single npz produced 58 GB — disk full. Pivoted to chunk-streaming training.
+3. **train_binary.py rewritten** with three major optimizations:
+   - Chunk-streaming: loads from 13 chunk dirs directly, no merge step
+   - Parallel training: 4 ProcessPoolExecutor workers (3 torch threads each)
+   - NEG_RATIO=2 + batch_size=512: 10× faster per detector
+4. **All 23 ONNX detectors trained** on 1.57M expanded replays
+5. **Validation results — 11/12 weak detectors improved:**
 
-### Previous Session Work
+| Category | Count | Key examples |
+|----------|-------|-------------|
+| Precision improved | 16 | `mid_hidden_tech_vs_terran` 23.8%→84.8%, `late_ground_army_vs_terran` 5.8%→74.1% |
+| Stable | 2 | `early_rush_vs_terran`, `mid_timing_attack_vs_terran` |
+| Regressed | 5 | `early_cheese_vs_protoss` 91.8%→70.8%, `mid_ground_heavy_vs_terran` 43.8%→11.1% |
+| Still broken | 1 | `late_ground_army_vs_protoss` (10.3% precision) |
+
+**Follow-up needed:** File issue for broken detectors (`mid_ground_heavy_vs_terran`, `late_ground_army_vs_protoss`) — likely labelling quality problems, not data volume.
+
+### Commits This Session
+
+```
+335a0014 wip: parallel training (4 workers), NEG_RATIO=2, batch_size=512
+65bdde8f wip: add --matchup filter flag to train_binary.py
+e2f6bb74 wip: batch detectors in groups of 3, downsample all splits
+528ce354 wip: batch chunk loading per-matchup to eliminate redundant I/O
+fd571608 wip: add chunk-streaming mode to train_binary.py
+ab7000c3 wip: add validate_improvement.py for baseline vs expanded comparison
+1dcf8a1f wip: fix label.json glob filter, PYTHONPATH, chunk size default
+7ece4abb wip: add --max-replays flag and fix merge path resolution
+df7238a8 wip: add batch reconstitution pipeline for 1.57M new replays
+a90253f7 feat: train 23 phase-specific binary ONNX detectors
+```
+
+### Previous Sessions
 
 **Built and launched batch reconstitution pipeline (#412):**
 
