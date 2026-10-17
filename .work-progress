@@ -53,3 +53,6 @@ squash_attempt=1
 squash=done
 squash_produced=1
 report_squash=done
+checkout_main=done
+cleanup_stack=done
+cleanup_mechanical_attempt=1
