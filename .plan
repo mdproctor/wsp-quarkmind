@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-412-train-binary-onnx-detectors
-state: closing:promoted
+state: closing:pushed
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
