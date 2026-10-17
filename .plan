@@ -1,8 +1,8 @@
-# Work Plan — issue-412-train-binary-onnx-detectors
+# Work Plan — main
 
 ## State
 branch: main
-state: active
+state: scaffolded
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -10,11 +10,6 @@ covers: 411
 design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
-evidence-era: true
 
 ## Queue
-- [x] casehubio/quarkmind#412 — Issue #412
-- [ ] casehubio/quarkmind#411 — Detector library
-- [ ] casehubio/quarkmind#413 — Gap analysis
-- [ ] casehubio/quarkmind#417 — Investigate broken detectors
-- [ ] casehubio/quarkmind#388 — Train multi-class ONNX
+- [ ] casehubio/quarkmind#411 — Issue #411 ← active
