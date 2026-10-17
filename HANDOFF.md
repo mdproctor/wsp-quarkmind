@@ -37,14 +37,15 @@ f68f47a5 feat: train 23 binary ONNX detectors on 1.57M expanded replays (#412)
 
 ---
 
-## What Comes Next
+## What Comes Next — ONNX Detector Track
 
-| Priority | Issue | What | Estimated effort |
-|----------|-------|------|-----------------|
-| 1 | #411, #414 | Detector library — load ONNX in Java game loop | M |
-| 2 | #413 | Gap analysis — which archetypes do detectors miss | S |
-| 3 | #417 | Fix 2 broken detectors (labelling investigation) | S |
-| 4 | #388 | Multi-class ONNX training on reconstituted data | M (paused) |
+| # | Title | Scale | Complexity | Blocked by | Notes |
+|---|-------|-------|-----------|------------|-------|
+| #414 | **Epic: ONNX Detector Library** | Epic | — | — | Parent epic for #411, #412 (done), #413, #417 |
+| #411 | Detector library — phase-gated binary detectors with pluggable selection and aggregation | L | High | #412 (done) | Wire 23 ONNX models into Java game loop; pluggable selection, aggregation, phase gating |
+| #413 | Combinatorial gap analysis — detector coverage audit | S | Med | #412 (done) | Audit blind spots across phase transitions and compound strategies |
+| #417 | Investigate broken detectors (mid_ground_heavy_vs_terran, late_ground_army_vs_protoss) | S | Med | #412 (done) | Labelling quality investigation — MECH_PUSH/COLOSSUS_PUSH conflicting signals |
+| #388 | Train multi-class ONNX classifier on reconstituted ladder data | M | Med | — | Paused on stack; perspectives format fixed, trained on 148K; retrain on expanded data |
 
 ---
 

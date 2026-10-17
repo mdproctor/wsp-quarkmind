@@ -10,7 +10,11 @@ covers: 412
 design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
-
 evidence-era: true
+
 ## Queue
-- [ ] casehubio/quarkmind#412 — Issue #412 ← active
+- [x] casehubio/quarkmind#412 — Issue #412
+- [ ] casehubio/quarkmind#411 — Detector library
+- [ ] casehubio/quarkmind#413 — Gap analysis
+- [ ] casehubio/quarkmind#417 — Investigate broken detectors
+- [ ] casehubio/quarkmind#388 — Train multi-class ONNX
