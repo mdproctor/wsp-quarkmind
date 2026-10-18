@@ -5,7 +5,7 @@
 - Java diagnostic test — uses real Java types but mixes concerns (training pipeline analysis in the game engine module)
 - Manual document — fastest but stale immediately, no rerunnable quantification
 **Rationale:** The gap analysis is a training pipeline concern — it audits detector coverage and training data completeness. Living alongside binary_catalog.py keeps it maintainable and rerunnable as the catalog evolves.
-**Trade-offs:** Archetype list is hardcoded as a Python constant mirroring the Java enum — could drift. Mitigated by the existing test_upgrade_mapping_sync pattern (a sync test can catch drift).
+**Trade-offs:** None significant — the script parses StrategyArchetype.java directly at runtime, so no hardcoded Python mirror is needed and no sync test required.
 **Sources:** binary_catalog.py, detector_manifest.json, StrategyArchetype.java
 **Exploration:** quick
 **Status:** captured
