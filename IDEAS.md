@@ -5,6 +5,15 @@ Promote to an ADR when ready to decide; discard when no longer relevant.
 
 ---
 
+## 2026-10-18 — Retrain multi-class ONNX as holistic BJT evidence source
+
+**Priority:** medium
+**Status:** active
+
+Retrain a multi-class ONNX model on the 1.57M expanded dataset and wire it as an additional node in the Bayesian network — alongside the 23 binary detectors, not instead of them. The holistic classifier captures inter-archetype relationships (e.g., "if not rush, then probably macro") that independent binary detectors can't learn. The BJT naturally weights it against the specialists.
+
+**Context:** After closing #411 (BJT fusion architecture), the multi-class tier was removed from the cascade. But a retrained multi-class model on the larger dataset could be a valuable contributing signal — it was weak before because it was trained on only 148K replays. #388 (paused on stack) was the original multi-class retrain issue but predates the fusion architecture — would need reframing from "primary classifier" to "contributing signal."
+
 ## 2026-04-23 — 3D unit models to replace sphere placeholders
 
 **Priority:** medium
