@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-413-combinatorial-gap-analysis
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#413 — Issue #413 ← active
   - [x] Batch 1: Static audit
