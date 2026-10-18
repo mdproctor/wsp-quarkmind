@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-413-combinatorial-gap-analysis
-state: scaffolded
+state: active
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -13,9 +13,9 @@ flyway-next-v: unknown
 
 ## Queue
 - [ ] casehubio/quarkmind#413 — Issue #413 ← active
-  - [ ] Batch 1: Static audit
-    - [ ] Task 1: Parse archetypes and coverage matrix
-  - [ ] Batch 2: Co-occurrence
-    - [ ] Task 2: Label scanning and gap classification
-  - [ ] Batch 3: Report
-    - [ ] Task 3: Generate markdown report and CLAUDE.md update
+  - [x] Batch 1: Static audit
+    - [x] Task 1: Parse archetypes and coverage matrix
+  - [x] Batch 2: Co-occurrence
+    - [x] Task 2: Label scanning and gap classification
+  - [x] Batch 3: Report
+    - [x] Task 3: Generate markdown report and CLAUDE.md update
