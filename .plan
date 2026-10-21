@@ -1,0 +1,15 @@
+# Work Plan — issue-418-incremental-bjt
+
+## State
+branch: issue-418-incremental-bjt
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 418
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#418 — Issue #418 ← active
