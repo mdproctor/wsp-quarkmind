@@ -1,0 +1,15 @@
+# Work Plan — issue-422-onnx-detector-integration
+
+## State
+branch: issue-422-onnx-detector-integration
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 422
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#422 — Issue #422 ← active
