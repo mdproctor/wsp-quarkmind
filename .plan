@@ -13,13 +13,8 @@ flyway-next-v: unknown
 
 ## Queue
 - [ ] casehubio/quarkmind#453 — Issue #453 ← active
-  - [ ] Batch 1: batch1
-    - [ ] Task 1: casehubio/quarkmind#407
-  - [ ] Batch 2: batch2
-    - [ ] Task 2: casehubio/quarkmind#405
-  - [ ] Batch 3: batch3
-    - [ ] Task 3: casehubio/quarkmind#387
-    - [ ] Task 4: casehubio/quarkmind#450
+  - [x] Batch 1: Building index and exact routing
+    - [x] Task 1: Add game event building index and wire into all intent paths
 - [ ] casehubio/quarkmind#407 — Exact-replay-reconstruction
 - [ ] casehubio/quarkmind#405 — Calibrated-multiplication
 - [ ] casehubio/quarkmind#387 — Reconstitute-151K-ladder-replays
