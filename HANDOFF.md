@@ -1,12 +1,36 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-10-22)
+## Last Session (2026-10-24)
 
 Branch: main — no active branch
 
 ### What Was Done
 
-**#419 closed — Remove duplicated bayes engine.** Created `casehub-neocortex-inference-bayes` module in neocortex (zero-dependency jar). Deleted 4,273 lines of duplicated BJT from quarkmind-core, replaced with dependency. Landed as `8cc7f7e2`.
+**#419 closed — Remove duplicated bayes engine.** Created `casehub-neocortex-inference-bayes` module in neocortex. Landed as `8cc7f7e2`.
+
+**#418 closed — Upgrade BJT to incremental.** Ported from drools-beliefs. 39 tests.
+
+**Neocortex BJT Phase 1 + Phase 2 roadmap fully landed.** All 15 Phase 1 issues and all Phase 2 issues (#643-#652) completed by neocortex. The BJT is now a full engine: log-space, parallel propagation, MAP, parameter learning, causal inference, explanation traces, influence diagrams, hard evidence, LLM-elicited structure, continuous refinement, observability.
+
+**Closed 20 quarkmind BJT engine issues (#423-#442)** as duplicates — all done in neocortex.
+
+**Created #453 — Epic: SC2 Intelligence Stack.** 8-phase plan from detection efficiency to autonomous play and training. 10 SC2 consumer issues (#443-#452) for BJT adoption. Phase 7 adds opponent infrastructure (EmulatedSC2Server two-player + AI Arena bots).
+
+### Next Session
+
+Start **#453 Phase 1** (efficient detection). Recommended first issue: **#443** — sensitivity-driven detector scheduling.
+
+See #453 for the full 8-phase plan with parallelism diagram.
+
+### Key Context
+
+**Neocortex inference-bayes installed locally** at `275d8c78`. Full BJT API available.
+
+**EmulatedSC2Server** already speaks SC2 protobuf protocol — createGame, joinGame, observation, action, step. Two-player support needed for AI Arena bot opponents (Phase 7).
+
+**Pre-existing test failure:** `DroolsDominanceWeightStrategyTest` — `quarkmind.detector.models-dir` config missing.
+
+**Dependency issue (ongoing):** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid.
 
 **#418 closed — Upgrade BJT to incremental.** Ported full incremental BJT from drools-beliefs into neocortex inference-bayes: dirty subtree tracking, separator snapshots, fast evidence retraction, BitMask hierarchy. 39 tests. `EvidenceFusionEngine.reset()` uses retraction instead of instance rebuild.
 
