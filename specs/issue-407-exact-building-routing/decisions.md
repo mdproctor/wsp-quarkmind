@@ -22,3 +22,15 @@
 **Sources:** AbilityMapping.java:391-465, SelectionState.java, GameEventStream.java:34-36
 **Exploration:** quick
 **Status:** captured
+
+## D3: Index key structure — loop-only
+
+**Choice:** `TreeMap<Integer, String>` keyed by CmdEvent loop only, most-recent-wins for same-loop events
+**Alternatives:**
+- Composite (loop, abilLink) key — more precise but unnecessary; selection state doesn't change between same-loop CmdEvents
+**Rationale:** Selection state is set by SelectionDeltaEvents which precede all CmdEvents at that loop. Same-loop CmdEvents share the same selection, making abilLink disambiguation unnecessary.
+**Trade-offs:** None significant — simpler key is also correct.
+**Depends on:** D1 (pre-indexed map structure), D2 (selection tracking)
+**Sources:** SelectionDeltaEvent ordering semantics in TrackerEventFeatureExtractor.java:165-168
+**Exploration:** quick
+**Status:** captured
