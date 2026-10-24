@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-407-exact-building-routing
-state: active
+state: closing:review
 project-sha: b3883c4b
 date: 2026-10-24
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#453 — Issue #453 ← active
   - [x] Batch 1: Building index and exact routing
