@@ -58,3 +58,15 @@
 **Sources:** `application.properties` profile definitions, `CascadingPatternClassifier.buildDefaultOrchestrator()`
 **Exploration:** quick
 **Status:** captured
+
+## D6: Network loading vs reconstruction
+
+**Choice:** Replace `SC2NetworkBuilder.build()` with direct BayesNetwork loading — the JSON resource stores the full learned network specification (structure + CPTs), and `SC2NetworkBuilder` gains a `load()` method alongside the existing `build()`. The `build()` path serves as fallback for profiles without learned CPTs.
+**Alternatives:**
+- Extract learned CPTs back into `Map<String, Map<String, Double>>` and feed through existing `build()` — extra conversion step, fragile archetype ordering dependency between `double[][]` layout and sorted archetype array
+**Rationale:** The learned network already has correct structure and CPTs; reconstructing from maps is unnecessary indirection and risks CPT row ordering mismatches
+**Trade-offs:** Two code paths for network construction (load vs build); JSON schema must capture the full network topology
+**Depends on:** D4 (JSON resource persistence)
+**Sources:** `SC2NetworkBuilder.java`, `ParameterLearner.java` (returns `BayesNetwork` directly), neocortex `NetworkSpec` records
+**Exploration:** quick
+**Status:** captured
