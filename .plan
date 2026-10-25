@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-450-detector-cpts-learned-from-data
-state: closing:review
+state: closing:verified
 project-sha: 18716116ebd001e902f00e06414b78444ae654ff
 date: 2026-10-25
 issue-repo: casehubio/quarkmind
@@ -10,19 +10,7 @@ covers: 450
 design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
-
 evidence-era: true
+
 ## Queue
-- [ ] casehubio/quarkmind#450 — Issue #450 ← active
-  - [x] Batch 1: Prerequisites
-    - [x] Task 1: CptSpec Jackson + NetworkSpec.fromBayesNetwork
-  - [x] Batch 2: LabelAndEvidence
-    - [x] Task 2: CatalogLabelMapper
-    - [x] Task 3: 3-bucket evidence mapping
-  - [x] Batch 3: LoadingAndFallback
-    - [x] Task 4: LearnedCptLoader CDI bean
-    - [x] Task 5: Wire into CascadingPatternClassifier
-  - [x] Batch 4: ExportPipeline
-    - [x] Task 6: CptLearningExportTest
-  - [x] Batch 5: Validation
-    - [x] Task 7: CptLearningValidationTest + integration
+- [x] casehubio/quarkmind#450 — Issue #450
