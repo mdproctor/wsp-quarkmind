@@ -1,0 +1,15 @@
+# Work Plan — issue-451-coaching-bjt-explanation-traces
+
+## State
+branch: issue-451-coaching-bjt-explanation-traces
+state: active
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 451
+design-repo: project
+design-section-hashes: 
+flyway-next-v: unknown
+
+## Queue
+- [ ] casehubio/quarkmind#451 — Issue #451 ← active
