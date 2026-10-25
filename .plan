@@ -13,8 +13,8 @@ flyway-next-v: unknown
 
 ## Queue
 - [ ] casehubio/quarkmind#450 — Issue #450 ← active
-  - [ ] Batch 1: Prerequisites
-    - [ ] Task 1: CptSpec Jackson + NetworkSpec.fromBayesNetwork
+  - [x] Batch 1: Prerequisites
+    - [x] Task 1: CptSpec Jackson + NetworkSpec.fromBayesNetwork
   - [x] Batch 2: LabelAndEvidence
     - [x] Task 2: CatalogLabelMapper
     - [x] Task 3: 3-bucket evidence mapping
