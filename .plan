@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-450-detector-cpts-learned-from-data
-state: active
+state: closing:review
 project-sha: 18716116ebd001e902f00e06414b78444ae654ff
 date: 2026-10-25
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#450 — Issue #450 ← active
   - [x] Batch 1: Prerequisites
