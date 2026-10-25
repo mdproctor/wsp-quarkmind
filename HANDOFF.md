@@ -1,83 +1,38 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-10-24)
+## Last Session (2026-10-25)
 
 Branch: main — no active branch
 
 ### What Was Done
 
-**#419 closed — Remove duplicated bayes engine.** Created `casehub-neocortex-inference-bayes` module in neocortex. Landed as `8cc7f7e2`.
+**#447 closed — MAP inference for coherent joint classification.** `DetectorOrchestrator.getMapStrategy()`/`getMapAssignment()` expose MAP results after BJT fusion. `CascadeResult.mapStrategy` carries the MAP winner on fusion-tier results. Workbench receives MAP data via `DetectorStatsPublished`. Landed as `841e2083`.
 
-**#418 closed — Upgrade BJT to incremental.** Ported from drools-beliefs. 39 tests.
-
-**Neocortex BJT Phase 1 + Phase 2 roadmap fully landed.** All 15 Phase 1 issues and all Phase 2 issues (#643-#652) completed by neocortex. The BJT is now a full engine: log-space, parallel propagation, MAP, parameter learning, causal inference, explanation traces, influence diagrams, hard evidence, LLM-elicited structure, continuous refinement, observability.
-
-**Closed 20 quarkmind BJT engine issues (#423-#442)** as duplicates — all done in neocortex.
-
-**Created #453 — Epic: SC2 Intelligence Stack.** 8-phase plan from detection efficiency to autonomous play and training. 10 SC2 consumer issues (#443-#452) for BJT adoption. Phase 7 adds opponent infrastructure (EmulatedSC2Server two-player + AI Arena bots).
-
-### Next Session
-
-Start **#453 Phase 1** (efficient detection). Recommended first issue: **#443** — sensitivity-driven detector scheduling.
-
-See #453 for the full 8-phase plan with parallelism diagram.
-
-### Key Context
-
-**Neocortex inference-bayes installed locally** at `275d8c78`. Full BJT API available.
-
-**EmulatedSC2Server** already speaks SC2 protobuf protocol — createGame, joinGame, observation, action, step. Two-player support needed for AI Arena bot opponents (Phase 7).
-
-**Pre-existing test failure:** `DroolsDominanceWeightStrategyTest` — `quarkmind.detector.models-dir` config missing.
-
-**Dependency issue (ongoing):** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid.
-
-**#418 closed — Upgrade BJT to incremental.** Ported full incremental BJT from drools-beliefs into neocortex inference-bayes: dirty subtree tracking, separator snapshots, fast evidence retraction, BitMask hierarchy. 39 tests. `EvidenceFusionEngine.reset()` uses retraction instead of instance rebuild.
-
-**Neocortex BJT roadmap completed (both phases).** All 15 Phase 1 issues (#620-#639) and all Phase 2 issues (#643-#652) landed in neocortex. The BJT is now a full-featured engine: log-space arithmetic, parallel propagation, MAP inference, parameter learning, causal inference (do-calculus + counterfactuals), explanation traces, influence diagrams, hard evidence, LLM-elicited structure, continuous refinement, observability.
-
-**10 SC2 consumer issues created (#443-#452)** — quarkmind-side work to adopt the new BJT capabilities. None started yet.
-
-### Next Session Plan
-
-Adopt neocortex BJT capabilities in quarkmind's detector/strategy pipeline. Ordered by impact:
-
-| Priority | Issue | Title | Scale | Depends on |
-|----------|-------|-------|-------|------------|
-| 1 | #443 | Sensitivity-driven detector scheduling — skip low-value ONNX calls | M/Med | — |
-| 2 | #445 | Batch evidence API adoption | S/Low | — |
-| 3 | #446 | Hard evidence for high-confidence detectors | S/Low | — |
-| 4 | #449 | Builder API for SC2NetworkBuilder | S/Low | — |
-| 5 | #448 | Observability stats in workbench | S/Low | — |
-| 6 | #450 | Learn CPTs from replay data | M/Med | — |
-| 7 | #451 | Explanation traces for coaching | S/Med | — |
-| 8 | #447 | MAP inference for coherent classification | S/Med | — |
-| 9 | #444 | Temporal BJT for cross-tick smoothing | L/High | — |
-| 10 | #452 | Causal inference for strategy evaluation | M/High | — |
-
-**Recommended start:** #443 (sensitivity-driven scheduling) — highest impact, skipping ONNX calls saves more than any BJT optimization. Then #445 + #446 as quick wins. Three missing SC2 issues not yet created: influence diagram strategy selection, continuous refinement during play, LLM-elicited network structure.
-
-### Key Context
-
-**Neocortex inference-bayes installed locally** — `mvn install` done. Quarkmind can compile against the full BJT API immediately.
-
-**Pre-existing test failure:** `DroolsDominanceWeightStrategyTest` — `quarkmind.detector.models-dir` config missing in `%test` profile. From ONNX detector work (#422), unrelated to BJT.
-
-**Dependency issue (ongoing):** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM is invalid (missing langchain4j version).
+**#451 closed — BJT explanation traces for coaching.** `EvidenceFusionEngine.explain()` added to neocortex (delegates to `ExplanationEngine`). `DetectorOrchestrator.getExplanationTrace()`/`getExplanationSummary()` produce human-readable influence rankings. `DroolsScoutingTask` writes explanation to `SCOUTING_EXPLANATION` CaseFile key. `CoachingWorkerFactory` includes `EVIDENCE REASONING` in LLM prompt. Landed as `9996c47e`.
 
 ### Cross-Repo State
 
-**Neocortex** — main at `275d8c78` (feat(#651): NetworkElicitor). All BJT work merged. origin pushed.
+**Neocortex** — two commits on main: `mapInference()` (`b5d35c2b`) and `explain()` (`7a403dca`) on `EvidenceFusionEngine`. Installed locally. Not pushed to origin.
 
----
+### Key Context
 
-## Previous Session (2026-10-21)
+**Pre-existing test failure:** `DroolsDominanceWeightStrategyTest` — `quarkmind.detector.models-dir` config missing in `%test` profile.
 
-Branch: `issue-422-onnx-detector-integration` — **closed**, landed as `25502441` on main
+**Dependency issue (ongoing):** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid.
 
-**#422 closed — ONNX binary detectors loaded in the Java game loop.**
+**`patternAssessment` in coaching trigger is a dead code path.** `CoachingWorkerFactory.buildUserMessage()` reads `triggerMap.get("patternAssessment")` but nothing in production writes it. The assessment data exists at `SCOUTING_FINAL_ASSESSMENT` but isn't copied to the trigger map. Only test code constructs it.
 
-`neocortex-inference-runtime` promoted from `runtime` to `compile` scope — `BinaryDetectorRunner` directly references `OnnxInferenceModel`.
+### Next Session
+
+Remaining #453 epic issues (BJT adoption):
+
+| Priority | Issue | Title | Scale |
+|----------|-------|-------|-------|
+| 1 | #450 | Learn CPTs from replay data | M/Med |
+| 2 | #444 | Temporal BJT for cross-tick smoothing | L/High |
+| 3 | #452 | Causal inference for strategy evaluation | M/High |
+
+**Recommended start:** #450 (learn CPTs from replay data) — replaces hand-tuned conditional probability tables with values learned from the replay corpus.
 
 ---
 
