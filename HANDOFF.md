@@ -1,43 +1,23 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-10-25)
+## Last Session
 
-Branch: main — no active branch
+**#450 closed — learned CPTs from replay data.** Python exporter runs ONNX detectors on 521K training observations, discretizes to HIGH/MEDIUM/LOW. Java `CptLearningExportTest` feeds observations to `ParameterLearner.fit()`, writes 9 learned CPT JSON files (3 phases × 3 matchups). Validation: learned CPTs outperform hand-tuned across all 9 matchup-phases (+10.7% to +75.7% accuracy). Landed as `dcae900d`.
 
-### What Was Done
+**#360 scaffolded** — branch created, no implementation work started.
 
-**#447 closed — MAP inference for coherent joint classification.** `DetectorOrchestrator.getMapStrategy()`/`getMapAssignment()` expose MAP results after BJT fusion. `CascadeResult.mapStrategy` carries the MAP winner on fusion-tier results. Workbench receives MAP data via `DetectorStatsPublished`. Landed as `841e2083`.
+## Immediate Next Step
 
-**#451 closed — BJT explanation traces for coaching.** `EvidenceFusionEngine.explain()` added to neocortex (delegates to `ExplanationEngine`). `DetectorOrchestrator.getExplanationTrace()`/`getExplanationSummary()` produce human-readable influence rankings. `DroolsScoutingTask` writes explanation to `SCOUTING_EXPLANATION` CaseFile key. `CoachingWorkerFactory` includes `EVIDENCE REASONING` in LLM prompt. Landed as `9996c47e`.
+Brainstorm and plan #360 (feature extraction from emulated games, S/Med). Read the issue, understand what StrategyFeatures extraction from EmulatedGame requires vs the existing replay-based extraction path.
 
-### Cross-Repo State
+## Cross-Module
 
-**Neocortex** — two commits on main: `mapInference()` (`b5d35c2b`) and `explain()` (`7a403dca`) on `EvidenceFusionEngine`. Installed locally. Not pushed to origin.
+**Neocortex** — `ParameterLearner` used by #450. No pending changes.
 
-### Key Context
+**Pre-existing issues:** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid. `DroolsDominanceWeightStrategyTest` config missing in `%test` profile.
 
-**Pre-existing test failure:** `DroolsDominanceWeightStrategyTest` — `quarkmind.detector.models-dir` config missing in `%test` profile.
+## References
 
-**Dependency issue (ongoing):** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid.
-
-**`patternAssessment` in coaching trigger is a dead code path.** `CoachingWorkerFactory.buildUserMessage()` reads `triggerMap.get("patternAssessment")` but nothing in production writes it. The assessment data exists at `SCOUTING_FINAL_ASSESSMENT` but isn't copied to the trigger map. Only test code constructs it.
-
-### Next Session
-
-Remaining #453 epic issues (BJT adoption):
-
-| Priority | Issue | Title | Scale |
-|----------|-------|-------|-------|
-| 1 | #450 | Learn CPTs from replay data | M/Med |
-| 2 | #444 | Temporal BJT for cross-tick smoothing | L/High |
-| 3 | #452 | Causal inference for strategy evaluation | M/High |
-
-**Recommended start:** #450 (learn CPTs from replay data) — replaces hand-tuned conditional probability tables with values learned from the replay corpus.
-
----
-
-## Paused Work
-
-| Branch | Issue | State | Resume with |
-|--------|-------|-------|-------------|
-| `issue-388-train-onnx-reconstituted-ladder` | #388 | Perspectives format fixed, trained on 148K | `work resume` |
+- `.plan` — issue queue with #360 active
+- `docs/protocols/extractor-separate-from-simulated-game.md` — relevant protocol for #360
+- `blog/2026-10-25-mdp03-teaching-the-network-to-count.md` — diary entry for #450
