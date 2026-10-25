@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#3b82f6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="420" fill="#0f172a" rx="8"/>
+
+  <!-- Title -->
+  <text x="360" y="32" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="600">CPT Learning Pipeline — Production Path Fidelity</text>
+
+  <!-- Left column: Data sources -->
+  <rect x="30" y="60" width="180" height="44" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="120" y="78" text-anchor="middle" fill="#94a3b8" font-size="10">149K</text>
+  <text x="120" y="92" text-anchor="middle" fill="#e2e8f0" font-size="12">Reconstituted Replays</text>
+
+  <rect x="30" y="120" width="180" height="44" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="120" y="138" text-anchor="middle" fill="#94a3b8" font-size="10">.label.json sidecars</text>
+  <text x="120" y="152" text-anchor="middle" fill="#e2e8f0" font-size="12">Strategy Labels</text>
+
+  <!-- Production inference path (highlighted) -->
+  <rect x="260" y="56" width="200" height="160" rx="8" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="360" y="74" text-anchor="middle" fill="#60a5fa" font-size="10" font-weight="500">PRODUCTION INFERENCE PATH</text>
+
+  <rect x="280" y="86" width="160" height="34" rx="5" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="360" y="108" text-anchor="middle" fill="#93c5fd" font-size="11">EmulatedGame</text>
+
+  <rect x="280" y="130" width="160" height="34" rx="5" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="360" y="152" text-anchor="middle" fill="#93c5fd" font-size="11">StrategyFeatureExtractor</text>
+
+  <rect x="280" y="174" width="160" height="34" rx="5" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="360" y="196" text-anchor="middle" fill="#93c5fd" font-size="11">BinaryDetectorRunner</text>
+
+  <!-- Arrows within production path -->
+  <line x1="360" y1="120" x2="360" y2="130" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+  <line x1="360" y1="164" x2="360" y2="174" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+
+  <!-- Arrow from replays to production path -->
+  <line x1="210" y1="82" x2="278" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Checkpoints label -->
+  <text x="475" y="100" fill="#94a3b8" font-size="10">3 min  (EARLY)</text>
+  <text x="475" y="115" fill="#94a3b8" font-size="10">5 min  (MID)</text>
+  <text x="475" y="130" fill="#94a3b8" font-size="10">7 min  (LATE)</text>
+
+  <!-- Discretization step -->
+  <rect x="260" y="240" width="200" height="40" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1"/>
+  <text x="360" y="256" text-anchor="middle" fill="#fbbf24" font-size="10">3-BUCKET DISCRETIZATION</text>
+  <text x="360" y="270" text-anchor="middle" fill="#e2e8f0" font-size="11">LOW / MEDIUM / HIGH</text>
+
+  <line x1="360" y1="208" x2="360" y2="240" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Observations merge point -->
+  <rect x="220" y="300" width="280" height="40" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="360" y="316" text-anchor="middle" fill="#94a3b8" font-size="10">Map&lt;String, String&gt;</text>
+  <text x="360" y="330" text-anchor="middle" fill="#e2e8f0" font-size="11">Strategy=RUSH, rush_det=HIGH, greedy_det=LOW</text>
+
+  <line x1="360" y1="280" x2="360" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="120" y1="164" x2="220" y2="316" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ParameterLearner -->
+  <rect x="260" y="358" width="200" height="40" rx="6" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="360" y="374" text-anchor="middle" fill="#86efac" font-size="10">ParameterLearner.fit()</text>
+  <text x="360" y="388" text-anchor="middle" fill="#e2e8f0" font-size="11">MLE + Laplace smoothing</text>
+
+  <line x1="360" y1="340" x2="360" y2="358" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Output -->
+  <rect x="530" y="358" width="160" height="40" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="1"/>
+  <text x="610" y="374" text-anchor="middle" fill="#86efac" font-size="10">9 JSON RESOURCES</text>
+  <text x="610" y="388" text-anchor="middle" fill="#e2e8f0" font-size="11">3 matchups x 3 phases</text>
+
+  <line x1="460" y1="378" x2="528" y2="378" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

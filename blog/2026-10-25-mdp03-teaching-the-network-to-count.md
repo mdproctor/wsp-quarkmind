@@ -25,11 +25,15 @@ The key design decision was production-path fidelity. We could have run the Pyth
 
 So the pipeline runs Java end to end: reconstituted replay → EmulatedGame → StrategyFeatures → BinaryDetectorRunner (the same ONNX inference code that runs during live games) → observations. The CPTs learn from exactly the same signal path they'll serve at runtime.
 
+![CPT learning pipeline — data flows through the production Java inference path, not the Python training pipeline](images/cpt-learning-pipeline.svg)
+
 ## Three Buckets, Not Two
 
 The original plan was binary discretization: detector output ≥ 0.5 maps to HIGH, below to LOW. Simple. But the production inference path doesn't use binary evidence — `DetectorOrchestrator.classify()` feeds continuous soft evidence to the BJT. A detector scoring 0.95 produces very different posteriors from one scoring 0.51, even though both would be "HIGH" in training.
 
 Three buckets — LOW, MEDIUM, HIGH — capture the distinction between confident detection, borderline detection, and confident absence. The learned CPTs model P(HIGH | RUSH), P(MEDIUM | RUSH), P(LOW | RUSH) separately. At inference time, a piecewise linear function maps the continuous score to a 3-element likelihood vector, preserving the magnitude information that binary discretization destroys.
+
+![Binary discretization treats 0.51 and 0.95 identically — three buckets preserve the distinction](images/three-bucket-discretization.svg)
 
 There's a risk: if detector outputs are bimodal (clustering near 0.0 and 1.0, as binary classifiers often do), the MEDIUM bucket is nearly empty and adds noise instead of signal. The export pipeline logs per-detector bucket distributions. If MEDIUM is below 5% of observations, the pipeline reverts to binary — data decides, not us.
 

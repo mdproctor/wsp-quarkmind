@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="lowGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="medGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.1"/>
+      <stop offset="50%" stop-color="#f59e0b" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="highGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="340" fill="#0f172a" rx="8"/>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="600">Binary vs Three-Bucket Discretization</text>
+
+  <!-- === TOP: Binary (2 buckets) === -->
+  <text x="50" y="62" fill="#94a3b8" font-size="11" font-weight="500">BINARY</text>
+  <text x="50" y="76" fill="#64748b" font-size="10">2 outcomes</text>
+
+  <!-- Axis -->
+  <line x1="140" y1="100" x2="660" y2="100" stroke="#475569" stroke-width="1"/>
+
+  <!-- LOW zone -->
+  <rect x="140" y="56" width="260" height="40" rx="4" fill="#ef4444" fill-opacity="0.15" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="270" y="80" text-anchor="middle" fill="#fca5a5" font-size="12" font-weight="500">LOW</text>
+
+  <!-- HIGH zone -->
+  <rect x="400" y="56" width="260" height="40" rx="4" fill="#22c55e" fill-opacity="0.15" stroke="#22c55e" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="530" y="80" text-anchor="middle" fill="#86efac" font-size="12" font-weight="500">HIGH</text>
+
+  <!-- Threshold line -->
+  <line x1="400" y1="50" x2="400" y2="106" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="400" y="120" text-anchor="middle" fill="#e2e8f0" font-size="10">0.5</text>
+
+  <!-- Axis labels -->
+  <text x="140" y="120" text-anchor="middle" fill="#64748b" font-size="10">0.0</text>
+  <text x="660" y="120" text-anchor="middle" fill="#64748b" font-size="10">1.0</text>
+
+  <!-- Problem markers -->
+  <circle cx="410" cy="72" r="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="410" y="48" text-anchor="middle" fill="#fbbf24" font-size="9">0.51</text>
+
+  <circle cx="630" cy="72" r="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="630" y="48" text-anchor="middle" fill="#fbbf24" font-size="9">0.95</text>
+
+  <!-- Both = HIGH annotation -->
+  <line x1="410" y1="72" x2="500" y2="138" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="630" y1="72" x2="560" y2="138" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="530" y="152" text-anchor="middle" fill="#fbbf24" font-size="10" font-style="italic">Both "HIGH" — same CPT weight</text>
+  <text x="530" y="165" text-anchor="middle" fill="#f59e0b" font-size="10" font-style="italic">but 0.95 is far stronger evidence than 0.51</text>
+
+  <!-- === BOTTOM: Three buckets === -->
+  <text x="50" y="204" fill="#94a3b8" font-size="11" font-weight="500">3-BUCKET</text>
+  <text x="50" y="218" fill="#64748b" font-size="10">3 outcomes</text>
+
+  <!-- Axis -->
+  <line x1="140" y1="240" x2="660" y2="240" stroke="#475569" stroke-width="1"/>
+
+  <!-- LOW zone -->
+  <rect x="140" y="196" width="156" height="40" rx="4" fill="#ef4444" fill-opacity="0.15" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="218" y="220" text-anchor="middle" fill="#fca5a5" font-size="12" font-weight="500">LOW</text>
+
+  <!-- MEDIUM zone -->
+  <rect x="296" y="196" width="208" height="40" rx="4" fill="#f59e0b" fill-opacity="0.15" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="400" y="220" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="500">MEDIUM</text>
+
+  <!-- HIGH zone -->
+  <rect x="504" y="196" width="156" height="40" rx="4" fill="#22c55e" fill-opacity="0.15" stroke="#22c55e" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="582" y="220" text-anchor="middle" fill="#86efac" font-size="12" font-weight="500">HIGH</text>
+
+  <!-- Threshold lines -->
+  <line x1="296" y1="190" x2="296" y2="246" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="296" y="260" text-anchor="middle" fill="#e2e8f0" font-size="10">0.3</text>
+
+  <line x1="504" y1="190" x2="504" y2="246" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="504" y="260" text-anchor="middle" fill="#e2e8f0" font-size="10">0.7</text>
+
+  <!-- Axis labels -->
+  <text x="140" y="260" text-anchor="middle" fill="#64748b" font-size="10">0.0</text>
+  <text x="660" y="260" text-anchor="middle" fill="#64748b" font-size="10">1.0</text>
+
+  <!-- Correctly separated markers -->
+  <circle cx="350" cy="212" r="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="350" y="288" text-anchor="middle" fill="#fbbf24" font-size="9">0.51 → MEDIUM</text>
+
+  <circle cx="630" cy="212" r="5" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="630" y="288" text-anchor="middle" fill="#86efac" font-size="9">0.95 → HIGH</text>
+
+  <!-- Annotation -->
+  <text x="490" y="316" text-anchor="middle" fill="#94a3b8" font-size="10" font-style="italic">Different CPT weights — magnitude preserved in learned probabilities</text>
+</svg>
