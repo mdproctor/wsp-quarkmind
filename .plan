@@ -15,12 +15,12 @@ flyway-next-v: unknown
 - [ ] casehubio/quarkmind#450 — Issue #450 ← active
   - [ ] Batch 1: Prerequisites
     - [ ] Task 1: CptSpec Jackson + NetworkSpec.fromBayesNetwork
-  - [ ] Batch 2: LabelAndEvidence
-    - [ ] Task 2: CatalogLabelMapper
-    - [ ] Task 3: 3-bucket evidence mapping
-  - [ ] Batch 3: LoadingAndFallback
-    - [ ] Task 4: LearnedCptLoader CDI bean
-    - [ ] Task 5: Wire into CascadingPatternClassifier
+  - [x] Batch 2: LabelAndEvidence
+    - [x] Task 2: CatalogLabelMapper
+    - [x] Task 3: 3-bucket evidence mapping
+  - [x] Batch 3: LoadingAndFallback
+    - [x] Task 4: LearnedCptLoader CDI bean
+    - [x] Task 5: Wire into CascadingPatternClassifier
   - [ ] Batch 4: ExportPipeline
     - [ ] Task 6: CptLearningExportTest
   - [ ] Batch 5: Validation
