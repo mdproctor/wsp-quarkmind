@@ -23,3 +23,4 @@
 | [2026-10-04-mdp01-building-disambiguation.md](2026-10-04-mdp01-building-disambiguation.md) | 2026-10-04 | unitLink-aware upgrade detection — tournament abilLink disambiguation pushes accuracy from 78.6% to 87.7% |
 | [2026-10-10-mdp02-supply-queue-fidelity.md](2026-10-10-mdp02-supply-queue-fidelity.md) | 2026-10-10 | Supply consumed at training start not queue entry; energy-aware OC resolution for MULE calldowns |
 | [2026-10-12-mdp01-measuring-the-wrong-thing.md](2026-10-12-mdp01-measuring-the-wrong-thing.md) | 2026-10-12 | CmdEvent validation ceiling reveals a measurement problem, not a physics problem — shifting to tracker-event-driven validation |
+| [2026-10-25-mdp06-two-event-streams-one-truth.md](2026-10-25-mdp06-two-event-streams-one-truth.md) | 2026-10-25 | Cross-referencing SC2 tracker and game events for exact building routing — reconstruction fidelity as downstream infrastructure |
