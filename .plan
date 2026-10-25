@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-407-exact-building-routing
-state: closing:promoted
+state: closing:pushed
 project-sha: b3883c4b
 date: 2026-10-24
 issue-repo: casehubio/quarkmind
