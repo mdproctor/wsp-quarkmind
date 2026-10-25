@@ -21,7 +21,7 @@ flyway-next-v: unknown
   - [x] Batch 3: LoadingAndFallback
     - [x] Task 4: LearnedCptLoader CDI bean
     - [x] Task 5: Wire into CascadingPatternClassifier
-  - [ ] Batch 4: ExportPipeline
-    - [ ] Task 6: CptLearningExportTest
+  - [x] Batch 4: ExportPipeline
+    - [x] Task 6: CptLearningExportTest
   - [ ] Batch 5: Validation
     - [ ] Task 7: CptLearningValidationTest + integration
