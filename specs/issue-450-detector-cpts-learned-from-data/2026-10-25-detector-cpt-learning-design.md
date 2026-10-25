@@ -14,11 +14,12 @@ We have 1.57M labelled replays with both strategy labels (from the heuristic lab
 
 An offline batch learning pipeline that:
 1. Runs reconstituted replays through the **production Java inference path** (EmulatedGame → StrategyFeatures → BinaryDetectorRunner)
-2. Extracts detector outputs at game-phase checkpoints (3min, 5min)
-3. Pairs with heuristic strategy labels from `.label.json` sidecars
-4. Calls `ParameterLearner.fit()` to learn CPTs from data
-5. Serializes the learned network to JSON resource files (one per matchup)
-6. At startup, loads learned CPTs instead of the 0.8/0.2 defaults
+2. Extracts detector outputs at game-phase checkpoints (3min, 5min, 7min)
+3. Discretizes detector outputs into three buckets: LOW (<0.3), MEDIUM (0.3–0.7), HIGH (>0.7)
+4. Pairs with heuristic strategy labels from `.label.json` sidecars
+5. Calls `ParameterLearner.fit()` to learn CPTs from data
+6. Serializes the learned network as `NetworkSpec` JSON (one per matchup × phase = 9 files)
+7. At startup, loads learned CPTs via `NetworkSpec.toBayesNetwork()` instead of the 0.8/0.2 defaults
 
 ## Architecture
 
@@ -46,10 +47,10 @@ Reconstituted replays (.json)     .label.json sidecars
     ParameterLearner.fit(structure, observations)
          │
          ▼
-    Learned BayesNetwork
+    Learned BayesNetwork → NetworkSpec
          │
          ▼
-    JSON resource file (learned-cpts-vs-terran.json, etc.)
+    JSON resource files (9: 3 matchups × 3 phases)
 ```
 
 ### Training Data Extraction
@@ -57,92 +58,87 @@ Reconstituted replays (.json)     .label.json sidecars
 A new `@Tag("report")` test — `CptLearningExportTest` — following the established pattern of `ReconstitutionExportTest`:
 
 1. **Iterate reconstituted replays** from `../quarkmind-classifier/data/reconstituted/` with their `.label.json` sidecars
-2. **Filter** to replays with non-UNKNOWN labels and sufficient game length (≥3min for EARLY, ≥5min for MID)
+2. **Filter** to replays with non-UNKNOWN labels and sufficient game length (≥3min for EARLY, ≥5min for MID, ≥7min for LATE)
 3. **Group by matchup** (vs_terran, vs_zerg, vs_protoss) — each matchup has different active detectors
-4. **For each replay at each phase checkpoint:**
+4. **For each replay at each phase checkpoint** (3min = loop 4032, 5min = loop 6720, 7min = loop 9408):
    - Parse the reconstituted JSON to extract tracker events
-   - Feed tracker events through EmulatedGame, ticking to the checkpoint frame (3min = loop 4032, 5min = loop 6720)
+   - Feed tracker events through EmulatedGame, ticking to the checkpoint frame
    - Extract `StrategyFeatures` from the EmulatedGame state via `StrategyFeatureExtractor`
    - Run `BinaryDetectorRunner.runActiveDetectors()` for the phase and enemy race
-   - Threshold each detector output: ≥0.5 → "HIGH", <0.5 → "LOW"
-   - Record the observation: `Map.of("Strategy", label, det1, "HIGH", det2, "LOW", ...)`
+   - Discretize each detector output into three buckets: <0.3 → "LOW", 0.3–0.7 → "MEDIUM", >0.7 → "HIGH"
+   - Record the observation: `Map.of("Strategy", label, det1, "HIGH", det2, "LOW", det3, "MEDIUM", ...)`
+5. **Persist observations** as intermediate JSON (one file per matchup × phase) alongside the learned CPTs — enables re-learning without re-extracting, and seeds `OnlineParameterUpdater` for future migration
+
+### Three-Bucket Discretization
+
+Production inference in `DetectorOrchestrator.classify()` uses continuous soft evidence — a detector scoring 0.95 is much stronger evidence than one scoring 0.51. Binary HIGH/LOW discretization loses this magnitude information during training.
+
+Three buckets (LOW/MEDIUM/HIGH) capture the distinction between confident detection, borderline detection, and confident absence. The learned CPTs then model P(HIGH|RUSH), P(MEDIUM|RUSH), P(LOW|RUSH) separately. At inference time, detector outputs are discretized to the same three buckets before setting evidence via the `EvidenceFusionEngine`.
+
+The thresholds (0.3 and 0.7) are chosen to roughly partition the continuous score range into equal-information bands. They can be calibrated from the actual detector output distributions in the training data.
 
 ### Parameter Learning
 
-For each matchup:
+For each matchup × phase combination (9 total):
 
-1. Build the network **structure** via existing `SC2NetworkBuilder.build()` (topology only — CPT values don't matter, they'll be overwritten)
+1. Build the network **structure** — `Strategy` root with phase-specific detector children (3 outcomes each: HIGH/MEDIUM/LOW)
 2. Call `ParameterLearner.fit(structure, observations)` — returns a new `BayesNetwork` with MLE-learned CPTs (Laplace smoothing α=1.0)
-3. Extract learned CPTs and serialize to JSON
+3. Convert the learned `BayesNetwork` to a `NetworkSpec` via a helper that walks the variables and CPTs
 
-### JSON Resource Format
+### Persistence via NetworkSpec
 
-One file per matchup, stored at `quarkmind-sc2/src/main/resources/classifier/learned-cpts-vs-{race}.json`:
+Neocortex's `NetworkSpec` record hierarchy (`NetworkSpec`, `VariableSpec`, `EdgeSpec`, `CptSpec.DirectCpt`) is the purpose-built model for Bayesian network structure + CPTs. All are Java records — Jackson handles serialization natively.
 
-```json
-{
-  "matchup": "vs_terran",
-  "learnedFrom": {
-    "replayCount": 12345,
-    "observationCount": 24690,
-    "extractorVersion": "abc123",
-    "generatedAt": "2026-10-25T12:00:00Z"
-  },
-  "priors": {
-    "RUSH": 0.15,
-    "MACRO_ECONOMY": 0.35,
-    "BIO_TIMING": 0.20,
-    ...
-  },
-  "detectors": {
-    "early_rush_vs_terran": {
-      "outcomes": ["HIGH", "LOW"],
-      "cpt": {
-        "RUSH": [0.92, 0.08],
-        "MACRO_ECONOMY": [0.05, 0.95],
-        "BIO_TIMING": [0.12, 0.88],
-        ...
-      }
-    },
-    ...
-  }
-}
+Each learned network is wrapped in a metadata envelope:
+
+```java
+record LearnedCptResource(
+    String matchup,           // "vs_terran"
+    String phase,             // "EARLY"
+    LearnedFrom learnedFrom,
+    NetworkSpec network
+) {}
+
+record LearnedFrom(
+    int replayCount,
+    int observationCount,
+    String extractorVersion,
+    String generatedAt
+) {}
 ```
 
-The format stores CPTs in a human-readable archetype-keyed map rather than raw `double[][]` arrays — reviewable in PRs, and the archetype ordering is explicit rather than implicit.
+Stored at `quarkmind-sc2/src/main/resources/classifier/learned-cpts-{phase}-vs-{race}.json` (9 files).
 
-### Network Loading
+At load time: `ObjectMapper.readValue(is, LearnedCptResource.class)` → `resource.network().toBayesNetwork()`.
 
-`SC2NetworkBuilder` gains a `load(InputStream)` method:
-
-1. Parse the JSON resource
-2. Build a `BayesNetwork` via `BayesNetworkBuilder`:
-   - Root `"Strategy"` variable with learned priors
-   - Each detector variable with learned CPTs
-3. Return the assembled network
-
-The existing `build(priors, detectorNames, cpts)` method remains unchanged — it's the fallback path for profiles without learned CPTs.
+**Jackson sealed interface handling:** `CptSpec` is a sealed interface with record implementations (`DirectCpt`, `NoisyOr`, `Uniform`). The existing `ResponseParser` in `inference-bayes-llm` already deserializes `CptSpec` via Jackson using a type discriminator. If the core module doesn't have `@JsonTypeInfo` annotations, add them — a one-time annotation addition, not a new serialization framework.
 
 ### Integration into DetectorOrchestrator and CascadingPatternClassifier
 
-The integration point is `DetectorOrchestrator.initializeNetwork(detectorNames)`, which currently calls `SC2NetworkBuilder.build()` every time the active detector set changes. The learned CPTs are per-matchup, and the active detectors are filtered by enemy race at classify time.
+The integration point is `DetectorOrchestrator.initializeNetwork(detectorNames)`, which currently calls `SC2NetworkBuilder.build()` every time the active detector set changes. Learned networks are per matchup × phase, matching the active detector set exactly.
 
 **DetectorOrchestrator changes:**
 
-1. Constructor gains an optional `Map<String, BayesNetwork> learnedNetworks` — keyed by matchup (e.g., `"vs_terran"`)
-2. `initializeNetwork()` checks if a learned network exists for the current detector set — if yes, uses it directly; if no, falls back to `SC2NetworkBuilder.build()`
+1. Constructor gains an optional `Map<String, BayesNetwork> learnedNetworks` — keyed by `"{phase}_vs_{race}"` (e.g., `"EARLY_vs_terran"`)
+2. `initializeNetwork()` checks if a learned network exists for the current phase + race key — if yes, uses it directly; if no, falls back to `SC2NetworkBuilder.build()`
 3. The learned networks are pre-loaded at construction time, not per-tick
 
 **CascadingPatternClassifier.buildDefaultOrchestrator() changes:**
 
-1. For each matchup in the detector catalog, attempt to load `classifier/learned-cpts-vs-{race}.json` from classpath
-2. **If found:** parse via `SC2NetworkBuilder.load()`, store in the learned networks map
+1. For each matchup × phase in the detector catalog, attempt to load `classifier/learned-cpts-{phase}-vs-{race}.json` from classpath
+2. **If found:** deserialize `LearnedCptResource`, call `network().toBayesNetwork()`, store in the learned networks map
 3. **If not found:**
    - In `%sc2`, `%emulated`, `%coach` profiles: throw `IllegalStateException` — classification quality matters
    - In `%mock`, `%test`, `%replay` profiles: fall back to the 0.8/0.2 defaults with a WARN log
 4. Pass the learned networks map to `DetectorOrchestrator` constructor
 
 The profile check uses a Quarkus config property (`quarkmind.detector.require-learned-cpts`, defaulting to `false`, set to `true` in sc2/emulated/coach profiles).
+
+**Semantic validation at load time:** After deserializing, validate:
+- CPT rows sum to 1.0 (within ε)
+- Archetype names match `StrategyArchetype` enum values
+- Detector names match `DetectorCatalog` entries for the stated phase and race
+- Priors are non-zero
 
 ### Validation
 
@@ -153,28 +149,38 @@ A companion test — `CptLearningValidationTest` — measures accuracy improveme
 3. Compare: top-1 accuracy, mean posterior for correct archetype, calibration (do 80% predictions match 80% actual?)
 4. Assert learned CPTs produce strictly better top-1 accuracy than hand-tuned baseline
 
+## Assumptions and Limitations
+
+- **Label quality:** Strategy labels from the heuristic labeller are treated as ground truth. If the labeller has systematic confusion (e.g., mislabelling MACRO_ECONOMY as BIO_TIMING), the learned CPTs encode those errors. Out of scope for this issue — label quality improvements belong to the classifier pipeline.
+- **Star topology:** The naive Bayes assumption (detectors conditionally independent given strategy) is retained. Detectors like `early_rush` and `early_greedy` are definitionally anti-correlated, which naive Bayes can't model. Structure learning would address this but is out of scope.
+- **Laplace smoothing α=1.0:** With 10K+ observations per matchup, α=1.0 is negligible for common archetypes. For rare archetypes (e.g., CANNON_RUSH at <2% of games), the smoothing constant matters more. If rare-archetype CPTs look degenerate, α can be tuned — but start with the default.
+
 ## Scope
 
 ### In scope
-- `CptLearningExportTest` — batch extraction + learning + JSON export
-- `SC2NetworkBuilder.load()` — JSON resource loading
+- `CptLearningExportTest` — batch extraction + learning + NetworkSpec JSON export
+- `LearnedCptResource` — wrapper record for metadata + NetworkSpec
 - `CascadingPatternClassifier` — integration with profile-gated fallback
+- `DetectorOrchestrator` — learned network injection
 - `CptLearningValidationTest` — accuracy comparison
-- JSON resource files for 3 matchups
+- NetworkSpec JSON resource files (9: 3 matchups × 3 phases)
+- Observation persistence for future online learning migration
 
 ### Out of scope
-- Online CPT refinement during live games (future: `OnlineParameterUpdater`)
+- Online CPT refinement during live games (future: `OnlineParameterUpdater` — the persisted observations provide the seeding interface)
 - Structure learning (the DAG topology is fixed — naive Bayes star)
-- Neocortex serialization API (we serialize in quarkmind, not in the library)
 - Changes to ONNX detector models or the heuristic labeller
+- Jackson annotations on neocortex `CptSpec` (if needed — tracked as a dependency)
 
 ## Acceptance Criteria
 
 - [ ] CPTs learned from ≥10K labelled replays per matchup
 - [ ] Classification accuracy improves over hand-tuned 0.8/0.2 baseline (measured on held-out set)
-- [ ] Learned CPTs serialized as JSON resources, loadable at startup
+- [ ] Learned CPTs serialized as NetworkSpec JSON, loadable at startup via `toBayesNetwork()`
 - [ ] Profile-gated fallback: fail fast in sc2/emulated/coach, warn+fallback in mock/test/replay
+- [ ] Semantic validation at load time (CPT sums, archetype names, detector names)
 - [ ] `CptLearningExportTest` is reproducible (same inputs → same outputs)
+- [ ] Observations persisted alongside learned CPTs for future online learning
 
 ## References
 
@@ -183,7 +189,9 @@ A companion test — `CptLearningValidationTest` — measures accuracy improveme
 - `DetectorCatalog.java` — 9 detector definitions with phase/race/archetype mappings
 - `DetectorOrchestrator.java` — Bayesian fusion consumer
 - `ParameterLearner.java` (neocortex) — MLE batch learning API
-- `OnlineParameterUpdater.java` (neocortex) — incremental learning (future)
+- `OnlineParameterUpdater.java` (neocortex) — incremental learning (future seeding interface)
+- `NetworkSpec.java` (neocortex) — persistence format with `toBayesNetwork()` conversion
+- `CptSpec.java` (neocortex) — sealed interface for CPT representations
 - `ReconstitutionExportTest.java` — pattern for batch replay processing tests
 - `BinaryDetectorRunner.java` — production ONNX inference path
 - `StrategyFeatureExtractor.java` — production feature extraction

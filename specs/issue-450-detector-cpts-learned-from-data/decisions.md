@@ -12,15 +12,15 @@
 
 ## D2: Training data granularity
 
-**Choice:** Per-phase checkpoint — one observation at each game phase boundary (3min for EARLY, 5min for MID). Matches how `DetectorCatalog` splits detectors by phase (EARLY/MID/LATE). Produces ~3x more training data than single-checkpoint.
+**Choice:** Per-phase checkpoint — one observation at each game phase boundary (3min for EARLY, 5min for MID, 7min for LATE). Matches how `DetectorCatalog` splits detectors by phase (EARLY/MID/LATE). Produces ~3x more training data than single-checkpoint. Replays shorter than 7min contribute EARLY/MID data only — partial coverage is better than no LATE-phase learning.
 **Alternatives:**
 - Single checkpoint per replay (e.g., 5min) — simpler but phase-specific detectors learn from wrong time windows
 - Per-tick sliding window — maximum data but heavily correlated samples, much slower processing
-**Rationale:** Phase boundaries align with when each detector is active in production; EARLY detectors should learn from 3min state, MID detectors from 5min state
-**Trade-offs:** LATE phase (7min+) has less replay coverage since some games end before then
+**Rationale:** Phase boundaries align with when each detector is active in production; EARLY detectors should learn from 3min state, MID detectors from 5min state, LATE detectors from 7min state
+**Trade-offs:** LATE phase (7min+) has fewer replays reaching that length; data volume for LATE detectors will be lower
 **Sources:** `DetectorCatalog.java` (phase assignments), `CascadingPatternClassifier.java:378-383` (phase resolution)
 **Exploration:** quick
-**Status:** captured
+**Status:** revised (decision review: LATE-phase detectors had no learning pathway without 7min checkpoint)
 
 ## D3: Data source — production inference path
 
@@ -36,15 +36,15 @@
 
 ## D4: Persistence format
 
-**Choice:** JSON resource file — serialize learned CPTs as JSON bundled as a classpath resource, one file per matchup. Versionable, reviewable in PRs, consistent with how ONNX models are stored as resources.
+**Choice:** NetworkSpec JSON — serialize the learned `BayesNetwork` as a `NetworkSpec` record via Jackson, wrapped in a metadata envelope with matchup, replay count, and extractor version. `NetworkSpec`, `VariableSpec`, `EdgeSpec`, and `CptSpec` are all records — Jackson handles them natively. Deserialize with `ObjectMapper.readValue()`, convert to live network with `NetworkSpec.toBayesNetwork()`. One file per matchup as a classpath resource.
 **Alternatives:**
-- NetworkSpec records + neocortex serializer — requires adding serialization to neocortex; more coupling
+- Custom JSON format — unnecessary duplication of what NetworkSpec already models; creates schema drift risk if neocortex evolves CptSpec
 - Embedded Java constants — compile-time checked but requires regeneration on retrain
-**Rationale:** Simple, human-readable, no new neocortex dependencies, follows existing resource-file conventions
-**Trade-offs:** No compile-time schema validation; must parse and validate at load time
-**Sources:** `DetectorCatalog.java` (modelPath pattern), neocortex `CptSpec`/`NetworkSpec` records
+**Rationale:** NetworkSpec is purpose-built for this. The dependency already exists (quarkmind-sc2 → casehub-neocortex-inference-bayes). `toBayesNetwork()` eliminates the need for a custom loader. Records are human-readable as JSON.
+**Trade-offs:** Requires Jackson annotations on CptSpec sealed interface hierarchy (may need `@JsonTypeInfo`/`@JsonSubTypes` — verify); JSON is less pretty than a purpose-built format but has the correct semantics
+**Sources:** `NetworkSpec.java`, `CptSpec.java` (neocortex), `ResponseParser.java` (existing Jackson deserialization in inference-bayes-llm)
 **Exploration:** quick
-**Status:** captured
+**Status:** revised (decision review: NetworkSpec already exists and eliminates custom format duplication)
 
 ## D5: Fallback behaviour
 
@@ -61,12 +61,27 @@
 
 ## D6: Network loading vs reconstruction
 
-**Choice:** Replace `SC2NetworkBuilder.build()` with direct BayesNetwork loading — the JSON resource stores the full learned network specification (structure + CPTs), and `SC2NetworkBuilder` gains a `load()` method alongside the existing `build()`. The `build()` path serves as fallback for profiles without learned CPTs.
+**Choice:** Use `NetworkSpec.toBayesNetwork()` for loading learned networks — the JSON resource deserializes to a `NetworkSpec`, which converts directly to a `BayesNetwork`. No custom loader needed. `SC2NetworkBuilder.build()` remains unchanged as the fallback path for profiles without learned CPTs. Learned networks are stored per matchup × phase (9 files: 3 matchups × 3 phases) so the loaded network exactly matches the active detector set for that phase — no sub-network extraction needed.
 **Alternatives:**
-- Extract learned CPTs back into `Map<String, Map<String, Double>>` and feed through existing `build()` — extra conversion step, fragile archetype ordering dependency between `double[][]` layout and sorted archetype array
-**Rationale:** The learned network already has correct structure and CPTs; reconstructing from maps is unnecessary indirection and risks CPT row ordering mismatches
-**Trade-offs:** Two code paths for network construction (load vs build); JSON schema must capture the full network topology
-**Depends on:** D4 (JSON resource persistence)
-**Sources:** `SC2NetworkBuilder.java`, `ParameterLearner.java` (returns `BayesNetwork` directly), neocortex `NetworkSpec` records
+- Per-matchup only (3 files), filter at load time — marginalization over absent variables produces different CPTs than learning from the subset; learned priors change
+- Extract learned CPTs back into `Map<String, Map<String, Double>>` and feed through existing `build()` — extra conversion step, fragile archetype ordering dependency
+**Rationale:** Per-phase networks avoid the structural mismatch between a full-matchup learned network and the phase-specific active detector set. `NetworkSpec.toBayesNetwork()` eliminates custom loading code.
+**Trade-offs:** 9 resource files instead of 3; each file has fewer training observations than the matchup-wide pool
+**Depends on:** D2 (per-phase checkpoints), D4 (NetworkSpec JSON persistence)
+**Sources:** `SC2NetworkBuilder.java`, `NetworkSpec.toBayesNetwork()`, `DetectorOrchestrator.initializeNetwork()`
 **Exploration:** quick
-**Status:** captured
+**Status:** revised (decision review: phase-specific subsets must match learned network structure)
+
+## D7: Detector output discretization
+
+**Choice:** Three-bucket discretization — LOW (<0.3), MEDIUM (0.3–0.7), HIGH (>0.7). Each detector variable has three outcomes instead of two. `ParameterLearner.fit()` handles arbitrary outcome counts.
+**Alternatives:**
+- Binary HIGH/LOW at 0.5 — loses magnitude information; a detector scoring 0.95 and one scoring 0.51 both become "HIGH" in training but produce very different soft evidence at inference time
+- Beta distribution parameterization — principally correct for continuous soft evidence but goes beyond `ParameterLearner.fit()` which requires discrete observations
+- Match hardEvidenceThreshold (0.95/0.05) — only two buckets plus a wide "uncertain" middle zone; barely different from binary
+**Rationale:** Three buckets capture the distinction between confident detection (HIGH), borderline detection (MEDIUM), and confident absence (LOW). The learned CPTs then model P(HIGH|RUSH), P(MEDIUM|RUSH), P(LOW|RUSH) separately, giving the inference engine better discrimination than binary. The `BayesNetworkBuilder` already supports multi-outcome variables.
+**Trade-offs:** 3x more CPT cells per detector (3 outcomes × N archetypes instead of 2 × N); requires updating `SC2NetworkBuilder.build()` fallback to use 3 outcomes; at inference time, detector outputs must be discretized to the same 3 buckets before setting evidence
+**Depends on:** D3 (data source — discretization happens during extraction)
+**Sources:** `DetectorOrchestrator.classify()` (soft evidence path), `BayesNetworkBuilder.variable()` (multi-outcome API)
+**Exploration:** quick
+**Status:** captured (surfaced by decision review — implicit choice made explicit)
