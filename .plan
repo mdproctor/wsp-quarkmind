@@ -1,0 +1,15 @@
+# Work Plan — issue-450-detector-cpts-learned-from-data
+
+## State
+branch: issue-450-detector-cpts-learned-from-data
+state: scaffolded
+project-sha: 18716116ebd001e902f00e06414b78444ae654ff
+date: 2026-10-25
+issue-repo: casehubio/quarkmind
+covers: 450
+design-repo: project
+design-section-hashes: 
+flyway-next-v: unknown
+
+## Queue
+- [ ] casehubio/quarkmind#450 — Issue #450 ← active
