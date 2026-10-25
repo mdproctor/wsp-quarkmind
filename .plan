@@ -23,5 +23,5 @@ flyway-next-v: unknown
     - [x] Task 5: Wire into CascadingPatternClassifier
   - [x] Batch 4: ExportPipeline
     - [x] Task 6: CptLearningExportTest
-  - [ ] Batch 5: Validation
-    - [ ] Task 7: CptLearningValidationTest + integration
+  - [x] Batch 5: Validation
+    - [x] Task 7: CptLearningValidationTest + integration
