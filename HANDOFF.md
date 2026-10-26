@@ -4,6 +4,10 @@
 
 **#360 closed — EmulatedGameFeatureExtractor.** Count-based diff emitter that converts EmulatedGame tick-by-tick GameState snapshots into standard game_json format for the Python training pipeline. Includes UPPER_SNAKE_CASE→PascalCase name conversion with overrides for Python pipeline compatibility (SCV, MULE, HellionTank, VikingFighter, TemplarArchive). Full round-trip validated: shape (3 tests), runtime feature pipeline (2 tests), oracle replay equivalence characterisation (40 player runs — units 95%→64%, buildings 2%→37%). Landed as `dca03de3`.
 
+## Immediate Next Step
+
+No active branch. Queue is empty. Next candidates from the Phase 4 epic (#344): #359 (autonomous play — EmulatedGame running full games without replay input) or #361 (continuous training loop — play→extract→train→play). Run `work find` or `work start #359` to begin.
+
 ## Cross-Module
 
 **Neocortex** — no pending changes.
