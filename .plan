@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-360-feature-extraction-emulated-games
-state: closing:verified
+state: closing:promoted
 project-sha: 3e8e7048
 date: 2026-10-25
 issue-repo: casehubio/quarkmind
