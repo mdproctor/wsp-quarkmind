@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="Inter, -apple-system, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#3b82f6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="520" fill="#0f172a" rx="8"/>
+
+  <!-- Title -->
+  <text x="400" y="36" text-anchor="middle" fill="#e2e8f0" font-size="15" font-weight="600">The Extraction Loop</text>
+
+  <!-- Replay path (existing, dimmed) -->
+  <rect x="40" y="60" width="160" height="52" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="120" y="82" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="500">SC2 Replay</text>
+  <text x="120" y="98" text-anchor="middle" fill="#64748b" font-size="9">.SC2Replay file</text>
+
+  <rect x="40" y="130" width="160" height="52" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="120" y="149" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500">TrackerEvent / Stripped</text>
+  <text x="120" y="167" text-anchor="middle" fill="#64748b" font-size="9">FeatureExtractor</text>
+
+  <line x1="120" y1="112" x2="120" y2="130" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Emulated path (new, highlighted) -->
+  <rect x="300" y="60" width="200" height="52" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <text x="400" y="82" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">EmulatedGame</text>
+  <text x="400" y="98" text-anchor="middle" fill="#60a5fa" font-size="9">tick() → snapshot() → GameState</text>
+
+  <rect x="300" y="130" width="200" height="52" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <text x="400" y="149" text-anchor="middle" fill="#93c5fd" font-size="10" font-weight="600">EmulatedGameFeature</text>
+  <text x="400" y="167" text-anchor="middle" fill="#60a5fa" font-size="9">Extractor — count-based diffs</text>
+
+  <line x1="400" y1="112" x2="400" y2="130" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+
+  <!-- Convergence: both paths produce game_json -->
+  <rect x="160" y="220" width="280" height="52" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+  <text x="300" y="240" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600">game_json</text>
+  <text x="300" y="258" text-anchor="middle" fill="#94a3b8" font-size="9">UnitBorn · UnitDied · Upgrade · PlayerStats</text>
+
+  <line x1="120" y1="182" x2="230" y2="220" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="182" x2="370" y2="220" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+
+  <!-- "same format" label -->
+  <text x="300" y="206" text-anchor="middle" fill="#64748b" font-size="9" font-style="italic">same format — zero Python changes</text>
+
+  <!-- Python pipeline -->
+  <rect x="160" y="300" width="280" height="44" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="300" y="320" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500">sc2egset_extractor.py → feature_engineering.py</text>
+  <text x="300" y="334" text-anchor="middle" fill="#64748b" font-size="9">204 features/player · 10 windows · 4090 floats</text>
+
+  <line x1="300" y1="272" x2="300" y2="300" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- ONNX training -->
+  <rect x="160" y="370" width="280" height="44" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="300" y="390" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="500">ONNX Strategy Classifier</text>
+  <text x="300" y="404" text-anchor="middle" fill="#64748b" font-size="9">per-matchup binary detectors</text>
+
+  <line x1="300" y1="344" x2="300" y2="370" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Feedback loop (the "closing" part) -->
+  <path d="M 440 392 Q 560 392 560 226 Q 560 80 500 80" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="6 3" marker-end="url(#arrow-accent)"/>
+  <text x="590" y="230" fill="#60a5fa" font-size="9" font-weight="500" transform="rotate(-90 590 230)">retrain → play better</text>
+
+  <!-- Runtime path (right side) -->
+  <rect x="580" y="60" width="180" height="52" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="670" y="82" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500">Runtime Inference</text>
+  <text x="670" y="98" text-anchor="middle" fill="#64748b" font-size="9">WindowSnapshot → Accumulator</text>
+
+  <rect x="580" y="130" width="180" height="52" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="670" y="149" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500">StrategyFeatures</text>
+  <text x="670" y="167" text-anchor="middle" fill="#64748b" font-size="9">BinaryDetectorRunner</text>
+
+  <line x1="670" y1="112" x2="670" y2="130" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- GameState feeds runtime too -->
+  <line x1="500" y1="86" x2="580" y2="86" stroke="#475569" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <text x="540" y="78" text-anchor="middle" fill="#475569" font-size="8">GameState</text>
+
+  <!-- Legend -->
+  <line x1="50" y1="470" x2="80" y2="470" stroke="#3b82f6" stroke-width="2"/>
+  <text x="88" y="474" fill="#60a5fa" font-size="10">New (this work)</text>
+
+  <line x1="200" y1="470" x2="230" y2="470" stroke="#475569" stroke-width="1.5"/>
+  <text x="238" y="474" fill="#64748b" font-size="10">Existing</text>
+
+  <line x1="340" y1="470" x2="370" y2="470" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <text x="378" y="474" fill="#60a5fa" font-size="10">Feedback loop (future)</text>
+
+  <!-- Equivalence results annotation -->
+  <rect x="570" y="280" width="200" height="80" rx="6" fill="#1a1a2e" stroke="#334155" stroke-width="1"/>
+  <text x="670" y="298" text-anchor="middle" fill="#94a3b8" font-size="9" font-weight="600">Equivalence (oracle replays)</text>
+  <text x="670" y="316" text-anchor="middle" fill="#6ee7b7" font-size="10">Units:  95% → 64%</text>
+  <text x="670" y="332" text-anchor="middle" fill="#fbbf24" font-size="10">Buildings:  2% → 37%</text>
+  <text x="670" y="348" text-anchor="middle" fill="#64748b" font-size="8">at 1-min → 7-min checkpoints</text>
+</svg>
