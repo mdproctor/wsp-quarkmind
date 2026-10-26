@@ -2,22 +2,16 @@
 
 ## Last Session
 
-**#450 closed — learned CPTs from replay data.** Python exporter runs ONNX detectors on 521K training observations, discretizes to HIGH/MEDIUM/LOW. Java `CptLearningExportTest` feeds observations to `ParameterLearner.fit()`, writes 9 learned CPT JSON files (3 phases × 3 matchups). Validation: learned CPTs outperform hand-tuned across all 9 matchup-phases (+10.7% to +75.7% accuracy). Landed as `dcae900d`.
-
-**#360 scaffolded** — branch created, no implementation work started.
-
-## Immediate Next Step
-
-Brainstorm and plan #360 (feature extraction from emulated games, S/Med). Read the issue, understand what StrategyFeatures extraction from EmulatedGame requires vs the existing replay-based extraction path.
+**#360 closed — EmulatedGameFeatureExtractor.** Count-based diff emitter that converts EmulatedGame tick-by-tick GameState snapshots into standard game_json format for the Python training pipeline. Includes UPPER_SNAKE_CASE→PascalCase name conversion with overrides for Python pipeline compatibility (SCV, MULE, HellionTank, VikingFighter, TemplarArchive). Full round-trip validated: shape (3 tests), runtime feature pipeline (2 tests), oracle replay equivalence characterisation (40 player runs — units 95%→64%, buildings 2%→37%). Landed as `dca03de3`.
 
 ## Cross-Module
 
-**Neocortex** — `ParameterLearner` used by #450. No pending changes.
+**Neocortex** — no pending changes.
 
 **Pre-existing issues:** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid. `DroolsDominanceWeightStrategyTest` config missing in `%test` profile.
 
 ## References
 
-- `.plan` — issue queue with #360 active
-- `docs/protocols/extractor-separate-from-simulated-game.md` — relevant protocol for #360
-- `blog/2026-10-25-mdp03-teaching-the-network-to-count.md` — diary entry for #450
+- Design spec: `specs/issue-360-feature-extraction-emulated-games/2026-10-26-emulated-game-feature-extraction-design.md`
+- Plan: `plans/2026-10-26-emulated-game-feature-extraction.md`
+- Decisions: `specs/issue-360-feature-extraction-emulated-games/decisions.md`
