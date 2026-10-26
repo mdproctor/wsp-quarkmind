@@ -1,0 +1,15 @@
+# Work Plan — issue-358-cross-version-generalisation
+
+## State
+branch: issue-358-cross-version-generalisation
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 358
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#358 — Issue #358 ← active
