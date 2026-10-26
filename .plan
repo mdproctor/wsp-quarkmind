@@ -14,5 +14,5 @@ flyway-next-v:
 ## Queue
 - [x] casehubio/quarkmind#364 — Issue #364
 - [x] casehubio/quarkmind#365 — Generate upgrade_mapping.py at Maven build time
-- [ ] casehubio/quarkmind#358 — Cross-version generalisation validation ← active
-- [ ] casehubio/quarkmind#357 — Retrain ONNX and calibrate per-minute accuracy
+- [x] casehubio/quarkmind#358 — Cross-version generalisation validation
+- [x] casehubio/quarkmind#357 — Retrain ONNX and calibrate per-minute accuracy
