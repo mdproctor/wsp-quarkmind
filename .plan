@@ -13,3 +13,10 @@ flyway-next-v: unknown
 
 ## Queue
 - [ ] casehubio/quarkmind#360 — Issue #360 ← active
+  - [ ] Batch 1: Core Extractor
+    - [ ] Task 1: EmulatedGameFeatureExtractor diff logic and unit test
+  - [ ] Batch 2: Validation Tests
+    - [ ] Task 2: Shape validation test
+    - [ ] Task 3: ONNX inference validation test
+  - [ ] Batch 3: Equivalence
+    - [ ] Task 4: Feature equivalence report
