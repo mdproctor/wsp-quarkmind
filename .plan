@@ -1,0 +1,15 @@
+# Work Plan — issue-455-vs-zerg-early-classific
+
+## State
+branch: issue-455-vs-zerg-early-classific
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 455
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#455 — Issue #455 ← active
