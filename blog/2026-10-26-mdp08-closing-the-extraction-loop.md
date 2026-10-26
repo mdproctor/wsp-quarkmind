@@ -50,4 +50,4 @@ The extractor faithfully converts whatever EmulatedGame produces. When EmulatedG
 
 The extraction bridge is one piece of the Phase 4 training loop. With it, any EmulatedGame run — whether from autonomous play, from scripted scenarios, or from replayed games — can produce training data in exactly the same format as the replay-based pipeline. The Python training code doesn't need to know where the data came from.
 
-The next piece is autonomous play (#359): EmulatedGame running full games without replay input, generating novel game states the classifier hasn't seen before. Once that's working, the loop closes: play → extract → train → play better.
+The next piece is autonomous play (#359): EmulatedGame running full games without replay input, generating novel game states the classifier hasn't seen before. Once that's working, the loop closes: play → extract → train → play better
