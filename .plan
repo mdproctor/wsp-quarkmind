@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-360-feature-extraction-emulated-games
-state: active
+state: closing:review
 project-sha: 3e8e7048
 date: 2026-10-25
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo: project
 design-section-hashes: 
 flyway-next-v: unknown
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#360 — Issue #360 ← active
   - [x] Batch 1: Core Extractor
