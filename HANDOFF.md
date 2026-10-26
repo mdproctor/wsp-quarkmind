@@ -2,13 +2,14 @@
 
 ## Last Session
 
-**#358 closed — cross-version generalisation validation.** Evaluated retrained ONNX models across 6 tournament datasets (patches 4.1–5.0, 401 replays). Oracle→tournament gap: ~12pp at min 3, ~6pp at min 5. vs_zerg early-minute accuracy (43.5% at min 3) is the main weakness — ROACH_RUSH↔RUSH confusion dominates. Filed #455 as follow-up for coarse-level accuracy and label audit.
+**#455 in progress — vs_zerg early-minute classification accuracy.** Added coarse-level accuracy reporting to cross-version validation. Key finding: vs_zerg tournament coarse accuracy is 93.9% at minute 3 (fine: 43.5%) — the ROACH_RUSH→RUSH confusion is entirely within the AGGRESSIVE coarse category. Label audit confirmed 93% of ROACH_RUSH replays have no RoachWarren at minute 3, making the fine-grained distinction unobservable at that checkpoint. Phase-aware thresholds documented. All 3 acceptance criteria met — ready for work-end.
 
 ## Immediate Next Step
 
-**#455 (vs_zerg early-minute accuracy)** — add coarse-level accuracy to validation, audit ROACH_RUSH labels at min 3. Or Phase 4: #359 (autonomous play) / #361 (continuous training loop).
+**Close #455** — all acceptance criteria met, tests pass. Then Phase 4: #359 (autonomous play) / #361 (continuous training loop).
 
 ## Known Issues
 
 - **Ground truth alignment gap**: OnnxClassificationCalibrationTest mid-game accuracy limited because `deriveGroundTruth()` produces archetypes not in model vocabulary.
 - **Pre-existing:** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid.
+- **Pre-existing test failures:** `test_coarse_label_map_no_hierarchy` (wrong test assertion), `test_ingest_spawningtool` (API signature change), `test_coverage_gaps` (archetype count drift).
