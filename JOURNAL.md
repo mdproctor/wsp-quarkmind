@@ -1,1 +1,1 @@
-# Design Journal — issue-455-vs-zerg-early-classific
+# Design Journal — issue-456-sc2-replay-scouting-pipeline
