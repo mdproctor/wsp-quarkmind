@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-364-phase3-onnx-completion
-state: scaffolded
+state: active
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -13,3 +13,6 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#364 — Issue #364 ← active
+- [ ] casehubio/quarkmind#365 — Generate upgrade_mapping.py at Maven build time
+- [ ] casehubio/quarkmind#358 — Cross-version generalisation validation
+- [ ] casehubio/quarkmind#357 — Retrain ONNX and calibrate per-minute accuracy
