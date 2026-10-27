@@ -13,3 +13,11 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#456 — Issue #456 ← active
+  - [ ] Batch 1: Domain records and extraction
+    - [ ] Task 1: ScoutingObservation domain records
+    - [ ] Task 2: ScoutingObservationExtractor
+  - [ ] Batch 2: Prior and CPT learning
+    - [ ] Task 3: ClassifierLabelMapper
+    - [ ] Task 4: PriorExportPipeline
+  - [ ] Batch 3: End-to-end export
+    - [ ] Task 5: PriorExportTest bulk export
