@@ -126,11 +126,28 @@ public record ScoutingObservationSequence(
 ### Extraction Modes
 
 - **Replay mode (batch):** Reads game_json, applies fog-of-war (only what the
-  scouting player could see), extracts observations at known checkpoints.
+  scouting player could see), extracts observations at the game loop when they
+  become visible to the scouting player's units. `detectedAtLoop` records when
+  the player first had line-of-sight, not when the event actually occurred.
   Produces `ScoutingObservationSequence` per player per replay.
 - **Live mode:** Reads from `GameState` during a game tick, produces individual
   `ScoutingObservation` records as new information becomes visible. Used by
   `DroolsScoutingTask` to feed the HypothesisTracker during play.
+
+### Fog-of-War Design Rationale
+
+Fog-of-war extraction is intentional, not a limitation. The CPTs model
+P(observation_state | strategy) — the conditional probability of what a player
+sees given the opponent's strategy, at the moment of observation. Variables that
+have not yet been scouted simply have no evidence set on the tracker, which is
+the correct Bayesian treatment: prior weights hold until evidence arrives.
+
+This matches live prediction semantics: in a real game, observations arrive when
+scouted, not when the event occurs. Training CPTs from full-information replays
+would create a mismatch where the model expects observations earlier than the
+live system can provide them. The CPT values themselves are independent of
+observation timing — P(first_building = gateway | rush) is a structural property
+of the strategy, regardless of when the scout reaches the enemy base.
 
 ## Component 2: SC2HypothesisNetworkBuilder
 
@@ -186,11 +203,106 @@ public class SC2HypothesisNetworkBuilder {
 
     public static HypothesisTracker buildResponseTracker(
         Race ourRace,
-        Map<String, Double> responsePriors,          // P(our strategy | opponent strategy)
-        Map<String, Double> opponentPosterior        // current opponent assessment
+        Map<String, Double> responsePriors,
+        Map<String, Double> opponentPosterior,
+        Map<String, double[]> contextCpts            // economy/army/tech state CPTs
     );
 }
 ```
+
+### Construction Walkthrough
+
+The `buildOpponentTracker()` factory encapsulates the following multi-step
+construction. This walkthrough documents what the factory does internally,
+following the `HypothesisTrackerScoutingExample` pattern from neocortex.
+
+**Step 1: Build intel JunctionTree**
+
+```java
+var intelBuilder = BayesNetworkBuilder.create("intel");
+
+// Root variable — strategy archetypes for this race/phase
+String[] archetypes = filteredArchetypes(enemyRace, phase);
+double[] priorArray = /* from learnedPriors, indexed by archetypes */;
+intelBuilder.variable("enemy_strategy", archetypes).prior(priorArray);
+
+// Observation variables — one per scouting variable
+for (var obsEntry : observationCpts.entrySet()) {
+    String varName = obsEntry.getKey();  // e.g. "first_building"
+    String[] states = obsEntry.getValue().keySet().toArray(String[]::new);
+    double[] flatCpt = /* flatten observationCpts[varName] by archetype order */;
+    intelBuilder.variable(varName, states).given("enemy_strategy").cpt(flatCpt);
+}
+
+// Detector variables — one per active ONNX detector
+for (String detName : activeDetectorNames) {
+    Map<String, Double> cpt = detectorCpts.get(detName);
+    double[] flatCpt = /* build [pHigh, 1-pHigh] per archetype, clamped to [0.01, 0.99] */;
+    intelBuilder.variable(detName, "HIGH", "LOW").given("enemy_strategy").cpt(flatCpt);
+}
+
+// Drools evidence variable — for EvidenceMarker integration
+String[] markerStates = archetypes; // one state per archetype
+double[] uniformPrior = /* uniform 1/N */;
+intelBuilder.variable("drools_evidence", markerStates)
+    .given("enemy_strategy").cpt(/* identity-like CPT: P(evidence=X | strategy=X) = high */);
+
+JunctionTree intelTree = intelBuilder.buildJunctionTree();
+```
+
+**Step 2: Build response JunctionTree**
+
+```java
+var responseBuilder = BayesNetworkBuilder.create("response");
+responseBuilder.variable("enemy_strategy", archetypes).prior(priorArray);
+responseBuilder.variable("our_economy_state", "behind", "even", "ahead")
+    .given("enemy_strategy").cpt(/* uniform or learned */);
+responseBuilder.variable("our_army_state", "smaller", "even", "larger")
+    .given("enemy_strategy").cpt(/* uniform or learned */);
+responseBuilder.variable("our_tech_state", "behind", "even", "ahead")
+    .given("enemy_strategy").cpt(/* uniform or learned */);
+// Response conditioned on enemy strategy + context
+String[] ourStrategies = /* our available strategies */;
+responseBuilder.variable("our_strategy", ourStrategies)
+    .given("enemy_strategy").cpt(/* from response prior learning */);
+JunctionTree responseTree = responseBuilder.buildJunctionTree();
+```
+
+**Step 3: Compose via CompositionBuilder**
+
+```java
+NetworkComposition composition = CompositionBuilder.create("sc2-scouting")
+    .slot("intel", intelTree)
+    .slot("response", responseTree)
+    .link("intel", "enemy_strategy").to("response", "enemy_strategy")
+    .build();
+```
+
+Slot names: `"intel"` (opponent detection), `"response"` (strategy selection).
+The link transfers the `enemy_strategy` posterior from intel to response via
+`TransferMode.POSTERIOR` (default).
+
+**Step 4: Build HypothesisTracker**
+
+```java
+var builder = HypothesisTracker.builder(composition);
+for (var archetype : filteredArchetypes(enemyRace, phase)) {
+    double prior = learnedPriors.getOrDefault(archetype, 1.0 / N);
+    double[] override = new double[archetypes.length]; // concentrate on this archetype
+    // Set override[i] = 0.85 for this archetype, 0.05/(N-1) for others
+    builder.hypothesis(archetype)
+        .priorWeight(prior)
+        .priorOverride("intel", "enemy_strategy", override);
+}
+builder.eliminationThreshold(0.01)
+       .resolutionThreshold(0.95);
+return builder.build();
+```
+
+Each hypothesis concentrates probability on its archetype in the
+`enemy_strategy` variable via `priorOverride()`, then the tracker evolves
+weights as observations arrive. The `priorWeight` reflects the learned
+frequency of this archetype in the matchup.
 
 ## Component 3: Prior Learning Pipeline
 
@@ -233,16 +345,23 @@ knowledge:
 
 ```yaml
 vs_protoss:
-  when_opponent: PROTOSS_CANNON_RUSH
-    preferred_response: PROTOSS_FAST_EXPAND  # expand behind defense
-    confidence_boost: 0.3
-  when_opponent: PROTOSS_DT_RUSH
-    preferred_response: PROTOSS_MACRO  # observer + defend
-    confidence_boost: 0.4
+  - when_opponent: PROTOSS_CANNON_RUSH
+    preferred_response: PROTOSS_FAST_EXPAND
+    prior_multiplier: 3.0
+  - when_opponent: PROTOSS_DT_RUSH
+    preferred_response: PROTOSS_MACRO
+    prior_multiplier: 4.0
 ```
 
-Applied as prior overrides via
-`HypothesisTrackerBuilder.hypothesis(name).priorWeight(learnedPrior + boost)`.
+Applied as multiplicative prior adjustments: the learned prior for the
+preferred response is multiplied by `prior_multiplier`, then the full response
+prior distribution is renormalized. This preserves the relative scale of the
+learned distribution — a 3x multiplier has the same proportional effect whether
+the base prior is 0.05 or 0.40.
+
+Combination rule: `adjustedPrior[i] = learnedPrior[i] * multiplier[i]`, then
+normalize so all priors sum to 1.0. When no expert override applies,
+`multiplier = 1.0` (identity).
 
 ### Storage
 
@@ -269,12 +388,49 @@ OpponentStrategy). These are learned from labelled replay data:
 For each labelled replay:
   - Run ScoutingObservationExtractor → discrete observations
   - Pair each observation with the ground-truth strategy label
-  - Count co-occurrences → normalize to CPTs
+  - Count co-occurrences
+  - Apply Laplace smoothing (add-1) before normalizing to CPTs
+  - Clamp all CPT entries to [0.01, 0.99] floor/ceiling
 ```
+
+Laplace smoothing prevents zero-probability CPT entries. Without it, a single
+zero P(observation | strategy) entry causes immediate hard elimination in the
+`HypothesisTracker` — `if (likelihood == 0.0) → ELIMINATED`. With 62 strategy
+archetypes and sparse replay data, zero entries are guaranteed for rare
+strategy-observation combinations. The 0.01 floor matches the existing
+`SC2NetworkBuilder` clamping pattern (`Math.max(0.01, Math.min(0.99, pHigh))`).
+
+For prior learning, use `HypothesisPriorLearner(allHypotheses, smoothing=1.0)`
+which already supports Laplace smoothing via its constructor parameter.
 
 Output: `Map<String, Map<String, double[]>>` per matchup — variable name →
 archetype → probability distribution over states. Stored as JSON on classpath,
 loaded alongside detector CPTs.
+
+### Data Pipeline: Source → Classpath
+
+The prior learning pipeline runs as a standalone build step, not at runtime:
+
+```
+quarkmind-classifier/data/reconstituted/*.label.json  (source data)
+    │
+    ▼  ScoutingObservationExtractor (batch mode) + PriorLearner
+    │
+quarkmind-sc2/src/main/resources/priors/              (classpath resources)
+    opponent-priors-EARLY-vs-terran.json
+    opponent-priors-MID-vs-protoss.json
+    observation-cpts-EARLY-vs-terran.json
+    response-priors-vs-zerg.json
+    ...
+```
+
+The pipeline reads `.label.json` sidecars from `quarkmind-classifier` (a sibling
+project in the same workspace), extracts observations and strategy labels, learns
+priors and CPTs, and writes JSON files to `quarkmind-sc2/src/main/resources/priors/`.
+These are committed to the repository as resources, following the existing pattern
+from `LearnedCptLoader` which loads `classifier/learned-cpts-*.json` from the
+classpath. The pipeline is invoked manually (or via a Maven exec plugin) when new
+replay data is available — not on every build.
 
 ## Component 4: HypothesisTrackerFusion
 
@@ -294,7 +450,7 @@ public class HypothesisTrackerFusion {
         Map<String, Map<String, Double>> detectorCpts,
         Map<String, Map<String, double[]>> observationCpts,
         Map<String, BayesNetwork> learnedNetworks,
-        int smoothingWindowSize
+        PhaseResolver phaseResolver
     );
 
     // Initialize for a specific phase/race combination
@@ -326,9 +482,153 @@ public class HypothesisTrackerFusion {
     public String opponentLeader();
     public boolean isOpponentResolved();
 
+    // Diagnostic APIs — equivalents of DetectorOrchestrator methods
+    public StrategyArchetype getMapStrategy();
+    public BayesStats getStats();
+    public Map<String, Double> getSensitivities();
+    public Map<String, Object> getMapAssignment();
+    public String getExplanationSummary();
+    public Set<String> getDetectorsToEvaluate(Set<String> available);
+
     public void reset();
 }
 ```
+
+### Detector Output → HypothesisTracker Mapping
+
+ONNX detector outputs are continuous floats (0.0–1.0). They must be converted
+to `double[] distribution` arrays for `tracker.observe("intel", detName, dist)`.
+
+The existing `DetectorOrchestrator.toThreeElementLikelihood()` conversion is
+reused: each float score maps to a `[pHigh, pMedium, pLow]` array for 3-outcome
+detectors, or `[p, 1-p]` for binary detectors. The conversion logic is promoted
+to a shared utility in `HypothesisTrackerFusion`.
+
+```java
+// In classify():
+for (var entry : detectorOutputs.entrySet()) {
+    double[] distribution = toThreeElementLikelihood(entry.getValue());
+    tracker.observe("intel", entry.getKey(), distribution);
+}
+```
+
+For binary detectors (the current default), the hard evidence threshold still
+applies: scores ≥ 0.95 become `[1.0, 0.0]`, scores ≤ 0.05 become `[0.0, 1.0]`,
+and intermediate values become soft evidence `[p, 1-p]`.
+
+### EvidenceMarker Integration
+
+Drools `EvidenceMarker` records are integrated via a dedicated `drools_evidence`
+variable in the intel network (see Construction Walkthrough, Step 1). Each
+marker's archetype maps to a state of this variable:
+
+```java
+// In classify():
+if (!droolsMarkers.isEmpty()) {
+    double[] likelihood = new double[archetypes.length];
+    Arrays.fill(likelihood, 0.1);  // baseline
+    for (EvidenceMarker marker : droolsMarkers) {
+        int idx = archetypeIndex(marker.archetype());
+        likelihood[idx] = Math.max(likelihood[idx], marker.weight());
+    }
+    tracker.observe("intel", "drools_evidence", likelihood);
+}
+```
+
+This mirrors the existing `DetectorOrchestrator.computeMarkerLikelihood()`
+logic, translating marker weights into a soft evidence distribution on a
+dedicated variable rather than directly on the `Strategy` variable. The
+dedicated variable gives the Bayesian network a cleaner separation between
+Drools rule evidence and ONNX detector evidence.
+
+### Phase Transition Semantics
+
+When the game transitions between phases (EARLY → MID → LATE), the tracker is
+reinitialized:
+
+1. Capture terminal weights via `tracker.snapshot()`
+2. Build a new `HypothesisTracker` for the new phase (different archetypes,
+   different detectors, potentially different network structure)
+3. Seed the new tracker's priors from the terminal weights of the previous phase:
+   archetypes that exist in both phases carry forward their terminal weight;
+   new-phase-only archetypes receive the learned default prior
+
+```java
+// In initialize() when phase changes:
+TrackerSnapshot terminal = opponentTracker.snapshot();
+opponentTracker = SC2HypothesisNetworkBuilder.buildOpponentTracker(
+    enemyRace, newPhase, seedPriors(learnedPriors, terminal), ...);
+```
+
+This preserves accumulated intelligence across phases without maintaining stale
+network structure. The `initialize()` method detects phase changes by comparing
+the new phase against the current phase (not just the detector set), mirroring
+the existing `DetectorOrchestrator` guard:
+`if (initialized && currentPhase == newPhase && currentSorted.equals(newSorted)) return;`
+
+### Diagnostic API Mapping
+
+| `DetectorOrchestrator` method | `HypothesisTrackerFusion` equivalent | Source |
+|---|---|---|
+| `getMapStrategy()` | `getMapStrategy()` → `labelToArchetype.get(tracker.leader())` | `HypothesisTracker.leader()` |
+| `getStats()` | `getStats()` → delegates to `CompositionInstance.getStats("intel")` | `BayesInstance.getStats()` via composition |
+| `getSensitivities()` | `getSensitivities()` → computed from the intel slot's `BayesInstance` | Requires exposing `BayesInstance` sensitivities through the composition |
+| `getMapAssignment()` | `getMapAssignment()` → `Map.of("Strategy", tracker.leader())` + per-slot marginals | Derived from tracker weights and slot marginals |
+| `getExplanationSummary()` | `getExplanationSummary()` → built from `TrackerSnapshot`: top 5 viable hypotheses with weights and eliminated hypotheses | Different format: hypothesis weights rather than variable influence traces |
+| `getDetectorsToEvaluate()` | `getDetectorsToEvaluate()` → hypothesis-based pruning (see below) | `HypothesisTracker.viable()` |
+
+**Sensitivity pruning replacement:** The `HypothesisTracker` enables a
+different, potentially more effective pruning mechanism: hypothesis-based
+pruning. Once hypotheses are eliminated, detectors that only differentiate
+between eliminated hypotheses can be skipped. If only 3 of 62 hypotheses remain
+viable, only detectors whose CPTs distinguish between those 3 need to run.
+
+```java
+public Set<String> getDetectorsToEvaluate(Set<String> available) {
+    List<String> viable = tracker.viable();
+    if (viable.size() <= 1) return Set.of(); // resolved — no detectors needed
+    Set<String> needed = new HashSet<>();
+    for (String det : available) {
+        if (distinguishesViableHypotheses(det, viable)) {
+            needed.add(det);
+        }
+    }
+    return needed.isEmpty() ? available : needed;
+}
+```
+
+### Learned Networks Parameter
+
+The `learnedNetworks` parameter (`Map<String, BayesNetwork>`, keyed by
+`PHASE_vs_race`) provides pre-trained networks from `LearnedCptLoader`. When a
+learned network exists for the current phase/race combination, the
+`HypothesisTrackerFusion` uses it as the intel slot's `JunctionTree` instead of
+the generated one from `SC2HypothesisNetworkBuilder`. The learned network's
+variable structure must match the expected slot structure (same `enemy_strategy`
+outcomes, same detector and observation variables).
+
+```java
+// In initialize():
+String key = phase.name() + "_vs_" + enemyRace.name().toLowerCase();
+BayesNetwork learned = learnedNetworks.get(key);
+if (learned != null) {
+    JunctionTree intelTree = new JunctionTreeBuilder(learned).build();
+    // Use learned tree for intel slot instead of generated
+}
+```
+
+### Concurrency
+
+`DroolsScoutingTask.execute()` runs per game tick at 22.4 fps.
+`HypothesisTracker.observe()` performs Bayesian updating: marginalization,
+weight multiplication, normalization, and potential elimination. The
+`CompositionInstance.update()` propagates through the junction tree.
+
+For the expected network sizes (≤62 hypotheses, ≤15 variables per slot), each
+`observe()` call is O(hypotheses × variable_states) — microsecond-scale per
+observation. The `CompositionInstance.update()` includes incremental dirty-slot
+tracking (`slotsSkipped` counter in `CompositionStats`), so unchanged slots
+are not re-propagated. This is well within the ~45ms per-tick budget.
 
 ### Integration with CascadingPatternClassifier
 
@@ -345,29 +645,64 @@ var assessments = detectorOrchestrator.classify(scores, markers, frame);
 
 // After (HypothesisTrackerFusion):
 hypothesisTrackerFusion.initialize(detectorKeys, phase, enemyRace);
-// Feed any new discrete observations accumulated this tick
-for (ScoutingObservation obs : newObservations) {
-    hypothesisTrackerFusion.observeScouting(obs);
-}
-var scores = detectorRunner.runActiveDetectors(phase, enemyRace, features, detectorKeys);
+var toEvaluate = hypothesisTrackerFusion.getDetectorsToEvaluate(allKeys);
+var scores = detectorRunner.runActiveDetectors(phase, enemyRace, features, toEvaluate);
 var assessments = hypothesisTrackerFusion.classify(scores, markers, frame);
 ```
+
+The `classify()` signature on `CascadingPatternClassifier` is **unchanged** —
+scouting observations are not threaded through the cascade. Instead,
+`CascadingPatternClassifier` exposes a delegation method:
+
+```java
+public void observeScouting(ScoutingObservation observation) {
+    if (hypothesisTrackerFusion != null) {
+        hypothesisTrackerFusion.observeScouting(observation);
+    }
+}
+```
+
+This preserves tier separation: the cascade routes between tiers based on
+confidence without needing to know about scouting observation records. The
+fusion layer has already accumulated observations when the cascade invokes
+tier 2.
+
+The `detectorStats()` method is updated to use the `HypothesisTrackerFusion`
+diagnostic APIs, maintaining the `DetectorStatsPublished` CDI event format.
 
 ### DroolsScoutingTask Changes
 
 `DroolsScoutingTask` gains a `LiveScoutingObservationExtractor` that produces
-discrete observations from the current `GameState` each tick. These are passed
-to the cascade alongside the existing `EvidenceMarker` list and
-`StrategyFeatures`.
-
-The `execute()` method adds:
+discrete observations from the current `GameState` each tick. Observations are
+fed directly to the cascade's `observeScouting()` method before classification:
 
 ```java
 List<ScoutingObservation> newObs = liveExtractor.extract(gameState, frame);
+for (ScoutingObservation obs : newObs) {
+    cascadingClassifier.observeScouting(obs);
+}
 cascadeResult = cascadingClassifier.classify(
     evidence, revisions, features, enemyRace, frame, prevFrame, ctx,
-    enemies.size(), newObs);  // new parameter
+    enemies.size());  // signature unchanged
 ```
+
+### Phase Resolution
+
+The `HypothesisTrackerFusion` constructor accepts a `PhaseResolver` instance
+and uses it consistently. The static `CascadingPatternClassifier.resolvePhase(frame)`
+is replaced with a call to the injected `PhaseResolver`:
+
+```java
+// Before: GamePhase phase = resolvePhase(frame);  // static time thresholds
+// After:  GamePhase phase = phaseResolver.resolve(gameState);  // injected resolver
+```
+
+This eliminates the dual-track inconsistency where `DroolsScoutingTask` uses
+`phaseResolver.resolve(gameState)` but `CascadingPatternClassifier` uses
+`resolvePhase(frame)`. Both now use the same `PhaseResolver` instance, ensuring
+the phase used for learned prior selection matches the phase set on the
+`CaseContext`. `CascadingPatternClassifier.resolvePhase()` is retained as a
+package-private fallback for tests that don't inject a `PhaseResolver`.
 
 ## Testing Strategy
 
@@ -396,18 +731,33 @@ cascadeResult = cascadingClassifier.classify(
 ### Calibration Tests
 
 - **HypothesisTrackerCalibrationTest** — run against AI Arena + IEM10 replay
-  datasets, compare accuracy at 3-min and 5-min checkpoints against the
-  existing `PatternClassificationCalibrationTest` baseline. The new fusion must
-  match or exceed existing accuracy.
+  datasets, compare accuracy at 3-min and 5-min checkpoints against the full
+  cascade with the current `DetectorOrchestrator` tier 2 baseline. Both old
+  (DetectorOrchestrator) and new (HypothesisTrackerFusion) paths run the same
+  inputs and measure assessment accuracy. The new fusion must match or exceed
+  existing accuracy. Note: `PatternClassificationCalibrationTest` exercises the
+  full cascade including tier 2, so it is a valid baseline — but the new test
+  should explicitly run both tier 2 implementations side-by-side for direct
+  comparison.
 
 ## Scope and Phasing
 
-This is a moderate-sized integration. Suggested phasing:
+This spec is a comprehensive design document covering the full integration
+vision. Issue #456 scopes to Phase 1 only (replay parsing, observation
+extraction, strategy labelling, dataset generation). Subsequent phases are
+tracked under separate issues:
 
-**Phase 1: Data pipeline (prior learning)**
+| Phase | Issue | Scope |
+|---|---|---|
+| Phase 1: Data pipeline | casehubio/quarkmind#456 | Replay extraction, prior learning, CPT export |
+| Phase 2: Network definition | To be filed | `SC2HypothesisNetworkBuilder`, `HypothesisTrackerFusion` |
+| Phase 3: Live integration | To be filed | Cascade wiring, `LiveScoutingObservationExtractor`, `DroolsScoutingTask` |
+| Phase 4: Response selection | To be filed | Response priors, response network, expert overrides |
+
+**Phase 1: Data pipeline (prior learning)** — casehubio/quarkmind#456
 - `ScoutingObservationExtractor` (replay mode)
 - Prior frequency extraction from `.label.json` sidecars
-- Observation CPT learning from labelled replays
+- Observation CPT learning from labelled replays (with Laplace smoothing)
 - JSON export of learned priors and CPTs
 
 **Phase 2: Network definition**
@@ -415,7 +765,7 @@ This is a moderate-sized integration. Suggested phasing:
 - `HypothesisTrackerFusion` — replacement for `DetectorOrchestrator`
 - Unit tests against fixtures
 
-**Phase 3: Integration**
+**Phase 3: Live integration**
 - Wire into `CascadingPatternClassifier` (replace tier 2)
 - `LiveScoutingObservationExtractor` for game-tick observations
 - `DroolsScoutingTask` changes
@@ -448,15 +798,17 @@ available — it's not deleted, just not wired in by default.
 - **Discrete observation variables lose continuous information.** The
   discretization boundaries (e.g., gas_timing thresholds) are design choices
   that affect sensitivity. Calibrate from replay data, not from intuition.
-  Protocol `sc2data-train-times-require-calibration.md` applies.
+  Protocol `sc2data-train-times-require-calibration.md` applies — to be created
+  as part of Phase 1, covering discretization boundary calibration methodology.
 - **Response selection depends on opponent detection quality.** If opponent
   assessment is wrong, response selection amplifies the error. Path elimination
   and the resolution threshold (`0.95`) provide a gate — don't select a response
   until the opponent assessment is resolved or highly confident.
-- **Expert overrides can conflict with learned priors.** The override is additive
-  (boost), not a replacement — learned priors provide the base, expert knowledge
-  shifts the distribution. If data contradicts the expert, the data wins at
-  scale.
+- **Expert overrides can conflict with learned priors.** The override is
+  multiplicative, not a replacement — learned priors provide the base, expert
+  knowledge scales specific entries in the distribution. At scale, the learned
+  data dominates because the multiplicative adjustment is applied once at
+  construction time while the data informs the base prior.
 
 ## References
 
