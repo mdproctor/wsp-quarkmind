@@ -169,13 +169,13 @@ The composed network has two subnetworks:
   structure as current `SC2NetworkBuilder` detector children
 
 **Response Selection Network:**
-- **Hidden variable:** `OurStrategy` — states are our available strategy
-  archetypes for the current game state
+- **Output variable:** `OurStrategy` — states are our available strategy
+  archetypes, conditioned on `OpponentAssessment` + all context variables
 - **Conditioning variable:** `OpponentAssessment` — linked from the opponent
   detection network's current leader/distribution
 - **Context variables:** `our_economy_state` (behind/even/ahead),
   `our_army_state` (smaller/even/larger), `our_tech_state` (behind/even/ahead)
-  — derived from game state
+  — root nodes with uniform priors, set as hard evidence from `GameState`
 
 The two networks compose via `NetworkComposition`. The opponent detection
 network's posterior flows into the response selection network as a conditioning
@@ -252,21 +252,40 @@ JunctionTree intelTree = intelBuilder.buildJunctionTree();
 
 **Step 2: Build response JunctionTree**
 
+Context variables are root nodes set as hard evidence at inference time — they
+represent our game state, not the opponent's strategy. `our_strategy` is
+conditioned on all four parents so that context influences the recommendation:
+
+```
+enemy_strategy ──────┐
+our_economy_state ───┤
+our_army_state ──────┼──► our_strategy
+our_tech_state ──────┘
+```
+
 ```java
 var responseBuilder = BayesNetworkBuilder.create("response");
 responseBuilder.variable("enemy_strategy", archetypes).prior(priorArray);
+// Context variables — root nodes with uniform priors, set as hard evidence
 responseBuilder.variable("our_economy_state", "behind", "even", "ahead")
-    .given("enemy_strategy").cpt(/* uniform or learned */);
+    .prior(1.0/3, 1.0/3, 1.0/3);
 responseBuilder.variable("our_army_state", "smaller", "even", "larger")
-    .given("enemy_strategy").cpt(/* uniform or learned */);
+    .prior(1.0/3, 1.0/3, 1.0/3);
 responseBuilder.variable("our_tech_state", "behind", "even", "ahead")
-    .given("enemy_strategy").cpt(/* uniform or learned */);
-// Response conditioned on enemy strategy + context
+    .prior(1.0/3, 1.0/3, 1.0/3);
+// Response conditioned on enemy strategy AND all context variables
 String[] ourStrategies = /* our available strategies */;
 responseBuilder.variable("our_strategy", ourStrategies)
-    .given("enemy_strategy").cpt(/* from response prior learning */);
+    .given("enemy_strategy", "our_economy_state", "our_army_state", "our_tech_state")
+    .cpt(/* P(our_strategy | enemy_strategy, economy, army, tech) */);
 JunctionTree responseTree = responseBuilder.buildJunctionTree();
 ```
+
+The joint CPT has `|enemy_strategies| × 3 × 3 × 3 = 27 × |enemy_strategies|`
+rows. For 20 enemy archetypes this is 540 rows × |our_strategies| values.
+Initial CPTs are seeded from the response prior learning (Source 2) with uniform
+context dimensions, then refined through replay analysis that pairs game state
+snapshots with strategy outcomes.
 
 **Step 3: Compose via CompositionBuilder**
 
@@ -460,8 +479,12 @@ public class HypothesisTrackerFusion {
         Race enemyRace
     );
 
-    // Feed discrete scouting observations
+    // Feed discrete scouting observations (one-time, uses observeHard)
     public void observeScouting(ScoutingObservation observation);
+
+    // Set per-tick evidence (replaces without weight multiplication)
+    public void setDetectorEvidence(Map<String, Float> detectorOutputs);
+    public void setDroolsEvidence(List<EvidenceMarker> droolsMarkers);
 
     // Classify from all evidence sources
     public List<PatternAssessment> classify(
@@ -494,23 +517,100 @@ public class HypothesisTrackerFusion {
 }
 ```
 
-### Detector Output → HypothesisTracker Mapping
+### Evidence Model — Dual-Path Architecture
 
-ONNX detector outputs are continuous floats (0.0–1.0). They must be converted
-to `double[] distribution` arrays for `tracker.observe("intel", detName, dist)`.
+The `HypothesisTracker.observe()` API cumulatively **multiplies** hypothesis
+weights by the computed likelihood on each call:
 
-The existing `DetectorOrchestrator.toThreeElementLikelihood()` conversion is
-reused: each float score maps to a `[pHigh, pMedium, pLow]` array for 3-outcome
-detectors, or `[p, 1-p]` for binary detectors. The conversion logic is promoted
-to a shared utility in `HypothesisTrackerFusion`.
+```java
+// HypothesisTracker.observe():
+currentWeights.put(name, currentWeights.get(name) * likelihood);
+comp.setEvidence(slotName, variableName, distribution);
+comp.update();
+```
+
+This is correct for one-time sequential observations (a scout sees a gateway —
+that information arrives once and permanently updates beliefs). It is **wrong**
+for per-tick evidence (detector scores that refresh every game tick) — calling
+`observe()` K times with unchanged evidence multiplies the weight K times,
+exponentially converging on the best-fitting hypothesis regardless of whether
+new information arrived.
+
+The fusion layer therefore separates two evidence paths:
+
+**Path 1: One-time scouting observations → `tracker.observeHard()`**
+
+Called once per observation event. Multiplies hypothesis weights by the
+observation likelihood, may eliminate hypotheses. Drives hypothesis narrowing.
+
+```java
+// In observeScouting():
+tracker.observeHard("intel", observation.variable(), observation.state());
+```
+
+Scouting observations are categorical facts (`first_building = "gateway"`) so
+`observeHard()` is used, not `observe()`.
+
+**Path 2: Per-tick evidence → `tracker.setPerTickEvidence()`**
+
+Called every tick with current detector scores and Drools markers. **Replaces**
+evidence on each hypothesis's `CompositionInstance` via `setEvidence()` +
+`update()` — without multiplying hypothesis weights. The junction tree
+propagation reflects current evidence, but weight evolution is driven only by
+scouting observations.
 
 ```java
 // In classify():
+// Detector outputs — per-tick replacement
 for (var entry : detectorOutputs.entrySet()) {
     double[] distribution = toThreeElementLikelihood(entry.getValue());
-    tracker.observe("intel", entry.getKey(), distribution);
+    tracker.setPerTickEvidence("intel", entry.getKey(), distribution);
+}
+
+// Drools markers — per-tick replacement
+if (!droolsMarkers.isEmpty()) {
+    double[] likelihood = new double[archetypes.length];
+    Arrays.fill(likelihood, 0.1);
+    for (EvidenceMarker marker : droolsMarkers) {
+        int idx = archetypeIndex(marker.archetype());
+        likelihood[idx] = Math.max(likelihood[idx], marker.weight());
+    }
+    tracker.setPerTickEvidence("intel", "drools_evidence", likelihood);
+} else {
+    tracker.clearPerTickEvidence("intel", "drools_evidence");
 }
 ```
+
+**`setPerTickEvidence()`** is a new method on `HypothesisTracker` (see
+§Required Neocortex API Additions). It delegates to each viable hypothesis's
+`CompositionInstance.setEvidence()` + `update()` without touching weights:
+
+```java
+// New HypothesisTracker method:
+public void setPerTickEvidence(String slotName, String variableName, double[] distribution) {
+    for (var entry : compositions.entrySet()) {
+        if (statuses.get(entry.getKey()) == HypothesisStatus.VIABLE) {
+            entry.getValue().setEvidence(slotName, variableName, distribution);
+            entry.getValue().update();
+        }
+    }
+}
+```
+
+**Assessment derivation:** The output `List<PatternAssessment>` is built from
+the hypothesis weights (which reflect only scouting observation updates) combined
+with the compositions' current posteriors (which reflect all evidence including
+per-tick detector/Drools state). The assessment confidence for each archetype
+comes from the tracker's normalized hypothesis weight — which is only updated
+when scouting observations arrive.
+
+### Detector Output Conversion
+
+ONNX detector outputs are continuous floats (0.0–1.0). The existing
+`DetectorOrchestrator.toThreeElementLikelihood()` conversion is reused: each
+float score maps to a `[pHigh, pMedium, pLow]` array for 3-outcome detectors,
+or `[p, 1-p]` for binary detectors. The conversion logic is promoted to a
+shared utility.
 
 For binary detectors (the current default), the hard evidence threshold still
 applies: scores ≥ 0.95 become `[1.0, 0.0]`, scores ≤ 0.05 become `[0.0, 1.0]`,
@@ -520,26 +620,14 @@ and intermediate values become soft evidence `[p, 1-p]`.
 
 Drools `EvidenceMarker` records are integrated via a dedicated `drools_evidence`
 variable in the intel network (see Construction Walkthrough, Step 1). Each
-marker's archetype maps to a state of this variable:
+marker's archetype maps to a state of this variable, and the marker weight
+becomes the likelihood for that state with a 0.1 baseline — mirroring the
+existing `DetectorOrchestrator.computeMarkerLikelihood()` semantics. The
+dedicated variable gives the Bayesian network cleaner separation between Drools
+rule evidence and ONNX detector evidence.
 
-```java
-// In classify():
-if (!droolsMarkers.isEmpty()) {
-    double[] likelihood = new double[archetypes.length];
-    Arrays.fill(likelihood, 0.1);  // baseline
-    for (EvidenceMarker marker : droolsMarkers) {
-        int idx = archetypeIndex(marker.archetype());
-        likelihood[idx] = Math.max(likelihood[idx], marker.weight());
-    }
-    tracker.observe("intel", "drools_evidence", likelihood);
-}
-```
-
-This mirrors the existing `DetectorOrchestrator.computeMarkerLikelihood()`
-logic, translating marker weights into a soft evidence distribution on a
-dedicated variable rather than directly on the `Strategy` variable. The
-dedicated variable gives the Bayesian network a cleaner separation between
-Drools rule evidence and ONNX detector evidence.
+Evidence is set via the per-tick path (`setPerTickEvidence`) since Drools
+markers may change or disappear between ticks.
 
 ### Phase Transition Semantics
 
@@ -572,7 +660,7 @@ the existing `DetectorOrchestrator` guard:
 |---|---|---|
 | `getMapStrategy()` | `getMapStrategy()` → `labelToArchetype.get(tracker.leader())` | `HypothesisTracker.leader()` |
 | `getStats()` | `getStats()` → delegates to `CompositionInstance.getStats("intel")` | `BayesInstance.getStats()` via composition |
-| `getSensitivities()` | `getSensitivities()` → computed from the intel slot's `BayesInstance` | Requires exposing `BayesInstance` sensitivities through the composition |
+| `getSensitivities()` | `getSensitivities()` → delegates to `CompositionInstance.sensitivity()` | Requires new `sensitivity()` method on `CompositionInstance` (see §Required Neocortex API Additions) |
 | `getMapAssignment()` | `getMapAssignment()` → `Map.of("Strategy", tracker.leader())` + per-slot marginals | Derived from tracker weights and slot marginals |
 | `getExplanationSummary()` | `getExplanationSummary()` → built from `TrackerSnapshot`: top 5 viable hypotheses with weights and eliminated hypotheses | Different format: hypothesis weights rather than variable influence traces |
 | `getDetectorsToEvaluate()` | `getDetectorsToEvaluate()` → hypothesis-based pruning (see below) | `HypothesisTracker.viable()` |
@@ -595,7 +683,25 @@ public Set<String> getDetectorsToEvaluate(Set<String> available) {
     }
     return needed.isEmpty() ? available : needed;
 }
+
+// A detector distinguishes viable hypotheses if its CPT values differ
+// meaningfully across the viable set — i.e. the detector would produce
+// different evidence distributions under different viable hypotheses.
+private boolean distinguishesViableHypotheses(String detName, List<String> viable) {
+    double minP = Double.MAX_VALUE, maxP = -Double.MAX_VALUE;
+    for (String archetype : viable) {
+        double pHigh = detectorCpts.get(detName).getOrDefault(archetype, 0.5);
+        minP = Math.min(minP, pHigh);
+        maxP = Math.max(maxP, pHigh);
+    }
+    return (maxP - minP) >= 0.1; // 10% CPT variance threshold
+}
 ```
+
+The 10% threshold means a detector is skipped only when its CPT values are
+nearly identical across all viable hypotheses — it cannot distinguish between
+them. This is conservative: in practice, most detectors are designed to
+differentiate specific archetype groups.
 
 ### Learned Networks Parameter
 
@@ -735,10 +841,13 @@ package-private fallback for tests that don't inject a `PhaseResolver`.
   cascade with the current `DetectorOrchestrator` tier 2 baseline. Both old
   (DetectorOrchestrator) and new (HypothesisTrackerFusion) paths run the same
   inputs and measure assessment accuracy. The new fusion must match or exceed
-  existing accuracy. Note: `PatternClassificationCalibrationTest` exercises the
-  full cascade including tier 2, so it is a valid baseline — but the new test
-  should explicitly run both tier 2 implementations side-by-side for direct
-  comparison.
+  existing accuracy. Note: `PatternClassificationCalibrationTest` exercises
+  only the Drools-tier static methods (`computeAllConfidences`,
+  `mergeCumulative`, `applyRevisions`, `allAssessments`) — it does not invoke
+  `CascadingPatternClassifier.classify()` or exercise tier 2. The new test
+  must exercise the full cascade with both tier 2 implementations
+  (old `DetectorOrchestrator` and new `HypothesisTrackerFusion`) side-by-side
+  for direct comparison.
 
 ## Scope and Phasing
 
@@ -809,6 +918,57 @@ available — it's not deleted, just not wired in by default.
   knowledge scales specific entries in the distribution. At scale, the learned
   data dominates because the multiplicative adjustment is applied once at
   construction time while the data informs the base prior.
+
+## Required Neocortex API Additions
+
+This design requires two additions to `casehub-neocortex-inference-bayes`:
+
+### 1. `HypothesisTracker.setPerTickEvidence()` / `clearPerTickEvidence()`
+
+Sets evidence on all viable hypotheses' `CompositionInstance` objects without
+multiplying hypothesis weights. Required for per-tick detector and Drools
+evidence that refreshes every game tick.
+
+```java
+public void setPerTickEvidence(String slotName, String variableName, double[] distribution) {
+    for (var entry : compositions.entrySet()) {
+        if (statuses.get(entry.getKey()) == HypothesisStatus.VIABLE) {
+            entry.getValue().setEvidence(slotName, variableName, distribution);
+            entry.getValue().update();
+        }
+    }
+}
+
+public void clearPerTickEvidence(String slotName, String variableName) {
+    for (var entry : compositions.entrySet()) {
+        if (statuses.get(entry.getKey()) == HypothesisStatus.VIABLE) {
+            entry.getValue().unsetEvidence(slotName, variableName);
+            entry.getValue().update();
+        }
+    }
+}
+```
+
+Semantics: `setPerTickEvidence()` replaces evidence without weight
+multiplication. `observe()` / `observeHard()` remain the weight-updating path
+for one-time observations. This preserves the tracker's core contract while
+supporting the per-tick evidence replacement pattern that `DetectorOrchestrator`
+uses via `EvidenceFusionEngine.setAllEvidence()`.
+
+### 2. `CompositionInstance.sensitivity()`
+
+Delegates sensitivity analysis to the slot's underlying `BayesInstance`:
+
+```java
+public double sensitivity(String slotName, String evidenceVariable, String targetVariable) {
+    return getInstance(slotName).sensitivity(evidenceVariable, targetVariable);
+}
+```
+
+Required for `HypothesisTrackerFusion.getSensitivities()` which provides the
+`DetectorStatsPublished` CDI event with per-variable sensitivity values.
+`BayesInstance.sensitivity()` already exists (line 834) — this is a
+pass-through delegation.
 
 ## References
 
