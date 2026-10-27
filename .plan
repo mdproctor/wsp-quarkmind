@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-456-sc2-replay-scouting-pipeline
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo:
 design-section-hashes: 
 flyway-next-v: 
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#456 — Issue #456 ← active
   - [x] Batch 1: Domain records and extraction
