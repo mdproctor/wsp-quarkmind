@@ -203,9 +203,8 @@ public class SC2HypothesisNetworkBuilder {
 
     public static HypothesisTracker buildResponseTracker(
         Race ourRace,
-        Map<String, Double> responsePriors,
         Map<String, Double> opponentPosterior,
-        Map<String, double[]> contextCpts            // economy/army/tech state CPTs
+        double[] responseJointCpt                    // P(our_strategy | enemy, economy, army, tech)
     );
 }
 ```
@@ -283,9 +282,26 @@ JunctionTree responseTree = responseBuilder.buildJunctionTree();
 
 The joint CPT has `|enemy_strategies| × 3 × 3 × 3 = 27 × |enemy_strategies|`
 rows. For 20 enemy archetypes this is 540 rows × |our_strategies| values.
-Initial CPTs are seeded from the response prior learning (Source 2) with uniform
-context dimensions, then refined through replay analysis that pairs game state
-snapshots with strategy outcomes.
+
+**Phase 4 initial version:** Context dimensions start uniform — every row for
+the same `enemy_strategy` is identical regardless of economy/army/tech state.
+The CPT is seeded from Source 2 (`P(our_strategy | opponent_strategy, win)`) and
+tiled across the 27 context combinations. This means context variables have no
+effect on recommendations initially — the network structure is correct but the
+CPT values are uninformative for context.
+
+**Phase 5 refinement (future issue):** Context-dependent CPT learning requires
+extracting economy/army/tech state from replays at strategy-decision points.
+This involves:
+1. Extending `ScoutingObservationExtractor` to capture game state snapshots
+   (resource counts, army supply, tech tier) at strategy checkpoints
+2. Discretizing continuous values to the three-state categories
+3. Learning `P(our_strategy | enemy_strategy, economy, army, tech)` from
+   strategy-outcome pairs conditioned on game state
+
+This is a separate data pipeline step beyond Phase 4's scope. The Phase 4
+network structure supports it without structural changes — only CPT values
+update.
 
 **Step 3: Compose via CompositionBuilder**
 
@@ -496,7 +512,7 @@ public class HypothesisTrackerFusion {
     // Response selection — what should we do?
     public List<PatternAssessment> selectResponse(
         Race ourRace,
-        Map<String, Double> gameStateContext  // economy, army, tech state
+        Map<String, String> gameStateContext  // {"our_economy_state": "behind", ...}
     );
 
     // Hypothesis tracking state
@@ -597,12 +613,56 @@ public void setPerTickEvidence(String slotName, String variableName, double[] di
 }
 ```
 
-**Assessment derivation:** The output `List<PatternAssessment>` is built from
-the hypothesis weights (which reflect only scouting observation updates) combined
-with the compositions' current posteriors (which reflect all evidence including
-per-tick detector/Drools state). The assessment confidence for each archetype
-comes from the tracker's normalized hypothesis weight — which is only updated
-when scouting observations arrive.
+**Assessment derivation:** The output `List<PatternAssessment>` is the full
+posterior over archetypes, combining both scouting-derived weights and per-tick
+evidence at each tick:
+
+```
+P(archetype=H | all_evidence) ∝ weight_H × perTickLikelihood_H
+```
+
+Where:
+- `weight_H` — the tracker's hypothesis weight, updated only by scouting
+  observations (persistent across ticks)
+- `perTickLikelihood_H` — the product of `dot(evidence_distribution, marginal)`
+  for each per-tick evidence variable in hypothesis H's composition (transient,
+  recomputed each tick from current detector/Drools state)
+
+The per-tick likelihood is the same computation that `observe()` performs
+internally — but computed transiently for assessment derivation without
+committing to the weights.
+
+```java
+// In classify(), after setting per-tick evidence:
+Map<String, Double> adjustedWeights = new LinkedHashMap<>();
+for (String hypothesis : tracker.viable()) {
+    double ptLikelihood = 1.0;
+    for (var entry : detectorOutputs.entrySet()) {
+        double[] dist = toThreeElementLikelihood(entry.getValue());
+        double[] marginal = tracker.marginalize(hypothesis, "intel", entry.getKey());
+        ptLikelihood *= dot(dist, marginal);
+    }
+    if (!droolsMarkers.isEmpty()) {
+        double[] droolsDist = computeDroolsLikelihood(droolsMarkers);
+        double[] marginal = tracker.marginalize(hypothesis, "intel", "drools_evidence");
+        ptLikelihood *= dot(droolsDist, marginal);
+    }
+    adjustedWeights.put(hypothesis, tracker.weights().get(hypothesis) * ptLikelihood);
+}
+normalize(adjustedWeights);
+return buildAssessments(adjustedWeights, frame);
+```
+
+This ensures detector evidence alone can push assessment confidence above the
+cascade's `onnxThreshold` (0.5) — matching the current `DetectorOrchestrator`
+behavior where `engine.marginalize()` reflects all evidence at each tick. Before
+any scouting, the weights are learned priors (~0.05 for 20 archetypes), but
+strong detector evidence can produce a per-tick likelihood ratio of 10:1 or
+higher, raising the adjusted weight for one archetype well above threshold.
+
+The weights themselves are not modified — the multiplication is for assessment
+derivation only. Between scouting events, weight ratios are constant; per-tick
+evidence shifts the adjusted posterior transiently.
 
 ### Detector Output Conversion
 
@@ -921,7 +981,7 @@ available — it's not deleted, just not wired in by default.
 
 ## Required Neocortex API Additions
 
-This design requires two additions to `casehub-neocortex-inference-bayes`:
+This design requires three additions to `casehub-neocortex-inference-bayes`:
 
 ### 1. `HypothesisTracker.setPerTickEvidence()` / `clearPerTickEvidence()`
 
@@ -955,7 +1015,24 @@ for one-time observations. This preserves the tracker's core contract while
 supporting the per-tick evidence replacement pattern that `DetectorOrchestrator`
 uses via `EvidenceFusionEngine.setAllEvidence()`.
 
-### 2. `CompositionInstance.sensitivity()`
+### 2. `HypothesisTracker.marginalize()`
+
+Exposes the per-hypothesis composition marginals needed for the assessment
+derivation formula (§Evidence Model — per-tick likelihood computation):
+
+```java
+public double[] marginalize(String hypothesisName, String slotName, String variableName) {
+    CompositionInstance comp = compositions.get(hypothesisName);
+    if (comp == null) throw new IllegalArgumentException("Unknown hypothesis: " + hypothesisName);
+    return comp.marginalize(slotName, variableName);
+}
+```
+
+Required for computing the transient per-tick likelihood without modifying
+weights. `CompositionInstance.marginalize()` already exists — this is a
+lookup + delegation.
+
+### 3. `CompositionInstance.sensitivity()`
 
 Delegates sensitivity analysis to the slot's underlying `BayesInstance`:
 
