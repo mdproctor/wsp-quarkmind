@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#475569"/>
+    </marker>
+    <marker id="link-arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Intel slot -->
+  <rect x="20" y="20" width="320" height="380" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="45" font-weight="bold" fill="#334155" font-size="14">Intel Slot</text>
+
+  <!-- enemy_strategy node -->
+  <rect x="100" y="70" width="160" height="36" rx="6" fill="#1e40af" stroke="none"/>
+  <text x="180" y="93" text-anchor="middle" fill="#fff" font-weight="600">enemy_strategy</text>
+
+  <!-- observation nodes -->
+  <rect x="40" y="140" width="120" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="100" y="160" text-anchor="middle" fill="#1e40af" font-size="11">first_building</text>
+
+  <rect x="40" y="180" width="120" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="100" y="200" text-anchor="middle" fill="#1e40af" font-size="11">gas_timing</text>
+
+  <rect x="40" y="220" width="120" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="100" y="240" text-anchor="middle" fill="#1e40af" font-size="11">tech_path</text>
+
+  <rect x="40" y="260" width="120" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="100" y="280" text-anchor="middle" fill="#1e40af" font-size="11">+ 4 more obs...</text>
+
+  <!-- detector nodes -->
+  <rect x="200" y="140" width="120" height="30" rx="5" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="260" y="160" text-anchor="middle" fill="#92400e" font-size="11">rush_detector</text>
+
+  <rect x="200" y="180" width="120" height="30" rx="5" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="260" y="200" text-anchor="middle" fill="#92400e" font-size="11">air_detector</text>
+
+  <rect x="200" y="220" width="120" height="30" rx="5" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="260" y="240" text-anchor="middle" fill="#92400e" font-size="11">drools_evidence</text>
+
+  <!-- arrows from enemy_strategy to children -->
+  <line x1="140" y1="106" x2="100" y2="140" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="140" y1="106" x2="100" y2="180" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="140" y1="106" x2="100" y2="220" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="140" y1="106" x2="100" y2="260" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="220" y1="106" x2="260" y2="140" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="220" y1="106" x2="260" y2="180" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="220" y1="106" x2="260" y2="220" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Response slot -->
+  <rect x="380" y="20" width="320" height="380" rx="8" fill="#fefce8" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="395" y="45" font-weight="bold" fill="#334155" font-size="14">Response Slot</text>
+
+  <!-- enemy_strategy (link target) -->
+  <rect x="440" y="70" width="160" height="36" rx="6" fill="#1e40af" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="520" y="93" text-anchor="middle" fill="#fff" font-weight="600">enemy_strategy</text>
+  <text x="520" y="58" text-anchor="middle" fill="#2563eb" font-size="10" font-style="italic">← linked from intel</text>
+
+  <!-- context variables -->
+  <rect x="400" y="150" width="130" height="28" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="465" y="169" text-anchor="middle" fill="#166534" font-size="11">our_economy_state</text>
+
+  <rect x="400" y="190" width="130" height="28" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="465" y="209" text-anchor="middle" fill="#166534" font-size="11">our_army_state</text>
+
+  <rect x="400" y="230" width="130" height="28" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="465" y="249" text-anchor="middle" fill="#166534" font-size="11">our_tech_state</text>
+
+  <!-- our_strategy output -->
+  <rect x="440" y="310" width="200" height="40" rx="8" fill="#15803d" stroke="none"/>
+  <text x="540" y="335" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">our_strategy</text>
+
+  <!-- arrows to our_strategy -->
+  <line x1="520" y1="106" x2="540" y2="310" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="465" y1="178" x2="500" y2="310" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="465" y1="218" x2="520" y2="310" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="465" y1="258" x2="540" y2="310" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Composition link -->
+  <line x1="260" y1="88" x2="440" y2="88" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#link-arrow)"/>
+  <text x="350" y="82" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="600">POSTERIOR transfer</text>
+
+  <!-- Labels -->
+  <text x="100" y="340" text-anchor="middle" fill="#64748b" font-size="11" font-style="italic">Scouting observations</text>
+  <text x="100" y="355" text-anchor="middle" fill="#64748b" font-size="11" font-style="italic">+ ONNX detectors</text>
+  <text x="100" y="370" text-anchor="middle" fill="#64748b" font-size="11" font-style="italic">→ who is the opponent?</text>
+
+  <text x="540" y="375" text-anchor="middle" fill="#64748b" font-size="11" font-style="italic">Context + opponent assessment</text>
+  <text x="540" y="390" text-anchor="middle" fill="#64748b" font-size="11" font-style="italic">→ what should we do?</text>
+</svg>
