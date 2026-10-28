@@ -2,7 +2,7 @@
 
 ## State
 branch: 
-state: closing:stamped
+state: drained
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -10,13 +10,13 @@ covers: 461
 design-repo: 
 design-section-hashes: 
 flyway-next-v: 
-
 evidence-era: true
+
 ## Queue
 - [x] casehubio/quarkmind#461 — Issue #461
 - [x] casehubio/quarkmind#467 — SC2Data-attribute-validation-test
 - [x] casehubio/quarkmind#468 — Cross-source-data-consistency-validator
-- [ ] casehubio/quarkmind#470 — Learned-scouting-network-structure ← active
-- [ ] casehubio/quarkmind#472 — Explanation-traces
+- [x] casehubio/quarkmind#470 — Learned-scouting-network-structure
+- [ ] casehubio/quarkmind#472 — Explanation-traces ← active
 - [ ] casehubio/quarkmind#469 — Context-dependent-response-CPTs
 - [ ] casehubio/quarkmind#471 — Dynamic-Bayes-net
