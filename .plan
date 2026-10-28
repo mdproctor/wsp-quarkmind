@@ -14,8 +14,8 @@ flyway-next-v:
 ## Queue
 - [x] casehubio/quarkmind#461 — Issue #461
 - [x] casehubio/quarkmind#467 — SC2Data-attribute-validation-test
-- [ ] casehubio/quarkmind#468 — Cross-source-data-consistency-validator ← active
-- [ ] casehubio/quarkmind#470 — Learned-scouting-network-structure
+- [x] casehubio/quarkmind#468 — Cross-source-data-consistency-validator
+- [ ] casehubio/quarkmind#470 — Learned-scouting-network-structure ← active
 - [ ] casehubio/quarkmind#472 — Explanation-traces
 - [ ] casehubio/quarkmind#469 — Context-dependent-response-CPTs
 - [ ] casehubio/quarkmind#471 — Dynamic-Bayes-net
