@@ -58,7 +58,9 @@ accumulated UnitBorn/UnitDied data.
 
 Tech buildings are the 24 types in `DroolsScoutingTask.TECH_BUILDINGS`:
 all non-supply, non-base, non-gas production and research buildings across
-all three races.
+all three races. For replay extraction, map `UnitBorn`/`UnitInit` event
+`unitTypeName` values to this same set — the names match directly (e.g.
+`"CyberneticsCore"`, `"TwilightCouncil"`, `"RoboticsFacility"`).
 
 ## Extraction Pipeline
 
