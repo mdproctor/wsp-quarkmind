@@ -1,16 +1,15 @@
-# Work Plan — issue-472-response-explanation-traces
+# Work Plan — issue-473-human-readable-evidence-mapping
 
 ## State
-branch: issue-472-response-explanation-traces
-state: drained
+branch: issue-473-human-readable-evidence-mapping
+state: scaffolded
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
-covers: 472
+covers: 473
 design-repo: 
 design-section-hashes: 
 flyway-next-v: 
 
-evidence-era: true
 ## Queue
-- [ ] casehubio/quarkmind#472 — Issue #472 ← active
+- [ ] casehubio/quarkmind#473 — Issue #473 ← active
