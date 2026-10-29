@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-471-temporal-strategy-dbn
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -11,5 +11,18 @@ design-repo:
 design-section-hashes: 
 flyway-next-v: 
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#471 — Issue #471 ← active
+  - [x] Batch 1: Foundation
+    - [x] Task 1: PhaseWindowDecay function
+    - [x] Task 2: Transition CPT loader
+  - [x] Batch 2: DetectorOrchestrator
+    - [x] Task 3: Replace TemporalAssessmentTracker with decay
+  - [x] Batch 3: HypothesisTrackerFusion
+    - [x] Task 4: Unified init all archetypes
+    - [x] Task 5: Transition-aware temporal blending
+  - [x] Batch 4: Pipeline
+    - [x] Task 6: StrategyTransitionExportTest
+  - [x] Batch 5: Integration
+    - [x] Task 7: Docs ADR and regression
