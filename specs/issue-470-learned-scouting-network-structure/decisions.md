@@ -59,3 +59,28 @@
 **Sources:** SC2HypothesisNetworkBuilder.buildIntelTree(), neocortex NetworkSpec
 **Exploration:** quick
 **Status:** captured
+
+## D6: Matchup scope
+
+**Choice:** Per-matchup — learn separate topologies for vs_protoss, vs_terran, vs_zerg
+**Alternatives:**
+- Unified — one topology for all matchups, simpler but misses matchup-specific independence structure
+- Both — compare unified vs per-matchup, most thorough but adds another comparison dimension
+**Rationale:** Different matchups have different informative observations (first_building matters more vs Protoss than vs Zerg). Consistent with per-matchup CPT exports. ~50K replays per matchup is sufficient for PC/HC.
+**Trade-offs:** Three separate learning runs per algorithm variant. If one matchup has sparse data, learned structure may be less reliable.
+**Sources:** ContextResponsePriorExportTest (per-matchup CPT export), PriorExportPipeline
+**Exploration:** quick
+**Status:** captured
+
+## D7: Variable scope — include detectors
+
+**Choice:** Include observations + detectors in structure learning. Learn topology across all variable types (7 observations + N binary detectors + enemy_strategy).
+**Alternatives:**
+- Observations only — simpler, detectors keep existing CPTs, but misses potential cross-edges between observations and detectors
+- Observations + drools_evidence — drools evidence mirrors archetype labels, unlikely to add structural information
+**Rationale:** May discover that detectors are conditionally dependent on specific observations (e.g. tech_path → early_rush). StructureResult.toBayesNetwork() re-fits all CPTs automatically from the tabular data.
+**Trade-offs:** Detector CPTs will be re-fitted from tabular data rather than using the ONNX binary detector pipeline. Need detector outputs in the tabular rows. More variables increases structure learning complexity.
+**Depends on:** D2 (algorithms), D6 (per-matchup scope)
+**Sources:** SC2HypothesisNetworkBuilder.buildIntelTree(), DetectorOrchestrator, DetectorRegistry
+**Exploration:** quick
+**Status:** captured
