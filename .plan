@@ -13,3 +13,11 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#469 — Issue #469 ← active
+  - [ ] Batch 1: Learning Pipeline
+    - [ ] Task 1: ContextResponseOutcome and discretizeContext
+    - [ ] Task 2: learnContextResponsePriors with hierarchical smoothing
+  - [ ] Batch 2: Network Integration
+    - [ ] Task 3: buildContextResponseCpt and loadContextResponsePriors
+    - [ ] Task 4: Wire context CPTs through HypothesisTrackerFusion
+  - [ ] Batch 3: Data Generation
+    - [ ] Task 5: ContextResponsePriorExportTest and calibration assertion
