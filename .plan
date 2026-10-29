@@ -1,16 +1,15 @@
-# Work Plan — issue-473-human-readable-evidence-mapping
+# Work Plan — issue-470-learned-scouting-network-structure
 
 ## State
-branch: main
-state: drained
+branch: issue-470-learned-scouting-network-structure
+state: scaffolded
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
-covers: 473
+covers: 470
 design-repo: 
 design-section-hashes: 
 flyway-next-v: 
 
-evidence-era: true
 ## Queue
-- [ ] casehubio/quarkmind#473 — Issue #473 ← active
+- [ ] casehubio/quarkmind#470 — Issue #470 ← active
