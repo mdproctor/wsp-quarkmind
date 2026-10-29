@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <style>
+      .axis-line { stroke: #52514e; stroke-width: 1; }
+      .grid-line { stroke: #e0dfdc; stroke-width: 0.5; }
+      .label { fill: #52514e; font-size: 11px; }
+      .title { fill: #0b0b0b; font-size: 13px; font-weight: 600; }
+      .cell-line { stroke: #2a78d6; stroke-width: 2.5; fill: none; }
+      .marginal-line { stroke: #eb6834; stroke-width: 2.5; fill: none; stroke-dasharray: 6 3; }
+      .annotation { fill: #0b0b0b; font-size: 11px; }
+      .annotation-line { stroke: #52514e; stroke-width: 0.75; stroke-dasharray: 2 2; }
+      .legend-swatch { stroke-width: 2.5; fill: none; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="320" y="24" text-anchor="middle" class="title">Hierarchical Smoothing: Who Gets the Final Say?</text>
+  <text x="320" y="40" text-anchor="middle" class="label">Weight blend as a function of cell win count (α = 10)</text>
+
+  <!-- Chart area: 80,56 to 600,280 -->
+  <!-- Y axis gridlines -->
+  <line x1="80" y1="280" x2="600" y2="280" class="grid-line"/>
+  <line x1="80" y1="224" x2="600" y2="224" class="grid-line"/>
+  <line x1="80" y1="168" x2="600" y2="168" class="grid-line"/>
+  <line x1="80" y1="112" x2="600" y2="112" class="grid-line"/>
+  <line x1="80" y1="56" x2="600" y2="56" class="grid-line"/>
+
+  <!-- Axes -->
+  <line x1="80" y1="56" x2="80" y2="280" class="axis-line"/>
+  <line x1="80" y1="280" x2="600" y2="280" class="axis-line"/>
+
+  <!-- Y axis labels -->
+  <text x="72" y="284" text-anchor="end" class="label">0%</text>
+  <text x="72" y="228" text-anchor="end" class="label">25%</text>
+  <text x="72" y="172" text-anchor="end" class="label">50%</text>
+  <text x="72" y="116" text-anchor="end" class="label">75%</text>
+  <text x="72" y="60" text-anchor="end" class="label">100%</text>
+
+  <!-- X axis labels -->
+  <text x="80" y="298" text-anchor="middle" class="label">0</text>
+  <text x="184" y="298" text-anchor="middle" class="label">20</text>
+  <text x="288" y="298" text-anchor="middle" class="label">40</text>
+  <text x="392" y="298" text-anchor="middle" class="label">60</text>
+  <text x="496" y="298" text-anchor="middle" class="label">80</text>
+  <text x="600" y="298" text-anchor="middle" class="label">100</text>
+
+  <!-- Axis titles -->
+  <text x="340" y="320" text-anchor="middle" class="label">Wins in context cell (n)</text>
+  <text x="20" y="168" text-anchor="middle" class="label" transform="rotate(-90 20 168)">Weight in final blend</text>
+
+  <!-- Cell weight curve: w = n/(n+10) -->
+  <!-- Points: n=0→0, 1→0.091, 2→0.167, 5→0.333, 10→0.5, 20→0.667, 40→0.8, 60→0.857, 80→0.889, 100→0.909 -->
+  <path class="cell-line" d="M 80,280 C 90,270 100,258 106,253 L 132,236 L 158,218 L 184,192 L 236,168 L 288,145 L 340,131 L 392,122 L 444,116 L 496,111 L 548,108 L 600,105"/>
+
+  <!-- Marginal weight curve: w = 10/(n+10) = 1 - cell_weight -->
+  <path class="marginal-line" d="M 80,56 C 90,66 100,78 106,83 L 132,100 L 158,118 L 184,144 L 236,168 L 288,191 L 340,205 L 392,214 L 444,220 L 496,225 L 548,228 L 600,231"/>
+
+  <!-- 50/50 crossover annotation at n=10 -->
+  <line x1="132" y1="168" x2="132" y2="280" class="annotation-line"/>
+  <circle cx="132" cy="168" r="4" fill="#2a78d6"/>
+  <circle cx="132" cy="168" r="4" fill="#eb6834" opacity="0.5"/>
+  <text x="138" y="164" class="annotation">n = 10: 50/50</text>
+
+  <!-- n=1 annotation -->
+  <circle cx="85" cy="259" r="3" fill="#2a78d6"/>
+  <text x="91" y="256" class="annotation" font-size="10">n = 1: 9% cell</text>
+
+  <!-- n=120 annotation (extrapolated) -->
+  <text x="510" y="100" class="annotation">n = 120: 92% cell</text>
+
+  <!-- Legend -->
+  <line x1="400" y1="62" x2="430" y2="62" class="legend-swatch" stroke="#2a78d6"/>
+  <text x="436" y="66" class="label">Cell-specific data</text>
+  <line x1="400" y1="80" x2="430" y2="80" class="legend-swatch" stroke="#eb6834" stroke-dasharray="6 3"/>
+  <text x="436" y="84" class="label">Phase 4 marginal prior</text>
+</svg>
