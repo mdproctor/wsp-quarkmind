@@ -52,15 +52,17 @@
 
 ## D5: Builder API — NetworkSpec-based construction
 
-**Choice:** Express both hand-specified star and learned structure as NetworkSpec. Both paths use `NetworkSpec.toBuilder().buildJunctionTree()` for construction. The hand-specified star is no longer special — just one NetworkSpec among several. Swapping topology is a resource file choice, not a code change.
+**Choice:** Express both hand-specified star and learned structure as NetworkSpec. Both paths use `NetworkSpec.toBuilder().buildJunctionTree()` for construction. The hand-specified star is no longer special — just one NetworkSpec among several. Swapping topology is a resource file choice, not a code change — provided the export pipeline appends platform integration variables (see below).
 **Alternatives:**
 - Toggle flag between two hard-coded paths — duplicate construction code, any accuracy difference could be an artifact of different code paths
 - Keep buildIntelTree as primary path, add separate learned path — two divergent code paths for the same purpose
 **Rationale:** There are two independent network builders today: `SC2HypothesisNetworkBuilder.buildIntelTree()` (builds JunctionTree for HypothesisTracker with observations + detectors + drools_evidence) and `SC2NetworkBuilder.build()` (builds BayesNetwork for DetectorOrchestrator with detectors only). Both should be unified through NetworkSpec. For learned structures: `StructureResult.networkSpec()` → serialize as JSON. For the hand-specified star: refactor `buildIntelTree` to PRODUCE a NetworkSpec (encoding its clamping, normalization, and drools_evidence as spec-level concerns), then use `NetworkSpec.toBuilder().buildJunctionTree()`. The current per-variable clamping (`Math.max(0.01, Math.min(0.99, val))`) moves to spec creation time rather than consumption time. `DetectorOrchestrator.learnedNetworks` already consumes `BayesNetwork` objects via `NetworkSpec.toBayesNetwork()` through `LearnedCptLoader`.
-**Trade-offs:** Refactoring buildIntelTree to produce a NetworkSpec requires expressing drools_evidence and all clamping in NetworkSpec format. Both SC2HypothesisNetworkBuilder and SC2NetworkBuilder must be updated.
-**Sources:** SC2HypothesisNetworkBuilder.buildIntelTree(), SC2NetworkBuilder.build(), DetectorOrchestrator.learnedNetworks, LearnedCptLoader, neocortex NetworkSpec.toBuilder(), StructureResult.networkSpec()
+
+**drools_evidence in learned topologies:** A learned `NetworkSpec` from `StructureResult.networkSpec()` will NOT contain `drools_evidence` — this variable is absent from the training data because it's a platform integration artifact, not a learned structural relationship. `HypothesisTrackerFusion.classify()` depends on `drools_evidence` at runtime (5 usage sites: `setPerTickEvidence`, `clearPerTickEvidence`, and `marginalize` calls on the "intel" slot). Without it, swapping to a learned topology breaks Drools evidence injection. The export pipeline must therefore append `drools_evidence` as a `VariableSpec` with `CptSpec.DirectCpt` to every learned NetworkSpec destined for the "intel" slot, using the same soft-identity CPT currently hard-coded in `buildIntelTree` (0.8 diagonal, 0.2/(N-1) off-diagonal, conditioned on `enemy_strategy`). This is a post-structure-learning augmentation step, not a structural learning concern.
+**Trade-offs:** Refactoring buildIntelTree to produce a NetworkSpec requires expressing drools_evidence and all clamping in NetworkSpec format. Both SC2HypothesisNetworkBuilder and SC2NetworkBuilder must be updated. The drools_evidence augmentation step is mechanical but must be applied consistently in the export pipeline.
+**Sources:** SC2HypothesisNetworkBuilder.buildIntelTree(), SC2NetworkBuilder.build(), DetectorOrchestrator.learnedNetworks, LearnedCptLoader, HypothesisTrackerFusion.classify(), neocortex NetworkSpec.toBuilder(), StructureResult.networkSpec()
 **Exploration:** quick
-**Status:** revised (R1-03: corrected API description — buildIntelTree does not accept NetworkSpec; R1-04: expanded scope to cover both SC2HypothesisNetworkBuilder and SC2NetworkBuilder/DetectorOrchestrator)
+**Status:** revised (R1-03: corrected API description — buildIntelTree does not accept NetworkSpec; R1-04: expanded scope to cover both SC2HypothesisNetworkBuilder and SC2NetworkBuilder/DetectorOrchestrator; R2-01: drools_evidence augmentation for learned topologies)
 
 ## D6: Matchup scope
 
@@ -89,16 +91,19 @@
 
 ## D8: Comparison methodology
 
-**Choice:** Cross-validated log-likelihood as primary metric. Brier score and per-archetype classification accuracy as secondary metrics. K-fold cross-validation at the replay level.
+**Choice:** Cross-validated log-likelihood as primary metric. Brier score and per-archetype classification accuracy as secondary metrics. K-fold cross-validation at the replay level. All topologies evaluated with data-fitted CPTs to isolate the structure contribution.
 **Alternatives:**
 - BIC/AIC only — model selection criteria that don't validate on held-out data; useful for algorithm-internal optimization but not for cross-topology comparison
 - Accuracy only — doesn't measure calibration quality (a network can have high accuracy but poorly calibrated posteriors)
 - Calibration accuracy only — ambiguous term; log-likelihood is the standard information-theoretic measure of probabilistic model quality
+- Compare learned (data-fitted CPTs) vs star (hand-tuned CPTs) — confounds structure quality with parameter quality
 **Rationale:** Log-likelihood on held-out data directly measures how well the network predicts unseen observations. Brier score measures calibration — whether predicted probabilities match empirical frequencies. Per-archetype accuracy catches cases where a topology is good on average but poor for specific strategies. K-fold at the replay level (all observations from one replay in the same fold) prevents data leakage from correlated observations within the same game. Statistical significance via paired bootstrap test on per-replay log-likelihood scores. Practical significance threshold: a learned topology must improve log-likelihood by at least 5% over the hand-specified star to justify switching (buffer against overfitting to the training distribution).
-**Trade-offs:** Log-likelihood rewards density (more edges = higher likelihood on training data). The 5% improvement threshold and cross-validation guard against this, but BIC's explicit complexity penalty provides an additional safeguard — BIC scores from D2's hill-climbing variant serve as a cross-check.
-**Sources:** neocortex ParameterLearner.fit(), StructureDiagnostics
+
+**Parameter source for comparison:** All topologies — including the hand-specified star — are evaluated with data-fitted CPTs from `ParameterLearner.fit()` on the training fold. The star's current hand-tuned CPTs from `buildIntelTree` (with manual clamping) are NOT used in the primary comparison. This isolates the structure comparison from parameter quality: a better structure might lose to better-tuned parameters if the star uses hand-tuned CPTs while learned structures use fitted ones. As a secondary comparison point, the star with hand-tuned CPTs is evaluated alongside the star with data-fitted CPTs — this answers "does data-fitting the star improve it?" and provides a practical baseline (what's currently in production).
+**Trade-offs:** Log-likelihood rewards density (more edges = higher likelihood on training data). The 5% improvement threshold and cross-validation guard against this, but BIC's explicit complexity penalty provides an additional safeguard — BIC scores from D2's hill-climbing variant serve as a cross-check. Data-fitting the star topology may produce CPTs that are worse than the hand-tuned ones (the hand-tuning encodes domain expertise not in the data), but the comparison still isolates the structural question correctly.
+**Sources:** neocortex ParameterLearner.fit(), StructureDiagnostics, SC2HypothesisNetworkBuilder.buildIntelTree()
 **Exploration:** quick
-**Status:** captured (surfaced by R1-08)
+**Status:** revised (R1-08: surfaced as implicit decision; R2-02: specified data-fitted CPTs for all topologies in primary comparison)
 
 ## D9: Pipeline lifecycle — coexistence with CptLearningExportTest
 
