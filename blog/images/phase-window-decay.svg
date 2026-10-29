@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="windowFill" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#16a34a" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#16a34a" stop-opacity="0.03"/>
+    </linearGradient>
+  </defs>
+
+  <text x="350" y="25" text-anchor="middle" font-size="15" font-weight="600" fill="#1e293b">Phase-Window Decay Function</text>
+
+  <!-- Axes -->
+  <line x1="80" y1="250" x2="650" y2="250" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="80" y1="250" x2="80" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Y axis labels -->
+  <text x="70" y="70" text-anchor="end" font-size="11" fill="#64748b">1.0</text>
+  <text x="70" y="250" text-anchor="end" font-size="11" fill="#64748b">0.01</text>
+  <line x1="78" y1="66" x2="82" y2="66" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- X axis labels (game time) -->
+  <text x="130" y="270" text-anchor="middle" font-size="10" fill="#64748b">0</text>
+  <text x="210" y="270" text-anchor="middle" font-size="10" fill="#64748b">2</text>
+  <text x="290" y="270" text-anchor="middle" font-size="10" fill="#64748b">4</text>
+  <text x="370" y="270" text-anchor="middle" font-size="10" fill="#64748b">6</text>
+  <text x="450" y="270" text-anchor="middle" font-size="10" fill="#64748b">8</text>
+  <text x="530" y="270" text-anchor="middle" font-size="10" fill="#64748b">10</text>
+  <text x="610" y="270" text-anchor="middle" font-size="10" fill="#64748b">12</text>
+  <text x="370" y="290" text-anchor="middle" font-size="11" fill="#64748b">game time (minutes)</text>
+  <text x="35" y="160" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90 35 160)">weight</text>
+
+  <!-- Phase window background -->
+  <rect x="210" y="55" width="240" height="195" fill="url(#windowFill)" rx="3"/>
+  <text x="330" y="48" text-anchor="middle" font-size="10" fill="#16a34a" font-weight="500">phase window [2.0, 8.0]</text>
+
+  <!-- Floor line -->
+  <line x1="80" y1="245" x2="650" y2="245" stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+  <text x="660" y="248" font-size="9" fill="#ef4444">floor = 0.01</text>
+
+  <!-- The decay function curve -->
+  <!-- Before ramp: floor -->
+  <polyline points="90,245 170,245"
+            fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+  <!-- Ramp up (sigmoid) -->
+  <polyline points="170,245 180,244 190,240 200,230 210,200 220,130 230,85 240,72 250,68"
+            fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+  <!-- Inside window: 1.0 -->
+  <polyline points="250,66 300,66 350,66 400,66 420,66"
+            fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <!-- Ramp down (sigmoid) -->
+  <polyline points="420,66 430,68 440,72 450,85 460,130 470,200 480,230 490,240 500,244"
+            fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+  <!-- After ramp: floor -->
+  <polyline points="500,245 640,245"
+            fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+
+  <!-- Annotations -->
+  <!-- Ramp zone left -->
+  <line x1="170" y1="252" x2="250" y2="252" stroke="#94a3b8" stroke-width="1" marker-start="url(#arrowLeft)" marker-end="url(#arrowRight)"/>
+  <text x="210" y="264" text-anchor="middle" font-size="9" fill="#94a3b8">ramp</text>
+
+  <!-- Ramp zone right -->
+  <line x1="420" y1="252" x2="500" y2="252" stroke="#94a3b8" stroke-width="1" marker-start="url(#arrowLeft)" marker-end="url(#arrowRight)"/>
+  <text x="460" y="264" text-anchor="middle" font-size="9" fill="#94a3b8">ramp</text>
+
+  <!-- Example archetype labels -->
+  <text x="150" y="105" font-size="10" fill="#3b82f6" font-weight="500">GATEWAY_RUSH</text>
+  <text x="140" y="118" font-size="9" fill="#64748b">window [0, 4]</text>
+
+  <text x="500" y="105" font-size="10" fill="#f59e0b" font-weight="500">STALKER_COLOSSUS</text>
+  <text x="500" y="118" font-size="9" fill="#64748b">window [4, 10]</text>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowLeft" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto">
+      <path d="M6,0 L0,3 L6,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowRight" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

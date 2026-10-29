@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="earlyGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="midGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="lateGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">Before: Phase Transition Reinitialisation</text>
+
+  <!-- Phase backgrounds -->
+  <rect x="60" y="45" width="220" height="150" fill="url(#earlyGrad)" rx="4"/>
+  <rect x="290" y="45" width="230" height="150" fill="url(#midGrad)" rx="4"/>
+  <rect x="530" y="45" width="220" height="150" fill="url(#lateGrad)" rx="4"/>
+
+  <!-- Phase labels -->
+  <text x="170" y="65" text-anchor="middle" font-size="12" fill="#3b82f6" font-weight="600">EARLY</text>
+  <text x="405" y="65" text-anchor="middle" font-size="12" fill="#f59e0b" font-weight="600">MID</text>
+  <text x="640" y="65" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="600">LATE</text>
+
+  <!-- EARLY confidence line — rises then drops to zero -->
+  <polyline points="70,180 120,160 170,130 220,100 260,85 270,85"
+            fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+  <!-- Gap at transition -->
+  <line x1="280" y1="85" x2="280" y2="170" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="280" y="198" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="600">REBUILD</text>
+
+  <!-- MID confidence line — starts from scratch -->
+  <polyline points="300,175 340,160 380,135 420,110 460,95 500,88 510,88"
+            fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+  <!-- Gap at transition -->
+  <line x1="520" y1="88" x2="520" y2="170" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="520" y="198" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="600">REBUILD</text>
+
+  <!-- LATE confidence line -->
+  <polyline points="540,170 580,155 620,130 660,110 700,98 740,92"
+            fill="none" stroke="#ef4444" stroke-width="2.5"/>
+
+  <!-- seedPriors arrows -->
+  <path d="M275,90 C285,120 295,120 298,170" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowGrey)"/>
+  <text x="310" y="140" font-size="9" fill="#94a3b8" font-style="italic">seedPriors()</text>
+
+  <!-- Axis labels -->
+  <text x="40" y="100" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90 40 120)">confidence</text>
+  <text x="400" y="210" text-anchor="middle" font-size="10" fill="#64748b">game time →</text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowGrey" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- ============ BOTTOM: CONTINUOUS ============ -->
+  <text x="400" y="250" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">After: Continuous Temporal Inference</text>
+
+  <!-- Single continuous background -->
+  <rect x="60" y="265" width="690" height="110" fill="#f0fdf4" rx="4" stroke="#86efac" stroke-width="1"/>
+
+  <!-- Continuous confidence line — smooth, no breaks -->
+  <polyline points="70,360 100,350 140,335 180,315 220,300 260,292 300,295 340,290 380,280 420,275 460,278 500,285 540,290 580,295 620,300 660,305 700,310 740,315"
+            fill="none" stroke="#16a34a" stroke-width="2.5"/>
+
+  <!-- Phase window zones (faded) -->
+  <rect x="60" y="265" width="220" height="110" fill="#3b82f6" fill-opacity="0.06" rx="4"/>
+  <rect x="200" y="265" width="310" height="110" fill="#f59e0b" fill-opacity="0.06" rx="4"/>
+  <rect x="440" y="265" width="310" height="110" fill="#ef4444" fill-opacity="0.06" rx="4"/>
+
+  <!-- Phase window labels -->
+  <text x="120" y="283" font-size="9" fill="#3b82f6" font-weight="500">EARLY window</text>
+  <text x="320" y="283" font-size="9" fill="#f59e0b" font-weight="500">MID window</text>
+  <text x="570" y="283" font-size="9" fill="#ef4444" font-weight="500">LATE window</text>
+
+  <!-- Transition annotation -->
+  <text x="300" y="310" font-size="9" fill="#16a34a" font-style="italic">smooth transition →</text>
+
+  <!-- No rebuild label -->
+  <text x="400" y="393" text-anchor="middle" font-size="11" fill="#16a34a" font-weight="600">No rebuilds. No lost evidence. Continuous.</text>
+</svg>
