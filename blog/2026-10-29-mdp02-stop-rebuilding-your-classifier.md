@@ -12,7 +12,7 @@ tags: [bayesian-inference, temporal-modelling, strategy-classification, game-ai]
 
 The hypothesis tracker had a dirty secret. Every time the game crossed a phase boundary — early to mid, mid to late — the entire Bayesian network was torn down and rebuilt from scratch. The old tracker's posterior weights were snapshotted, stuffed into the new tracker's priors via `seedPriors()`, and the accumulated evidence from dozens of observations was reduced to a handful of floating-point numbers.
 
-It worked. For months it worked fine. But it was a lie about how strategies actually evolve.
+It worked. But it was a lie about how strategies actually evolve.
 
 ## The phase-transition trap
 
