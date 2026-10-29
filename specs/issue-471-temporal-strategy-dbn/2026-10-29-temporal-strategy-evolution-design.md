@@ -89,10 +89,12 @@ Initialize once with all 55 archetypes. No phase-transition rebuild. Temporal co
 - **New field: `phaseWeights`** — `Map<String, Double>` recalculated each tick based on current game time and each archetype's phase window.
 - **`classify()` changes:**
   1. Recalculate phase weights for current game time
-  2. Apply transition-aware temporal prior (blend previous posterior with transition matrix)
-  3. Run standard evidence fusion
-  4. Weight results by phase window relevance
-  5. Return assessments
+  2. Apply phase weights as multiplicative modifiers on tracker priors (before evidence)
+  3. Set per-tick detector evidence and drools markers (same as today)
+  4. Run standard evidence fusion via `HypothesisTracker` observe/setPerTickEvidence
+  5. Get raw posteriors from tracker weights
+  6. Apply transition-aware temporal blending: `smoothed[j] = (1 - decay) * raw[j] + decay * sum_i(prev[i] * P(j|i))` where P(j|i) is the learned transition CPT and `prev` is the previous tick's smoothed posterior
+  7. Return assessments built from smoothed posterior
 
 - **New method: `computePhaseWeights(double gameTimeMinutes)`** — returns per-archetype weights based on phase windows. Uses sigmoid ramp at window boundaries.
 
@@ -225,7 +227,7 @@ QuarkMind's `inference-bayes` dependency must include the `TemporalEvidenceFusio
 1. Add these methods to `TemporalEvidenceFusionEngine` (small neocortex PR)
 2. Expose the underlying `BayesInstance` for direct access
 
-Option 1 is cleaner — small cross-repo change.
+Option 1 is cleaner — small cross-repo change. This is NOT a blocker: DetectorOrchestrator can initially skip sensitivity analysis, or access the underlying instance directly. The neocortex PR can follow.
 
 ## References
 
