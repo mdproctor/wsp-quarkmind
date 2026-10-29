@@ -42,15 +42,18 @@ Replace both with a single `TemporalEvidenceFusionEngine`:
   3. `engine.marginalize()` → smoothed posterior
   4. Build assessments
 
-### Changes
+### Changes — composition approach
 
-- **Field changes:** Remove `EvidenceFusionEngine engine` and `TemporalAssessmentTracker tracker`. Add `TemporalEvidenceFusionEngine temporalEngine`.
+Rather than a monolithic replacement, compose temporal blending with the existing `EvidenceFusionEngine` to preserve its full API (`mapInference()`, `explain()`, `getVariableSensitivities()`, `getStats()`). The `TemporalEvidenceFusionEngine` pattern (linear blending of posteriors) is simple enough to implement in the quarkmind layer without requiring the neocortex class directly.
+
+- **Field changes:** Remove `TemporalAssessmentTracker tracker`. Keep `EvidenceFusionEngine engine`. Add `double temporalDecay` and `double[] previousPosterior` fields.
 - **Constructor:** Replace `int windowSize` with `double temporalDecay`. Default decay: `0.3` (30% carry-over from previous tick — equivalent smoothing to a ~3-tick window).
-- **`initializeNetwork()`:** Call `temporalEngine.initialize(network, "Strategy", temporalDecay)` instead of separate engine + tracker init.
-- **`classify()`:** Use `temporalEngine.setAllEvidence()`, `temporalEngine.update()`, `temporalEngine.marginalize()`. Remove `tracker.recordPosterior()` and `tracker.getSmoothedPosterior()`.
-- **`detectTransition()`:** Implement directly — compare consecutive `marginalize()` results for dominant-hypothesis change. The `TemporalEvidenceFusionEngine` already stores `previousPosterior`.
-- **`reset()`:** Call `temporalEngine.reset()`.
-- **Sensitivity analysis:** `EvidenceFusionEngine.getVariableSensitivities()` is not on `TemporalEvidenceFusionEngine`. Add a delegation method or access the underlying instance. Alternatively, add `getVariableSensitivities()` to the temporal engine (neocortex change — small).
+- **`classify()`:** After `engine.update()` and `engine.marginalize()`, apply temporal blending inline: `smoothed[i] = (1 - decay) * current[i] + decay * previous[i]`. Store `smoothed` as `previousPosterior` for next tick. Build assessments from smoothed posterior.
+- **`detectTransition()`:** Compare consecutive smoothed posteriors for dominant-hypothesis change.
+- **`reset()`:** Call `engine.reset()` and clear `previousPosterior`.
+- **Preserved API:** `getMapStrategy()`, `getExplanationTrace()`, `getSensitivities()`, `getStats()` all continue to work via the underlying `EvidenceFusionEngine`.
+
+This supersedes ADR-0010's choice of windowing over decay. The windowing approach (TemporalAssessmentTracker) was correct for its time — it provided stability without introducing temporal coupling. But with transition-aware priors and phase-window decay now providing structural temporal awareness, the simpler decay blending is sufficient for tick-to-tick smoothing, and windowing's equal-weight-across-window assumption is actually less appropriate than exponential decay for strategy evolution (recent evidence should matter more than evidence 5 ticks ago).
 
 ### Impact
 
@@ -73,7 +76,7 @@ This causes a discontinuity — accumulated evidence is lost except for the term
 
 ### New state
 
-Initialize once with all 55 archetypes. No phase-transition rebuild. Temporal continuity is maintained by:
+Initialize once with all archetypes for the enemy race (~18-23 per race, ~69 total across all races but only one race's archetypes are active per game). No phase-transition rebuild. Temporal continuity is maintained by:
 
 1. **Phase-window-weighted priors:** Each archetype has a `phaseWindow: [min, max]` in the taxonomy. The prior for each archetype is weighted by how much the current game time overlaps its phase window. An EARLY archetype at minute 8 gets a near-zero prior; a MID archetype at minute 8 is in its prime window.
 
@@ -112,7 +115,11 @@ Initialize once with all 55 archetypes. No phase-transition rebuild. Temporal co
 Current: ~15-20 hypotheses per phase × 1 tracker rebuild per phase transition
 New: ~18-23 hypotheses per race (all phases) × 1 tracker for the entire game
 
-The HypothesisTracker maintains per-hypothesis `CompositionInstance` objects. Each instance runs its own junction tree. With 20→23 hypotheses, the per-tick cost increases ~15%. Acceptable given the game loop runs at 22.4 ticks/second (44.6ms budget per tick) and the detector pipeline currently uses <5ms.
+The HypothesisTracker maintains per-hypothesis `CompositionInstance` objects. Each instance runs its own junction tree. Per-race archetype counts: Terran ~23, Zerg ~20, Protoss ~21. This is larger than the current per-phase networks (~15-20) but not dramatically so because the tracker is already race-filtered.
+
+**Prior dilution mitigation:** With ~23 hypotheses, uniform priors give each ~4.3% — close to the current ~5% per phase-filtered network. Phase-window decay further concentrates probability mass: at minute 2, only EARLY archetypes (~6-9 per race) have full weight, giving each an effective prior of ~11-17%. The phase-window decay function is critical to avoiding dilution — it must be applied before evidence fusion, not after.
+
+**Latency:** Inference is O(N × D) for star topology. At ~23 archetypes × ~15 detectors, the per-tick cost is manageable within the 44.6ms budget (detector pipeline currently uses <5ms). Run `GameLoopBenchmarkTest` before and after to verify.
 
 ## Component 3: Transition learning pipeline
 
@@ -131,6 +138,8 @@ A `@Tag("report")` test that learns strategy transition probabilities from repla
    - All transitions in `strategy-taxonomy.yaml` are included regardless of frequency
    - Additional transitions are included only if frequency > 5% of games for that matchup
    - Below-threshold transitions get a uniform background probability
+
+**Note on LATE-game coverage:** The 10-minute cap means MID→LATE transitions (typically 10-15 min) have limited data. LATE archetypes will have transition priors dominated by the taxonomy's hand-authored entries and the hierarchical smoothing α. This is acceptable for v1 — LATE-game strategy is more stable (fewer transitions) and can be extended to 15 minutes in a follow-up if data shows gaps.
 
 **Output:** Three JSON files in `src/main/resources/transitions/`:
 - `transition-cpts-vs_terran.json`
