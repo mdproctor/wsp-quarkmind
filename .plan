@@ -13,3 +13,9 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#470 — Issue #470 ← active
+  - [ ] Batch 1: Builder refactor
+    - [ ] Task 1: Refactor buildIntelTree to accept NetworkSpec
+  - [ ] Batch 2: Structure learning
+    - [ ] Task 2: Create StructureLearningExportTest
+  - [ ] Batch 3: Runtime integration
+    - [ ] Task 3: Wire learned topology loading and config flag
