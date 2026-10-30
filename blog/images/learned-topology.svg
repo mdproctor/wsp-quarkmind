@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow-learned" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#666"/>
+    </marker>
+    <marker id="arrow-discovered" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#e74c3c"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="260" y="24" text-anchor="middle" font-size="15" font-weight="600" fill="#333">Data-Learned Topology — What the Data Reveals</text>
+
+  <!-- Root node -->
+  <rect x="175" y="44" width="170" height="36" rx="6" fill="#4a90d9" stroke="#3a7bc8" stroke-width="1.5"/>
+  <text x="260" y="67" text-anchor="middle" fill="white" font-weight="600">enemy_strategy</text>
+
+  <!-- Observation nodes -->
+  <rect x="10" y="130" width="110" height="30" rx="5" fill="#e8f4e8" stroke="#7cb87c" stroke-width="1"/>
+  <text x="65" y="150" text-anchor="middle" fill="#2d5a2d" font-size="11">gas_timing</text>
+
+  <rect x="135" y="130" width="110" height="30" rx="5" fill="#e8f4e8" stroke="#7cb87c" stroke-width="1"/>
+  <text x="190" y="150" text-anchor="middle" fill="#2d5a2d" font-size="11">first_building</text>
+
+  <rect x="260" y="130" width="110" height="30" rx="5" fill="#e8f4e8" stroke="#7cb87c" stroke-width="1"/>
+  <text x="315" y="150" text-anchor="middle" fill="#2d5a2d" font-size="11">tech_path</text>
+
+  <rect x="385" y="130" width="125" height="30" rx="5" fill="#e8f4e8" stroke="#7cb87c" stroke-width="1"/>
+  <text x="447" y="150" text-anchor="middle" fill="#2d5a2d" font-size="11">expansion_timing</text>
+
+  <rect x="40" y="210" width="130" height="30" rx="5" fill="#e8f4e8" stroke="#7cb87c" stroke-width="1"/>
+  <text x="105" y="230" text-anchor="middle" fill="#2d5a2d" font-size="11">army_composition</text>
+
+  <rect x="195" y="210" width="130" height="30" rx="5" fill="#f0e8f4" stroke="#9b7cb8" stroke-width="1.5"/>
+  <text x="260" y="230" text-anchor="middle" fill="#4a2d5a" font-size="11">worker_saturation</text>
+
+  <rect x="350" y="210" width="140" height="30" rx="5" fill="#e8f4e8" stroke="#7cb87c" stroke-width="1"/>
+  <text x="420" y="230" text-anchor="middle" fill="#2d5a2d" font-size="11">aggression_timing</text>
+
+  <!-- Standard edges from root (some removed) -->
+  <line x1="220" y1="80" x2="65" y2="130" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+  <line x1="245" y1="80" x2="190" y2="130" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+  <line x1="275" y1="80" x2="315" y2="130" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+  <line x1="300" y1="80" x2="447" y2="130" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+  <line x1="230" y1="80" x2="105" y2="210" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+  <line x1="290" y1="80" x2="420" y2="210" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+
+  <!-- Discovered cross-edges (hypothetical — what structure learning might find) -->
+  <line x1="120" y1="145" x2="265" y2="145" stroke="#e74c3c" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow-discovered)"/>
+  <text x="193" y="138" text-anchor="middle" fill="#e74c3c" font-size="10" font-style="italic">discovered</text>
+
+  <line x1="370" y1="145" x2="260" y2="210" stroke="#e74c3c" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow-discovered)"/>
+
+  <!-- Pruned edge (worker_saturation no longer directly from root) -->
+  <text x="260" y="255" text-anchor="middle" fill="#9b59b6" font-size="10" font-style="italic">worker_saturation pruned — conditionally independent</text>
+
+  <!-- Legend -->
+  <rect x="30" y="290" width="460" height="60" rx="6" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="50" y1="310" x2="90" y2="310" stroke="#666" stroke-width="1.2" marker-end="url(#arrow-learned)"/>
+  <text x="100" y="314" fill="#555" font-size="11">Retained from star</text>
+  <line x1="50" y1="330" x2="90" y2="330" stroke="#e74c3c" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow-discovered)"/>
+  <text x="100" y="334" fill="#555" font-size="11">Cross-edge discovered by PC / hill-climbing</text>
+  <rect x="300" y="302" width="15" height="15" rx="3" fill="#f0e8f4" stroke="#9b7cb8" stroke-width="1"/>
+  <text x="325" y="314" fill="#555" font-size="11">Pruned — no direct edge from root</text>
+</svg>
