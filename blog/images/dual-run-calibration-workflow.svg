@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#555"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="780" height="440" fill="#fafafa" rx="8"/>
+
+  <!-- Title -->
+  <text x="390" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#111">Dual-Run Calibration Workflow</text>
+
+  <!-- PHASE 1: Record (left side) -->
+  <text x="195" y="62" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">Phase 1: Record Baseline (once)</text>
+
+  <!-- Playbook YAML -->
+  <rect x="30" y="80" width="140" height="44" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="100" y="100" text-anchor="middle" font-size="12" font-weight="600" fill="#312e81">Playbook YAML</text>
+  <text x="100" y="114" text-anchor="middle" font-size="10" fill="#4338ca">economy-only-protoss</text>
+
+  <!-- Arrow to adapter -->
+  <line x1="170" y1="102" x2="205" y2="102" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- PlaybookSC2Adapter -->
+  <rect x="210" y="76" width="160" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="290" y="98" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">PlaybookSC2Adapter</text>
+  <text x="290" y="114" text-anchor="middle" font-size="10" fill="#1d4ed8">SC2FrameCallback</text>
+
+  <!-- Arrow down to SC2 -->
+  <line x1="290" y1="128" x2="290" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- Real SC2 -->
+  <rect x="220" y="152" width="140" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="290" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="#7f1d1d">Real SC2 Client</text>
+  <text x="290" y="186" text-anchor="middle" font-size="10" fill="#991b1b">observe → act → step</text>
+
+  <!-- Arrow down to baseline -->
+  <line x1="290" y1="196" x2="290" y2="218" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Baseline JSON -->
+  <rect x="210" y="220" width="160" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="290" y="240" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">Baseline JSON</text>
+  <text x="290" y="254" text-anchor="middle" font-size="10" fill="#166534">per-tick snapshots</text>
+
+  <!-- Divider -->
+  <line x1="395" y1="60" x2="395" y2="400" stroke="#d1d5db" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- PHASE 2: Calibrate (right side) -->
+  <text x="585" y="62" text-anchor="middle" font-size="14" font-weight="bold" fill="#16a34a">Phase 2: Calibrate (iterate)</text>
+
+  <!-- Same Playbook -->
+  <rect x="425" y="80" width="140" height="44" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="495" y="100" text-anchor="middle" font-size="12" font-weight="600" fill="#312e81">Same Playbook</text>
+  <text x="495" y="114" text-anchor="middle" font-size="10" fill="#4338ca">identical steps</text>
+
+  <!-- Arrow to EmulatedGame -->
+  <line x1="565" y1="102" x2="600" y2="102" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- EmulatedGame -->
+  <rect x="605" y="76" width="150" height="52" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="680" y="98" text-anchor="middle" font-size="11" font-weight="600" fill="#78350f">EmulatedGame</text>
+  <text x="680" y="114" text-anchor="middle" font-size="10" fill="#92400e">Java physics engine</text>
+
+  <!-- Arrow down to comparison -->
+  <line x1="680" y1="128" x2="680" y2="150" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Per-tick comparison -->
+  <rect x="595" y="152" width="170" height="52" rx="6" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="680" y="172" text-anchor="middle" font-size="11" font-weight="600" fill="#4c1d95">Per-Tick Comparison</text>
+  <text x="680" y="188" text-anchor="middle" font-size="10" fill="#5b21b6">units · buildings · upgrades</text>
+
+  <!-- Baseline feeds into comparison -->
+  <path d="M370,242 L430,242 L430,178 L590,178" stroke="#16a34a" stroke-width="1.5" fill="none" marker-end="url(#arrow-green)" stroke-dasharray="6,3"/>
+  <text x="450" y="210" font-size="10" fill="#16a34a">baseline</text>
+
+  <!-- Arrow down from comparison — divergence path -->
+  <line x1="640" y1="204" x2="640" y2="242" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+  <!-- Early exit report -->
+  <rect x="555" y="244" width="170" height="56" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="640" y="264" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">DIVERGENCE at tick 187</text>
+  <text x="640" y="280" text-anchor="middle" font-size="10" fill="#991b1b">units.PROBE: expected 16</text>
+  <text x="640" y="293" text-anchor="middle" font-size="10" fill="#991b1b">actual 15 (Emulated)</text>
+
+  <!-- Arrow down — pass path -->
+  <line x1="720" y1="204" x2="720" y2="242" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <!-- Pass -->
+  <rect x="690" y="244" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="725" y="267" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">PASS</text>
+
+  <!-- Fix → re-run loop -->
+  <rect x="460" y="330" width="130" height="40" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="525" y="348" text-anchor="middle" font-size="11" font-weight="600" fill="#7c2d12">Fix mechanic</text>
+  <text x="525" y="362" text-anchor="middle" font-size="10" fill="#9a3412">in EmulatedGame</text>
+
+  <!-- Arrow from divergence to fix -->
+  <line x1="640" y1="300" x2="640" y2="350" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="640" y1="350" x2="595" y2="350" stroke="#dc2626" stroke-width="1" marker-end="url(#arrow-red)"/>
+
+  <!-- Arrow from fix back to EmulatedGame -->
+  <path d="M460,350 L430,350 L430,102 L600,102" stroke="#ea580c" stroke-width="1.5" fill="none" marker-end="url(#arrow)" stroke-dasharray="6,3"/>
+  <text x="430" y="230" font-size="10" fill="#ea580c" transform="rotate(-90,430,230)">re-run</text>
+
+  <!-- Legend -->
+  <rect x="30" y="360" width="350" height="68" rx="6" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="45" y="382" font-size="11" fill="#374151">Economy divergence (minerals, vespene) is</text>
+  <text x="45" y="396" font-size="11" font-weight="600" fill="#374151">logged but never triggers early exit</text>
+  <text x="45" y="416" font-size="10" fill="#6b7280">— calibrated separately, known mining model imprecision</text>
+</svg>
