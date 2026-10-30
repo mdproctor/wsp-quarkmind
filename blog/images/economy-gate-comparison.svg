@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <style>
+    .title { font-size: 15px; font-weight: 700; fill: #1e293b; }
+    .subtitle { font-size: 12px; fill: #64748b; }
+    .label { font-size: 11px; fill: #334155; }
+    .label-bold { font-size: 11px; font-weight: 600; fill: #1e293b; }
+    .cost-yes { font-size: 10px; fill: #16a34a; font-weight: 600; }
+    .cost-no { font-size: 10px; fill: #dc2626; font-weight: 600; }
+    .gate { font-size: 10px; fill: #1e40af; font-weight: 600; }
+  </style>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" class="title">Economy Gates by Intent Type</text>
+  <text x="360" y="46" text-anchor="middle" class="subtitle">Before fix — morph path had no gate at all</text>
+
+  <!-- TRAIN path -->
+  <rect x="30" y="70" width="100" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="80" y="93" text-anchor="middle" class="label-bold">TrainIntent</text>
+
+  <line x1="130" y1="88" x2="175" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="180" y="70" width="100" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="230" y="85" text-anchor="middle" class="gate">CHECK</text>
+  <text x="230" y="97" text-anchor="middle" class="label">minerals + gas</text>
+
+  <line x1="280" y1="88" x2="325" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="330" y="70" width="100" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="380" y="85" text-anchor="middle" class="gate">DEDUCT</text>
+  <text x="380" y="97" text-anchor="middle" class="label">minerals + gas</text>
+
+  <line x1="430" y1="88" x2="475" y2="88" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <rect x="480" y="70" width="120" height="36" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="540" y="85" text-anchor="middle" class="label-bold">Execute</text>
+  <text x="540" y="97" text-anchor="middle" class="cost-yes">✓ costs tracked</text>
+
+  <!-- BUILD path -->
+  <rect x="30" y="130" width="100" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="80" y="153" text-anchor="middle" class="label-bold">BuildIntent</text>
+
+  <line x1="130" y1="148" x2="175" y2="148" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="180" y="130" width="100" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="230" y="145" text-anchor="middle" class="gate">CHECK</text>
+  <text x="230" y="157" text-anchor="middle" class="label">minerals</text>
+
+  <line x1="280" y1="148" x2="325" y2="148" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="330" y="130" width="100" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="380" y="145" text-anchor="middle" class="gate">DEDUCT</text>
+  <text x="380" y="157" text-anchor="middle" class="label">minerals</text>
+
+  <line x1="430" y1="148" x2="475" y2="148" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <rect x="480" y="130" width="120" height="36" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="540" y="145" text-anchor="middle" class="label-bold">Execute</text>
+  <text x="540" y="157" text-anchor="middle" class="cost-yes">✓ costs tracked</text>
+
+  <!-- MORPH path (before) -->
+  <rect x="30" y="190" width="100" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="80" y="213" text-anchor="middle" class="label-bold">MorphIntent</text>
+
+  <line x1="130" y1="208" x2="475" y2="208" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-red)"/>
+  <text x="300" y="200" text-anchor="middle" class="cost-no">no check — no deduction</text>
+
+  <rect x="480" y="190" width="120" height="36" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="540" y="205" text-anchor="middle" class="label-bold">Execute</text>
+  <text x="540" y="217" text-anchor="middle" class="cost-no">✗ morphs are free</text>
+
+  <!-- Divider -->
+  <line x1="30" y1="250" x2="690" y2="250" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="360" y="272" text-anchor="middle" class="subtitle">After fix — all three paths check and deduct</text>
+
+  <!-- MORPH path (after) -->
+  <rect x="30" y="290" width="100" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="80" y="313" text-anchor="middle" class="label-bold">MorphIntent</text>
+
+  <line x1="130" y1="308" x2="175" y2="308" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="180" y="290" width="100" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="230" y="305" text-anchor="middle" class="gate">CHECK</text>
+  <text x="230" y="317" text-anchor="middle" class="label">minerals + gas</text>
+
+  <line x1="280" y1="308" x2="325" y2="308" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="330" y="290" width="100" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="380" y="305" text-anchor="middle" class="gate">DEDUCT</text>
+  <text x="380" y="317" text-anchor="middle" class="label">minerals + gas</text>
+
+  <line x1="430" y1="308" x2="475" y2="308" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <rect x="480" y="290" width="120" height="36" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="540" y="305" text-anchor="middle" class="label-bold">Execute</text>
+  <text x="540" y="317" text-anchor="middle" class="cost-yes">✓ costs tracked</text>
+
+  <!-- Tracker-driven note -->
+  <rect x="180" y="350" width="420" height="50" rx="4" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+  <text x="200" y="372" class="label-bold">Tracker-driven exception (r- prefix):</text>
+  <text x="200" y="388" class="label">All three paths skip the economy gate for replay-reconstructed intents.</text>
+  <text x="200" y="400" class="label">The player already afforded it — the emulator measures physics, not economics.</text>
+</svg>

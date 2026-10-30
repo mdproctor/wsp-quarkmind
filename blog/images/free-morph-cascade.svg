@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <style>
+    .t { font-size: 15px; font-weight: 700; fill: #1e293b; }
+    .st { font-size: 12px; fill: #64748b; }
+    .lb { font-size: 11px; fill: #334155; }
+    .lbb { font-size: 11px; font-weight: 600; fill: #1e293b; }
+    .err { font-size: 10px; fill: #dc2626; font-weight: 500; }
+    .val { font-size: 13px; fill: #1e293b; font-weight: 700; font-family: 'SF Mono', 'Fira Code', monospace; }
+    .unit { font-size: 10px; fill: #64748b; }
+  </style>
+
+  <text x="360" y="28" text-anchor="middle" class="t">How Free Morphs Poison the Agent Pipeline</text>
+  <text x="360" y="46" text-anchor="middle" class="st">CC→Orbital Command morph: 150 minerals never deducted</text>
+
+  <!-- Timeline -->
+  <line x1="60" y1="80" x2="660" y2="80" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Morph event -->
+  <circle cx="100" cy="80" r="6" fill="#dc2626"/>
+  <text x="100" y="72" text-anchor="middle" class="lbb">Morph</text>
+  <text x="100" y="106" text-anchor="middle" class="err">-0 minerals</text>
+  <text x="100" y="118" text-anchor="middle" class="unit">(should be -150)</text>
+
+  <!-- Economy reads -->
+  <circle cx="240" cy="80" r="6" fill="#f59e0b"/>
+  <text x="240" y="72" text-anchor="middle" class="lbb">Economy reads</text>
+
+  <circle cx="400" cy="80" r="6" fill="#f59e0b"/>
+  <text x="400" y="72" text-anchor="middle" class="lbb">Strategy reads</text>
+
+  <circle cx="560" cy="80" r="6" fill="#f59e0b"/>
+  <text x="560" y="72" text-anchor="middle" class="lbb">Scouting reads</text>
+
+  <!-- Economy cascade -->
+  <rect x="170" y="130" width="140" height="80" rx="6" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="240" y="152" text-anchor="middle" class="lbb">EconomicsTask</text>
+  <text x="240" y="170" text-anchor="middle" class="lb">Sees: 400 minerals</text>
+  <text x="240" y="185" text-anchor="middle" class="err">Real: 250 minerals</text>
+  <text x="240" y="200" text-anchor="middle" class="err">+150 phantom budget</text>
+
+  <line x1="240" y1="110" x2="240" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Strategy cascade -->
+  <rect x="330" y="130" width="140" height="80" rx="6" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="400" y="152" text-anchor="middle" class="lbb">StrategyTask</text>
+  <text x="400" y="170" text-anchor="middle" class="lb">Plans expansion</text>
+  <text x="400" y="185" text-anchor="middle" class="err">based on phantom</text>
+  <text x="400" y="200" text-anchor="middle" class="err">minerals</text>
+
+  <line x1="400" y1="110" x2="400" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Scouting cascade -->
+  <rect x="490" y="130" width="140" height="80" rx="6" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="560" y="152" text-anchor="middle" class="lbb">ScoutingTask</text>
+  <text x="560" y="170" text-anchor="middle" class="lb">Enemy advantage</text>
+  <text x="560" y="185" text-anchor="middle" class="err">underestimated —</text>
+  <text x="560" y="200" text-anchor="middle" class="err">we look richer</text>
+
+  <line x1="560" y1="110" x2="560" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Cascade arrows -->
+  <line x1="310" y1="170" x2="330" y2="170" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-r)"/>
+  <line x1="470" y1="170" x2="490" y2="170" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-r)"/>
+
+  <!-- Bottom summary -->
+  <rect x="100" y="240" width="520" height="80" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="360" y="265" text-anchor="middle" class="lbb">Compound error across the agent pipeline</text>
+  <text x="360" y="283" text-anchor="middle" class="lb">Every morph that doesn't deduct costs inflates the economy model.</text>
+  <text x="360" y="299" text-anchor="middle" class="lb">Every agent that reads minerals gets a wrong input.</text>
+  <text x="360" y="315" text-anchor="middle" class="lb">The AI plans from money it doesn't have.</text>
+</svg>
