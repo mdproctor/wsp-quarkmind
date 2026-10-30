@@ -78,11 +78,23 @@ Every learned `NetworkSpec` destined for the "intel" slot gets `drools_evidence`
 ### Builder refactor
 
 `SC2HypothesisNetworkBuilder.buildIntelTree()` is refactored to:
-1. Produce a `NetworkSpec` encoding its current topology, clamping (`Math.max(0.01, Math.min(0.99, val))`), normalization, and drools_evidence
-2. Both hand-specified and learned topologies flow through the same `NetworkSpec → JunctionTree` construction path via `NetworkSpec.toBuilder().buildJunctionTree()`
+1. Produce a `NetworkSpec` encoding its current observation topology, clamping (`Math.max(0.01, Math.min(0.99, val))`), normalization, and drools_evidence
+2. Both hand-specified and learned topologies flow through the same construction path
 3. The hand-specified star is the default `NetworkSpec`; learned topologies are alternatives loaded from JSON resources
 
-This unifies construction across `SC2HypothesisNetworkBuilder` (observations + detectors + drools for HypothesisTracker) and aligns with `DetectorOrchestrator.learnedNetworks` which already consumes `BayesNetwork` objects via `NetworkSpec.toBayesNetwork()` through `LearnedCptLoader`.
+**Dynamic detector grafting:** The learned `NetworkSpec` covers only observation variables + `enemy_strategy` + `drools_evidence` (detectors are Phase 2). Detector variables are grafted at build time as star children of `enemy_strategy` using runtime parameters. The builder signature becomes:
+
+```
+buildIntelTree(NetworkSpec observationTopology,
+               List<String> activeDetectorNames,
+               Map<String, Map<String, Double>> detectorCpts) → JunctionTree
+```
+
+The `NetworkSpec` provides the observation subgraph; detectors are appended as naïve Bayes children of `enemy_strategy` using the runtime detector list and CPTs. This is not a pure "build from spec" operation — it's a merge of learned structure with runtime detector configuration.
+
+**Note on existing learned network path:** `DetectorOrchestrator.learnedNetworks` consumes `BayesNetwork` objects through `LearnedCptLoader`, but `HypothesisTrackerFusion.learnedNetworks` is currently a dead field (stored but never read — `initialize()` always builds via `SC2HypothesisNetworkBuilder`). This issue introduces learned topology consumption for `HypothesisTrackerFusion` for the first time — it is novel, not aligning with an existing pattern.
+
+**Runtime topology selection:** A config flag `quarkmind.scouting.use-learned-topology` (default `false`) controls whether the learned topology resource is loaded or the hand-specified star is used. This provides rollback without redeployment if the learned topology degrades under distribution shift.
 
 ## Per-phase structure learning
 
@@ -108,7 +120,8 @@ All topologies are evaluated with data-fitted CPTs to isolate the structure cont
 - **Secondary:** Brier score (calibration quality), per-archetype classification accuracy
 - **K-fold:** At replay level (all observations from one replay in same fold) to prevent data leakage
 - **Significance:** Paired bootstrap test on per-replay log-likelihood scores
-- **Threshold:** 5% log-likelihood improvement required to justify switching from star
+- **Threshold:** 5% relative improvement in mean per-replay log-likelihood required to justify switching from star (i.e. `(LL_learned - LL_star) / |LL_star| > 0.05`)
+- **Fold assignment:** Shared across phases for a given matchup — the same replay is always in the same fold regardless of phase, preventing subtle cross-phase data leakage
 
 ## Pipeline coexistence
 
@@ -124,7 +137,7 @@ If the learned structure wins: detector CPTs from `CptLearningExportTest` are pr
 - **Unit test:** `SC2HypothesisNetworkBuilder` refactored to produce `NetworkSpec` — existing test assertions still pass (same junction tree, same posteriors)
 - **Unit test:** Hand-specified star expressed as `NetworkSpec` produces identical posteriors to the current hard-coded builder
 - **Report test:** `StructureLearningExportTest` — the main pipeline. Extracts data, learns structures, compares, exports winners. Prints comparison table to stdout
-- **Calibration gate:** `PatternClassificationCalibrationTest` must still pass with learned topology — no regression below current thresholds (≥70% rush/air-threat at 3min)
+- **Calibration gate:** `HypothesisTrackerCalibrationTest` must still pass with learned topology — this test exercises the Bayesian network topology via `HypothesisTrackerFusion`, not the Drools cascade. (`PatternClassificationCalibrationTest` tests `CascadingPatternClassifier`, which does not use the junction tree.)
 
 ## Dependencies
 
@@ -143,9 +156,10 @@ If the learned structure wins: detector CPTs from `CptLearningExportTest` are pr
 - Export winning topologies as JSON resources
 - Post-structure drools_evidence augmentation
 
-**Out of scope (Phase 2 follow-up):**
+**Out of scope (Phase 2 follow-up — to be filed as GitHub issues):**
 - Including detector variables in structure learning (requires observation-detector data join)
 - Selective parameter re-fitting (keep ONNX detector CPTs, only re-fit observation CPTs from learned structure)
+- `initializeUnified()` path — currently uses the hand-specified star, unaffected by this change
 
 ## References
 
