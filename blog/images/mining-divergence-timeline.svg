@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <style>
+      .axis { stroke: #64748b; stroke-width: 1.5; }
+      .grid { stroke: #e2e8f0; stroke-width: 0.5; }
+      .label { font-size: 11px; fill: #64748b; }
+      .title { font-size: 13px; fill: #334155; font-weight: 600; }
+      .sc2-line { stroke: #3b82f6; stroke-width: 2.5; fill: none; }
+      .old-line { stroke: #ef4444; stroke-width: 2.5; fill: none; stroke-dasharray: 6,3; }
+      .fix-line { stroke: #22c55e; stroke-width: 2.5; fill: none; }
+      .dot-sc2 { fill: #3b82f6; }
+      .dot-old { fill: #ef4444; }
+      .dot-fix { fill: #22c55e; }
+      .annotation { font-size: 10px; fill: #475569; }
+      .annotation-bold { font-size: 10px; fill: #dc2626; font-weight: 600; }
+      .legend { font-size: 11px; fill: #334155; }
+      .zone { fill: #fef2f2; opacity: 0.5; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="24" text-anchor="middle" class="title">Mineral accumulation: SC2 vs EmulatedGame (first 10 ticks)</text>
+
+  <!-- Chart area: x=70..680, y=45..300 -->
+  <!-- Y axis gridlines and labels (minerals: 0, 20, 40, 60, 80, 100) -->
+  <line x1="70" y1="300" x2="680" y2="300" class="grid"/>
+  <line x1="70" y1="249" x2="680" y2="249" class="grid"/>
+  <line x1="70" y1="198" x2="680" y2="198" class="grid"/>
+  <line x1="70" y1="147" x2="680" y2="147" class="grid"/>
+  <line x1="70" y1="96" x2="680" y2="96" class="grid"/>
+  <line x1="70" y1="45" x2="680" y2="45" class="grid"/>
+
+  <text x="60" y="304" text-anchor="end" class="label">0</text>
+  <text x="60" y="253" text-anchor="end" class="label">20</text>
+  <text x="60" y="202" text-anchor="end" class="label">40</text>
+  <text x="60" y="151" text-anchor="end" class="label">60</text>
+  <text x="60" y="100" text-anchor="end" class="label">80</text>
+  <text x="60" y="49" text-anchor="end" class="label">100</text>
+
+  <!-- Y axis title -->
+  <text x="18" y="175" text-anchor="middle" class="label" transform="rotate(-90,18,175)">minerals</text>
+
+  <!-- X axis labels (ticks 0-10) -->
+  <!-- tick spacing: (680-70)/10 = 61px per tick -->
+  <text x="70" y="318" text-anchor="middle" class="label">0</text>
+  <text x="131" y="318" text-anchor="middle" class="label">1</text>
+  <text x="192" y="318" text-anchor="middle" class="label">2</text>
+  <text x="253" y="318" text-anchor="middle" class="label">3</text>
+  <text x="314" y="318" text-anchor="middle" class="label">4</text>
+  <text x="375" y="318" text-anchor="middle" class="label">5</text>
+  <text x="436" y="318" text-anchor="middle" class="label">6</text>
+  <text x="497" y="318" text-anchor="middle" class="label">7</text>
+  <text x="558" y="318" text-anchor="middle" class="label">8</text>
+  <text x="619" y="318" text-anchor="middle" class="label">9</text>
+  <text x="680" y="318" text-anchor="middle" class="label">10</text>
+
+  <text x="375" y="338" text-anchor="middle" class="label">game tick</text>
+
+  <!-- Axes -->
+  <line x1="70" y1="45" x2="70" y2="300" class="axis"/>
+  <line x1="70" y1="300" x2="680" y2="300" class="axis"/>
+
+  <!-- Divergence zone highlight (ticks 1-6) -->
+  <rect x="131" y="45" width="305" height="255" class="zone" rx="4"/>
+
+  <!-- SC2 line (blue): starts 50, stays 50 at tick 1 (workers walking), then +8/tick -->
+  <!-- minerals → y: y = 300 - (minerals * 2.55) -->
+  <!-- 50→172.5, 58→152.1, 66→131.7, 74→111.3, 82→90.9, 90→70.5, 98→50.1 -->
+  <polyline class="sc2-line" points="
+    70,172   131,172   192,152   253,131   314,111   375,91   436,70   497,50   558,50   619,50   680,50
+  "/>
+
+  <!-- Old EmulatedGame line (red dashed): starts 50, +8 from tick 1, no cost deduction ever -->
+  <polyline class="old-line" points="
+    70,172   131,152   192,131   253,111   314,91   375,70   436,50   497,50   558,50   619,50   680,50
+  "/>
+
+  <!-- Fixed EmulatedGame line (green): starts 50, no mining tick 1, +8 from tick 2, deducts cost -->
+  <!-- matches SC2 line -->
+  <polyline class="fix-line" points="
+    70,172   131,172   192,152   253,131   314,111   375,91   436,70   497,50   558,50   619,50   680,50
+  "/>
+
+  <!-- Data points -->
+  <circle cx="70" cy="172" r="3" class="dot-sc2"/>
+  <circle cx="131" cy="172" r="3" class="dot-sc2"/>
+  <circle cx="192" cy="152" r="3" class="dot-sc2"/>
+
+  <circle cx="70" cy="172" r="3" class="dot-old"/>
+  <circle cx="131" cy="152" r="3" class="dot-old"/>
+  <circle cx="192" cy="131" r="3" class="dot-old"/>
+
+  <circle cx="70" cy="172" r="3" class="dot-fix"/>
+  <circle cx="131" cy="172" r="3" class="dot-fix"/>
+  <circle cx="192" cy="152" r="3" class="dot-fix"/>
+
+  <!-- Delta annotation at tick 1 -->
+  <line x1="138" y1="172" x2="138" y2="152" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="2,2"/>
+  <text x="145" y="164" class="annotation-bold">+8 Δ</text>
+
+  <!-- Annotation: "workers walking" -->
+  <text x="131" y="186" text-anchor="middle" class="annotation">SC2: workers</text>
+  <text x="131" y="196" text-anchor="middle" class="annotation">still walking</text>
+
+  <!-- Legend -->
+  <line x1="200" y1="355" x2="230" y2="355" class="sc2-line"/>
+  <text x="235" y="359" class="legend">SC2 ground truth</text>
+
+  <line x1="370" y1="355" x2="400" y2="355" class="old-line"/>
+  <text x="405" y="359" class="legend">EmulatedGame (before fix)</text>
+
+  <line x1="570" y1="355" x2="600" y2="355" class="fix-line"/>
+  <text x="605" y="359" class="legend">After fix</text>
+</svg>
