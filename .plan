@@ -1,22 +1,15 @@
-# Work Plan — issue-470-learned-scouting-network-structure
+# Work Plan — issue-475-learned-topology-phase2
 
 ## State
-branch: main
-state: drained
+branch: issue-475-learned-topology-phase2
+state: scaffolded
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
-covers: 470
+covers: 475,476,477,478
 design-repo: 
 design-section-hashes: 
 flyway-next-v: 
 
-evidence-era: true
 ## Queue
-- [ ] casehubio/quarkmind#470 — Issue #470 ← active
-  - [x] Batch 1: Builder refactor
-    - [x] Task 1: Refactor buildIntelTree to accept NetworkSpec
-  - [x] Batch 2: Structure learning
-    - [x] Task 2: Create StructureLearningExportTest
-  - [x] Batch 3: Runtime integration
-    - [x] Task 3: Wire learned topology loading and config flag
+- [ ] casehubio/quarkmind#475 — Issue #475 ← active
