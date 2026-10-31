@@ -16,8 +16,8 @@ flyway-next-v: none
   - [x] Batch 1: Factor injection
     - [x] Task 1: Add calibration factor support to extractor
     - [x] Task 2: Add pass-through in ReplayFeatureExtractor
-  - [ ] Batch 2: Factor derivation
-    - [ ] Task 3: Create CalibrationFactorDerivationTest
+  - [x] Batch 2: Factor derivation
+    - [x] Task 3: Create CalibrationFactorDerivationTest
   - [ ] Batch 3: Validation
     - [ ] Task 4: Run calibrated oracle accuracy baseline
     - [ ] Task 5: Re-extract and retrain classifier
