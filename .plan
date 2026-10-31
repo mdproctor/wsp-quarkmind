@@ -1,0 +1,15 @@
+# Work Plan — issue-405-calibrated-multiplication
+
+## State
+branch: issue-405-calibrated-multiplication
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 405
+design-repo: 
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#405 — Issue #405 ← active
