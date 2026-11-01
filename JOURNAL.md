@@ -1,1 +1,1 @@
-# Design Journal — issue-484-targeted-emulator-calibration
+# Design Journal — issue-485-tracker-building-tag-resolution
