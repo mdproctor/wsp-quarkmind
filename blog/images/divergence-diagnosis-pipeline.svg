@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="340" fill="#fafaf9" rx="8"/>
+
+  <!-- Title -->
+  <text x="360" y="32" text-anchor="middle" font-size="15" font-weight="600" fill="#1e293b">Scan → Trace → Fix → Validate</text>
+
+  <!-- Phase 1: Scanner -->
+  <rect x="30" y="60" width="150" height="120" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="30" y="60" width="150" height="32" rx="8" fill="#3b82f6"/>
+  <rect x="30" y="80" width="150" height="12" fill="#3b82f6"/>
+  <text x="105" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">SCAN</text>
+  <text x="105" y="112" text-anchor="middle" font-size="10" fill="#475569">118 replays × 2 players</text>
+  <text x="105" y="128" text-anchor="middle" font-size="10" fill="#475569">Per-type deltas at</text>
+  <text x="105" y="144" text-anchor="middle" font-size="10" fill="#475569">1 / 3 / 5 / 7 min</text>
+  <text x="105" y="164" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">→ worst replays</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="180" y1="120" x2="215" y2="120" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Phase 2: Tracer -->
+  <rect x="220" y="60" width="150" height="120" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="220" y="60" width="150" height="32" rx="8" fill="#f59e0b"/>
+  <rect x="220" y="80" width="150" height="12" fill="#f59e0b"/>
+  <text x="295" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">TRACE</text>
+  <text x="295" y="112" text-anchor="middle" font-size="10" fill="#475569">Per-tick intent timeline</text>
+  <text x="295" y="128" text-anchor="middle" font-size="10" fill="#475569">Building tag + outcome</text>
+  <text x="295" y="144" text-anchor="middle" font-size="10" fill="#475569">Rejection reason</text>
+  <text x="295" y="164" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">→ root cause</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="370" y1="120" x2="405" y2="120" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Phase 3: Fix -->
+  <rect x="410" y="60" width="150" height="120" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="410" y="60" width="150" height="32" rx="8" fill="#10b981"/>
+  <rect x="410" y="80" width="150" height="12" fill="#10b981"/>
+  <text x="485" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">FIX</text>
+  <text x="485" y="112" text-anchor="middle" font-size="10" fill="#475569">Targeted code change</text>
+  <text x="485" y="128" text-anchor="middle" font-size="10" fill="#475569">in EmulatedGame</text>
+  <text x="485" y="144" text-anchor="middle" font-size="10" fill="#475569">physics</text>
+  <text x="485" y="164" text-anchor="middle" font-size="10" font-weight="600" fill="#059669">→ accuracy gain</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="560" y1="120" x2="595" y2="120" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Phase 4: Validate -->
+  <rect x="600" y="60" width="90" height="120" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="600" y="60" width="90" height="32" rx="8" fill="#8b5cf6"/>
+  <rect x="600" y="80" width="90" height="12" fill="#8b5cf6"/>
+  <text x="645" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">VALIDATE</text>
+  <text x="645" y="112" text-anchor="middle" font-size="10" fill="#475569">Baseline</text>
+  <text x="645" y="128" text-anchor="middle" font-size="10" fill="#475569">regression</text>
+  <text x="645" y="144" text-anchor="middle" font-size="10" fill="#475569">tests</text>
+  <text x="645" y="164" text-anchor="middle" font-size="10" font-weight="600" fill="#7c3aed">→ repeat</text>
+
+  <!-- Feedback arrow from Validate back to Scan -->
+  <path d="M 645 180 L 645 210 Q 645 230 625 230 L 125 230 Q 105 230 105 210 L 105 185" stroke="#94a3b8" stroke-width="1.2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="365" y="248" text-anchor="middle" font-size="10" fill="#94a3b8" font-style="italic">re-scan to verify improvement and find next target</text>
+
+  <!-- Bottom context box -->
+  <rect x="30" y="270" width="660" height="55" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="50" y="292" font-size="11" font-weight="600" fill="#334155">The pattern generalises:</text>
+  <text x="50" y="310" font-size="10" fill="#475569">Any system with a simulation and a ground truth can use this cycle — physics engines, financial models,</text>
+  <text x="50" y="324" font-size="10" fill="#475569">climate simulations, digital twins. The tooling is specific; the method is universal.</text>
+</svg>
