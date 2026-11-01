@@ -13,3 +13,13 @@ flyway-next-v: none
 
 ## Queue
 - [ ] casehubio/quarkmind#484 — Issue #484 ← active
+  - [ ] Batch 1: Diagnostic infrastructure
+    - [ ] Task 1: IntentExecutionListener
+    - [ ] Task 2: ReplayDivergenceScanner
+    - [ ] Task 3: ReplayDivergenceTracer
+  - [ ] Batch 2: Terran fixes
+    - [ ] Task 4: Diagnose and fix physics
+  - [ ] Batch 3: SC2EGSet expansion
+    - [ ] Task 5: Download and ingest
+  - [ ] Batch 4: Documentation
+    - [ ] Task 6: Process doc and CLAUDE.md
