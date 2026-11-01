@@ -1,0 +1,15 @@
+# Work Plan — issue-484-targeted-emulator-calibration
+
+## State
+branch: issue-484-targeted-emulator-calibration
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 484
+design-repo: 
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#484 — Issue #484 ← active
