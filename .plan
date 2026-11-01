@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-484-targeted-emulator-calibration
-state: active
+state: closing:review
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -11,6 +11,7 @@ design-repo:
 design-section-hashes: 
 flyway-next-v: none
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#484 — Issue #484 ← active
   - [x] Batch 1: Diagnostic infrastructure
