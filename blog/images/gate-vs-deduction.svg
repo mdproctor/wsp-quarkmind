@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 250" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <style>
+      .box { rx: 6; ry: 6; stroke-width: 1.5; }
+      .box-intent { fill: #f0f9ff; stroke: #3b82f6; }
+      .box-gate { fill: #fefce8; stroke: #ca8a04; }
+      .box-skip { fill: #fef2f2; stroke: #ef4444; }
+      .box-pass { fill: #f0fdf4; stroke: #22c55e; }
+      .box-result { fill: #f8fafc; stroke: #64748b; }
+      .arrow { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .arrow-red { stroke: #ef4444; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead-red); stroke-dasharray: 5,3; }
+      .arrow-green { stroke: #22c55e; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead-green); }
+      .label { font-size: 11px; fill: #334155; text-anchor: middle; }
+      .label-sm { font-size: 9.5px; fill: #64748b; text-anchor: middle; }
+      .label-code { font-size: 10px; fill: #7c3aed; font-family: 'JetBrains Mono', 'Fira Code', monospace; text-anchor: middle; }
+      .title { font-size: 13px; fill: #334155; font-weight: 600; text-anchor: middle; }
+      .verdict { font-size: 11px; font-weight: 600; text-anchor: middle; }
+      .verdict-bad { fill: #dc2626; }
+      .verdict-good { fill: #16a34a; }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#64748b" stroke-width="1"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#22c55e" stroke-width="1.5"/>
+    </marker>
+  </defs>
+
+  <text x="350" y="22" class="title">Separating gate logic from resource accounting</text>
+
+  <!-- Column 1: Gate -->
+  <text x="170" y="52" class="label" style="font-weight:600">Economy gate</text>
+  <text x="170" y="65" class="label-sm">"Can the player afford this?"</text>
+
+  <rect x="100" y="78" width="140" height="28" class="box box-gate"/>
+  <text x="170" y="96" class="label">Normal intent</text>
+  <path d="M170,106 L170,130" class="arrow"/>
+  <rect x="110" y="132" width="120" height="24" class="box box-pass"/>
+  <text x="170" y="148" class="verdict verdict-good">gate + deduct</text>
+
+  <rect x="100" y="170" width="140" height="28" class="box box-intent"/>
+  <text x="170" y="188" class="label">Tracker-driven</text>
+  <path d="M170,198 L170,218" class="arrow-red"/>
+  <text x="170" y="236" class="verdict verdict-bad">skip gate, skip deduct</text>
+  <text x="170" y="248" class="label-sm" style="fill:#dc2626">minerals never spent</text>
+
+  <!-- Column 2: Fix -->
+  <text x="520" y="52" class="label" style="font-weight:600">After fix</text>
+  <text x="520" y="65" class="label-sm">"Gate and deduction are independent"</text>
+
+  <rect x="450" y="78" width="140" height="28" class="box box-gate"/>
+  <text x="520" y="96" class="label">Normal intent</text>
+  <path d="M520,106 L520,130" class="arrow"/>
+  <rect x="460" y="132" width="120" height="24" class="box box-pass"/>
+  <text x="520" y="148" class="verdict verdict-good">gate + deduct</text>
+
+  <rect x="450" y="170" width="140" height="28" class="box box-intent"/>
+  <text x="520" y="188" class="label">Tracker-driven</text>
+  <path d="M520,198 L520,218" class="arrow-green"/>
+  <text x="520" y="236" class="verdict verdict-good">skip gate, still deduct</text>
+  <text x="520" y="248" class="label-sm" style="fill:#16a34a">minerals accurately tracked</text>
+
+  <!-- Divider -->
+  <line x1="340" y1="40" x2="340" y2="250" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3"/>
+</svg>
