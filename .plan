@@ -13,3 +13,8 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#493 — Issue #493 ← active
+  - [x] Batch 1: Pipeline
+    - [x] Task 1: UnitDiedIntent and EmulatedGame wiring
+    - [x] Task 2: Extract UnitDied in TrackerIntentExtractor
+  - [x] Batch 2: Validation
+    - [x] Task 3: Verify accuracy improvement
