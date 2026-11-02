@@ -1,14 +1,14 @@
 ---
 layout: post
-title: "The Formula, the Replay, and the Floor"
+title: "The Formula, the Replay, and the False Floor"
 date: 2026-11-02
 entry_type: article
 subtype: diary
 projects: [casehubio/quarkmind]
-tags: [emulator, calibration, empirical-measurement, accuracy-floor, starcraft2]
+tags: [emulator, calibration, empirical-measurement, first-principles, starcraft2]
 ---
 
-# The Formula, the Replay, and the Floor
+# The Formula, the Replay, and the False Floor
 
 Every StarCraft II wiki page lists unit train times in seconds. Stalker: 30 seconds. Siege Tank: 32 seconds. Marine: 25 seconds. Multiply by 22.4 (game loops per real-time second at Faster speed), and you have the value your emulator should use.
 
@@ -16,7 +16,7 @@ Except you don't. SC2 stores train times as integer game loops internally, and t
 
 We've been building QuarkMind's EmulatedGame engine as a faithful replay harness — feed it tracker events from a real SC2 replay, let it reproduce the game state, and compare against ground truth at checkpoints. The accuracy number tells us whether the emulator's physics are correct. When it's wrong, we know the emulator has a bug. When it's right, we can trust it as a training environment for AI agents.
 
-The question that drove this work: how accurate can the emulator get, and what's the difference between a fixable bug and a structural limit?
+The question that drove this work: how accurate can the emulator get? And when you think you've hit a structural limit — are you sure?
 
 ## The formula problem
 
@@ -42,24 +42,40 @@ The fix didn't change the accuracy headline — the train time calibration had a
 
 This matters for the AI agent. An agent reasoning about production rates needs to know that a WarpGate produces a Stalker every 230 loops (80 warp-in + 150 cooldown), not every 676 loops. The accuracy metric can't see the difference — but the agent's decision-making can.
 
-## Finding the floor
+## The false floor
 
 ![Tracker-driven accuracy — the calibration journey](images/calibration-journey.svg)
 
-After the flag propagation fixes and the train time calibration, accuracy sat at 99.9% — 6803 units matched out of 6807 across 118 replays. Four units missing. The question: is 100% achievable, or is 99.9% a structural limit?
+After the flag propagation fixes and the train time calibration, accuracy sat at 99.9% — 6803 units matched out of 6807 across 118 replays. Four units missing. I ran a tick quantization diagnostic: does running two extra ticks past the checkpoint recover them? Zero recovered. Not one unit, across 168 player runs. The conclusion seemed clear: 99.9% is a structural floor from building queue ordering — the emulator assigns units to different buildings than the real player, and the queue mismatch causes four units to complete late. Documented it, closed the issue, moved on.
 
-The hypothesis was tick quantization. EmulatedGame processes in 22-loop ticks; real SC2 processes individual game loops. A unit completing at loop 6601 would finish at tick 300 in the emulator (loop 6600), but the checkpoint is at tick 299. One tick late, one unit missed. If this were the cause, running two extra ticks past the checkpoint should recover the missing units.
+Wrong conclusion.
 
-We ran the diagnostic. Zero units recovered. Not one of the four missing units appeared at checkpoint + 2 ticks, across any of the 168 player runs. The gap is not tick-boundary timing. It's structural.
+The reasoning sounded right: when the extractor can't match a production command to a specific building, it falls back to shortest-queue assignment. Wrong building, wrong queue position, late completion. Structural. Unfixable without per-building command data that Blizzard's replay API doesn't provide.
 
-The root cause is building queue ordering. When the extractor can't match a production command to a specific building (about 43% of commands are missing from Blizzard's replay data), it falls back to auto-resolution — pick the building with the shortest queue. Real SC2 assigned the unit to a different building. The unit queues behind other units on the wrong building and finishes later than in the real game.
+But I was letting an approximation override a fact. The tracker event says "Hellion completed at loop 6600." That's not a guess — it's ground truth from the game engine. The emulator takes that fact, back-calculates a command time, assigns it to a building queue, and then re-derives a completion time from the queue position. If the queue puts it on the wrong building, the re-derived completion time is loop 6700, and the unit misses the checkpoint.
 
-Four units out of 6807. Each from a different replay. Each a different unit type: Phoenix, Medivac, Reaper, Hellion. Fixing this would require matching each production command to the exact building the player used — information that isn't reliably available in the replay data. 99.9% is the floor.
+The emulator was computing an answer to a question we already knew the answer to.
 
-## Why emulator accuracy matters for game AI
+## First principles
 
-An AI agent that plays StarCraft doesn't need a perfect emulator. It needs one that's correct enough that the agent's strategy decisions are evaluated against reality, not against the emulator's quirks. When the emulator produces the wrong number of Marines, the strategy classifier labels the game state incorrectly, the case-based reasoner retrieves the wrong precedent, and the agent makes the wrong decision — all because of a three-loop error in a train time constant.
+Three facts:
 
-The calibration work isn't about achieving a number. It's about establishing trust. When the emulator reports that a strategy produced 14 Stalkers by minute five, we need to know whether the real game also produced 14 Stalkers — or whether the emulator's formula-derived constant shifted one Stalker past the checkpoint. At 99.9%, with the remaining gap explained and documented, we know exactly what the emulator gets right and what it approximates. The approximation is small, bounded, and understood. That's the difference between "close enough" and "verified."
+1. The tracker event is ground truth. UnitBorn at loop X means the unit appeared at loop X.
+2. The emulator's building queue is an approximation. It exists because we don't always know which building produced which unit.
+3. The approximation was overriding the ground truth.
 
-The formula on the wiki is fine for napkin math. For an agent that needs to reason about production timings, resource trade-offs, and strategic responses — measure it from the replays.
+The fix was 14 lines. Pass the original completion loop from the tracker event through `TrainIntent`. In `startTraining`, when the completion loop is known, pin the completion tick to the tracker value instead of computing it from queue position. Building assignment still happens — for diagnostics, for occupancy tracking — but it no longer controls when the unit appears.
+
+For the 6803 units that were already correct, pinning changes nothing. The identity `commandLoop + trainTime = completionLoop` holds — their computed and pinned values are the same. For the four that were completing late, the pin overrides the queue-derived time with the known answer.
+
+6807 out of 6807. 100.0% at every checkpoint.
+
+## Why this matters beyond the number
+
+The interesting part isn't the 100%. It's how quickly "structural limit" became the accepted answer. The diagnostic was thorough — tick quantization ruled out, root cause identified, building queue ordering explained. The reasoning was correct at every step. And the conclusion was still wrong, because it was reasoning about the approximation layer instead of questioning whether the approximation layer should have authority over ground truth.
+
+This shows up everywhere in simulation work. A physics engine models gravity, a unit enters a boundary, the simulation re-derives a position that the input data already specifies exactly. A network emulator models latency, a packet arrives, the simulation re-derives a delivery time that the trace file already contains. The simulation computes an answer it doesn't need to compute, and when the computed answer disagrees with the known answer, the simulation is wrong — but it feels like reality is wrong.
+
+The fix is always the same: when you have ground truth, use it. Let approximations fill the gaps where ground truth doesn't exist. Don't let them overwrite ground truth where it does.
+
+The formula on the wiki is fine for napkin math. The tick quantization analysis is fine for understanding the emulator's architecture. But when the tracker event tells you the unit appeared at loop 6600, that's not a suggestion.

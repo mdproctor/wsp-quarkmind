@@ -1,62 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 320">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 320">
   <defs>
     <style>
       text { font-family: -apple-system, 'Segoe UI', sans-serif; }
       .label { font-size: 13px; fill: #374151; }
       .pct { font-size: 22px; font-weight: 700; fill: #1e3a5f; }
       .fix { font-size: 11px; fill: #6b7280; }
-      .floor-label { font-size: 12px; fill: #991b1b; font-weight: 600; }
+      .win { font-size: 12px; fill: #059669; font-weight: 600; }
     </style>
   </defs>
 
-  <!-- Background -->
-  <rect width="780" height="320" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <rect width="840" height="320" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="420" y="32" text-anchor="middle" font-size="15" font-weight="600" fill="#1e3a5f">Tracker-Driven Accuracy — The Calibration Journey</text>
 
-  <!-- Title -->
-  <text x="390" y="32" text-anchor="middle" font-size="15" font-weight="600" fill="#1e3a5f">Tracker-Driven Accuracy — The Calibration Journey</text>
-
-  <!-- Accuracy bar chart -->
   <!-- 99.1% bar -->
-  <rect x="60" y="60" width="100" height="160" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
-  <rect x="60" y="61.4" width="100" height="158.6" rx="4" fill="#3b82f6" opacity="0.2"/>
-  <text x="110" y="245" text-anchor="middle" class="pct">99.1%</text>
-  <text x="110" y="265" text-anchor="middle" class="fix">Start</text>
-  <text x="110" y="280" text-anchor="middle" class="fix">63 missing</text>
+  <rect x="40" y="60" width="100" height="160" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="40" y="61.4" width="100" height="158.6" rx="4" fill="#3b82f6" opacity="0.15"/>
+  <text x="90" y="245" text-anchor="middle" class="pct">99.1%</text>
+  <text x="90" y="265" text-anchor="middle" class="fix">Start</text>
+  <text x="90" y="280" text-anchor="middle" class="fix">63 missing</text>
 
-  <!-- Arrow -->
-  <path d="M175 140 L205 140" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M155 140 L185 140" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
   <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#9ca3af"/></marker></defs>
 
   <!-- 99.7% bar -->
-  <rect x="220" y="60" width="100" height="160" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
-  <rect x="220" y="60.5" width="100" height="159.5" rx="4" fill="#3b82f6" opacity="0.35"/>
-  <text x="270" y="245" text-anchor="middle" class="pct">99.7%</text>
-  <text x="270" y="265" text-anchor="middle" class="fix">Flag propagation</text>
-  <text x="270" y="280" text-anchor="middle" class="fix">23 missing</text>
+  <rect x="200" y="60" width="100" height="160" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="200" y="60.5" width="100" height="159.5" rx="4" fill="#3b82f6" opacity="0.25"/>
+  <text x="250" y="245" text-anchor="middle" class="pct">99.7%</text>
+  <text x="250" y="265" text-anchor="middle" class="fix">Flag propagation</text>
+  <text x="250" y="280" text-anchor="middle" class="fix">23 missing</text>
 
-  <!-- Arrow -->
-  <path d="M335 140 L365 140" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M315 140 L345 140" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
 
   <!-- 99.9% bar -->
-  <rect x="380" y="60" width="100" height="160" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
-  <rect x="380" y="60.2" width="100" height="159.8" rx="4" fill="#3b82f6" opacity="0.5"/>
-  <text x="430" y="245" text-anchor="middle" class="pct">99.9%</text>
-  <text x="430" y="265" text-anchor="middle" class="fix">Calibration +</text>
-  <text x="430" y="280" text-anchor="middle" class="fix">flag fix — 4 left</text>
+  <rect x="360" y="60" width="100" height="160" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="360" y="60.2" width="100" height="159.8" rx="4" fill="#3b82f6" opacity="0.35"/>
+  <text x="410" y="245" text-anchor="middle" class="pct">99.9%</text>
+  <text x="410" y="265" text-anchor="middle" class="fix">Calibration +</text>
+  <text x="410" y="280" text-anchor="middle" class="fix">warp-gate — 4 left</text>
 
-  <!-- Arrow -->
-  <path d="M495 140 L525 140" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M475 140 L505 140" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Floor marker -->
-  <rect x="540" y="60" width="180" height="160" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="630" y="130" text-anchor="middle" class="pct" fill="#991b1b">99.9%</text>
-  <text x="630" y="155" text-anchor="middle" class="floor-label">STRUCTURAL FLOOR</text>
-  <text x="630" y="180" text-anchor="middle" class="fix">Queue ordering — not timing</text>
-  <text x="630" y="195" text-anchor="middle" class="fix">+2 ticks recovers zero units</text>
+  <!-- "Structural floor" crossed out -->
+  <rect x="520" y="60" width="100" height="160" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="570" y="135" text-anchor="middle" font-size="13" fill="#991b1b">Declared</text>
+  <text x="570" y="152" text-anchor="middle" font-size="13" fill="#991b1b">"floor"</text>
+  <line x1="530" y1="143" x2="610" y2="143" stroke="#991b1b" stroke-width="2"/>
+  <text x="570" y="265" text-anchor="middle" class="fix">Wrong — the</text>
+  <text x="570" y="280" text-anchor="middle" class="fix">approximation lied</text>
 
-  <text x="630" y="265" text-anchor="middle" class="fix">4 units / 6807 total</text>
-  <text x="630" y="280" text-anchor="middle" class="fix">0.06% structural gap</text>
+  <path d="M635 140 L665 140" stroke="#059669" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
+  <defs><marker id="arrow2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#059669"/></marker></defs>
 
-  <!-- Legend -->
-  <text x="390" y="310" text-anchor="middle" font-size="11" fill="#9ca3af">118 oracle replays · v4.9.3 · all three races · 5-minute checkpoint</text>
+  <!-- 100% bar -->
+  <rect x="680" y="60" width="120" height="160" rx="4" fill="#dcfce7" stroke="#86efac" stroke-width="2"/>
+  <rect x="680" y="60" width="120" height="160" rx="4" fill="#22c55e" opacity="0.15"/>
+  <text x="740" y="140" text-anchor="middle" class="pct" fill="#059669">100%</text>
+  <text x="740" y="165" text-anchor="middle" class="win">6807 / 6807</text>
+  <text x="740" y="265" text-anchor="middle" class="fix">Pin completion to</text>
+  <text x="740" y="280" text-anchor="middle" class="fix">ground truth</text>
+
+  <text x="420" y="310" text-anchor="middle" font-size="11" fill="#9ca3af">118 oracle replays · v4.9.3 · all three races · 5-minute checkpoint</text>
 </svg>
