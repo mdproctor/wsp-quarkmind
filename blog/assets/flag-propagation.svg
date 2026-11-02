@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 520" font-family="'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#555"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#c0392b"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#27ae60"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="390" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Flag propagation through three code paths</text>
+
+  <!-- Entry point -->
+  <rect x="280" y="50" width="220" height="44" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="390" y="68" text-anchor="middle" fill="white" font-size="13" font-weight="bold">TrainIntent arrives</text>
+  <text x="390" y="84" text-anchor="middle" fill="white" font-size="11">trackerDriven = true</text>
+
+  <!-- Branch arrow down -->
+  <line x1="390" y1="94" x2="390" y2="120" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- handleTrain box -->
+  <rect x="240" y="125" width="300" height="40" rx="6" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1.5"/>
+  <text x="390" y="150" text-anchor="middle" fill="#2c3e50" font-size="13" font-weight="bold">handleTrain()</text>
+
+  <!-- Three branches from handleTrain -->
+  <!-- Left: building found, correct type -->
+  <line x1="310" y1="165" x2="130" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Center: building found, wrong type → reroute -->
+  <line x1="390" y1="165" x2="390" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Right: building not found → auto-resolve -->
+  <line x1="470" y1="165" x2="650" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Left path: direct match -->
+  <rect x="30" y="215" width="200" height="50" rx="6" fill="#fadbd8" stroke="#e74c3c" stroke-width="2"/>
+  <text x="130" y="235" text-anchor="middle" fill="#2c3e50" font-size="12" font-weight="bold">Direct match</text>
+  <text x="130" y="252" text-anchor="middle" fill="#c0392b" font-size="11">trackerDriven = false ✗</text>
+
+  <!-- Center path: reroute -->
+  <rect x="280" y="215" width="220" height="50" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="2"/>
+  <text x="390" y="235" text-anchor="middle" fill="#2c3e50" font-size="12" font-weight="bold">Auto-resolve (reroute)</text>
+  <text x="390" y="252" text-anchor="middle" fill="#27ae60" font-size="11">trackerDriven = true ✓</text>
+
+  <!-- Right path: building not found -->
+  <rect x="550" y="215" width="200" height="50" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="2"/>
+  <text x="650" y="235" text-anchor="middle" fill="#2c3e50" font-size="12" font-weight="bold">Auto-resolve (404)</text>
+  <text x="650" y="252" text-anchor="middle" fill="#27ae60" font-size="11">trackerDriven = true ✓</text>
+
+  <!-- Arrows down to economy check -->
+  <line x1="130" y1="265" x2="130" y2="310" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <line x1="390" y1="265" x2="390" y2="310" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="650" y1="265" x2="650" y2="310" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <!-- Economy gate row -->
+  <rect x="30" y="315" width="200" height="44" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="130" y="333" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Economy gate</text>
+  <text x="130" y="349" text-anchor="middle" fill="white" font-size="11">resources checked → rejected</text>
+
+  <rect x="280" y="315" width="220" height="44" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="1.5"/>
+  <text x="390" y="333" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Economy gate</text>
+  <text x="390" y="349" text-anchor="middle" fill="white" font-size="11">skipped ✓</text>
+
+  <rect x="550" y="315" width="200" height="44" rx="6" fill="#27ae60" stroke="#1e8449" stroke-width="1.5"/>
+  <text x="650" y="333" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Economy gate</text>
+  <text x="650" y="349" text-anchor="middle" fill="white" font-size="11">skipped ✓</text>
+
+  <!-- Arrow down from left to queue -->
+  <line x1="130" y1="359" x2="130" y2="400" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+  <!-- Supply gate (drainBuildingQueues) -->
+  <rect x="30" y="405" width="200" height="44" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="130" y="423" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Supply gate</text>
+  <text x="130" y="439" text-anchor="middle" fill="white" font-size="11">drainBuildingQueues → blocked</text>
+
+  <!-- Annotation -->
+  <rect x="30" y="465" width="720" height="44" rx="6" fill="#fef9e7" stroke="#f1c40f" stroke-width="1.5"/>
+  <text x="390" y="483" text-anchor="middle" fill="#7d6608" font-size="12" font-weight="bold">The most common path — direct building match — was the broken one.</text>
+  <text x="390" y="499" text-anchor="middle" fill="#7d6608" font-size="11">Error-handling paths (reroute, auto-resolve) correctly set the flag. The happy path didn't.</text>
+</svg>
