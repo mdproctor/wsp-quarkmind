@@ -2,17 +2,11 @@
 
 ## Last Session
 
-**#484 closed — targeted emulator calibration.** Built diagnostic infrastructure (IntentExecutionListener, ReplayDivergenceScanner, ReplayDivergenceTracer) and applied a rerouting fix for wrong_building_type rejections. Accuracy improved from 98.8% to 99.1% at 5min (+22 units). Discovered baseline was stale (98.8%, not 99.8% as documented) — three EmulatedGame changes (#401, #479, #480) since Oct 13 regressed accuracy undetected because report tests are excluded from the default suite.
-
-**Key finding:** 354 `wrong_building_type` rejections across 236 player runs from TrackerIntentExtractor building tag resolution issues. The rerouting fix rescued cases where a correct building type exists. Remaining gap requires fixing `lookupBuildingTag()` in TrackerIntentExtractor — filed as #485.
-
-**#485 created — TrackerIntentExtractor building tag resolution.** Fix `lookupBuildingTag()` to reduce wrong_building_type rejections. Target ≥99.5% at 5min. L/High.
-
-**SC2EGSet confirmed complete:** all 71 tournament ZIPs (2016-2024, ~17,930 replays) already downloaded and processed (234 NPZ files). Updated replay index with Dataset 8 summary.
+Closed three children of epic #481 (EmulatedGame calibration). #493 added UnitDied tracker event processing — dead units now removed from PlayerState with supply deduction (97% tag-match rate, foodUsed error 52%→35%). #494 separated economy gate logic from resource deduction — tracker-driven intents now deduct mineral/vespene costs (mineralsCurrent error 654%→4%). #497 added per-field economy regression thresholds to DivergenceRegressionTest, replacing the single 420% MAPE ceiling with 5 individual field ceilings calibrated from post-fix baselines.
 
 ## Immediate Next Step
 
-**#485** — TrackerIntentExtractor building tag resolution. Use the diagnostic tools from #484 (scanner, tracer, listener) to identify and fix the remaining building tag misresolutions.
+#496 (calibrate mining income model against oracle replays) — M/Med, the next calibration issue under #481. Collection rate errors are ~93% because EmulatedGame uses a flat mining rate vs SC2's saturation-based model.
 
 ## Known Issues
 
@@ -21,3 +15,8 @@
 - **Ground truth alignment gap**: OnnxClassificationCalibrationTest mid-game accuracy limited because `deriveGroundTruth()` produces archetypes not in model vocabulary.
 - **Pre-existing:** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid.
 - **Pre-existing test failures:** `test_coarse_label_map_no_hierarchy`, `test_ingest_spawningtool` (5 tests), `test_coverage_gaps` (2 tests).
+
+## References
+
+- `docs/benchmarks/tracker-driven-accuracy-baseline.md` — updated accuracy numbers
+- `blog/2026-11-02-mdp02-teaching-the-emulator-about-death.md` — diary entry covering #493/#494
