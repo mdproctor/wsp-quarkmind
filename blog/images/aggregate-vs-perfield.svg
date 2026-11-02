@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <style>
+      .box { rx: 6; ry: 6; stroke-width: 1.5; }
+      .box-pass { fill: #f0fdf4; stroke: #22c55e; }
+      .box-fail { fill: #fef2f2; stroke: #ef4444; }
+      .box-hidden { fill: #fefce8; stroke: #ca8a04; }
+      .box-neutral { fill: #f8fafc; stroke: #64748b; }
+      .label { font-size: 11px; fill: #334155; text-anchor: middle; }
+      .label-sm { font-size: 9.5px; fill: #64748b; text-anchor: middle; }
+      .label-val { font-size: 12px; fill: #334155; font-weight: 600; text-anchor: middle; }
+      .title { font-size: 13px; fill: #334155; font-weight: 600; text-anchor: middle; }
+      .verdict { font-size: 10px; font-weight: 600; text-anchor: middle; }
+      .verdict-good { fill: #16a34a; }
+      .verdict-bad { fill: #dc2626; }
+      .verdict-warn { fill: #ca8a04; }
+      .bar { rx: 3; ry: 3; }
+      .bar-good { fill: #86efac; stroke: #22c55e; stroke-width: 1; }
+      .bar-warn { fill: #fde68a; stroke: #ca8a04; stroke-width: 1; }
+      .bar-bad { fill: #fca5a5; stroke: #ef4444; stroke-width: 1; }
+      .threshold { stroke: #ef4444; stroke-width: 1.5; stroke-dasharray: 5,3; }
+    </style>
+  </defs>
+
+  <!-- Left: aggregate -->
+  <text x="170" y="22" class="title">Aggregate MAPE: one number hides everything</text>
+
+  <rect x="40" y="38" width="260" height="120" class="box box-neutral"/>
+  <text x="170" y="58" class="label">ECONOMY_MAPE_CEILING = 420%</text>
+
+  <!-- Aggregate bar -->
+  <rect x="60" y="72" width="54" height="20" class="bar bar-good"/>
+  <text x="87" y="86" class="label-sm">74%</text>
+  <text x="87" y="102" class="label-sm">aggregate</text>
+
+  <!-- Threshold line -->
+  <line x1="246" y1="68" x2="246" y2="98" class="threshold"/>
+  <text x="266" y="86" class="label-sm" style="fill:#ef4444">420%</text>
+
+  <text x="170" y="125" class="verdict verdict-good">PASS</text>
+  <text x="170" y="140" class="label-sm">minerals 4%, vespene 0.5%, rates 93%,</text>
+  <text x="170" y="152" class="label-sm">foodUsed 35% — all invisible behind one number</text>
+
+  <!-- Right: per-field -->
+  <text x="520" y="22" class="title">Per-field thresholds: each metric has its own gate</text>
+
+  <rect x="370" y="38" width="300" height="240" class="box box-neutral"/>
+
+  <!-- minerals -->
+  <text x="395" y="60" class="label-sm" style="text-anchor:start">minerals</text>
+  <rect x="470" y="49" width="8" height="16" class="bar bar-good"/>
+  <text x="490" y="61" class="label-sm" style="text-anchor:start">4.7%</text>
+  <line x1="600" y1="47" x2="600" y2="67" class="threshold"/>
+  <text x="620" y="61" class="label-sm" style="text-anchor:start;fill:#ef4444">130%</text>
+
+  <!-- vespene -->
+  <text x="395" y="86" class="label-sm" style="text-anchor:start">vespene</text>
+  <rect x="470" y="75" width="3" height="16" class="bar bar-good"/>
+  <text x="490" y="87" class="label-sm" style="text-anchor:start">0.5%</text>
+  <line x1="490" y1="73" x2="490" y2="93" class="threshold"/>
+  <text x="500" y="87" class="label-sm" style="text-anchor:start;fill:#ef4444">10%</text>
+
+  <!-- mineral rate -->
+  <text x="395" y="112" class="label-sm" style="text-anchor:start">mineral rate</text>
+  <rect x="470" y="101" width="122" height="16" class="bar bar-warn"/>
+  <text x="600" y="113" class="label-sm" style="text-anchor:start">93.6%</text>
+  <line x1="598" y1="99" x2="598" y2="119" class="threshold"/>
+  <text x="620" y="113" class="label-sm" style="text-anchor:start;fill:#ef4444">95%</text>
+
+  <!-- vespene rate -->
+  <text x="395" y="138" class="label-sm" style="text-anchor:start">vespene rate</text>
+  <rect x="470" y="127" width="110" height="16" class="bar bar-warn"/>
+  <text x="588" y="139" class="label-sm" style="text-anchor:start">85.3%</text>
+  <line x1="598" y1="125" x2="598" y2="145" class="threshold"/>
+  <text x="620" y="139" class="label-sm" style="text-anchor:start;fill:#ef4444">95%</text>
+
+  <!-- foodUsed -->
+  <text x="395" y="164" class="label-sm" style="text-anchor:start">foodUsed</text>
+  <rect x="470" y="153" width="34" height="16" class="bar bar-warn"/>
+  <text x="512" y="165" class="label-sm" style="text-anchor:start">22.3%</text>
+  <line x1="535" y1="151" x2="535" y2="171" class="threshold"/>
+  <text x="545" y="165" class="label-sm" style="text-anchor:start;fill:#ef4444">50%</text>
+
+  <!-- Annotation -->
+  <text x="520" y="200" class="label" style="font-weight:600">Each field has its own regression gate.</text>
+  <text x="520" y="216" class="label-sm">Collection rates near threshold —</text>
+  <text x="520" y="228" class="label-sm">income model calibration (#496) is next.</text>
+  <text x="520" y="244" class="label-sm">foodUsed gap from supply-at-training-time.</text>
+  <text x="520" y="260" class="label-sm">Every regression is caught where it happens,</text>
+  <text x="520" y="272" class="label-sm">not averaged away.</text>
+</svg>
