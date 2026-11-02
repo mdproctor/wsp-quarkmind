@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <style>
+    text { font-family: -apple-system, 'Segoe UI', sans-serif; }
+    .title { font-size: 15px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 11px; fill: #555; }
+    .value { font-size: 11px; font-weight: 600; }
+    .axis-label { font-size: 10px; fill: #888; }
+    .bar-before { fill: #e74c3c; opacity: 0.85; }
+    .bar-after { fill: #2ecc71; opacity: 0.85; }
+    .grid { stroke: #e8e8e8; stroke-width: 1; }
+    .legend-box { rx: 3; ry: 3; }
+  </style>
+
+  <text x="360" y="28" text-anchor="middle" class="title">Collection Rate Error — Before vs After Calibration</text>
+  <text x="360" y="46" text-anchor="middle" class="axis-label">(lower is better — % error at each checkpoint, 118 oracle replays)</text>
+
+  <!-- Legend -->
+  <rect x="520" y="60" width="14" height="14" class="bar-before legend-box"/>
+  <text x="540" y="72" class="label">Before (#496)</text>
+  <rect x="620" y="60" width="14" height="14" class="bar-after legend-box"/>
+  <text x="640" y="72" class="label">After (#496)</text>
+
+  <!-- Y axis labels -->
+  <text x="55" y="105" text-anchor="end" class="axis-label">100%</text>
+  <text x="55" y="155" text-anchor="end" class="axis-label">75%</text>
+  <text x="55" y="205" text-anchor="end" class="axis-label">50%</text>
+  <text x="55" y="255" text-anchor="end" class="axis-label">25%</text>
+  <text x="55" y="305" text-anchor="end" class="axis-label">0%</text>
+
+  <!-- Grid lines -->
+  <line x1="65" y1="100" x2="700" y2="100" class="grid"/>
+  <line x1="65" y1="150" x2="700" y2="150" class="grid"/>
+  <line x1="65" y1="200" x2="700" y2="200" class="grid"/>
+  <line x1="65" y1="250" x2="700" y2="250" class="grid"/>
+  <line x1="65" y1="300" x2="700" y2="300" class="grid" stroke="#bbb"/>
+
+  <!-- 1-min minerals -->
+  <rect x="80" y="118" width="28" height="182" class="bar-before"/>
+  <rect x="112" y="256" width="28" height="44" class="bar-after"/>
+  <text x="110" y="320" text-anchor="middle" class="label">1 min</text>
+  <text x="94" y="114" text-anchor="middle" class="value" fill="#e74c3c">91%</text>
+  <text x="126" y="252" text-anchor="middle" class="value" fill="#2ecc71">22%</text>
+
+  <!-- 3-min minerals -->
+  <rect x="175" y="115" width="28" height="185" class="bar-before"/>
+  <rect x="207" y="292" width="28" height="8" class="bar-after"/>
+  <text x="205" y="320" text-anchor="middle" class="label">3 min</text>
+  <text x="189" y="111" text-anchor="middle" class="value" fill="#e74c3c">92%</text>
+  <text x="221" y="288" text-anchor="middle" class="value" fill="#2ecc71">4%</text>
+
+  <!-- 5-min minerals -->
+  <rect x="270" y="114" width="28" height="186" class="bar-before"/>
+  <rect x="302" y="300" width="28" height="0.5" class="bar-after"/>
+  <text x="300" y="320" text-anchor="middle" class="label">5 min</text>
+  <text x="284" y="110" text-anchor="middle" class="value" fill="#e74c3c">93%</text>
+  <text x="316" y="296" text-anchor="middle" class="value" fill="#2ecc71">0%</text>
+
+  <!-- 7-min minerals -->
+  <rect x="365" y="115" width="28" height="185" class="bar-before"/>
+  <rect x="397" y="297" width="28" height="3" class="bar-after"/>
+  <text x="395" y="320" text-anchor="middle" class="label">7 min</text>
+  <text x="379" y="111" text-anchor="middle" class="value" fill="#e74c3c">93%</text>
+  <text x="411" y="293" text-anchor="middle" class="value" fill="#2ecc71">2%</text>
+
+  <!-- Separator -->
+  <line x1="460" y1="90" x2="460" y2="310" stroke="#ddd" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="85" text-anchor="middle" class="axis-label">Minerals ← | → Vespene</text>
+
+  <!-- 5-min vespene -->
+  <rect x="490" y="115" width="28" height="185" class="bar-before"/>
+  <rect x="522" y="300" width="28" height="0.5" class="bar-after"/>
+  <text x="520" y="320" text-anchor="middle" class="label">5 min</text>
+  <text x="504" y="111" text-anchor="middle" class="value" fill="#e74c3c">92%</text>
+  <text x="536" y="296" text-anchor="middle" class="value" fill="#2ecc71">0.2%</text>
+
+  <!-- 7-min vespene -->
+  <rect x="575" y="116" width="28" height="184" class="bar-before"/>
+  <rect x="607" y="293" width="28" height="7" class="bar-after"/>
+  <text x="605" y="320" text-anchor="middle" class="label">7 min</text>
+  <text x="589" y="112" text-anchor="middle" class="value" fill="#e74c3c">92%</text>
+  <text x="621" y="289" text-anchor="middle" class="value" fill="#2ecc71">3%</text>
+</svg>
