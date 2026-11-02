@@ -7,7 +7,7 @@
 - covers: 495
 
 evidence-era: true
-state: closing:review
+state: closing:verified
 ## Queue
 
 - [x] casehubio/quarkmind#495 Worker-to-resource assignment tracking from replay events [active]
