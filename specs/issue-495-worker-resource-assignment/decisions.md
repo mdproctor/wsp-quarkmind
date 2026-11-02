@@ -34,3 +34,16 @@
 **Sources:** EmulatedGame.java:1282-1306 (countWorkersPerBase), EmulatedGame.java:1258-1262 (setMiningProbesPerBase override)
 **Exploration:** quick
 **Status:** captured
+
+## D4: Overall architecture
+
+**Choice:** Event-driven `WorkerAssignment` class with per-worker tag-to-base mapping, BaseEntry per town hall tracking mineral workers + associated gas buildings, event API fired from existing EmulatedGame intent handlers
+**Alternatives:**
+- Count-only tracking (no individual worker-to-base mapping) — simpler but can't accurately handle worker death (don't know which base to decrement)
+- Position-based reassignment each tick (status quo with refinements) — avoids event-driven complexity but doesn't model gas assignment timing or expansion transfers
+**Rationale:** Tag-to-base mapping enables precise death handling. Event-driven model captures the actual SC2 worker lifecycle (produce → assign → transfer → die) rather than inferring from positions. Same model serves standalone and replay modes with different event sources.
+**Trade-offs:** Must fire events from all relevant intent handlers (handleTrain, handleBuild, handleUnitDied, building completion callbacks). Missing an event source causes silent worker count drift. Existing setMiningProbesPerBase override retained as safety net for replay validation harness.
+**Depends on:** D1 (scope), D2 (state location), D3 (integration mode)
+**Sources:** EmulatedGame.java:870-877 (handleUnitDied), EmulatedGame.java:366-524 (handleTrain), Building.java (isComplete lifecycle)
+**Exploration:** quick
+**Status:** captured
