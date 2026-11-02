@@ -1,0 +1,15 @@
+# Work Plan — issue-494-tracker-resource-deduction
+
+## State
+branch: issue-494-tracker-resource-deduction
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 494
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#494 — Issue #494 ← active
