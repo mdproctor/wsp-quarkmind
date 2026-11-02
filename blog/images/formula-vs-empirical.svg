@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400">
+  <defs>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', sans-serif; }
+      .header { font-size: 14px; font-weight: 600; fill: #1e3a5f; }
+      .unit { font-size: 12px; fill: #374151; font-weight: 500; }
+      .val { font-size: 12px; fill: #374151; }
+      .formula { font-size: 12px; fill: #dc2626; }
+      .empirical { font-size: 12px; fill: #059669; font-weight: 600; }
+      .obs { font-size: 10px; fill: #9ca3af; }
+      .col-header { font-size: 11px; fill: #6b7280; font-weight: 600; }
+    </style>
+  </defs>
+
+  <rect width="720" height="400" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="360" y="30" text-anchor="middle" class="header">Formula-Derived vs Empirically Calibrated Train Times</text>
+  <text x="360" y="48" text-anchor="middle" font-size="11" fill="#9ca3af">SC2 stores integer game loops — the seconds × 22.4 formula systematically misses</text>
+
+  <!-- Column headers -->
+  <text x="40" y="78" class="col-header">UNIT</text>
+  <text x="200" y="78" text-anchor="middle" class="col-header">FORMULA</text>
+  <text x="320" y="78" text-anchor="middle" class="col-header">EMPIRICAL</text>
+  <text x="430" y="78" text-anchor="middle" class="col-header">DELTA</text>
+  <text x="540" y="78" text-anchor="middle" class="col-header">OBS</text>
+  <text x="640" y="78" text-anchor="middle" class="col-header">PATTERN</text>
+  <line x1="30" y1="85" x2="690" y2="85" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- SCV row -->
+  <text x="40" y="105" class="unit">SCV</text>
+  <text x="200" y="105" text-anchor="middle" class="formula">275</text>
+  <text x="320" y="105" text-anchor="middle" class="empirical">272</text>
+  <text x="430" y="105" text-anchor="middle" class="val">-3</text>
+  <text x="540" y="105" text-anchor="middle" class="obs">1443</text>
+  <rect x="590" y="93" width="100" height="14" rx="3" fill="#dcfce7"/>
+  <text x="640" y="104" text-anchor="middle" font-size="10" fill="#059669">= Probe (272)</text>
+
+  <!-- Marine row -->
+  <text x="40" y="130" class="unit">Marine</text>
+  <text x="200" y="130" text-anchor="middle" class="formula">563</text>
+  <text x="320" y="130" text-anchor="middle" class="empirical">554</text>
+  <text x="430" y="130" text-anchor="middle" class="val">-9</text>
+  <text x="540" y="130" text-anchor="middle" class="obs">180</text>
+  <text x="640" y="130" text-anchor="middle" class="obs"></text>
+
+  <!-- Hellion row -->
+  <rect x="30" y="140" width="660" height="25" fill="#f0fdf4" rx="2"/>
+  <text x="40" y="157" class="unit">Hellion</text>
+  <text x="200" y="157" text-anchor="middle" class="formula">470</text>
+  <text x="320" y="157" text-anchor="middle" class="empirical">480</text>
+  <text x="430" y="157" text-anchor="middle" class="val">+10</text>
+  <text x="540" y="157" text-anchor="middle" class="obs">106</text>
+  <rect x="590" y="145" width="100" height="14" rx="3" fill="#dcfce7"/>
+  <text x="640" y="156" text-anchor="middle" font-size="10" fill="#059669">20 × 24</text>
+
+  <!-- Widow Mine -->
+  <text x="40" y="182" class="unit">Widow Mine</text>
+  <text x="200" y="182" text-anchor="middle" class="formula">470</text>
+  <text x="320" y="182" text-anchor="middle" class="empirical">480</text>
+  <text x="430" y="182" text-anchor="middle" class="val">+10</text>
+  <text x="540" y="182" text-anchor="middle" class="obs">56</text>
+  <rect x="590" y="170" width="100" height="14" rx="3" fill="#dcfce7"/>
+  <text x="640" y="181" text-anchor="middle" font-size="10" fill="#059669">20 × 24</text>
+
+  <!-- Siege Tank row -->
+  <rect x="30" y="192" width="660" height="25" fill="#f0fdf4" rx="2"/>
+  <text x="40" y="209" class="unit">Siege Tank</text>
+  <text x="200" y="209" text-anchor="middle" class="formula">717</text>
+  <text x="320" y="209" text-anchor="middle" class="empirical">720</text>
+  <text x="430" y="209" text-anchor="middle" class="val">+3</text>
+  <text x="540" y="209" text-anchor="middle" class="obs">188</text>
+  <rect x="590" y="197" width="100" height="14" rx="3" fill="#dcfce7"/>
+  <text x="640" y="208" text-anchor="middle" font-size="10" fill="#059669">30 × 24</text>
+
+  <!-- Thor row -->
+  <text x="40" y="234" class="unit">Thor</text>
+  <text x="200" y="234" text-anchor="middle" class="formula">963</text>
+  <text x="320" y="234" text-anchor="middle" class="empirical">960</text>
+  <text x="430" y="234" text-anchor="middle" class="val">-3</text>
+  <text x="540" y="234" text-anchor="middle" class="obs">18</text>
+  <rect x="590" y="222" width="100" height="14" rx="3" fill="#dcfce7"/>
+  <text x="640" y="233" text-anchor="middle" font-size="10" fill="#059669">40 × 24</text>
+
+  <!-- Battlecruiser row -->
+  <rect x="30" y="244" width="660" height="25" fill="#f0fdf4" rx="2"/>
+  <text x="40" y="261" class="unit">Battlecruiser</text>
+  <text x="200" y="261" text-anchor="middle" class="formula">1434</text>
+  <text x="320" y="261" text-anchor="middle" class="empirical">1440</text>
+  <text x="430" y="261" text-anchor="middle" class="val">+6</text>
+  <text x="540" y="261" text-anchor="middle" class="obs">75</text>
+  <rect x="590" y="249" width="100" height="14" rx="3" fill="#dcfce7"/>
+  <text x="640" y="260" text-anchor="middle" font-size="10" fill="#059669">60 × 24</text>
+
+  <!-- Marauder row -->
+  <text x="40" y="286" class="unit">Marauder</text>
+  <text x="200" y="286" text-anchor="middle" class="formula">757</text>
+  <text x="320" y="286" text-anchor="middle" class="empirical">781</text>
+  <text x="430" y="286" text-anchor="middle" class="val">+24</text>
+  <text x="540" y="286" text-anchor="middle" class="obs">13</text>
+  <text x="640" y="286" text-anchor="middle" class="obs"></text>
+
+  <!-- Immortal row -->
+  <rect x="30" y="296" width="660" height="25" fill="#f0fdf4" rx="2"/>
+  <text x="40" y="313" class="unit">Immortal</text>
+  <text x="200" y="313" text-anchor="middle" class="formula">896</text>
+  <text x="320" y="313" text-anchor="middle" class="empirical">880</text>
+  <text x="430" y="313" text-anchor="middle" class="val">-16</text>
+  <text x="540" y="313" text-anchor="middle" class="obs">26</text>
+  <text x="640" y="313" text-anchor="middle" class="obs"></text>
+
+  <!-- Footer -->
+  <line x1="30" y1="335" x2="690" y2="335" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="355" font-size="11" fill="#6b7280">Formula: community wiki "seconds × 22.4" — produces floats, then rounding. SC2 stores integers.</text>
+  <text x="40" y="372" font-size="11" fill="#6b7280">Empirical: modal (UnitBorn_loop - CmdEvent_loop) across 118 v4.9.3 oracle replays.</text>
+  <text x="40" y="389" font-size="11" fill="#059669">Pattern column: many Terran values are exact multiples of 24 — a different internal time base.</text>
+</svg>
