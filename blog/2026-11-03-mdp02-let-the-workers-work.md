@@ -2,22 +2,22 @@
 layout: post
 title: "Let the Workers Work"
 date: 2026-11-03
-entry_type: note
-subtype: diary
+entry_type: article
+subtype: technical
 projects: [casehubio/quarkmind]
-tags: [emulation, simulation, emergent-behaviour, architecture, starcraft2]
+tags: [emulation, simulation, emergent-behaviour, architecture, dual-model-validation, starcraft2]
 series: issue-500-worker-simulation
 ---
 
 # Let the Workers Work
 
-In an [earlier entry](2026-11-03-mdp01-when-the-formula-is-the-bug.md), I wrote about how QuarkMind's income model was architecturally broken — two income paths disagreeing about where workers were, with aggregate formulas hiding the disagreement. The formula wasn't wrong. The abstraction was.
+Every system that approximates physics with a formula has the same structural weakness: the formula is unfalsifiable. It computes what it computes. If the result is wrong, nothing inside the system can detect it. You calibrate against external data, adjust parameters, and hope the model structure is right. But you can't test that hope — not with the formula alone.
 
-This entry is about the fix. Not the bug fix — that was a two-line patch. The *architectural* fix: replacing the entire formula-driven income model with individual worker simulation, so that income emerges from what each worker is actually doing.
+There's a better architecture. Run a simulation alongside the formula. Let the simulation produce the same quantity from first principles. When they agree, you're probably right. When they disagree, you've found a question worth answering — and the shape of the disagreement tells you where to look.
 
-## Why formulas lie
+## The formula that hid its own assumptions
 
-Here's the formula that computed mineral income for the last six months:
+QuarkMind's emulated StarCraft II game computed mineral income from a function:
 
 ```java
 public static double mineralIncomePerTick(int probeCount) {
@@ -30,41 +30,33 @@ public static double mineralIncomePerTick(int probeCount) {
 }
 ```
 
-Three tiers of 8 workers each. First 8 workers earn full rate. Next 8 earn half. Next 8 earn a tenth. Calibrated from 118 oracle replays. It's a reasonable mathematical model of SC2 mineral saturation.
+Three tiers of 8 workers each. First 8 earn full rate. Next 8 earn half. Next 8 earn a tenth. Calibrated against 118 tournament replays. Reasonable math.
 
-The problem isn't the math. The problem is that the formula is the entire model. Feed it a number, get income back. No way to ask *why* that number. No way to detect when the number is wrong. No way to validate the formula's assumptions without building a second, independent model to check it against.
+The formula encodes three claims about how mining works:
 
-The formula encodes three specific claims about how mining works:
-
-1. Saturation happens at discrete tier boundaries (8, 16, 24 workers)
+1. Saturation is a discrete step function at tier boundaries (8, 16, 24 workers)
 2. All workers within a tier earn identically
-3. Income depends only on worker count, not on worker position, distance, or state
+3. Income depends only on count, not on position, distance, or state
 
-All three are wrong. In SC2, saturation is a smooth curve driven by patch competition. Workers near close patches earn more than workers at far patches. And a worker walking back to the town hall earns zero for those ticks — the formula has no concept of "in transit."
+All three are wrong. In SC2, saturation is a smooth curve driven by patch competition. Workers near close patches earn more. A worker walking back to the town hall earns zero for those ticks. The formula doesn't model any of this — and because it IS the model, nothing detects the gap.
 
-## Simulation as a statement about what matters
+## Simulation as the alternative
 
-The replacement is called `WorkerSimulation`. Each worker is a tiny agent with three things: a position, a velocity, and a current task.
+The replacement tracks each worker individually. Three things: a position, a velocity, a task.
 
-![Worker state machine — walk to patch, mine, return with cargo, deposit](images/worker-state-machine.svg)
+![Worker mining cycle — walk to patch, mine, return with cargo, deposit](images/worker-state-machine.svg)
 
-That's the entire model. Each tick, every worker advances one step. If it's walking, it moves toward its target. If it's mining, it counts down. If it arrives at the town hall with cargo, it deposits — and that deposit event is the income.
+Each tick, every worker advances one step. Walking? Move toward the target. Mining? Count down. Arriving at the town hall with cargo? Deposit — and that deposit event is the income.
 
-There's no `mineralIncomePerTick` function computing income. Income is a side effect of workers completing trips. Mineral saturation isn't encoded — it emerges from workers competing for 8 patches. When 16 workers share 8 patches, each patch has a queue of 2. The second worker waits. That wait time is the saturation penalty. No formula. Physics.
+There's no `mineralIncomePerTick` function. Income is a side effect of workers completing trips. Saturation emerges from workers competing for 8 patches: when 16 workers share 8 patches, each patch has a queue of 2. The second worker waits. That wait time IS the saturation penalty.
 
-![Saturation emerges from patch competition — formula produces stepped tiers, simulation produces a smooth curve](images/saturation-emergence.svg)
+![Formula produces stepped tiers; simulation produces a smooth curve from patch competition](images/saturation-emergence.svg)
 
-The same principle holds for gas. Each gas building has an interior slot and a wait queue. 3 workers rotate: one enters the building, harvests for ~29 game loops, exits, walks to town hall, deposits. While one is inside, the others wait or walk. The 3rd-worker penalty that the formula approximated with a lower per-worker rate now falls out of the rotation geometry.
+Gas works the same way. Each gas building has an interior slot and a wait queue. 3 workers rotate: one enters, harvests for ~29 game loops, exits, walks to base, deposits. The 3rd-worker penalty that the formula approximated with a lower per-worker rate now falls out of the rotation geometry.
 
-## What this makes possible
+## The real payoff: structural validation
 
-The immediate payoff is accuracy. The replay validation harness can now sync *both* mineral and gas workers from ground truth — something that was architecturally impossible before, because `WorkerAssignment` was a counting structure with no concept of individual worker state. The harness says "these 3 workers are near this gas building" and the simulation assigns them directly. No formula interprets the count. No pool tracking fails to grow because CmdEvents were missed.
-
-But the deeper value is falsifiability.
-
-The old formula was a black box. Feed it 12, get income. If the income was wrong, you had two possible explanations: the input count was wrong, or the formula rates were miscalibrated. Both require external validation — run it against replays, compare, adjust. The formula couldn't help you find its own bugs.
-
-Now the formula still exists, but as a validator:
+The formula doesn't disappear. It becomes a validator.
 
 ```java
 FormulaComparison compareWithFormula(TickIncome simulated) {
@@ -77,20 +69,30 @@ FormulaComparison compareWithFormula(TickIncome simulated) {
 }
 ```
 
-Run the simulation. Also compute the formula result. When they diverge, something is wrong — and the divergence tells you where. If the formula says 15 minerals/tick but the simulation says 12, either workers are spending too long walking (simulation bug) or the formula's tier rates are miscalibrated (formula bug). The error has diagnostic structure. Neither model is privileged; each validates the other.
+Run the simulation. Compute the formula. Compare. When they diverge, something is wrong — and the divergence tells you where. Formula says 15 minerals/tick but simulation says 12? Either workers are spending too long walking (simulation bug) or the formula's tier rates are miscalibrated (formula bug). The error has diagnostic structure. Neither model is privileged; each validates the other.
 
-## The general principle
+![Formula alone is unfalsifiable — dual-model validation gives errors diagnostic structure](images/dual-model-validation.svg)
 
-This isn't specific to game AI. The pattern shows up everywhere a formula approximates a physical process:
+This isn't a theoretical nicety. The dual-model approach caught real bugs within hours. The gas income formula was returning correct values for months — but the worker assignment system was feeding it the wrong input. Gas workers were being counted as mineral workers, inflating mineral income and starving gas income. Two errors partially cancelling. The formula was correct. The inputs were wrong. And nobody knew, because the formula was the only model. Once the simulation ran alongside it, the disagreement pointed straight at the worker-counting layer.
 
-- **Financial models** approximate market dynamics with aggregate functions (Black-Scholes, DCF). Agent-based models simulate individual actors and let market behaviour emerge. When the two disagree, you learn something about the assumptions built into the formula.
+## The pattern generalises
 
-- **Network simulators** can model throughput with formulas (Little's Law, queueing theory) or simulate individual packet routing. The formula tells you the steady-state average. The simulation tells you about bursts, congestion, and edge cases the formula assumes away.
+This isn't specific to game AI. The pattern shows up wherever a formula approximates a physical process:
 
-- **Population models** approximate growth with logistic curves. Agent-based models simulate individual births, deaths, and resource competition. The logistic curve is a reasonable first approximation — until local resource depletion or spatial clustering makes the aggregate assumption break.
+**Financial models** approximate market dynamics with aggregate functions. Black-Scholes computes option prices from volatility, time, and strike. Agent-based models simulate individual traders and let prices emerge from their interactions. When Black-Scholes says an option should cost X and the agent model says Y, the gap tells you something about the assumptions the formula makes about market microstructure — assumptions that are invisible when the formula operates alone.
 
-The lesson isn't that formulas are wrong. It's that a formula operating alone is unfalsifiable. It computes what it computes. You can calibrate it against data, but calibration assumes the model structure is correct and only the parameters need tuning. When the structure is wrong — when saturation isn't actually a discrete 3-tier function, when the gas income curve isn't actually symmetric across workers — no amount of parameter tuning will fix it.
+**Network simulators** model throughput with queueing theory — Little's Law, M/M/1 queues. The formulas give steady-state averages. A packet-level simulation shows what happens under bursts, congestion, and correlated arrivals that the formula's independence assumptions don't cover. Run both; the divergence reveals how far reality is from steady state.
 
-A simulation running alongside the formula gives you structural validation. The formula makes claims about the shape of the system. The simulation makes different claims. Where they agree, you're probably right. Where they disagree, you've found a question worth answering.
+**Climate models** approximate radiative forcing with parameterisations — simplified functions that stand in for cloud physics, ocean mixing, and ice albedo. Higher-resolution simulations model these processes directly. When the parameterisation and the simulation disagree about regional temperature response, you've learned something about what the parameterisation assumed away.
+
+In each case, the formula isn't wrong. It's an approximation that encodes specific structural assumptions. Those assumptions are invisible from inside the formula. A simulation that produces the same quantity from different principles — from individual agents, individual packets, individual physical processes — makes the assumptions visible by producing a different answer when they're violated.
+
+## Why teams don't do this
+
+The obvious objection: running two models costs more than one. More code. More maintenance. More cognitive load.
+
+True. But consider what the alternative costs. A formula operating alone is a closed system. When its output is wrong, your debugging options are: check the inputs, or recalibrate the parameters. If the inputs are correct and the parameters are calibrated, you're stuck. The bug is in the model structure — the shape of the function, the assumptions about independence, the discretisation of a continuous process — and no parameter tuning can surface that.
+
+A dual-model architecture turns structural bugs into observable divergences. The formula says the answer should be X. The simulation says Y. The gap isn't noise; it's a signal about what the formula assumed and what reality actually does. The cost of the second model is real. The cost of shipping a formula you can't structurally validate is harder to see, and usually larger.
 
 The formula was never the bug. Trusting it alone was.

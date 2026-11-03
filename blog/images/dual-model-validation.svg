@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#dc2626"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#16a34a"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
+      .heading { font-size: 14px; font-weight: 700; fill: #0f172a; }
+      .subhead { font-size: 11px; fill: #64748b; font-style: italic; }
+      .box-label { font-size: 12px; font-weight: 600; fill: #1e293b; text-anchor: middle; }
+      .box-detail { font-size: 10px; fill: #64748b; text-anchor: middle; }
+      .note { font-size: 10px; fill: #475569; }
+      .note-bold { font-size: 10px; fill: #0f172a; font-weight: 600; }
+      .arrow { stroke: #475569; stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+      .arrow-red { stroke: #dc2626; stroke-width: 2; fill: none; marker-end: url(#arr-red); stroke-dasharray: 5,3; }
+      .arrow-green { stroke: #16a34a; stroke-width: 2; fill: none; marker-end: url(#arr-green); }
+      .formula { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; rx: 10; }
+      .simulation { fill: #f0fdf4; stroke: #22c55e; stroke-width: 2; rx: 10; }
+      .input { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+      .output { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+      .compare { fill: #fefce8; stroke: #eab308; stroke-width: 2; rx: 10; }
+      .danger { fill: #fef2f2; stroke: #ef4444; stroke-width: 2; rx: 10; }
+      .separator { stroke: #e2e8f0; stroke-width: 1; stroke-dasharray: 4,4; }
+    </style>
+  </defs>
+
+  <!-- Left side: Formula Only -->
+  <text class="heading" x="20" y="28">Formula alone</text>
+  <text class="subhead" x="20" y="44">unfalsifiable — errors compound silently</text>
+
+  <!-- Input -->
+  <rect class="input" x="40" y="70" width="120" height="50"/>
+  <text class="box-label" x="100" y="93">Input</text>
+  <text class="box-detail" x="100" y="107">worker count: 16</text>
+
+  <!-- Formula box -->
+  <rect class="formula" x="40" y="160" width="120" height="60"/>
+  <text class="box-label" x="100" y="185">Formula</text>
+  <text class="box-detail" x="100" y="200">f(N) → income</text>
+
+  <!-- Output -->
+  <rect class="output" x="40" y="260" width="120" height="50"/>
+  <text class="box-label" x="100" y="283">Output</text>
+  <text class="box-detail" x="100" y="297">12.7 min/tick</text>
+
+  <!-- Danger zone -->
+  <rect class="danger" x="200" y="160" width="140" height="60"/>
+  <text class="box-label" x="270" y="182" style="fill:#991b1b">No validator</text>
+  <text class="box-detail" x="270" y="198" style="fill:#991b1b">If wrong, nothing detects it</text>
+
+  <!-- Arrows -->
+  <line class="arrow" x1="100" y1="120" x2="100" y2="158"/>
+  <line class="arrow" x1="100" y1="220" x2="100" y2="258"/>
+  <line class="arrow-red" x1="160" y1="190" x2="198" y2="190"/>
+
+  <!-- Problem annotations -->
+  <text class="note" x="200" y="250">• Wrong input? Formula can't tell.</text>
+  <text class="note" x="200" y="266">• Wrong structure? Invisible.</text>
+  <text class="note" x="200" y="282">• Calibration masks architecture bugs.</text>
+
+  <!-- Vertical separator -->
+  <line class="separator" x1="380" y1="10" x2="380" y2="410"/>
+
+  <!-- Right side: Dual Model -->
+  <text class="heading" x="400" y="28">Formula + Simulation</text>
+  <text class="subhead" x="400" y="44">each validates the other — errors have diagnostic structure</text>
+
+  <!-- Input -->
+  <rect class="input" x="490" y="60" width="120" height="45"/>
+  <text class="box-label" x="550" y="80">Input</text>
+  <text class="box-detail" x="550" y="94">worker states</text>
+
+  <!-- Fork arrows -->
+  <line class="arrow" x1="520" y1="105" x2="470" y2="138"/>
+  <line class="arrow" x1="580" y1="105" x2="630" y2="138"/>
+
+  <!-- Formula box -->
+  <rect class="formula" x="410" y="140" width="120" height="55"/>
+  <text class="box-label" x="470" y="163">Formula</text>
+  <text class="box-detail" x="470" y="178">f(N) → 12.7</text>
+
+  <!-- Simulation box -->
+  <rect class="simulation" x="570" y="140" width="130" height="55"/>
+  <text class="box-label" x="635" y="163">Simulation</text>
+  <text class="box-detail" x="635" y="178">Σ trips → 11.2</text>
+
+  <!-- Converge to comparator -->
+  <line class="arrow" x1="470" y1="195" x2="520" y2="232"/>
+  <line class="arrow" x1="635" y1="195" x2="580" y2="232"/>
+
+  <!-- Comparator -->
+  <rect class="compare" x="490" y="234" width="120" height="55"/>
+  <text class="box-label" x="550" y="256">Compare</text>
+  <text class="box-detail" x="550" y="272">Δ = 1.5 min/tick</text>
+
+  <!-- Divergence arrow -->
+  <line class="arrow-green" x1="550" y1="289" x2="550" y2="322"/>
+
+  <!-- Diagnostic output -->
+  <rect x="440" y="324" width="220" height="75" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text class="box-label" x="550" y="348" style="fill:#166534">Diagnostic signal</text>
+  <text class="box-detail" x="550" y="366" style="fill:#166534">Formula says tier-2. Simulation says</text>
+  <text class="box-detail" x="550" y="380" style="fill:#166534">workers are walking, not mining.</text>
+  <text class="box-detail" x="550" y="394" style="fill:#166534">→ formula's tier model is wrong</text>
+
+  <!-- Annotation -->
+  <text class="note-bold" x="400" y="418">Divergence tells you WHERE and WHY — not just that something is off.</text>
+</svg>
