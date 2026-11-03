@@ -13,3 +13,7 @@ flyway-next-v:
 
 ## Queue
 - [ ] casehubio/quarkmind#501 — Issue #501 ← active
+- [ ] casehubio/quarkmind#505 — Rich mineral patch harvest rate
+- [ ] casehubio/quarkmind#502 — Mineral spending reconciliation
+- [ ] casehubio/quarkmind#503 — Gas harvesting physics calibration
+- [ ] casehubio/quarkmind#504 — Supply foodUsed reconciliation
