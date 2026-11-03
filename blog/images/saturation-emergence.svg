@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400">
+  <defs>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
+      .title { font-size: 14px; font-weight: 600; fill: #1e293b; }
+      .label { font-size: 11px; fill: #475569; }
+      .label-bold { font-size: 11px; fill: #1e293b; font-weight: 600; }
+      .axis { stroke: #94a3b8; stroke-width: 1; }
+      .axis-label { font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+      .formula-line { stroke: #3b82f6; stroke-width: 2; fill: none; }
+      .sim-line { stroke: #22c55e; stroke-width: 2; fill: none; stroke-dasharray: 6,3; }
+      .patch { fill: #fef3c7; stroke: #f59e0b; stroke-width: 1.5; }
+      .worker { fill: #3b82f6; }
+      .worker-wait { fill: #ef4444; }
+    </style>
+  </defs>
+
+  <!-- Left panel: Patches with workers -->
+  <text class="title" x="20" y="25">8 mineral patches, N workers</text>
+
+  <!-- 8 workers: each patch has 1 -->
+  <text class="label-bold" x="20" y="55">8 workers — no contention</text>
+  <g transform="translate(20, 65)">
+    <rect class="patch" x="0" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="18" cy="12" r="6"/>
+    <rect class="patch" x="42" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="60" cy="12" r="6"/>
+    <rect class="patch" x="84" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="102" cy="12" r="6"/>
+    <rect class="patch" x="126" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="144" cy="12" r="6"/>
+    <rect class="patch" x="168" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="186" cy="12" r="6"/>
+    <rect class="patch" x="210" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="228" cy="12" r="6"/>
+    <rect class="patch" x="252" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="270" cy="12" r="6"/>
+    <rect class="patch" x="294" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="312" cy="12" r="6"/>
+  </g>
+
+  <!-- 16 workers: each patch has 2, second waits -->
+  <text class="label-bold" x="20" y="120">16 workers — 2nd worker waits</text>
+  <g transform="translate(20, 130)">
+    <rect class="patch" x="0" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="13" cy="12" r="6"/>
+    <circle class="worker-wait" cx="27" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="42" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="55" cy="12" r="6"/>
+    <circle class="worker-wait" cx="69" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="84" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="97" cy="12" r="6"/>
+    <circle class="worker-wait" cx="111" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="126" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="139" cy="12" r="6"/>
+    <circle class="worker-wait" cx="153" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="168" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="181" cy="12" r="6"/>
+    <circle class="worker-wait" cx="195" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="210" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="223" cy="12" r="6"/>
+    <circle class="worker-wait" cx="237" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="252" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="265" cy="12" r="6"/>
+    <circle class="worker-wait" cx="279" cy="12" r="5" opacity="0.6"/>
+    <rect class="patch" x="294" y="0" width="36" height="24" rx="4"/>
+    <circle class="worker" cx="307" cy="12" r="6"/>
+    <circle class="worker-wait" cx="321" cy="12" r="5" opacity="0.6"/>
+  </g>
+  <text class="label" x="340" y="148" style="fill:#ef4444">← waiting (red)</text>
+
+  <!-- Right panel: Income curve -->
+  <text class="title" x="400" y="25">Income per worker vs worker count</text>
+
+  <!-- Axes -->
+  <line class="axis" x1="420" y1="330" x2="700" y2="330"/>
+  <line class="axis" x1="420" y1="330" x2="420" y2="50"/>
+  <text class="axis-label" x="560" y="355">Workers per base</text>
+  <text class="axis-label" x="405" y="190" transform="rotate(-90,405,190)">Income / worker</text>
+
+  <!-- X-axis ticks -->
+  <text class="axis-label" x="438" y="345">4</text>
+  <text class="axis-label" x="490" y="345">8</text>
+  <text class="axis-label" x="560" y="345">12</text>
+  <text class="axis-label" x="630" y="345">16</text>
+  <text class="axis-label" x="690" y="345">20</text>
+
+  <!-- Formula curve (blue solid) — stepped approximation -->
+  <polyline class="formula-line" points="420,80 490,80 490,180 560,180 560,300 700,300"/>
+
+  <!-- Simulation curve (green dashed) — smooth decline -->
+  <polyline class="sim-line" points="420,75 450,78 490,90 520,130 560,190 600,250 650,285 700,300"/>
+
+  <!-- Legend -->
+  <line x1="430" y1="370" x2="460" y2="370" stroke="#3b82f6" stroke-width="2"/>
+  <text class="label" x="465" y="374">Formula (stepped tiers)</text>
+  <line x1="570" y1="370" x2="600" y2="370" stroke="#22c55e" stroke-width="2" stroke-dasharray="6,3"/>
+  <text class="label" x="605" y="374">Simulation (emergent)</text>
+
+  <!-- Annotation -->
+  <text class="label" x="20" y="200" style="font-style:italic; fill:#64748b">The formula encodes 3 tiers of 8.</text>
+  <text class="label" x="20" y="216" style="font-style:italic; fill:#64748b">The simulation produces a smooth curve</text>
+  <text class="label" x="20" y="232" style="font-style:italic; fill:#64748b">from individual worker physics.</text>
+</svg>

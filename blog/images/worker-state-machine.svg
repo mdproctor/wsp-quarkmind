@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#444"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
+      .state { fill: #f0f4f8; stroke: #3b82f6; stroke-width: 2; rx: 12; }
+      .state-label { font-size: 13px; font-weight: 600; fill: #1e293b; text-anchor: middle; }
+      .state-detail { font-size: 10px; fill: #64748b; text-anchor: middle; }
+      .arrow { stroke: #444; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .transition { font-size: 10px; fill: #64748b; text-anchor: middle; }
+      .income { fill: #dcfce7; stroke: #22c55e; stroke-width: 2; rx: 12; }
+      .income-label { font-size: 12px; font-weight: 600; fill: #166534; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- Walk to Patch -->
+  <rect class="state" x="20" y="40" width="140" height="70"/>
+  <text class="state-label" x="90" y="70">Walk to Patch</text>
+  <text class="state-detail" x="90" y="88">move at 3.94 tiles/sec</text>
+
+  <!-- Mining -->
+  <rect class="state" x="220" y="40" width="140" height="70"/>
+  <text class="state-label" x="290" y="70">Mining</text>
+  <text class="state-detail" x="290" y="88">~46 loops at patch</text>
+
+  <!-- Return to Base -->
+  <rect class="state" x="420" y="40" width="140" height="70"/>
+  <text class="state-label" x="490" y="70">Return to Base</text>
+  <text class="state-detail" x="490" y="88">carrying 5 minerals</text>
+
+  <!-- Deposit -->
+  <rect class="income" x="560" y="170" width="140" height="70"/>
+  <text class="income-label" x="630" y="200">Deposit</text>
+  <text class="state-detail" x="630" y="218">+5 minerals income</text>
+
+  <!-- Arrows: Walk → Mining -->
+  <line class="arrow" x1="160" y1="75" x2="218" y2="75"/>
+  <text class="transition" x="189" y="68">arrive</text>
+
+  <!-- Mining → Return -->
+  <line class="arrow" x1="360" y1="75" x2="418" y2="75"/>
+  <text class="transition" x="389" y="68">done</text>
+
+  <!-- Return → Deposit -->
+  <path class="arrow" d="M 560 75 Q 640 75 640 168"/>
+  <text class="transition" x="615" y="140">arrive</text>
+
+  <!-- Deposit → Walk (loop back) -->
+  <path class="arrow" d="M 560 205 Q 20 280 60 112"/>
+  <text class="transition" x="280" y="270">pick next patch</text>
+
+  <!-- Saturation note -->
+  <rect x="180" y="150" width="280" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text class="state-detail" x="320" y="172" style="fill:#92400e; font-weight:600">Saturation emerges here</text>
+  <text class="state-detail" x="320" y="188" style="fill:#92400e">If patch is occupied → wait in queue</text>
+  <text class="state-detail" x="320" y="200" style="fill:#92400e">No formula needed — physics does it</text>
+</svg>
