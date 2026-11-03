@@ -1,0 +1,15 @@
+# Work Plan — issue-502-mineral-spending-reconciliation
+
+## State
+branch: issue-502-mineral-spending-reconciliation
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 502
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#502 — Issue #502 ← active
