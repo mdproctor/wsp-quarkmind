@@ -1,0 +1,15 @@
+# Work Plan — main
+
+## State
+branch: main
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 500
+design-repo: 
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#500 — Issue #500 ← active
