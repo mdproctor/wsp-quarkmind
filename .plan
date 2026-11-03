@@ -1,28 +1,15 @@
-# Work Plan — main
+# Work Plan — issue-501-map-mineral-patch-init
 
 ## State
-branch: issue-500-worker-simulation
-state: closing:stamped
+branch: issue-501-map-mineral-patch-init
+state: scaffolded
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
-covers: 500
+covers: 501
 design-repo: 
 design-section-hashes: 
-flyway-next-v: none
+flyway-next-v: 
 
-evidence-era: true
 ## Queue
-- [ ] casehubio/quarkmind#500 — Issue #500 ← active
-  - [ ] Batch 1: Mineral core
-    - [ ] Task 1: MineralPatch SimulatedWorker WorkerSimulation mineral mining
-  - [ ] Batch 2: Gas cycle
-    - [ ] Task 2: GasSlot and gas worker simulation
-  - [ ] Batch 3: EmulatedGame integration
-    - [ ] Task 3: Wire WorkerSimulation replace WorkerAssignment
-  - [ ] Batch 4: Harness integration
-    - [ ] Task 4: syncFromGroundTruth and harness update
-  - [ ] Batch 5: Calibration
-    - [ ] Task 5: Formula-as-validator and calibration run
-  - [ ] Batch 6: Verification
-    - [ ] Task 6: Full suite green and CLAUDE.md update
+- [ ] casehubio/quarkmind#501 — Issue #501 ← active
