@@ -2,7 +2,7 @@
 
 ## State
 branch: 
-state: closing:promoted
+state: active
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
@@ -14,7 +14,7 @@ evidence-era: true
 
 ## Queue
 - [x] casehubio/quarkmind#501 — Issue #501
-- [ ] casehubio/quarkmind#505 — Rich mineral patch harvest rate ← active
-- [ ] casehubio/quarkmind#502 — Mineral spending reconciliation
+- [x] casehubio/quarkmind#505 — Rich mineral patch harvest rate
+- [ ] casehubio/quarkmind#502 — Mineral spending reconciliation ← active
 - [ ] casehubio/quarkmind#503 — Gas harvesting physics calibration
 - [ ] casehubio/quarkmind#504 — Supply foodUsed reconciliation
