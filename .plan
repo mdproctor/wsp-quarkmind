@@ -1,4 +1,4 @@
-# Work Plan — issue-501-map-mineral-patch-init
+# Work Plan — 
 
 ## State
 branch: 
@@ -6,15 +6,14 @@ state: active
 project-sha: 
 date: 
 issue-repo: casehubio/quarkmind
-covers: 501
+covers: 505
 design-repo: 
 design-section-hashes: 
 flyway-next-v: 
 evidence-era: true
 
 ## Queue
-- [x] casehubio/quarkmind#501 — Issue #501
-- [x] casehubio/quarkmind#505 — Rich mineral patch harvest rate
-- [ ] casehubio/quarkmind#502 — Mineral spending reconciliation ← active
+- [ ] casehubio/quarkmind#505 — Rich mineral patch harvest rate ← active
+- [ ] casehubio/quarkmind#502 — Mineral spending reconciliation
 - [ ] casehubio/quarkmind#503 — Gas harvesting physics calibration
 - [ ] casehubio/quarkmind#504 — Supply foodUsed reconciliation
