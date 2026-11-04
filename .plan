@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-525-tracker-unitdied-coverage
-state: closing:verified
+state: closing:promoted
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#525
 evidence-era: true
