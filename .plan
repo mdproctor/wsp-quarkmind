@@ -1,0 +1,7 @@
+- [x] casehubio/quarkmind#525: TrackerIntentExtractor improve UnitDied coverage
+
+## State
+branch: issue-525-tracker-unitdied-coverage
+state: active
+issue-repo: casehubio/quarkmind
+covers: casehubio/quarkmind#525
