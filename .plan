@@ -2,12 +2,13 @@
 
 ## State
 branch: issue-513-sync-vespene-collection-rate
-state: active
+state: closing:review
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#513
 Current: casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
 date: 2026-11-04
 
+evidence-era: true
 ## Queue
 - [ ] casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
 - [ ] casehubio/quarkmind#515 — Sync vespeneCurrent from GT for vespene balance accuracy
