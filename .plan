@@ -1,8 +1,0 @@
-- [x] casehubio/quarkmind#522: Standalone spending tracking
-
-## State
-branch: issue-522-standalone-spending-tracking
-state: closing:promoted
-issue-repo: casehubio/quarkmind
-covers: casehubio/quarkmind#522
-evidence-era: true
