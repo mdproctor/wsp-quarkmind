@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="Inter, -apple-system, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#1e293b">Two Income Models, Two Purposes</text>
+
+  <!-- Formula box -->
+  <rect x="40" y="55" width="280" height="120" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="180" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">Calibrated Formula</text>
+  <text x="180" y="102" text-anchor="middle" font-size="11" fill="#4b5563">mineralIncomePerTick(workers)</text>
+  <text x="180" y="120" text-anchor="middle" font-size="11" fill="#4b5563">gasIncomePerTick(workers)</text>
+  <text x="180" y="145" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Calibrated from 118 replays</text>
+  <text x="180" y="162" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Accurate rates, no physics</text>
+
+  <!-- Simulation box -->
+  <rect x="400" y="55" width="280" height="120" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="540" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40ad">Trip-Based Simulation</text>
+  <text x="540" y="102" text-anchor="middle" font-size="11" fill="#4b5563">Walk → Mine → Return → Deposit</text>
+  <text x="540" y="120" text-anchor="middle" font-size="11" fill="#4b5563">Per-patch occupancy, travel time</text>
+  <text x="540" y="145" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Physics-based, not calibrated</text>
+  <text x="540" y="162" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Realistic balance, inaccurate rates</text>
+
+  <!-- Arrows down -->
+  <line x1="180" y1="175" x2="180" y2="220" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="540" y1="175" x2="540" y2="220" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Rate tracking box -->
+  <rect x="60" y="225" width="240" height="50" rx="6" fill="#dcfce7" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="180" y="247" text-anchor="middle" font-size="12" font-weight="600" fill="#166534">EconomyTracker</text>
+  <text x="180" y="264" text-anchor="middle" font-size="10" fill="#4b5563">Collection rate computation</text>
+
+  <!-- Balance box -->
+  <rect x="420" y="225" width="240" height="50" rx="6" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="540" y="247" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40ad">PlayerState</text>
+  <text x="540" y="264" text-anchor="middle" font-size="10" fill="#4b5563">Mineral / vespene balance</text>
+
+  <!-- Bottom outcome -->
+  <line x1="180" y1="275" x2="180" y2="310" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="540" y1="275" x2="540" y2="310" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="180" y="326" text-anchor="middle" font-size="10" fill="#059669" font-weight="500">~5-11% error vs GT</text>
+  <text x="540" y="326" text-anchor="middle" font-size="10" fill="#2563eb" font-weight="500">Overridden by GT sync</text>
+</svg>
