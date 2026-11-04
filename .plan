@@ -1,0 +1,15 @@
+# Work Plan — issue-521-standalone-supply-tracking
+
+## State
+branch: issue-521-standalone-supply-tracking
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: casehubio/quarkmind#521
+design-repo: 
+design-section-hashes: 
+flyway-next-v: none
+
+## Queue
+- [ ] casehubio/quarkmind#521 — Issue #521 ← active
