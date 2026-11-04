@@ -1,0 +1,7 @@
+- [x] casehubio/quarkmind#526: Harness seed-state deduplication
+
+## State
+branch: issue-526-seed-deduplication
+state: active
+issue-repo: casehubio/quarkmind
+covers: casehubio/quarkmind#526
