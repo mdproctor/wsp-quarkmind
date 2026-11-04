@@ -1,16 +1,16 @@
 # Work Plan — quarkmind
 
 ## State
-branch: issue-509-mineralsCollectionRate-tracker-accuracy
+branch: 
 state: active
 issue-repo: casehubio/quarkmind
-covers: casehubio/quarkmind#509
-Current: casehubio/quarkmind#509 — Reduce mineralsCollectionRate error in tracker-driven mode
+covers: casehubio/quarkmind#511
+Current: casehubio/quarkmind#511 — Improve Drone building consumption capture rate
 date: 2026-11-04
 
 ## Queue
-- [ ] casehubio/quarkmind#509 — Reduce mineralsCollectionRate error in tracker-driven mode ← active
-- [ ] casehubio/quarkmind#511 — Improve-Drone-building-consumption-capture-rate
+- [x] casehubio/quarkmind#509 — Reduce mineralsCollectionRate error in tracker-driven mode
+- [ ] casehubio/quarkmind#511 — Improve-Drone-building-consumption-capture-rate ← active
 - [ ] casehubio/quarkmind#512 — Remaining-workersActiveCount-gap
 - [ ] casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy
 - [x] casehubio/quarkmind#508 — Supply and worker count reconciliation on tracker-driven UnitDied events
