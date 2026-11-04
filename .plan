@@ -1,7 +1,7 @@
 # Work Plan — quarkmind
 
 ## State
-branch: 
+branch: issue-509-mineralsCollectionRate-tracker-accuracy
 state: active
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#509
