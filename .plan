@@ -4,8 +4,8 @@
 branch: main
 state: active
 issue-repo: casehubio/quarkmind
-covers: casehubio/quarkmind#513
-Current: casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
+covers: casehubio/quarkmind#402
+Current: casehubio/quarkmind#402 — Extend BalanceData for behavioral parameters
 date: 2026-11-04
 evidence-era: true
 
