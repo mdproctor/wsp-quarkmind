@@ -5,15 +5,14 @@ branch: main
 state: active
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#516
-Current: casehubio/quarkmind#516 — Epic: Standalone EmulatedGame
+Current: casehubio/quarkmind#517 — Baseline standalone accuracy
 date: 2026-11-04
 evidence-era: true
 
 ## Queue
-- [ ] casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
-- [ ] casehubio/quarkmind#515 — Sync vespeneCurrent from GT for vespene balance accuracy
-- [ ] casehubio/quarkmind#514 — Drone under-production from synthetic building consumption UnitDied
-- [ ] casehubio/quarkmind#402 — Extend BalanceData for behavioral parameters
+- [x] casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
+- [x] casehubio/quarkmind#515 — Sync vespeneCurrent from GT for vespene balance accuracy
+- [x] casehubio/quarkmind#514 — Drone under-production from synthetic building consumption UnitDied
 - [ ] casehubio/quarkmind#517 — Baseline standalone accuracy
 - [ ] casehubio/quarkmind#518 — Mineral mining model
 - [ ] casehubio/quarkmind#519 — Gas income model
@@ -22,3 +21,6 @@ evidence-era: true
 - [ ] casehubio/quarkmind#522 — Spending tracking
 - [ ] casehubio/quarkmind#523 — Building lifecycle
 - [ ] casehubio/quarkmind#524 — Final gate
+
+## Deferred
+- [ ] casehubio/quarkmind#402 — Extend BalanceData for behavioral parameters (L / Med)
