@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-527-half-supply-tracking
-state: closing:verified
+state: closing:promoted
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#527
 evidence-era: true
