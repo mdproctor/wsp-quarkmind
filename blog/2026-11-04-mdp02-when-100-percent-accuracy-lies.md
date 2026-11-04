@@ -67,7 +67,7 @@ The [previous entry](/blog/2026-11-04-mdp01-the-model-you-trust) explored the te
 
 The harness already synced minerals, vespene, supply cap, and buildings from ground truth each tick. We extended the pattern to supply used, worker count, mineral rate, and all six spending fields — same set-and-restore approach. Replace the emulated value with GT for the snapshot, restore it for intent processing. The emulator's internal state stays useful for affordability checks and production decisions. The measurement reflects reality.
 
-Every economy field: 0.0% error at all checkpoints. Not because the model is perfect — because the measurement no longer pretends it is.
+Ten of twelve economy fields: 0.0% error at all checkpoints. The two remaining — `vespeneCollectionRate` and `vespeneCurrent` — still use the emulator's own gas model, not GT sync. Not because the model is perfect — because the measurement no longer pretends it is.
 
 ## Why this matters for agent training
 
