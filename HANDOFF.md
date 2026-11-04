@@ -2,37 +2,33 @@
 
 ## Last Session (2026-11-04)
 
-Completed #517 (baseline measurement) and #521 (standalone supply tracking) from epic #516. Filed #525 and #526 for residual supply gaps. Posted baseline data to all child issues.
+Completed #525 (UnitTypeChange handling in TrackerIntentExtractor). Filed #527 for the real foodUsed root cause (Zergling half-supply).
 
 ### What landed
 
-- **#517** — Baseline: measure standalone EmulatedGame accuracy without GT syncs. Created `StandaloneEmulatedGameBaselineTest` running 118 oracle replays with all 10 economy GT syncs disabled (buildings still injected from GT). Units/buildings/upgrades: 100%. Economy: 20-470% MAPE depending on field. Baseline doc at `docs/benchmarks/standalone-emulated-game-baseline.md`. Posted per-field MAPE to epic #516 and all child issues (#518-#522).
+- **#525** — TrackerIntentExtractor UnitTypeChange handling. Added `ID_UNIT_TYPE_CHANGE` handler to update `unitTagToType` when units morph or switch modes (SiegeTank→Sieged, Hellion→Hellbat, Roach→Ravager, etc.). Added 9 missing tracker type name mappings. Missed supply reduced from 1,437 to 475 (67% reduction). Added `UnitDiedCoverageDiagnosticTest` and morph death type accuracy test.
 
-- **#521** — Standalone supply tracking. Fixed `SC2Data.supplyBonus` for town halls (NEXUS/CC=15, was 0). Added `SC2Data.unitSupplyProvided` for Overlord/Overseer (8). Added supply tracking to `injectReplayBuilding`/`syncReplayBuilding`/`markReplayBuildingComplete`. Unified Overlord supply from ZergRaceModel to universal path. foodMade: 37-57% → **0.9-4.4%** MAPE. foodUsed: 24-78% → **4-11%** MAPE.
+### Root cause correction
 
-### Issues filed
+Investigation found that the foodUsed 4-11% MAPE overcount is **not** caused by missed UnitDied intents. UnitDied coverage diagnostic shows all supply-relevant deaths ARE captured (remaining gaps: Larva with 0 supply, Drone building morphs correctly skipped). The real root cause is **Zergling half-supply**: SC2 Zerglings cost 0.5 supply, our `supplyCost(ZERGLING)` = 1. Each Zergling adds 0.5 excess supply. Filed as #527.
 
-- **#525** (S/Med) — TrackerIntentExtractor UnitDied coverage. Root cause of foodUsed residual: extractor misses UnitDied for units whose UnitBorn wasn't tracked. Each missed death leaves stale supply in accumulator.
-- **#526** (S/Med) — Harness seed-state deduplication. Root cause of foodMade residual: race model seeds initial units/buildings that overlap with GT injections. Currently worked around by zeroing supply after reset.
-
-### Root cause analysis
+Updated root cause table:
 
 | Residual gap | MAPE | Root cause | Fix issue |
 |---|---|---|---|
 | foodMade | 0.9-4.4% | Tick quantization + duplicate seeded buildings | #526 |
-| foodUsed | 4-11% | Missed UnitDied intents in TrackerIntentExtractor | #525 |
+| foodUsed | 4-11% | Zergling/Baneling half-supply (0.5 vs 1.0) | #527 |
 
-### Decisions
+### Issues filed
 
-- Supply tracking is now universal in EmulatedGame — removed race-model-specific Overlord supply from ZergRaceModel, replaced with `SC2Data.unitSupplyProvided` called at unit spawn/death for all races.
-- Standalone test zeroes supply after `reset()` to avoid double-counting with GT-injected buildings. This is a workaround — #526 addresses the root cause.
+- **#527** (M/Med) — Half-supply tracking for Zergling/Baneling. Root cause of foodUsed 4-11% overcount. Switch to half-supply representation or use double for supply fields.
 
 ## Active Plan
 
-Epic #516 — Standalone EmulatedGame. Queue ordered for maximum independence:
+Epic #516 — Standalone EmulatedGame. Queue updated:
 
-1. #525 — TrackerIntentExtractor UnitDied coverage (S/Med) — quick win, reduces foodUsed residual
-2. #526 — Harness seed-state deduplication (S/Med) — quick win, reduces foodMade residual
+1. #527 — Half-supply tracking for Zergling/Baneling (M/Med) — root cause of foodUsed overcount
+2. #526 — Harness seed-state deduplication (S/Med) — reduces foodMade residual
 3. #522 — Standalone spending tracking (M/Med) — largest MAPE gap (40-87%)
 4. #519 — Gas income ramp-up and worker assignment (M/Med) — 50-86% MAPE
 5. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
