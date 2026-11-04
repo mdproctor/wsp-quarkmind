@@ -2,39 +2,39 @@
 
 ## Last Session (2026-11-04)
 
-Completed #525 (UnitTypeChange handling in TrackerIntentExtractor). Filed #527 for the real foodUsed root cause (Zergling half-supply).
+Completed #525 (UnitTypeChange handling), #527 (half-supply tracking) from epic #516.
 
 ### What landed
 
-- **#525** — TrackerIntentExtractor UnitTypeChange handling. Added `ID_UNIT_TYPE_CHANGE` handler to update `unitTagToType` when units morph or switch modes (SiegeTank→Sieged, Hellion→Hellbat, Roach→Ravager, etc.). Added 9 missing tracker type name mappings. Missed supply reduced from 1,437 to 475 (67% reduction). Added `UnitDiedCoverageDiagnosticTest` and morph death type accuracy test.
+- **#525** — TrackerIntentExtractor UnitTypeChange handling. Added `ID_UNIT_TYPE_CHANGE` handler, 9 missing tracker type mappings. Missed supply reduced 1,437→475 (67%). Root cause of foodUsed overcount was NOT missed deaths — it was Zergling half-supply.
 
-### Root cause correction
+- **#527** — Double supply tracking. Changed supply type from int to double. `supplyCost(ZERGLING)` = 0.5 (was 1), `supplyCost(BANELING)` = 0.5 (was 0). GT now preserves fractional supply from tracker events. foodUsed MAPE: 4.2-10.9% → **3.2-7.0%** (35-54% reduction). 19 files changed, 3,273 tests pass.
 
-Investigation found that the foodUsed 4-11% MAPE overcount is **not** caused by missed UnitDied intents. UnitDied coverage diagnostic shows all supply-relevant deaths ARE captured (remaining gaps: Larva with 0 supply, Drone building morphs correctly skipped). The real root cause is **Zergling half-supply**: SC2 Zerglings cost 0.5 supply, our `supplyCost(ZERGLING)` = 1. Each Zergling adds 0.5 excess supply. Filed as #527.
+### Current standalone accuracy
 
-Updated root cause table:
+| Field | 1-min | 3-min | 5-min | 7-min |
+|-------|-------|-------|-------|-------|
+| foodMade | 0.9% | 1.5% | 4.2% | 4.4% |
+| foodUsed | 4.2% | 3.2% | 7.0% | 5.1% |
 
-| Residual gap | MAPE | Root cause | Fix issue |
-|---|---|---|---|
-| foodMade | 0.9-4.4% | Tick quantization + duplicate seeded buildings | #526 |
-| foodUsed | 4-11% | Zergling/Baneling half-supply (0.5 vs 1.0) | #527 |
+### Remaining foodUsed 3-7% residual
 
-### Issues filed
-
-- **#527** (M/Med) — Half-supply tracking for Zergling/Baneling. Root cause of foodUsed 4-11% overcount. Switch to half-supply representation or use double for supply fields.
+Not from Zergling/Baneling supply. Likely causes:
+- Morph supply deltas not tracked (Roach→Ravager +1 supply)
+- Other supply accounting gaps
+- Separate investigation needed
 
 ## Active Plan
 
-Epic #516 — Standalone EmulatedGame. Queue updated:
+Epic #516 — Standalone EmulatedGame. Queue:
 
-1. #527 — Half-supply tracking for Zergling/Baneling (M/Med) — root cause of foodUsed overcount
-2. #526 — Harness seed-state deduplication (S/Med) — reduces foodMade residual
-3. #522 — Standalone spending tracking (M/Med) — largest MAPE gap (40-87%)
-4. #519 — Gas income ramp-up and worker assignment (M/Med) — 50-86% MAPE
-5. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
-6. #520 — Standalone worker lifecycle tracking (M/Med) — blocked by #518, #519
-7. #523 — Standalone building lifecycle (L/High) — structural, eliminates syncBuildings
-8. #524 — Final gate: remove all GT syncs (S/Low) — blocked by all above
+1. #526 — Harness seed-state deduplication (S/Med) — reduces foodMade 0.9-4.4%
+2. #522 — Standalone spending tracking (M/Med) — largest MAPE gap (40-87%)
+3. #519 — Gas income ramp-up and worker assignment (M/Med) — 50-86% MAPE
+4. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
+5. #520 — Standalone worker lifecycle tracking (M/Med) — blocked by #518, #519
+6. #523 — Standalone building lifecycle (L/High) — structural, eliminates syncBuildings
+7. #524 — Final gate: remove all GT syncs (S/Low) — blocked by all above
 
 ## Known Issues
 
@@ -44,7 +44,6 @@ Epic #516 — Standalone EmulatedGame. Queue updated:
 
 ## References
 
-- `docs/benchmarks/standalone-emulated-game-baseline.md` — standalone accuracy (economy MAPE without GT syncs)
-- `docs/benchmarks/tracker-driven-accuracy-baseline.md` — GT-synced accuracy (all 0.0%/100%)
+- `docs/benchmarks/standalone-emulated-game-baseline.md` — standalone accuracy
+- `docs/benchmarks/tracker-driven-accuracy-baseline.md` — GT-synced accuracy
 - Epic #516 — standalone EmulatedGame issue tracker
-- Epic #481 — economy fidelity (complete)
