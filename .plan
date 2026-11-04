@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-510-mineralsUsedCurrentArmy-reconciliation
-state: closing:verified
+state: closing:promoted
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#510
 Current: casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy
