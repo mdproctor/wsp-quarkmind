@@ -2,7 +2,7 @@
 
 ## State
 branch: issue-513-sync-vespene-collection-rate
-state: closing:verified
+state: closing:promoted
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#513
 Current: casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
