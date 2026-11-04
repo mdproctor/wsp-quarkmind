@@ -2,18 +2,19 @@
 
 ## Last Session (2026-11-04)
 
-Fixed replay validation baseline regression (#506). Root cause was quarkmind code changes (#500/#503), not SNAPSHOT dependencies.
+Fixed replay validation baseline regression (#506) and gas rate calibration (#507). Two issues closed, all economy metrics now within tight regression ceilings.
 
 ### What happened
 
-- **Root cause found:** WorkerSimulation (#500) replaced the calibrated formula model for income tracking. The simulation underproduces income vs reality (occupancy constraints, travel time). Additionally, `syncGasWorkersFromGt` oscillated gas worker assignments every tick because `countGasWorkersPerBuilding` uses a 2.0 distance threshold — workers returning gas cargo exceed this, preventing harvest cycle completion.
-- **Fix applied:** `EconomyTracker.recordIncome()` now uses calibrated formula rates (`SC2Data.mineralIncomePerTick`/`gasIncomePerTick`) via `WorkerSimulation.formulaIncome()`. Balance still uses simulation income. Gas worker sync removed from harness — workers auto-assigned by `onGasBuildingCompleted`.
-- **Results:** mineralsCollectionRate 50.8% → 11.3%, vespeneCollectionRate 99.5% → 41.0%. All 3267 tests pass.
-- **Unit accuracy 79% clarified:** NOT a regression — CmdEvent path was always ~79% (UNIT_ACCURACY_FLOOR=0.70). The 100% was tracker-driven path which is unchanged.
+- **#506 — Baseline regression fixed:** WorkerSimulation (#500) replaced the calibrated formula model for income tracking. The simulation underproduces vs reality. Additionally, `syncGasWorkersFromGt` oscillated gas worker assignments due to a 2.0 distance threshold. Fix: EconomyTracker uses calibrated formula rates for rate computation; simulation income still drives balance.
+- **#507 — Gas rate calibration:** The calibration sweep was ineffective (formula rates are independent of `GAS_HARVEST_DURATION_LOOPS`). Found WorkerSimulation had duplicate GasSlots (intent-created + GT-injected buildings). Fix: harness syncs gas rate from GT gas building count × 3 workers via calibrated formula. Position-based dedup added to `onGasBuildingCompleted`.
+- **Results at 5-min:** mineralsCollectionRate 10.4% error (was 50.8%), vespeneCollectionRate 1.5% error (was 99.5%). Regression ceilings tightened: minerals 16%, vespene 7%.
+- **Blog written:** "The Model You Trust Is the One You Calibrate" — on why calibration matters more than model complexity.
 
 ### Issues closed
 
-- #506 — Replay validation baseline regression. Root cause: quarkmind code, not SNAPSHOTs.
+- #506 — Replay validation baseline regression
+- #507 — Gas rate calibration (approach changed from harvest duration to GT-synced formula)
 
 ## Epic #481 — Calibration State
 
@@ -21,13 +22,12 @@ Fixed replay validation baseline regression (#506). Root cause was quarkmind cod
 
 | # | Title | Scale | Notes |
 |---|-------|-------|-------|
-| #507 | Gas harvest calibration sweep | S/Low | Unblocked by #506 — test ready |
-| #504 | foodUsed reconciliation | S/Med | 35% error |
+| #504 | foodUsed reconciliation | S/Med | 20.7% error |
 | #402 | Extend BalanceData | L/Med | Phase 1 item |
 
 ## Immediate Next Step
 
-Run #507 (gas harvest calibration sweep) — blocked by #506, now unblocked. Test ready at `GasHarvestCalibrationTest`.
+#504 (foodUsed reconciliation) — 20.7% error, S/Med. Or pivot to other epic work.
 
 ## Known Issues
 
@@ -37,6 +37,5 @@ Run #507 (gas harvest calibration sweep) — blocked by #506, now unblocked. Tes
 
 ## References
 
-- `docs/benchmarks/tracker-driven-accuracy-baseline.md` — accuracy numbers (regenerated 2026-11-04)
-- `quarkmind-sc2/src/main/java/io/quarkmind/sc2/emulated/GasSlot.java` — concurrent gas model
-- `quarkmind-sc2/src/test/java/io/quarkmind/sc2/emulated/GasHarvestCalibrationTest.java` — calibration sweep
+- `docs/benchmarks/tracker-driven-accuracy-baseline.md` — accuracy numbers (regenerated 2026-11-04, vespene 1.5%)
+- `blog/2026-11-04-mdp01-the-model-you-trust.md` — blog on calibration vs complexity
