@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="system-ui, -apple-system, sans-serif">
+  <!-- Background -->
+  <rect width="720" height="340" fill="#f8f9fa" rx="8"/>
+
+  <!-- GT Replay box -->
+  <rect x="40" y="40" width="200" height="260" fill="#e8f0fe" stroke="#4285f4" stroke-width="2" rx="6"/>
+  <text x="140" y="70" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a73e8">Ground Truth</text>
+  <text x="140" y="90" text-anchor="middle" font-size="11" fill="#5f6368">(SC2 Replay)</text>
+
+  <text x="60" y="120" font-size="11" fill="#333">PlayerStats.foodUsed</text>
+  <text x="60" y="145" font-size="11" fill="#333">PlayerStats.workersActive</text>
+  <text x="60" y="170" font-size="11" fill="#333">PlayerStats.mineralRate</text>
+  <text x="60" y="195" font-size="11" fill="#333">minerals</text>
+  <text x="60" y="220" font-size="11" fill="#333">vespene</text>
+  <text x="60" y="245" font-size="11" fill="#333">supply</text>
+  <text x="60" y="270" font-size="11" fill="#333">buildings</text>
+
+  <!-- Emulated Game box -->
+  <rect x="480" y="40" width="200" height="260" fill="#fce8e6" stroke="#ea4335" stroke-width="2" rx="6"/>
+  <text x="580" y="70" text-anchor="middle" font-size="14" font-weight="bold" fill="#c5221f">Emulated Game</text>
+  <text x="580" y="90" text-anchor="middle" font-size="11" fill="#5f6368">(EmulatedGame.java)</text>
+
+  <text x="500" y="120" font-size="11" fill="#333">supplyUsed</text>
+  <text x="500" y="145" font-size="11" fill="#333">workerCount</text>
+  <text x="500" y="170" font-size="11" fill="#333">mineralRate</text>
+  <text x="500" y="195" font-size="11" fill="#333">minerals</text>
+  <text x="500" y="220" font-size="11" fill="#333">vespene</text>
+  <text x="500" y="245" font-size="11" fill="#333">supply</text>
+  <text x="500" y="270" font-size="11" fill="#333">buildings[]</text>
+
+  <!-- Sync arrows -->
+  <defs>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#34a853"/>
+    </marker>
+  </defs>
+
+  <line x1="240" y1="116" x2="478" y2="116" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="240" y1="141" x2="478" y2="141" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="240" y1="166" x2="478" y2="166" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="240" y1="191" x2="478" y2="191" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="240" y1="216" x2="478" y2="216" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="240" y1="241" x2="478" y2="241" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="240" y1="266" x2="478" y2="266" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- "sync" labels on arrows -->
+  <text x="360" y="110" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">sync</text>
+  <text x="360" y="135" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">sync</text>
+  <text x="360" y="160" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">sync</text>
+  <text x="360" y="185" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">sync</text>
+  <text x="360" y="210" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">sync</text>
+  <text x="360" y="235" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">sync</text>
+  <text x="360" y="260" text-anchor="middle" font-size="9" fill="#34a853" font-weight="bold">inject</text>
+
+  <!-- Harness label -->
+  <text x="360" y="320" text-anchor="middle" font-size="12" fill="#5f6368">ReplayValidationHarness — per-tick sync loop</text>
+</svg>
