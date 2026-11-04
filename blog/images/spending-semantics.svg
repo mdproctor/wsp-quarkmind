@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <style>
+      .title { font-size: 14px; fill: #1e293b; font-weight: 600; }
+      .subtitle { font-size: 11px; fill: #64748b; }
+      .box { rx: 6; ry: 6; stroke-width: 1.5; }
+      .box-sc2 { fill: #eff6ff; stroke: #2563eb; }
+      .box-old { fill: #fef2f2; stroke: #dc2626; }
+      .box-label { font-size: 12px; fill: #1e293b; font-weight: 600; }
+      .box-value { font-size: 11px; fill: #475569; }
+      .arrow { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .event { font-size: 10px; fill: #1e293b; font-weight: 500; }
+      .delta-up { font-size: 11px; fill: #16a34a; font-weight: 600; }
+      .delta-down { font-size: 11px; fill: #dc2626; font-weight: 600; }
+      .delta-none { font-size: 11px; fill: #94a3b8; }
+      .divider { stroke: #e2e8f0; stroke-width: 1; }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="360" y="24" text-anchor="middle" class="title">Spending Semantics: Cumulative vs Current Investment</text>
+  <text x="360" y="42" text-anchor="middle" class="subtitle">SC2 subtracts when units die — our tracker only accumulated</text>
+
+  <!-- SC2 column header -->
+  <text x="200" y="72" text-anchor="middle" class="box-label" fill="#2563eb">SC2 Ground Truth</text>
+  <text x="200" y="86" text-anchor="middle" class="subtitle">"mineralsUsedInCurrentArmy"</text>
+
+  <!-- Old EM column header -->
+  <text x="540" y="72" text-anchor="middle" class="box-label" fill="#dc2626">EmulatedGame (before fix)</text>
+  <text x="540" y="86" text-anchor="middle" class="subtitle">"mineralsUsedArmy" (accumulator)</text>
+
+  <!-- Divider -->
+  <line x1="360" y1="60" x2="360" y2="370" class="divider" stroke-dasharray="4 4"/>
+
+  <!-- Row 1: Train Marine -->
+  <text x="20" y="118" class="event">Train Marine</text>
+  <text x="20" y="132" class="subtitle">(50 minerals)</text>
+  <rect x="120" y="104" width="160" height="36" class="box box-sc2"/>
+  <text x="200" y="126" text-anchor="middle" class="delta-up">+50 → 50</text>
+  <rect x="460" y="104" width="160" height="36" class="box box-old"/>
+  <text x="540" y="126" text-anchor="middle" class="delta-up">+50 → 50</text>
+
+  <!-- Row 2: Train Stalker -->
+  <text x="20" y="168" class="event">Train Stalker</text>
+  <text x="20" y="182" class="subtitle">(125 minerals)</text>
+  <rect x="120" y="154" width="160" height="36" class="box box-sc2"/>
+  <text x="200" y="176" text-anchor="middle" class="delta-up">+125 → 175</text>
+  <rect x="460" y="154" width="160" height="36" class="box box-old"/>
+  <text x="540" y="176" text-anchor="middle" class="delta-up">+125 → 175</text>
+
+  <!-- Row 3: Marine dies -->
+  <text x="20" y="220" class="event">Marine dies</text>
+  <text x="20" y="234" class="subtitle">(investment lost)</text>
+  <rect x="120" y="206" width="160" height="36" class="box box-sc2"/>
+  <text x="200" y="228" text-anchor="middle" class="delta-down">−50 → 125</text>
+  <rect x="460" y="206" width="160" height="36" class="box box-old"/>
+  <text x="540" y="228" text-anchor="middle" class="delta-none">unchanged → 175</text>
+
+  <!-- Row 4: Result -->
+  <rect x="120" y="262" width="160" height="44" class="box box-sc2" stroke-width="2.5"/>
+  <text x="200" y="282" text-anchor="middle" class="box-label" fill="#2563eb">125</text>
+  <text x="200" y="298" text-anchor="middle" class="subtitle">= surviving army cost</text>
+
+  <rect x="460" y="262" width="160" height="44" class="box box-old" stroke-width="2.5"/>
+  <text x="540" y="282" text-anchor="middle" class="box-label" fill="#dc2626">175</text>
+  <text x="540" y="298" text-anchor="middle" class="subtitle">= all-time army spend</text>
+
+  <!-- Error annotation -->
+  <rect x="290" y="320" width="140" height="36" rx="4" ry="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <text x="360" y="340" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">40% MAPE error</text>
+  <text x="360" y="353" text-anchor="middle" font-size="10" fill="#92400e">grows with every death</text>
+</svg>

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <style>
+      .axis { stroke: #64748b; stroke-width: 1; }
+      .axis-label { font-size: 12px; fill: #64748b; }
+      .title { font-size: 14px; fill: #1e293b; font-weight: 600; }
+      .gt-line { stroke: #2563eb; stroke-width: 2.5; fill: none; }
+      .em-old-line { stroke: #dc2626; stroke-width: 2; fill: none; stroke-dasharray: 6 3; }
+      .em-new-line { stroke: #16a34a; stroke-width: 2.5; fill: none; }
+      .legend-text { font-size: 11px; fill: #334155; }
+      .annotation { font-size: 10px; fill: #64748b; }
+      .gridline { stroke: #e2e8f0; stroke-width: 0.5; }
+      .event-line { stroke: #f59e0b; stroke-width: 1; stroke-dasharray: 3 3; }
+      .event-label { font-size: 9px; fill: #d97706; }
+    </style>
+  </defs>
+
+  <text x="360" y="24" text-anchor="middle" class="title">Supply Used Tracking: Zergling Half-Supply Error</text>
+
+  <!-- Grid -->
+  <line x1="80" y1="50" x2="80" y2="280" class="axis"/>
+  <line x1="80" y1="280" x2="680" y2="280" class="axis"/>
+  <line x1="80" y1="222" x2="680" y2="222" class="gridline"/>
+  <line x1="80" y1="164" x2="680" y2="164" class="gridline"/>
+  <line x1="80" y1="106" x2="680" y2="106" class="gridline"/>
+
+  <!-- Y-axis labels -->
+  <text x="72" y="284" text-anchor="end" class="axis-label">0</text>
+  <text x="72" y="226" text-anchor="end" class="axis-label">20</text>
+  <text x="72" y="168" text-anchor="end" class="axis-label">40</text>
+  <text x="72" y="110" text-anchor="end" class="axis-label">60</text>
+  <text x="72" y="54" text-anchor="end" class="axis-label">80</text>
+  <text x="30" y="170" text-anchor="middle" transform="rotate(-90 30 170)" class="axis-label">Supply Used</text>
+
+  <!-- X-axis labels -->
+  <text x="80" y="298" text-anchor="middle" class="axis-label">0</text>
+  <text x="230" y="298" text-anchor="middle" class="axis-label">1 min</text>
+  <text x="380" y="298" text-anchor="middle" class="axis-label">3 min</text>
+  <text x="530" y="298" text-anchor="middle" class="axis-label">5 min</text>
+  <text x="680" y="298" text-anchor="middle" class="axis-label">7 min</text>
+
+  <!-- Event markers: Zergling pairs trained -->
+  <line x1="200" y1="52" x2="200" y2="280" class="event-line"/>
+  <text x="204" y="62" class="event-label">6 Zerglings</text>
+  <line x1="310" y1="52" x2="310" y2="280" class="event-line"/>
+  <text x="314" y="62" class="event-label">+8 Zerglings</text>
+  <line x1="420" y1="52" x2="420" y2="280" class="event-line"/>
+  <text x="424" y="62" class="event-label">+4 more</text>
+
+  <!-- GT line (ground truth) -->
+  <polyline class="gt-line" points="
+    80,251
+    200,233
+    230,222
+    310,193
+    380,174
+    420,168
+    530,145
+    600,138
+    680,148
+  "/>
+
+  <!-- EM old line (supply=1 per Zergling, before fix) -->
+  <polyline class="em-old-line" points="
+    80,251
+    200,222
+    230,207
+    310,168
+    380,139
+    420,127
+    530,96
+    600,87
+    680,99
+  "/>
+
+  <!-- EM new line (supply=0.5 per Zergling, after fix) -->
+  <polyline class="em-new-line" points="
+    80,251
+    200,234
+    230,224
+    310,197
+    380,179
+    420,173
+    530,151
+    600,143
+    680,153
+  "/>
+
+  <!-- Annotations: gap between old EM and GT -->
+  <line x1="532" y1="96" x2="532" y2="145" stroke="#dc2626" stroke-width="1"/>
+  <text x="540" y="115" font-size="10" fill="#dc2626">+10.9%</text>
+  <text x="540" y="127" font-size="10" fill="#dc2626">overcount</text>
+
+  <!-- Legend -->
+  <line x1="100" y1="318" x2="130" y2="318" class="gt-line"/>
+  <text x="135" y="322" class="legend-text">SC2 Ground Truth</text>
+  <line x1="280" y1="318" x2="310" y2="318" class="em-old-line"/>
+  <text x="315" y="322" class="legend-text">EM (supply=1 per Zergling)</text>
+  <line x1="510" y1="318" x2="540" y2="318" class="em-new-line"/>
+  <text x="545" y="322" class="legend-text">EM (supply=0.5, fixed)</text>
+</svg>
