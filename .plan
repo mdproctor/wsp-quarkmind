@@ -1,0 +1,12 @@
+# Work Plan — quarkmind
+
+## Queue
+- [x] casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy <- active
+
+## State
+branch: issue-510-mineralsUsedCurrentArmy-reconciliation
+state: active
+issue-repo: casehubio/quarkmind
+covers: casehubio/quarkmind#510
+Current: casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy
+date: 2026-11-04
