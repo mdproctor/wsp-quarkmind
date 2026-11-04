@@ -2,6 +2,7 @@
 
 ## State
 branch: issue-526-seed-deduplication
-state: active
+state: closing:review
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#526
+evidence-era: true
