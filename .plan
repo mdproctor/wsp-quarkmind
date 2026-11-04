@@ -1,8 +1,0 @@
-- [x] casehubio/quarkmind#527: Half-supply tracking for Zergling/Baneling
-
-## State
-branch: issue-527-half-supply-tracking
-state: closing:promoted
-issue-repo: casehubio/quarkmind
-covers: casehubio/quarkmind#527
-evidence-era: true
