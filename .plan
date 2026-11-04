@@ -1,0 +1,14 @@
+# Work Plan — quarkmind
+
+## Queue
+- [ ] casehubio/quarkmind#508 — Supply and worker count reconciliation on tracker-driven UnitDied events ← active
+- [ ] casehubio/quarkmind#509 — Reduce mineralsCollectionRate error in tracker-driven mode
+- [ ] casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy
+
+## State
+branch: quarkmind
+state: active
+issue-repo: casehubio/quarkmind
+covers: casehubio/quarkmind#508
+Current: casehubio/quarkmind#508 — Supply and worker count reconciliation on tracker-driven UnitDied events
+date: 2026-11-04
