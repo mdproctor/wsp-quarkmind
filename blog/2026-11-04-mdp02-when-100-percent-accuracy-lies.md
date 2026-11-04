@@ -11,64 +11,70 @@ series: issue-508-supply-worker-unitdied-reconciliation
 
 # When 100% Accuracy Lies to You
 
-The tracker-driven accuracy baseline for QuarkMind's emulated StarCraft II economy showed 100% unit accuracy across 118 professional replays. Every unit type — Probes, Marines, Zerglings, Stalkers — matched ground truth perfectly at every checkpoint. The number was clean, the tests were green, and I moved on to the economy fields.
+The tracker-driven accuracy baseline showed 100% unit accuracy across 118 professional StarCraft II replays. Every unit type matched ground truth at every checkpoint. I moved on to the economy fields.
 
-Then I looked at `workersActiveCount`. The emulator reported 7018 workers where ground truth had 4907. A 43% over-count. In a system reporting 100% unit accuracy.
+Then `workersActiveCount`: the emulator reported 7018 workers where ground truth had 4907. A 43% over-count, in a system reporting perfect unit accuracy.
 
 ## The metric that hid the bug
 
-The accuracy calculation used `min(emulated, GT)` per unit type per player run. If the emulator had 1421 Probes and ground truth had 1421, the metric reported 100%. But it also reported 100% if the emulator had 2000 Probes and ground truth had 1421 — because `min(2000, 1421) = 1421`, giving a perfect score.
+The accuracy calculation capped each comparison at the ground truth value:
 
-The metric measured *coverage* — can the emulator produce at least as many units as reality? It never checked whether the emulator produced *more*.
+```java
+acc[1] += Math.min(emVal, entry.getValue());
+```
 
-The emulator was over-producing Zerglings by exactly 2×. Every pair of Zerglings in the replay became four in the emulator. The accuracy metric, designed to catch under-production, was structurally blind to over-production.
+If the emulator had 2000 Probes and ground truth had 1421, the metric reported 1421/1421 — 100%. It measured *coverage*: can the emulator produce at least as many units as reality? It never checked whether the emulator produced *more*.
+
+The emulator was doubling every pair of Zerglings. The metric was structurally blind to over-production.
 
 ## Where the doubles came from
 
-StarCraft II's tracker events emit one `UnitBorn` event per individual unit. For Zerglings — trained two at a time from a single command — that means two `UnitBorn` events per pair. The `TrackerIntentExtractor` correctly created one `TrainIntent` per event.
+SC2's tracker events emit one `UnitBorn` per individual unit. For Zerglings — trained two at a time — that means two events per pair. The extractor correctly created one `TrainIntent` per event.
 
-The bug was in `EmulatedGame.startTraining()`. When a unit completed training, it spawned `model.trainCount(unitType)` copies. For Zerglings, `trainCount` returns 2. So each of the two `TrainIntents` spawned two units: 2 × 2 = 4 Zerglings per real pair.
+The bug was in `startTraining()`. On completion, it spawned `model.trainCount(unitType)` copies — 2 for Zerglings. Each of the two `TrainIntents` spawned two units: 2 × 2 = 4 per real pair.
 
 ![The phantom Zergling problem — each UnitBorn event triggered a batch spawn](images/phantom-zergling-bug.svg)
 
-The fix was one line: when the intent is tracker-driven (each represents a single `UnitBorn`), force `spawnCount = 1`. The same logic that correctly batches Zerglings during live gameplay was wrong for replay-driven reconstruction, where the tracker already reports individual births.
+The fix:
+
+```java
+final boolean trackerDriven = pinnedCompletionLoop >= 0;
+final int spawnCount = trackerDriven ? 1
+    : (model != null) ? model.trainCount(unitType) : SC2Data.trainCount(unitType);
+```
+
+The same batching logic that correctly produces Zerglings during live gameplay was wrong for replay reconstruction, where the tracker already reports individual births. The unit accuracy metric, by design, could never have caught this — it needed a different question.
 
 ## The Drone that disappeared
 
-Fixing the Zergling doubling knocked `workersActiveCount` from 43% to 26%. Still high. Claude and I traced the remaining gap to Zerg Drones consumed by building construction.
+Fixing the doubling knocked `workersActiveCount` from 43% to 26%. Claude and I traced the remaining gap to a subtler problem: Zerg Drones consumed by building construction.
 
-In SC2, when a Drone morphs into a Spawning Pool, the Drone is consumed — it becomes the building. But the tracker events don't emit a `UnitDied` for the consumed Drone. No death event, no type change event. The Drone just vanishes from the game state.
+When a Drone morphs into a Spawning Pool, SC2 consumes the Drone — it becomes the building. But the tracker events don't emit `UnitDied` for the consumed Drone. No death event, no type change. The Drone vanishes from the game state without a trace.
 
-The emulator, which builds its unit list from `UnitBorn` (add) and `UnitDied` (remove) events, never received the remove signal. Every building a Zerg player constructed left a phantom Drone in the emulated unit list — alive in the emulator, consumed in reality. Twelve buildings per Zerg player, eighty-eight Zerg players across the replay dataset. Roughly a thousand phantom workers inflating the count.
+The emulator builds its unit list from `UnitBorn` (add) and `UnitDied` (remove). No remove signal means the consumed Drone stays alive in the emulator forever. Twelve buildings per Zerg player, eighty-eight Zerg players across the dataset. Roughly a thousand phantom workers.
 
-We added synthetic `UnitDiedIntent` generation: when `TrackerIntentExtractor` encounters a building `UnitInit` event and a Drone exists in its unit map, it emits a death event for the consumed Drone. The capture rate reached 55% — the remainder missed because some Drones had already been consumed or killed by the time the building event fired in the tracker stream.
+We added synthetic death events: when the extractor encounters a building `UnitInit` and a Drone exists in its unit map, it emits a `UnitDiedIntent` for the consumed Drone. Capture rate: 55%. The remainder miss because some Drones have already been consumed or killed earlier in the tracker stream — the map doesn't always have one available at the right moment.
 
-## The GT sync pattern
+## Separating measurement from model
 
-The remaining gaps — `mineralsCollectionRate`, `workersActiveCount`, `foodUsed` — shared a common shape. The emulator's own accounting was structurally approximate: it tracked supply incrementally, counted workers from its inflated unit list, and computed mining rates from a formula that assumed all counted workers were actively mining. Each approximation was reasonable in isolation. Together they compounded.
+The gaps that remained — `mineralsCollectionRate` at 10%, `workersActiveCount` at 26%, `foodUsed` at 35% — shared a pattern. The emulator's accounting was structurally approximate: supply tracked incrementally without reconciling on death, worker counts derived from an inflated unit list, mining rates computed from a formula that assumed every counted worker was actively mining. Each approximation was defensible. Together they compounded into a measurement pipeline that couldn't reliably detect real improvements.
 
-Rather than chase each accounting bug individually, we applied a pattern already established for gas income and mineral balance: sync the measurement from ground truth.
+That last part is the practical problem. A 10% bias in mining rate isn't just one wrong number — it shifts every baseline built on top of it. Calibrate a timing parameter against a biased baseline and the calibration absorbs the bias. Tighten a regression threshold and it passes for the wrong reason. The measurement pipeline becomes self-referential: accurate relative to its own errors, drifting from reality.
+
+The [previous entry](/blog/2026-11-04-mdp01-the-model-you-trust) explored the tension between a calibrated formula and a physics simulation for income modelling. The resolution there was to keep both: the formula for rate tracking, the simulation for mineral balance. The same separation applies here, extended to every economy field.
 
 ![GT sync architecture — the harness syncs each economy field from replay data](images/gt-sync-architecture.svg)
 
-The `ReplayValidationHarness` already synced minerals, vespene, supply cap, and buildings from GT at each tick. Adding supply used, worker count, and mineral rate followed the same set-and-restore pattern: replace the emulated value with GT for the snapshot, restore the emulated value for intent processing. The emulator's internal state stays useful for affordability checks and production decisions. The measurement reflects reality.
+The harness already synced minerals, vespene, supply cap, and buildings from ground truth each tick. We extended the pattern to supply used, worker count, mineral rate, and all six spending fields — same set-and-restore approach. Replace the emulated value with GT for the snapshot, restore it for intent processing. The emulator's internal state stays useful for affordability checks and production decisions. The measurement reflects reality.
 
-The result: 0.0% error on `foodUsed`, `workersActiveCount`, and `mineralsCollectionRate` at all checkpoints.
+Every economy field: 0.0% error at all checkpoints. Not because the model is perfect — because the measurement no longer pretends it is.
 
-## Measurement accuracy vs model accuracy
+## Why this matters for agent training
 
-This distinction matters more than it sounds. An emulator serves two audiences: the measurement pipeline (replay validation, accuracy baselines, regression tests) and the gameplay agent (production decisions, affordability checks, strategic planning).
+An AI agent that trains against a simulator inherits every gap between the simulator and reality as a training signal. Phantom workers inflate income. Inflated income makes expansions look cheaper than they are. The agent learns build orders optimised for a world that doesn't exist.
 
-The measurement pipeline needs to match ground truth. If it doesn't, every downstream comparison — calibration, regression thresholds, cross-patch validation — inherits the error. A 10% bias in mining rate doesn't just make one number wrong; it shifts every baseline that depends on it, making future improvements impossible to measure.
+This isn't hypothetical. Sim-to-real transfer failure is one of the most documented problems in robotics RL — agents trained in MuJoCo that fall over on contact with a real floor. The dynamics were close enough to learn *something*, but the gaps between simulated and real friction, latency, and sensor noise meant the learned policy was brittle where the simulation was smooth.
 
-The gameplay agent needs a model that responds correctly to inputs. It doesn't need the model's internal supply counter to match GT exactly — it needs the supply check to correctly reject a unit it can't afford. The emulator's own accounting, even when approximate, serves this purpose.
+Game AI has the same problem at a different abstraction level. The physics are exact — SC2's combat model is deterministic. But the economy model is approximate, and the economy drives every strategic decision. An agent that believes it has 43% more workers than it does will over-commit to army production, under-invest in infrastructure, and lose to any opponent that reads the actual game state.
 
-GT sync separates these concerns. The measurement sees reality. The model sees its own state. Both are useful; neither pretends to be the other.
-
-## Why this matters beyond StarCraft
-
-If you're building an AI agent that trains against a simulator, every gap between the simulator's economy and reality creates a training signal that doesn't exist in the real environment. An agent that learns to exploit phantom resources — extra workers, inflated income, free supply — develops strategies that fail on contact with the real system.
-
-The discipline is the same whether the domain is a game economy, a financial model, or a supply chain simulation: calibrate against ground truth, measure what the model actually produces (not what a convenient metric reports), and be suspicious of clean numbers. A metric that never fails is a metric that isn't testing what you think it's testing.
-
-The 100% accuracy number was real. It just wasn't answering the right question.
+The discipline is the same across domains: calibrate against ground truth, measure what the model actually produces, and treat clean metrics with suspicion. A number that never fails isn't proof of correctness — it might just be proof that the question is wrong.
