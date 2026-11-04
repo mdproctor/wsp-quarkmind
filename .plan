@@ -5,12 +5,12 @@ branch:
 state: active
 issue-repo: casehubio/quarkmind
 covers: casehubio/quarkmind#510
-Current: casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation
+Current: Queue drained — all issues closed
 date: 2026-11-04
 
 ## Queue
 - [x] casehubio/quarkmind#509 — Reduce mineralsCollectionRate error in tracker-driven mode
 - [x] casehubio/quarkmind#511 — Improve-Drone-building-consumption-capture-rate
 - [x] casehubio/quarkmind#512 — Remaining-workersActiveCount-gap
-- [ ] casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy ← active
+- [x] casehubio/quarkmind#510 — mineralsUsedCurrentArmy reconciliation for tracker-driven accuracy
 - [x] casehubio/quarkmind#508 — Supply and worker count reconciliation on tracker-driven UnitDied events
