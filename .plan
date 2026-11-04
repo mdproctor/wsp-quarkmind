@@ -1,26 +1,15 @@
-# Work Plan — quarkmind
+# Work Plan — issue-517-standalone-emulated-game-baseline
 
 ## State
-branch: main
-state: active
+branch: issue-517-standalone-emulated-game-baseline
+state: scaffolded
+project-sha: 
+date: 
 issue-repo: casehubio/quarkmind
-covers: casehubio/quarkmind#516
-Current: casehubio/quarkmind#517 — Baseline standalone accuracy
-date: 2026-11-04
-evidence-era: true
+covers: casehubio/quarkmind#517
+design-repo: 
+design-section-hashes: 
+flyway-next-v: none
 
 ## Queue
-- [x] casehubio/quarkmind#513 — Sync vespeneCollectionRate from GT PlayerStats
-- [x] casehubio/quarkmind#515 — Sync vespeneCurrent from GT for vespene balance accuracy
-- [x] casehubio/quarkmind#514 — Drone under-production from synthetic building consumption UnitDied
-- [ ] casehubio/quarkmind#517 — Baseline standalone accuracy
-- [ ] casehubio/quarkmind#518 — Mineral mining model
-- [ ] casehubio/quarkmind#519 — Gas income model
-- [ ] casehubio/quarkmind#520 — Worker lifecycle
-- [ ] casehubio/quarkmind#521 — Supply tracking
-- [ ] casehubio/quarkmind#522 — Spending tracking
-- [ ] casehubio/quarkmind#523 — Building lifecycle
-- [ ] casehubio/quarkmind#524 — Final gate
-
-## Deferred
-- [ ] casehubio/quarkmind#402 — Extend BalanceData for behavioral parameters (L / Med)
+- [ ] casehubio/quarkmind#517 — Issue #517 ← active
