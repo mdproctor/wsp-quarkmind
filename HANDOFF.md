@@ -2,52 +2,46 @@
 
 ## Last Session (2026-11-05)
 
-Completed #530, #528, major progress on #529. Filed #531, #532, #533.
+Completed #530, #528, #529, #531 from epic #516 (Standalone EmulatedGame).
 
 ### What landed
 
-- **#530** — Archon supply tracking. `supplyCost(ARCHON)` = 4. HT merge now supply-neutral.
+- **#530** — Archon supply tracking. `supplyCost(ARCHON)` = 4.
 
 - **#528** — Morph cost tracking. TrackerIntentExtractor emits MorphIntent on ID_UNIT_TYPE_CHANGE. EmulatedGame records spending for tracker-driven morphs. EconomyTracker.recordUnitDeath subtracts total investment via morphSourceType.
 
-- **#529** — SC2 spending classification + timing (major). Four root causes identified and fixed:
-  1. **Timing**: SC2's `scoreValueMineralsUsedCurrentArmy` counts COMPLETED items only. We recorded at training START. Moved `recordTrainSpending` and `recordResearchSpending` to completion callbacks.
-  2. **Building injection timing**: `injectReplayBuilding` now records spending only for complete buildings. `syncReplayBuilding` records when buildings transition to complete.
-  3. **Overlord classification**: SC2 classifies Overlords as economy (supply providers). Added `unitSupplyProvided > 0` check.
-  4. **UNKNOWN building cost**: 218 UNKNOWN buildings (add-ons, creep tumors) × 100m = phantom 21,800m in technology. Set to 0.
+- **#529** — SC2 spending timing + classification. Four root causes fixed:
+  1. Timing: moved recordTrainSpending and recordResearchSpending to completion callbacks (SC2's "Current" counts completed items only)
+  2. Building injection: only record spending for complete buildings; syncReplayBuilding records at completion transition
+  3. Overlord classification: supply-providing units (Overlord/Overseer) classified as economy, not army
+  4. UNKNOWN building cost: set to 0 (was 100m, phantom spending)
+
+- **#531** — Missing building mappings + warp-in guard. Added toBuildingType for CreepTumor, CreepTumorQueen, CreepTumorBurrowed, OracleStasisTrap, AssimilatorRich, LurkerDenMP. Added BUILDING_NAMES guard in applyUnitInit — warp-in units were being added as UNKNOWN buildings. Calibrated LURKER_DEN and CREEP_TUMOR build times.
 
 ### Accuracy improvements (5-min checkpoint)
 
 | Field | Before | After |
 |-------|--------|-------|
 | mineralsUsedCurrentArmy | 62.5% | **10.4%** |
-| mineralsUsedCurrentEconomy | 10.3% | **4.8%** |
+| mineralsUsedCurrentEconomy | 10.3% | **4.7%** |
 | mineralsUsedCurrentTechnology | 63.2% | **23.9%** |
 | vespeneUsedCurrentArmy | 58.4% | **21.2%** |
-| vespeneUsedCurrentTechnology | 82.6% | **57.1%** |
-| foodMade | 2.6% | 2.6% |
-| foodUsed | 7.0% | 7.0% |
+| UNKNOWN buildings | 218 | **0** |
 
 ### Branch
 
-`issue-530-archon-supply-tracking` — 4 commits, needs work-end.
-
-### Issues filed this session
-
-- **#531** — Track Terran add-on buildings (Tech Lab, Reactor) as BuildingType (XS/Low)
-- **#532** — Vespene spending variance — high per-replay error (S/Med)
-- **#533** — Technology mineral spending remaining gap — 24% MAPE at 5-min (S/Med)
+`issue-530-archon-supply-tracking` — 5 commits, not yet merged. No work-end run (queue preservation).
 
 ### Queue status
 
-Epic #516 — Standalone EmulatedGame. Updated queue:
+Epic #516 — Standalone EmulatedGame:
 
 1. ~~#530 — Archon supply tracking~~ ✅
 2. ~~#528 — Morph cost tracking~~ ✅
-3. ~~#529 — SC2 spending classification~~ ✅ (classification done, MAPE 63%→24%)
-4. #531 — Track Terran add-ons (XS/Low) — NEW, quick win
-5. #533 — Tech mineral remaining gap (S/Med) — NEW, diagnostic
-6. #532 — Vespene spending variance (S/Med) — NEW, diagnostic
+3. ~~#529 — SC2 spending classification~~ ✅
+4. ~~#531 — Track missing building types~~ ✅
+5. #533 — Technology mineral remaining gap — 24% MAPE at 5-min (S/Med)
+6. #532 — Vespene spending variance (S/Med)
 7. #519 — Gas income ramp-up and worker assignment (M/Med) — 25% MAPE
 8. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
 9. #520 — Standalone worker lifecycle tracking (M/Med) — blocked by #518, #519
@@ -62,6 +56,6 @@ Epic #516 — Standalone EmulatedGame. Updated queue:
 
 ## References
 
-- `docs/benchmarks/standalone-emulated-game-baseline.md` — standalone accuracy (post-#529)
+- `docs/benchmarks/standalone-emulated-game-baseline.md` — standalone accuracy (post-session)
 - `docs/benchmarks/tracker-driven-accuracy-baseline.md` — GT-synced accuracy
 - Epic #516 — standalone EmulatedGame issue tracker
