@@ -97,6 +97,8 @@ BuildingBornIntent(tag, Sc2ReplayShared.toBuildingType(typeName), position)
 
 Position comes from `IBaseUnitEvent.getXCoord()` / `getYCoord()`.
 
+**Loop-0 ordering constraint (from decision review):** `BuildingBornIntents` at loop 0 must sort before `TrainIntents` at loop 0. The initial town hall must exist before worker trains resolve. Use a secondary sort key (intent type priority: `BuildingBornIntent` = 0, `BuildIntent` = 1, all others = 10) in the final `intents.sort()` at line 202.
+
 ### UnitInit handler (buildings)
 
 Currently: Calls `consumeDroneForBuilding()` and continues.
@@ -107,15 +109,15 @@ Change: Still call `consumeDroneForBuilding()`, then add to `buildingTagToType`.
 BuildIntent("worker", buildingType, position, replayTag, -1)
 ```
 
-The `completionLoop` is initially -1 (unknown). A second pass correlates UnitDone events.
+The `completionLoop` comes from a pre-pass over UnitDone events (see below).
 
-### UnitDone handler
+### UnitDone handler (pre-pass)
 
 Currently: No-op.
 
-Change: If the tag is in `pendingBuildings`, record the completion loop. Used to set `completionLoop` on the corresponding `BuildIntent`.
+Change: A pre-pass before the main extraction loop builds a `buildingDoneLoops` map (composite tag → UnitDone loop). The main UnitInit handler uses this to set `completionLoop` on the corresponding `BuildIntent`. Since `extractFromReplay` already iterates all events and sorts intents at the end, a pre-pass is natural.
 
-**Implementation detail:** Two-pass approach. First pass collects all events and builds a `pendingBuildingDoneLoops` map (tag → completionLoop). The `BuildIntent` is created with the pre-computed completionLoop from UnitDone. Since `extractFromReplay` already iterates all events and sorts intents at the end, a pre-pass for UnitDone loops is natural.
+**Build-time validation diagnostic (from decision review):** Optionally, compute `SC2Data.buildTimeInLoops(type)` and compare against the actual duration (UnitDone loop - UnitInit loop). Log a diagnostic on mismatch. This validates build-time constants against actual replays without affecting completion timing — the pinned value is always used.
 
 ### UnitTypeChange handler (buildings)
 
