@@ -38,7 +38,7 @@ public record BuildingBornIntent(
 ) implements Intent {}
 ```
 
-**EmulatedGame handler:** Adds a complete building directly to `PlayerState` — no construction timer, no mineral deduction (these buildings are not purchased). Registers town halls and gas buildings. Adds supply bonus. Records building spending for economy tracking.
+**EmulatedGame handler:** Adds a complete building directly to `PlayerState` — no construction timer, no mineral deduction, no spending recording (these buildings are gifts at game start, not purchased). Registers town halls and gas buildings. Adds supply bonus.
 
 ### BuildingDiedIntent
 
@@ -67,9 +67,15 @@ public record BuildIntent(
 ) implements Intent {}
 ```
 
-Existing callers use a compact constructor or static factory: `BuildIntent.of(unitTag, buildingType, location)` which sets `replayTag=null` and `completionLoop=-1`. All existing call sites (ProtobufToIntent, ReplayCommandExtractor, EnemyBehavior) are updated to use this factory.
+Existing callers use a compact constructor or static factory: `BuildIntent.of(unitTag, buildingType, location)` which sets `replayTag=null` and `completionLoop=-1`. All 11 existing call sites must be updated: ProtobufToIntent, ReplayCommandExtractor, EnemyBehavior, SC2DeliveryHandler, EconomicsDecisionService (3 sites), BasicEconomicsTask, DroolsStrategyTask (3 sites).
 
-**EmulatedGame handler modification:** When `replayTag` is non-null, use it as the building tag instead of generating "bldg-N". When `completionLoop >= 0`, pin completion to that loop (like TrainIntent's `pinnedCompletionLoop`). Always deduct mineral and gas costs from PlayerState — consistent with handleTrain's tracker-driven path (EmulatedGame.java:486-490) which always deducts both. While the mineral GT sync is active, the deduction is overwritten — no harm. When the mineral GT sync is later removed (#516), the deduction is essential. Fix pre-existing gap: add gas cost deduction and gas affordability check to handleBuild (currently only deducts minerals; tech buildings like Twilight Council 150m/100g, Robotics Facility 200m/100g, Stargate 150m/150g have significant gas costs). Also record gas cost via the 3-arg `economyTracker.recordBuildSpending(type, mineralCost, gasCost)` overload. Add the building tag to `trackerDrivenBuildings` when processing a tracker-driven BuildIntent, so `drainBuildingQueues` supply bypass is active from building creation rather than first train.
+**EmulatedGame handler modification:**
+- When `replayTag` is non-null, use it as the building tag instead of generating "bldg-N".
+- When `completionLoop >= 0`, pin completion to that loop (like TrainIntent's `pinnedCompletionLoop`).
+- **Tracker-driven affordability bypass (R1-06):** When `replayTag` is non-null, skip the affordability check and deduct costs unconditionally (may go negative — correct, matches `injectReplayBuildingWithCost`'s documented behavior). For non-tracker builds, keep the existing affordability check.
+- Always deduct mineral and gas costs from PlayerState — consistent with handleTrain's tracker-driven path. While the mineral GT sync is active, the deduction is overwritten. When the mineral GT sync is later removed (#516), the deduction is essential.
+- **Gas cost gap (R1-07):** `SC2Data.gasCost()` currently returns 0 for all buildings (tech buildings incorrectly mapped). Fix `SC2Data.gasCost()` to return correct gas costs for tech buildings as part of this change: Twilight Council 100g, Robotics Facility 100g, Stargate 150g, Dark Shrine 150g, Templar Archives 200g, Fleet Beacon 200g, Robotics Bay 200g, etc. Then add gas deduction to `handleBuild` and use the 3-arg `economyTracker.recordBuildSpending(type, mineralCost, gasCost)`.
+- Add the building tag to `trackerDrivenBuildings` when processing a tracker-driven BuildIntent.
 
 ## Intent sealed hierarchy update
 
@@ -103,13 +109,20 @@ Position comes from `IBaseUnitEvent.getXCoord()` / `getYCoord()`.
 
 Currently: Calls `consumeDroneForBuilding()` and continues.
 
-Change: Still call `consumeDroneForBuilding()`, then add to `buildingTagToType`. Track the tag in a `pendingBuildings` set. Emit `BuildIntent` with tracker tag:
+Change: Still call `consumeDroneForBuilding()` for non-morph buildings, then add to `buildingTagToType`. Use the `buildingDoneLoops` pre-pass map (see UnitDone handler below) to get the pinned `completionLoop`.
+
+**Morph vs fresh construction (R1-04):** UnitInit fires for BOTH fresh buildings AND building morphs (Lair, Hive, GreaterSpire, OrbitalCommand, PlanetaryFortress). The morph buildings are a subset of `NON_DRONE_BUILDINGS` (the same set that prevents drone consumption for morphs). For morph buildings, emit a `MorphIntent` instead of a `BuildIntent`:
 
 ```
-BuildIntent("worker", buildingType, position, replayTag, -1)
+// For morph buildings (Lair, Hive, GreaterSpire, OrbitalCommand, PlanetaryFortress, LurkerDen):
+MorphIntent(tag, sourceType.name(), trackerTypeName)
+// e.g. MorphIntent("r-5-1", "HATCHERY", "Lair")
+
+// For fresh construction (all other buildings):
+BuildIntent("worker", buildingType, position, replayTag, completionLoop)
 ```
 
-The `completionLoop` comes from a pre-pass over UnitDone events (see below).
+The `sourceType` for morph buildings is determined from `buildingTagToType` — the existing entry for this tag's source building. For example, a Lair UnitInit at the Hatchery's tag index has the Hatchery already in `buildingTagToType`. Update `buildingTagToType` to the new type after emitting the MorphIntent.
 
 ### UnitDone handler (pre-pass)
 
@@ -126,8 +139,11 @@ Currently: Skips buildings (not in `unitTagToType`).
 Change: Check `buildingTagToType` as well. When a building's type changes, emit a `MorphIntent`:
 
 ```
-MorphIntent(tag, sourceName, targetName)
+MorphIntent(tag, sourceType.name(), rawTrackerTypeName)
+// e.g. MorphIntent("r-5-1", "HATCHERY", "Lair")
 ```
+
+**Naming convention (R1-02):** `sourceName` must use `BuildingType.name()` format (`"HATCHERY"`, `"COMMAND_CENTER"`) to match `BuildingType.valueOf()` at handleMorph line 1097. `targetName` must use the raw SC2 tracker event type name (`"Lair"`, `"OrbitalCommand"`) to match `MORPH_BUILDING_TARGETS` keys. Evidence: `ZergEmulatedGameTest:476` uses `MorphIntent(tag, "HATCHERY", "Lair")`, `TerranEmulatedGameTest:259` uses `MorphIntent(tag, "COMMAND_CENTER", "OrbitalCommand")`.
 
 The existing `handleMorph()` in EmulatedGame already handles building morphs via `MORPH_BUILDING_TARGETS`.
 
@@ -149,7 +165,11 @@ When `UnitInit` fires for a Reactor add-on (type name ends with "Reactor"):
 
 When the Reactor building completes in EmulatedGame, the handler finds the nearest production building of the matching type (using position proximity, same logic as `ReplaySimulatedGame.findNearestProductionBuilding`) and calls `markBuildingReactored()` on it.
 
+**Self-match prevention (R1-03):** The Reactor building maps to the same `BuildingType` as its parent (e.g., `BarracksReactor` → `BARRACKS`). The nearest-building search must exclude the Reactor's own tag from candidates, otherwise it self-matches at distance 0. Pass the Reactor's tag into the search method and skip it.
+
 **Alternative considered:** Emitting a separate `ReactorMarkIntent`. Rejected because the Reactor detection happens naturally at building completion — no separate intent needed.
+
+**TechLab add-ons (R1-09):** TechLab add-ons (BarracksTechLab, FactoryTechLab, StarportTechLab) also map to their parent's BuildingType. They should be treated as regular buildings for counting purposes but are NOT production buildings (same exclusion as Reactors — `if (!isAddOn)`). TechLab gating for unit production (Marauder requires TechLab) is out of scope for this issue — file a follow-up if needed for 100% accuracy.
 
 ## Harness Integration
 
