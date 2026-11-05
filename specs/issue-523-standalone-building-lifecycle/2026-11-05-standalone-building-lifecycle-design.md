@@ -53,6 +53,23 @@ public record BuildingDiedIntent(
 
 **EmulatedGame handler:** Calls existing `removeDestroyedBuilding()` logic — subtracts supply bonus, records destruction in economy tracker, removes building from `PlayerState`.
 
+### Extended MorphIntent
+
+Add `completionLoop` field to support pinned morph completion from tracker data (R2-04):
+
+```java
+public record MorphIntent(
+    String unitTag,
+    String sourceName,
+    String targetName,
+    long completionLoop       // NEW: pinned completion from UnitDone (-1 for computed)
+) implements Intent {}
+```
+
+Existing callers use a convenience factory: `MorphIntent.of(unitTag, sourceName, targetName)` which sets `completionLoop=-1`. All 3 production sites (SC2DeliveryHandler, ReplayCommandExtractor, TrackerIntentExtractor unit morphs) and 13 test sites updated to use this factory.
+
+**EmulatedGame handler modification:** In `handleMorph`, when `completionLoop >= 0`, pin the morph completion to that loop (convert to tick: `completionLoop / LOOPS_PER_TICK`) instead of computing `gameFrame + buildTimeInLoops(targetBt) / LOOPS_PER_TICK`. This is the same pattern as BuildIntent's pinned completion and TrainIntent's `pinnedCompletionLoop`.
+
 ### Extended BuildIntent
 
 Add `replayTag` and `completionLoop` fields to support tracker-driven building construction:
@@ -135,12 +152,13 @@ Currently: Calls `consumeDroneForBuilding()` and continues.
 
 Change: Still call `consumeDroneForBuilding()` for non-morph buildings, then add to `buildingTagToType`. Use the `buildingDoneLoops` pre-pass map (see UnitDone handler below) to get the pinned `completionLoop`.
 
-**Morph vs fresh construction (R1-04):** UnitInit fires for BOTH fresh buildings AND building morphs (Lair, Hive, GreaterSpire, OrbitalCommand, PlanetaryFortress). The morph buildings are a subset of `NON_DRONE_BUILDINGS` (the same set that prevents drone consumption for morphs). For morph buildings, emit a `MorphIntent` instead of a `BuildIntent`:
+**Morph vs fresh construction (R1-04, R2-02):** UnitInit fires for BOTH fresh buildings AND building morphs (Lair, Hive, GreaterSpire, OrbitalCommand, PlanetaryFortress). Detect morph buildings using `MORPH_BUILDING_SOURCES.containsKey(typeName)` — NOT `NON_DRONE_BUILDINGS`, which is a "skip drone consumption" set with different membership (includes LurkerDen, SpineCrawlerUprooted, SporeCrawlerUprooted — none of which are morph buildings; excludes OrbitalCommand, PlanetaryFortress — which ARE morph buildings). For morph buildings, emit a `MorphIntent` instead of a `BuildIntent`:
 
 ```
-// For morph buildings (Lair, Hive, GreaterSpire, OrbitalCommand, PlanetaryFortress, LurkerDen):
-MorphIntent(tag, sourceType.name(), trackerTypeName)
-// e.g. MorphIntent("r-5-1", "HATCHERY", "Lair")
+// For morph buildings (MORPH_BUILDING_SOURCES.containsKey(typeName)):
+//   {Lair, Hive, GreaterSpire, OrbitalCommand, PlanetaryFortress}
+MorphIntent(tag, sourceType.name(), trackerTypeName, completionLoop)
+// e.g. MorphIntent("r-5-1", "HATCHERY", "Lair", 4320)
 
 // For fresh construction (all other buildings):
 BuildIntent("worker", buildingType, position, replayTag, completionLoop)
@@ -163,7 +181,7 @@ Update `buildingTagToType` to the new type after emitting the MorphIntent. The `
 
 Currently: No-op.
 
-Change: A pre-pass before the main extraction loop builds a `buildingDoneLoops` map (composite tag → UnitDone loop). The main UnitInit handler uses this to set `completionLoop` on the corresponding `BuildIntent`. Since `extractFromReplay` already iterates all events and sorts intents at the end, a pre-pass is natural.
+Change: A pre-pass before the main extraction loop builds a `buildingDoneLoops` map (composite tag → UnitDone loop). The main UnitInit handler uses this to set `completionLoop` on both `BuildIntent` (fresh construction) and `MorphIntent` (building morphs). Since `extractFromReplay` already iterates all events and sorts intents at the end, a pre-pass is natural.
 
 **Build-time validation diagnostic (from decision review):** Optionally, compute `SC2Data.buildTimeInLoops(type)` and compare against the actual duration (UnitDone loop - UnitInit loop). Log a diagnostic on mismatch. This validates build-time constants against actual replays without affecting completion timing — the pinned value is always used.
 
@@ -272,7 +290,9 @@ These are ability-placed structures with no construction time. They appear as Un
 | `intent/BuildingBornIntent.java` | New record |
 | `intent/BuildingDiedIntent.java` | New record |
 | `intent/BuildIntent.java` | Add `replayTag`, `completionLoop` fields; convenience constructor |
-| `emulated/EmulatedGame.java` | Handle `BuildingBornIntent`, `BuildingDiedIntent` in switch; modify `handleBuild` for tracker tags and pinned completion |
+| `intent/MorphIntent.java` | Add `completionLoop` field; convenience constructor |
+| `domain/SC2Data.java` | Fix `gasCost(BuildingType)` for 7 Protoss buildings |
+| `emulated/EmulatedGame.java` | Handle `BuildingBornIntent`, `BuildingDiedIntent` in switch; modify `handleBuild` for tracker tags and pinned completion; modify `handleMorph` for pinned morph completion |
 | `replay/TrackerIntentExtractor.java` | Emit building intents from UnitBorn/UnitInit/UnitDone/UnitTypeChange/UnitDied; two-pass for UnitDone completion loops |
 | `real/ActionTranslator.java` | Add `BuildingBornIntent` and `BuildingDiedIntent` cases (→ `null`, not translated to SC2 actions) |
 | `replay/ReplayValidationHarness.java` | Remove `syncBuildings()` |
