@@ -1,0 +1,15 @@
+# Work Plan — issue-523-standalone-building-lifecycle
+
+## State
+branch: issue-523-standalone-building-lifecycle
+state: scaffolded
+project-sha: 
+date: 
+issue-repo: casehubio/quarkmind
+covers: 523
+design-repo: 
+design-section-hashes: 
+flyway-next-v: 
+
+## Queue
+- [ ] casehubio/quarkmind#523 — Issue #523 ← active
