@@ -74,7 +74,19 @@ Existing callers use a compact constructor or static factory: `BuildIntent.of(un
 - When `completionLoop >= 0`, pin completion to that loop (like TrainIntent's `pinnedCompletionLoop`).
 - **Tracker-driven affordability bypass (R1-06):** When `replayTag` is non-null, skip the affordability check and deduct costs unconditionally (may go negative — correct, matches `injectReplayBuildingWithCost`'s documented behavior). For non-tracker builds, keep the existing affordability check.
 - Always deduct mineral and gas costs from PlayerState — consistent with handleTrain's tracker-driven path. While the mineral GT sync is active, the deduction is overwritten. When the mineral GT sync is later removed (#516), the deduction is essential.
-- **Gas cost gap (R1-07):** `SC2Data.gasCost()` currently returns 0 for all buildings (tech buildings incorrectly mapped). Fix `SC2Data.gasCost()` to return correct gas costs for tech buildings as part of this change: Twilight Council 100g, Robotics Facility 100g, Stargate 150g, Dark Shrine 150g, Templar Archives 200g, Fleet Beacon 200g, Robotics Bay 200g, etc. Then add gas deduction to `handleBuild` and use the 3-arg `economyTracker.recordBuildSpending(type, mineralCost, gasCost)`.
+- **Gas cost gap (R1-07):** `SC2Data.gasCost(BuildingType)` currently returns incorrect values for Protoss tech buildings — several return 0 when they should have significant gas costs, and two (Dark Shrine, Templar Archives) return 100 when they should be higher. Fix `SC2Data.gasCost()` as part of this change:
+
+  | Building | Current | Correct |
+  |----------|---------|---------|
+  | Twilight Council | 0 | 100 |
+  | Robotics Facility | 0 | 100 |
+  | Stargate | 0 | 150 |
+  | Fleet Beacon | 0 | 200 |
+  | Robotics Bay | 0 | 150 |
+  | Dark Shrine | 100 | 150 |
+  | Templar Archives | 100 | 200 |
+
+  Then add gas deduction to `handleBuild` and use the 3-arg `economyTracker.recordBuildSpending(type, mineralCost, gasCost)`.
 - Add the building tag to `trackerDrivenBuildings` when processing a tracker-driven BuildIntent.
 
 ## Intent sealed hierarchy update
@@ -103,7 +115,19 @@ BuildingBornIntent(tag, Sc2ReplayShared.toBuildingType(typeName), position)
 
 Position comes from `IBaseUnitEvent.getXCoord()` / `getYCoord()`.
 
-**Loop-0 ordering constraint (from decision review):** `BuildingBornIntents` at loop 0 must sort before `TrainIntents` at loop 0. The initial town hall must exist before worker trains resolve. Use a secondary sort key (intent type priority: `BuildingBornIntent` = 0, `BuildIntent` = 1, all others = 10) in the final `intents.sort()` at line 202.
+**Loop-0 ordering constraint (from decision review):** `BuildingBornIntents` at loop 0 must sort before `TrainIntents` at loop 0. The initial town hall must exist before worker trains resolve. Add a `thenComparingInt` secondary sort key by intent type priority in the final `intents.sort()` (the `Comparator.comparingLong(TimedIntent::loop)` call at the end of `extractFromReplay`):
+
+| Intent type | Priority | Rationale |
+|------------|----------|-----------|
+| BuildingBornIntent | 0 | Initial buildings must exist before anything trains from them |
+| BuildingDiedIntent | 1 | Remove old buildings before creating replacements (morph flows) |
+| BuildIntent | 2 | Construction starts before training |
+| MorphIntent | 3 | Morphs happen on existing buildings |
+| TrainIntent | 5 | Training requires buildings to exist |
+| ResearchIntent | 5 | Research requires buildings to exist |
+| AbilityIntent | 5 | Abilities target existing entities |
+| UnitDiedIntent | 8 | Deaths are final events |
+| All others | 10 | Default — no ordering dependency |
 
 ### UnitInit handler (buildings)
 
@@ -122,7 +146,18 @@ MorphIntent(tag, sourceType.name(), trackerTypeName)
 BuildIntent("worker", buildingType, position, replayTag, completionLoop)
 ```
 
-The `sourceType` for morph buildings is determined from `buildingTagToType` — the existing entry for this tag's source building. For example, a Lair UnitInit at the Hatchery's tag index has the Hatchery already in `buildingTagToType`. Update `buildingTagToType` to the new type after emitting the MorphIntent.
+The `sourceType` for morph buildings is resolved in two steps:
+1. **Tag lookup (preferred):** Check `buildingTagToType` for the compositeTag — if the morph target reuses the source building's tag, the source type is already registered. E.g., a Lair UnitInit at the Hatchery's compositeTag finds HATCHERY in the map.
+2. **Static fallback:** If no entry exists (morph target gets a new tag), use a static `MORPH_BUILDING_SOURCES` map:
+   ```java
+   Map.of("Lair", BuildingType.HATCHERY, "Hive", BuildingType.LAIR,
+          "GreaterSpire", BuildingType.SPIRE,
+          "OrbitalCommand", BuildingType.COMMAND_CENTER,
+          "PlanetaryFortress", BuildingType.COMMAND_CENTER)
+   ```
+   This is deterministic — each morph target has exactly one source type.
+
+Update `buildingTagToType` to the new type after emitting the MorphIntent. The `handleMorph` auto-resolve mechanism (line 1092) uses `BuildingType.valueOf(sourceName)` to find the first complete building of the source type, so the MorphIntent works correctly regardless of whether the tracker tag matches the existing building's tag.
 
 ### UnitDone handler (pre-pass)
 
@@ -144,6 +179,8 @@ MorphIntent(tag, sourceType.name(), rawTrackerTypeName)
 ```
 
 **Naming convention (R1-02):** `sourceName` must use `BuildingType.name()` format (`"HATCHERY"`, `"COMMAND_CENTER"`) to match `BuildingType.valueOf()` at handleMorph line 1097. `targetName` must use the raw SC2 tracker event type name (`"Lair"`, `"OrbitalCommand"`) to match `MORPH_BUILDING_TARGETS` keys. Evidence: `ZergEmulatedGameTest:476` uses `MorphIntent(tag, "HATCHERY", "Lair")`, `TerranEmulatedGameTest:259` uses `MorphIntent(tag, "COMMAND_CENTER", "OrbitalCommand")`.
+
+**Pre-existing unit morph naming bug (companion fix):** The existing unit morph code at `TrackerIntentExtractor.java:148` uses `oldType.name()` / `newType.name()` — producing `"BANELING"` instead of `"Baneling"`. This fails silently because `MORPH_UNIT_TARGETS` and `MORPH_SOURCE_TYPES` keys use tracker event names (e.g., `"Baneling"`, `"Zergling"`). Currently harmless (GT sync compensates), but must be fixed before unit GT sync removal. Fix in this change: use `raw.get("unitTypeName")` for targetName (the raw tracker event string), and the `MORPH_SOURCE_TYPES` key-name convention for sourceName (currently inconsistent — building morphs use enum names, unit morphs should use tracker event names since `MORPH_SOURCE_TYPES` is keyed by tracker event names).
 
 The existing `handleMorph()` in EmulatedGame already handles building morphs via `MORPH_BUILDING_TARGETS`.
 
@@ -216,6 +253,8 @@ Per issue #523:
 ### Building cancellation
 
 In SC2, a building under construction can be cancelled, refunding 75% of minerals. Tracker data represents this as a UnitDied event (the incomplete building dies). The `BuildingDiedIntent` handler already handles this — it removes the building and subtracts any supply bonus. Resource refund is not explicitly tracked since the harness validates economy against GT.
+
+**Follow-up:** When the mineral/vespene GT sync is removed (#518/#519), cancellation refunds will need explicit tracking. File issue linked to the economy GT sync removal epic.
 
 ### Supply Depot lowering
 
