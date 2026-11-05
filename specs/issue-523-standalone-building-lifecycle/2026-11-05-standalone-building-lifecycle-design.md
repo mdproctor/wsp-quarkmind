@@ -67,13 +67,17 @@ public record BuildIntent(
 ) implements Intent {}
 ```
 
-Existing callers use a convenience constructor: `BuildIntent(unitTag, buildingType, location)` which sets `replayTag=null` and `completionLoop=-1`.
+Existing callers use a compact constructor or static factory: `BuildIntent.of(unitTag, buildingType, location)` which sets `replayTag=null` and `completionLoop=-1`. All existing call sites (ProtobufToIntent, ReplayCommandExtractor, EnemyBehavior) are updated to use this factory.
 
 **EmulatedGame handler modification:** When `replayTag` is non-null, use it as the building tag instead of generating "bldg-N". When `completionLoop >= 0`, pin completion to that loop (like TrainIntent's `pinnedCompletionLoop`). Skip mineral deduction for tracker-driven builds (the player already spent the resources).
 
 ## Intent sealed hierarchy update
 
-`Intent.java` permits clause updated to include `BuildingBornIntent` and `BuildingDiedIntent`. Both `applyIntent` switch expressions in `EmulatedGame` (lines 333 and 349) updated with new cases.
+`Intent.java` permits clause updated to include `BuildingBornIntent` and `BuildingDiedIntent`. Three exhaustive switch expressions updated with new cases:
+
+1. `EmulatedGame.applyIntent(TimedIntent)` (line 333) — dispatch to handlers
+2. `EmulatedGame.applyIntent(Intent, PlayerState, PhysicsState)` (line 349) — dispatch to handlers
+3. `ActionTranslator.translate()` (line 44) — map to SC2 protocol commands (new types → `null`, buildings are not translated to real SC2 actions)
 
 ## TrackerIntentExtractor Changes
 
@@ -209,6 +213,7 @@ These are ability-placed structures with no construction time. They appear as Un
 | `intent/BuildIntent.java` | Add `replayTag`, `completionLoop` fields; convenience constructor |
 | `emulated/EmulatedGame.java` | Handle `BuildingBornIntent`, `BuildingDiedIntent` in switch; modify `handleBuild` for tracker tags and pinned completion |
 | `replay/TrackerIntentExtractor.java` | Emit building intents from UnitBorn/UnitInit/UnitDone/UnitTypeChange/UnitDied; two-pass for UnitDone completion loops |
+| `real/ActionTranslator.java` | Add `BuildingBornIntent` and `BuildingDiedIntent` cases (→ `null`, not translated to SC2 actions) |
 | `replay/ReplayValidationHarness.java` | Remove `syncBuildings()` |
 | `test/.../StandaloneEmulatedGameBaselineTest.java` | Remove `syncBuildings()` |
 | `test/.../TechSpendingDiagnosticTest.java` | Remove `syncBuildings()` |
