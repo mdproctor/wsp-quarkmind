@@ -69,7 +69,7 @@ public record BuildIntent(
 
 Existing callers use a compact constructor or static factory: `BuildIntent.of(unitTag, buildingType, location)` which sets `replayTag=null` and `completionLoop=-1`. All existing call sites (ProtobufToIntent, ReplayCommandExtractor, EnemyBehavior) are updated to use this factory.
 
-**EmulatedGame handler modification:** When `replayTag` is non-null, use it as the building tag instead of generating "bldg-N". When `completionLoop >= 0`, pin completion to that loop (like TrainIntent's `pinnedCompletionLoop`). Skip mineral deduction for tracker-driven builds (the player already spent the resources).
+**EmulatedGame handler modification:** When `replayTag` is non-null, use it as the building tag instead of generating "bldg-N". When `completionLoop >= 0`, pin completion to that loop (like TrainIntent's `pinnedCompletionLoop`). Always deduct mineral and gas costs from PlayerState — consistent with handleTrain's tracker-driven path (EmulatedGame.java:486-490) which always deducts both. While the mineral GT sync is active, the deduction is overwritten — no harm. When the mineral GT sync is later removed (#516), the deduction is essential. Fix pre-existing gap: add gas cost deduction and gas affordability check to handleBuild (currently only deducts minerals; tech buildings like Twilight Council 150m/100g, Robotics Facility 200m/100g, Stargate 150m/150g have significant gas costs). Also record gas cost via the 3-arg `economyTracker.recordBuildSpending(type, mineralCost, gasCost)` overload. Add the building tag to `trackerDrivenBuildings` when processing a tracker-driven BuildIntent, so `drainBuildingQueues` supply bypass is active from building creation rather than first train.
 
 ## Intent sealed hierarchy update
 
