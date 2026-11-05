@@ -192,8 +192,8 @@ Currently: Skips buildings (not in `unitTagToType`).
 Change: Check `buildingTagToType` as well. When a building's type changes, emit a `MorphIntent`:
 
 ```
-MorphIntent(tag, sourceType.name(), rawTrackerTypeName)
-// e.g. MorphIntent("r-5-1", "HATCHERY", "Lair")
+MorphIntent.of(tag, sourceType.name(), rawTrackerTypeName)
+// e.g. MorphIntent.of("r-5-1", "HATCHERY", "Lair")  → completionLoop = -1 (computed)
 ```
 
 **Naming convention (R1-02):** `sourceName` must use `BuildingType.name()` format (`"HATCHERY"`, `"COMMAND_CENTER"`) to match `BuildingType.valueOf()` at handleMorph line 1097. `targetName` must use the raw SC2 tracker event type name (`"Lair"`, `"OrbitalCommand"`) to match `MORPH_BUILDING_TARGETS` keys. Evidence: `ZergEmulatedGameTest:476` uses `MorphIntent(tag, "HATCHERY", "Lair")`, `TerranEmulatedGameTest:259` uses `MorphIntent(tag, "COMMAND_CENTER", "OrbitalCommand")`.
