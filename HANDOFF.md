@@ -1,45 +1,31 @@
 # HANDOFF — quarkmind
 
-## Last Session (2026-11-04)
+## Last Session (2026-11-05)
 
-Completed #525, #527, #526, #522 from epic #516 (Standalone EmulatedGame).
+Completed #530, #528 from epic #516 (Standalone EmulatedGame). Researched #529.
 
 ### What landed
 
-- **#525** — TrackerIntentExtractor UnitTypeChange handling. Added `ID_UNIT_TYPE_CHANGE` handler, 9 missing type mappings. Root cause of foodUsed identified as Zergling half-supply, not missed deaths.
+- **#530** — Archon supply tracking. `supplyCost(ARCHON)` changed from 0 to 4. HT merge is now supply-neutral: 2 HT deaths free 4 supply, Archon birth adds 4.
 
-- **#527** — Double supply tracking. Changed supply from int to double. `supplyCost(ZERGLING)` = 0.5 (was 1), `supplyCost(BANELING)` = 0.5 (was 0). foodUsed MAPE: 10.9% → **7.0%** at 5-min.
+- **#528** — Morph cost tracking. Three changes:
+  1. `TrackerIntentExtractor` now emits MorphIntent on `ID_UNIT_TYPE_CHANGE` for resource-costing morphs (Baneling, Ravager, BroodLord, Lurker, Overseer)
+  2. `EmulatedGame.handleMorph` records spending and updates unit type in-place for tracker-driven morphs (preserves tag for later UnitDied matching)
+  3. `EconomyTracker.recordUnitDeath` subtracts total investment (morph cost + source unit cost) via `SC2Data.morphSourceType` lookup
 
-- **#526** — Harness seed-state deduplication. Added `resetForHarness()` to skip race model seed.
+- **#529** — SC2 spending classification research (partial). Confirmed our `isEconomyBuilding` classification matches SC2 exactly. Production buildings ARE technology (not army). Analytically tested reclassification: moving production buildings to army improves tech MAPE (~13%) but destroys army MAPE (~143%). The spending overcount is an accounting issue, not classification — likely initial units/buildings being counted, morph accounting (partially fixed by #528), and death subtraction gaps. Comment added to issue.
 
-- **#522** — Standalone spending tracking. Unit death subtracts from spending (SC2 "InCurrentArmy" semantics). Building costs on GT injection. Corrected classification: `isEconomyBuilding` (bases/supply/gas only) replaces `isTechBuilding`. Building destruction detection. mineralsUsedCurrentEconomy MAPE: **40% → 10%**. foodMade: **4.2% → 2.6%** at 5-min.
+### Branch
 
-### Current standalone accuracy (5-min checkpoint)
+`issue-530-archon-supply-tracking` — contains both #530 and #528 commits.
 
-| Field | MAPE |
-|-------|------|
-| foodMade | 2.6% |
-| foodUsed | 7.0% |
-| mineralsUsedCurrentEconomy | 10.3% |
-| mineralsUsedCurrentArmy | 62.5% |
-| mineralsUsedCurrentTechnology | 63.2% |
-| vespeneUsedCurrentArmy | 58.4% |
-| vespeneUsedCurrentTechnology | 82.6% |
-| mineralsCollectionRate | 22.1% (3-min) |
-| vespeneCollectionRate | 25.5% (5-min) |
-| workersActiveCount | 3.9% (1-min), 44.7% (5-min) |
+### Queue status
 
-### Remaining spending gaps
+Epic #516 — Standalone EmulatedGame. Updated queue:
 
-Army spending overcounted (62%) — morph costs not fully tracked. Technology spending overcounted (63%) — SC2 classification of production buildings needs research. Both need deeper investigation.
-
-## Active Plan
-
-Epic #516 — Standalone EmulatedGame. Remaining queue:
-
-1. #530 — Archon supply tracking (XS/Low) — quick win, 4 supply on merge
-2. #528 — Morph cost tracking (S/Med) — fixes army spending gap from morphs
-3. #529 — SC2 spending classification research (S/Med) — fixes technology spending overcount
+1. ~~#530 — Archon supply tracking~~ ✅
+2. ~~#528 — Morph cost tracking~~ ✅
+3. #529 — SC2 spending classification research — classification done, MAPE target (below 20%) needs baseline re-run after #528 to measure improvement
 4. #519 — Gas income ramp-up and worker assignment (M/Med) — 25-50% MAPE
 5. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
 6. #520 — Standalone worker lifecycle tracking (M/Med) — blocked by #518, #519
@@ -51,9 +37,10 @@ Epic #516 — Standalone EmulatedGame. Remaining queue:
 - **Reconstituted data inconsistency**: blizzard_ladder_4.9.3 has mixed calibrated/uncalibrated files
 - **blizzard_ladder_4.9.2 reconstituted data deleted** — needs re-export
 - **Pre-existing:** `casehub-platform-agent-langchain4j:0.4-SNAPSHOT` POM invalid
+- **No oracle replay data on this machine** — StandaloneEmulatedGameBaselineTest cannot run; baseline needs regeneration after #528
 
 ## References
 
-- `docs/benchmarks/standalone-emulated-game-baseline.md` — standalone accuracy
+- `docs/benchmarks/standalone-emulated-game-baseline.md` — standalone accuracy (pre-#528)
 - `docs/benchmarks/tracker-driven-accuracy-baseline.md` — GT-synced accuracy
 - Epic #516 — standalone EmulatedGame issue tracker
