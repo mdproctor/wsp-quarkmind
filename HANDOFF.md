@@ -37,11 +37,14 @@ Army spending overcounted (62%) — morph costs not fully tracked. Technology sp
 
 Epic #516 — Standalone EmulatedGame. Remaining queue:
 
-1. #519 — Gas income ramp-up and worker assignment (M/Med) — 25-50% MAPE
-2. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
-3. #520 — Standalone worker lifecycle tracking (M/Med) — blocked by #518, #519
-4. #523 — Standalone building lifecycle (L/High) — structural, eliminates syncBuildings
-5. #524 — Final gate: remove all GT syncs (S/Low) — blocked by all above
+1. #530 — Archon supply tracking (XS/Low) — quick win, 4 supply on merge
+2. #528 — Morph cost tracking (S/Med) — fixes army spending gap from morphs
+3. #529 — SC2 spending classification research (S/Med) — fixes technology spending overcount
+4. #519 — Gas income ramp-up and worker assignment (M/Med) — 25-50% MAPE
+5. #518 — Distance-aware mineral mining model (L/High) — 22-54% MAPE
+6. #520 — Standalone worker lifecycle tracking (M/Med) — blocked by #518, #519
+7. #523 — Standalone building lifecycle (L/High) — structural, eliminates syncBuildings
+8. #524 — Final gate: remove all GT syncs (S/Low) — blocked by all above
 
 ## Known Issues
 
