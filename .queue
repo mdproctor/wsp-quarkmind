@@ -9,10 +9,11 @@ status: active
 - project-sha: 
 - date: 2026-11-06
 active_issue: 
+branch: 
 
 ## Queue
-- [ ] casehubio/quarkmind#548 — Creep Tumor undercount ← active
-- [ ] casehubio/quarkmind#549 — Unit mode tracking
+- [x] casehubio/quarkmind#548 — Creep Tumor undercount
+- [ ] casehubio/quarkmind#549 — Unit mode tracking ← active
 - [ ] casehubio/quarkmind#550 — Add-on cost over-deduction
 - [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [ ] casehubio/quarkmind#539 — Vespene balance income deficit

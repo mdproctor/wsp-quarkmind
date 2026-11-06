@@ -2,23 +2,21 @@
 
 ## Last Session
 
-Closed #545 (OC/Lair morph timing), #546 (tech spending ghost completion), and #547 (Factory/Starport add-on swap). Three distinct fixes:
-1. Ghost completion: added entityTag to PendingCompletion, cancel on building death
-2. Add-on swaps: added ADDON_SWAP_TARGETS for instant type changes on add-on morphs
-3. Building morphs: tracker-driven morphs now instant type swaps (matching GT); pre-pass uses per-tag Deque for multiple UnitDone events
+Closed 4 issues on Epic #534: #545 (OC/Lair morph), #546 (ghost completions), #547 (add-on swaps), #548 (Creep Tumor burrow). Filed 2 new issues (#550, #551) from investigation findings.
 
-Key accuracy improvements: OC 84.9→100%, Lair 22.2→100%, Factory/Starport/Barracks 86-91→100%, units 98.5→100% at 3-min. Building totals 94.7→95.8% at 7-min.
+**Buildings now 100% at ALL checkpoints.** Units 100% at 1-min and 3-min, 99.5% at 5-min, 98.8% at 7-min (remaining gap = mode-tracked units #549).
 
-## Remaining Queue (4 items)
+Key fixes: PendingCompletion entityTag for cancellation, ADDON_SWAP_TARGETS for instant add-on type changes, tracker-driven morphs as instant type swaps, per-tag UnitDone queue in pre-pass, CreepTumorBurrowed morph target.
+
+## Remaining Queue (5 items)
 
 | # | Title | Scale | Complexity | Impact |
 |---|-------|-------|------------|--------|
-| #548 | Creep Tumor undercount | XS | Low | 0-57% accuracy |
-| #549 | Unit mode tracking (SIEGE_TANK_SIEGED etc.) | S | Med | 0% for mode types |
+| #549 | Unit mode tracking (SIEGE_TANK_SIEGED etc.) | S | Med | 0% for mode types, 1.2% total unit gap |
+| #550 | Add-on cost over-deduction | S | Low | Economy accuracy |
 | #538 | Mineral balance — map geometry variance | M | High | Research |
 | #539 | Vespene balance — income deficit + spending | M | Med | Research |
-
-#548 and #549 are the remaining fixable building/unit accuracy gaps. #538 and #539 are research items.
+| #551 | Tech spending structural gap | M | High | Research |
 
 ## References
 
