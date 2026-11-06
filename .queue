@@ -1,0 +1,22 @@
+# Work Plan — Epic #534: EmulatedGame 100% accuracy
+
+## State
+status: active
+- branch: issue-534-emulated-game-100-accuracy
+- state: active
+- issue-repo: casehubio/quarkmind
+- covers: 534
+- project-sha:
+- date: 2026-11-06
+
+## Queue
+- [ ] casehubio/quarkmind#535 — Building accuracy CC Hatchery expansion undercount
+- [ ] casehubio/quarkmind#536 — Technology spending defer to completion
+- [ ] casehubio/quarkmind#537 — Rate reporting simulated income
+- [ ] casehubio/quarkmind#540 — Economy spending undercount
+- [ ] casehubio/quarkmind#544 — Vespene economy spending always zero
+- [ ] casehubio/quarkmind#541 — Army vespene spending death timing
+- [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
+- [ ] casehubio/quarkmind#539 — Vespene balance income deficit
+- [ ] casehubio/quarkmind#542 — SCV unit count undercount
+- [ ] casehubio/quarkmind#543 — foodUsed overcount
