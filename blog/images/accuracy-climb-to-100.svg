@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 320">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 14px; fill: #333; font-weight: 600; }
+    .subtitle { font-size: 11px; fill: #888; }
+    .label { font-size: 11px; fill: #555; }
+    .value { font-size: 11px; font-weight: 600; fill: #333; }
+    .fix-label { font-size: 10px; fill: #1e40af; }
+    .line-bldg { fill: none; stroke: #16a34a; stroke-width: 2.5; }
+    .line-unit { fill: none; stroke: #2563eb; stroke-width: 2.5; }
+    .dot-bldg { fill: #16a34a; }
+    .dot-unit { fill: #2563eb; }
+    .axis { stroke: #ccc; stroke-width: 1; }
+    .grid { stroke: #f0f0f0; stroke-width: 0.5; }
+    .zone-100 { fill: #dcfce7; opacity: 0.4; }
+    .fix-line { stroke: #e5e7eb; stroke-width: 1; stroke-dasharray: 3,3; }
+    .tag { font-size: 10px; fill: #999; }
+    .pct { font-size: 10px; }
+  </style>
+
+  <text class="title" x="200" y="22">Entity Accuracy at 7-minute Checkpoint — Five Fixes to 100%</text>
+  <text class="subtitle" x="230" y="38">118 oracle replays, 236 player runs</text>
+
+  <!-- Legend -->
+  <line x1="460" y1="54" x2="480" y2="54" class="line-bldg"/>
+  <circle cx="470" cy="54" r="3" class="dot-bldg"/>
+  <text class="label" x="484" y="58">Buildings</text>
+  <line x1="550" y1="54" x2="570" y2="54" class="line-unit"/>
+  <circle cx="560" cy="54" r="3" class="dot-unit"/>
+  <text class="label" x="574" y="58">Units</text>
+
+  <!-- Chart area: x=80..640, y=70..280 -->
+  <!-- 100% zone -->
+  <rect class="zone-100" x="80" y="70" width="560" height="12"/>
+
+  <!-- Y axis: 94% to 100% -->
+  <line class="axis" x1="80" y1="70" x2="80" y2="280"/>
+  <line class="axis" x1="80" y1="280" x2="640" y2="280"/>
+
+  <!-- Grid lines and Y labels -->
+  <line class="grid" x1="80" y1="70" x2="640" y2="70"/>
+  <text class="label" x="45" y="74" text-anchor="end">100%</text>
+  <line class="grid" x1="80" y1="105" x2="640" y2="105"/>
+  <text class="label" x="45" y="109" text-anchor="end">99%</text>
+  <line class="grid" x1="80" y1="140" x2="640" y2="140"/>
+  <text class="label" x="45" y="144" text-anchor="end">98%</text>
+  <line class="grid" x1="80" y1="175" x2="640" y2="175"/>
+  <text class="label" x="45" y="179" text-anchor="end">97%</text>
+  <line class="grid" x1="80" y1="210" x2="640" y2="210"/>
+  <text class="label" x="45" y="214" text-anchor="end">96%</text>
+  <line class="grid" x1="80" y1="245" x2="640" y2="245"/>
+  <text class="label" x="45" y="249" text-anchor="end">95%</text>
+
+  <!-- X positions: baseline=110, fix1=210, fix2=310, fix3=410, fix4=490, fix5=570 -->
+
+  <!-- Fix separator lines -->
+  <line class="fix-line" x1="160" y1="65" x2="160" y2="285"/>
+  <line class="fix-line" x1="260" y1="65" x2="260" y2="285"/>
+  <line class="fix-line" x1="360" y1="65" x2="360" y2="285"/>
+  <line class="fix-line" x1="460" y1="65" x2="460" y2="285"/>
+  <line class="fix-line" x1="560" y1="65" x2="560" y2="285"/>
+
+  <!-- X labels -->
+  <text class="tag" x="110" y="298" text-anchor="middle">Baseline</text>
+  <text class="fix-label" x="210" y="298" text-anchor="middle">Ghost</text>
+  <text class="fix-label" x="210" y="310" text-anchor="middle">completions</text>
+  <text class="fix-label" x="310" y="298" text-anchor="middle">Add-on</text>
+  <text class="fix-label" x="310" y="310" text-anchor="middle">swaps</text>
+  <text class="fix-label" x="410" y="298" text-anchor="middle">Morph</text>
+  <text class="fix-label" x="410" y="310" text-anchor="middle">timing</text>
+  <text class="fix-label" x="510" y="298" text-anchor="middle">Creep</text>
+  <text class="fix-label" x="510" y="310" text-anchor="middle">tumor</text>
+  <text class="fix-label" x="610" y="298" text-anchor="middle">Mode</text>
+  <text class="fix-label" x="610" y="310" text-anchor="middle">switches</text>
+
+  <!-- Buildings line: 94.7 → 95.5 → 95.8 → 100 → 100 → 100 -->
+  <!-- Y scale: 100% = y70, 94% = y280. Each 1% = 35px -->
+  <!-- 94.7% = 280 - (0.7 * 35) = 255.5 -->
+  <!-- 95.5% = 280 - (1.5 * 35) = 227.5 -->
+  <!-- 95.8% = 280 - (1.8 * 35) = 217 -->
+  <!-- 100% = 70 -->
+  <polyline class="line-bldg" points="110,255 210,255 310,227 410,70 510,70 610,70"/>
+  <circle cx="110" cy="255" r="4" class="dot-bldg"/>
+  <circle cx="210" cy="255" r="4" class="dot-bldg"/>
+  <circle cx="310" cy="227" r="4" class="dot-bldg"/>
+  <circle cx="410" cy="70" r="4" class="dot-bldg"/>
+  <circle cx="510" cy="70" r="4" class="dot-bldg"/>
+  <circle cx="610" cy="70" r="4" class="dot-bldg"/>
+
+  <text class="pct" x="110" y="270" text-anchor="middle" fill="#16a34a">94.7%</text>
+  <text class="pct" x="310" y="242" text-anchor="middle" fill="#16a34a">95.8%</text>
+  <text class="pct" x="410" y="62" text-anchor="middle" fill="#16a34a">100%</text>
+
+  <!-- Units line: 98.0 → 98.0 → 98.0 → 98.8 → 98.8 → 100 -->
+  <!-- 98.0% = 280 - (4.0 * 35) = 140 -->
+  <!-- 98.8% = 280 - (4.8 * 35) = 112 -->
+  <polyline class="line-unit" points="110,140 210,140 310,140 410,112 510,112 610,70"/>
+  <circle cx="110" cy="140" r="4" class="dot-unit"/>
+  <circle cx="210" cy="140" r="4" class="dot-unit"/>
+  <circle cx="310" cy="140" r="4" class="dot-unit"/>
+  <circle cx="410" cy="112" r="4" class="dot-unit"/>
+  <circle cx="510" cy="112" r="4" class="dot-unit"/>
+  <circle cx="610" cy="70" r="4" class="dot-unit"/>
+
+  <text class="pct" x="110" y="133" text-anchor="middle" fill="#2563eb">98.0%</text>
+  <text class="pct" x="410" y="105" text-anchor="middle" fill="#2563eb">98.8%</text>
+  <text class="pct" x="610" y="62" text-anchor="middle" fill="#2563eb">100%</text>
+</svg>
