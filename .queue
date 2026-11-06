@@ -13,8 +13,8 @@ branch:
 
 ## Queue
 - [x] casehubio/quarkmind#548 — Creep Tumor undercount
-- [ ] casehubio/quarkmind#549 — Unit mode tracking ← active
-- [ ] casehubio/quarkmind#550 — Add-on cost over-deduction
+- [x] casehubio/quarkmind#549 — Unit mode tracking
+- [ ] casehubio/quarkmind#550 — Add-on cost over-deduction ← active
 - [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [ ] casehubio/quarkmind#539 — Vespene balance income deficit
 - [ ] casehubio/quarkmind#551 — Tech spending structural gap
