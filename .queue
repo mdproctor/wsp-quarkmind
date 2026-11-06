@@ -26,3 +26,5 @@ active_issue:
 - [ ] casehubio/quarkmind#547 — Factory Starport building undercount
 - [ ] casehubio/quarkmind#548 — Creep Tumor undercount
 - [ ] casehubio/quarkmind#549 — Unit mode tracking
+- [ ] casehubio/quarkmind#550 — Add-on cost over-deduction
+- [ ] casehubio/quarkmind#551 — Tech spending structural gap
