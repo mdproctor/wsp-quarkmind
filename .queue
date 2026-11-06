@@ -11,20 +11,9 @@ status: active
 active_issue: 
 
 ## Queue
-- [ ] casehubio/quarkmind#535 — Building accuracy CC Hatchery expansion undercount
-- [ ] casehubio/quarkmind#536 — Technology spending defer to completion
-- [ ] casehubio/quarkmind#537 — Rate reporting simulated income
-- [ ] casehubio/quarkmind#540 — Economy spending undercount
-- [ ] casehubio/quarkmind#544 — Vespene economy spending always zero
-- [ ] casehubio/quarkmind#541 — Army vespene spending death timing
-- [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
-- [ ] casehubio/quarkmind#539 — Vespene balance income deficit
-- [ ] casehubio/quarkmind#542 — SCV unit count undercount
-- [ ] casehubio/quarkmind#543 — foodUsed overcount
-- [ ] casehubio/quarkmind#545 — Building morph completion timing OC Lair undercount
-- [ ] casehubio/quarkmind#546 — Tech spending overcount 30-47pct
-- [ ] casehubio/quarkmind#547 — Factory Starport building undercount
-- [ ] casehubio/quarkmind#548 — Creep Tumor undercount
+- [ ] casehubio/quarkmind#548 — Creep Tumor undercount ← active
 - [ ] casehubio/quarkmind#549 — Unit mode tracking
 - [ ] casehubio/quarkmind#550 — Add-on cost over-deduction
+- [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
+- [ ] casehubio/quarkmind#539 — Vespene balance income deficit
 - [ ] casehubio/quarkmind#551 — Tech spending structural gap
