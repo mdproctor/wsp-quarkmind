@@ -2,20 +2,23 @@
 
 ## Last Session
 
-Closed #546 (tech spending ghost completion) and #547 (Factory/Starport add-on swap undercount). Ghost completion fix: buildings destroyed mid-construction left PendingCompletion callbacks alive — added entityTag to cancel them. Add-on swap fix: MORPH_BUILDING_TARGETS didn't include add-on variant names (FactoryReactor, StarportTechLab, etc.) — added ADDON_SWAP_TARGETS as instant type changes. Factory/Starport/Barracks all now at 100%. Building totals improved 94.7→95.5% at 7-min.
+Closed #545 (OC/Lair morph timing), #546 (tech spending ghost completion), and #547 (Factory/Starport add-on swap). Three distinct fixes:
+1. Ghost completion: added entityTag to PendingCompletion, cancel on building death
+2. Add-on swaps: added ADDON_SWAP_TARGETS for instant type changes on add-on morphs
+3. Building morphs: tracker-driven morphs now instant type swaps (matching GT); pre-pass uses per-tag Deque for multiple UnitDone events
 
-Total: 10 of 10 original issues closed, 5 of 7 remaining queue items still open.
+Key accuracy improvements: OC 84.9→100%, Lair 22.2→100%, Factory/Starport/Barracks 86-91→100%, units 98.5→100% at 3-min. Building totals 94.7→95.8% at 7-min.
 
-## Immediate Next Step
+## Remaining Queue (4 items)
 
-Pick up any of the 5 remaining queue items:
-- #545 (OC/Lair morph timing, S/Med) — OC 95-98%, Lair 22-85% accuracy
-- #548 (Creep Tumor, XS/Low) — 0-57% accuracy
-- #549 (Unit mode tracking, S/Med) — SIEGE_TANK_SIEGED/RAVAGER/OVERSEER show 0
-- #538 (Mineral balance, M/High) — research
-- #539 (Vespene balance, M/Med) — research
+| # | Title | Scale | Complexity | Impact |
+|---|-------|-------|------------|--------|
+| #548 | Creep Tumor undercount | XS | Low | 0-57% accuracy |
+| #549 | Unit mode tracking (SIEGE_TANK_SIEGED etc.) | S | Med | 0% for mode types |
+| #538 | Mineral balance — map geometry variance | M | High | Research |
+| #539 | Vespene balance — income deficit + spending | M | Med | Research |
 
-#545 has the highest building accuracy impact — Lair at 22% accuracy is the worst non-CreepTumor building gap.
+#548 and #549 are the remaining fixable building/unit accuracy gaps. #538 and #539 are research items.
 
 ## References
 
