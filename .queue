@@ -17,3 +17,6 @@ branch:
 - [ ] casehubio/quarkmind#556 — Gas geyser distance calibration
 - [ ] casehubio/quarkmind#554 — Worker transfer to expansions
 - [ ] casehubio/quarkmind#555 — InProgress spending tracker
+- [ ] casehubio/quarkmind#557 — Mineral collection rate per-base calibration
+- [ ] casehubio/quarkmind#558 — Supply timing foodUsed
+- [ ] casehubio/quarkmind#559 — Spending category death-timing variance

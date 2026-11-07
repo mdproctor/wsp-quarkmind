@@ -18,19 +18,22 @@ Improved vespene balance (#539) on Epic #534. Two fixes to gas income model:
 
 ### Key finding for #538
 
-mineralsCurrent gap is spending-driven, not income-driven. EM income is within 10% of GT, but spending is systematically lower because spending categories are recorded at completion time while GT records at commitment. However, fixing this timing directly disrupts the death-subtraction accounting and makes things worse. A different approach is needed — possibly separate InProgress tracking that doesn't interact with the Current/death accounting.
+mineralsCurrent gap is spending-driven, not income-driven. EM income is within 10% of GT, but spending is systematically lower because spending categories are recorded at completion time while GT records at commitment. However, fixing this timing directly disrupts the death-subtraction accounting and makes things worse. #555 (InProgress tracker) proposes a clean solution: separate InProgress accumulator alongside Current.
 
-## Remaining Queue (7 items, priority ordered)
+## Remaining Queue (10 items, priority ordered)
 
 | # | Title | Scale | Complexity | Blocked by |
 |---|-------|-------|------------|------------|
 | #552 | Floor mineral balance at zero | XS | Low | — |
+| #558 | Supply timing — foodUsed | XS | Low | — |
 | #553 | Per-replay economy divergence diagnostic | S | Med | — |
 | #538 | Mineral balance — per-replay variance | M | High | #553 |
 | #539 | Vespene balance — income deficit | M | Med | #553 |
 | #556 | Gas geyser distance calibration | S | Med | #553 |
 | #554 | Worker transfer to expansions | M | High | #553 |
+| #557 | Mineral collection rate — per-base calibration | S | Med | #553, #554 |
 | #555 | InProgress spending tracker | M | High | #553 |
+| #559 | Spending category death-timing variance | S | Med | #553, #555 |
 
 ## References
 
