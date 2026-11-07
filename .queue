@@ -18,3 +18,8 @@ branch:
 - [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [ ] casehubio/quarkmind#539 — Vespene balance income deficit
 - [ ] casehubio/quarkmind#551 — Tech spending structural gap
+- [ ] casehubio/quarkmind#552 — Floor mineral balance at zero
+- [ ] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
+- [ ] casehubio/quarkmind#556 — Gas geyser distance calibration
+- [ ] casehubio/quarkmind#554 — Worker transfer to expansions
+- [ ] casehubio/quarkmind#555 — InProgress spending tracker
