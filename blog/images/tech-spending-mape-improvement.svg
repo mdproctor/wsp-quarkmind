@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="barBefore" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+    <linearGradient id="barAfter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#1e293b">Technology Spending MAPE — Before and After Add-On Cost Fix</text>
+  <text x="360" y="46" text-anchor="middle" font-size="11" fill="#64748b">118 oracle replays, 236 player runs</text>
+
+  <!-- Legend -->
+  <rect x="240" y="58" width="14" height="14" rx="2" fill="url(#barBefore)"/>
+  <text x="260" y="70" font-size="11" fill="#64748b">Before fix</text>
+  <rect x="340" y="58" width="14" height="14" rx="2" fill="url(#barAfter)"/>
+  <text x="360" y="70" font-size="11" fill="#64748b">After fix</text>
+
+  <!-- Y axis label -->
+  <text x="18" y="210" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90,18,210)">MAPE (%)</text>
+
+  <!-- === Minerals section === -->
+  <text x="200" y="96" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Minerals (Technology)</text>
+
+  <!-- Axes -->
+  <line x1="60" y1="105" x2="60" y2="250" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="60" y1="250" x2="350" y2="250" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- Y gridlines and labels (0, 10, 20, 30, 50) -->
+  <line x1="58" y1="250" x2="350" y2="250" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="54" y="254" text-anchor="end" font-size="10" fill="#94a3b8">0</text>
+
+  <line x1="58" y1="221" x2="350" y2="221" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="54" y="225" text-anchor="end" font-size="10" fill="#94a3b8">10</text>
+
+  <line x1="58" y1="192" x2="350" y2="192" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="54" y="196" text-anchor="end" font-size="10" fill="#94a3b8">20</text>
+
+  <line x1="58" y1="163" x2="350" y2="163" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="54" y="167" text-anchor="end" font-size="10" fill="#94a3b8">30</text>
+
+  <line x1="58" y1="105" x2="350" y2="105" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="54" y="109" text-anchor="end" font-size="10" fill="#94a3b8">50</text>
+
+  <!-- 3-min bars: Before=16.4%, After=8.8% -->
+  <rect x="80" y="202" width="28" height="48" rx="3" fill="url(#barBefore)"/>
+  <text x="94" y="198" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">16.4%</text>
+  <rect x="112" y="224" width="28" height="26" rx="3" fill="url(#barAfter)"/>
+  <text x="126" y="220" text-anchor="middle" font-size="10" font-weight="600" fill="#16a34a">8.8%</text>
+  <text x="110" y="266" text-anchor="middle" font-size="11" fill="#475569">3 min</text>
+
+  <!-- 5-min bars: Before=24.3%, After=12.2% -->
+  <rect x="170" y="179" width="28" height="71" rx="3" fill="url(#barBefore)"/>
+  <text x="184" y="175" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">24.3%</text>
+  <rect x="202" y="214" width="28" height="36" rx="3" fill="url(#barAfter)"/>
+  <text x="216" y="210" text-anchor="middle" font-size="10" font-weight="600" fill="#16a34a">12.2%</text>
+  <text x="200" y="266" text-anchor="middle" font-size="11" fill="#475569">5 min</text>
+
+  <!-- 7-min bars: Before=30.3%, After=17.0% -->
+  <rect x="260" y="162" width="28" height="88" rx="3" fill="url(#barBefore)"/>
+  <text x="274" y="158" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">30.3%</text>
+  <rect x="292" y="200" width="28" height="50" rx="3" fill="url(#barAfter)"/>
+  <text x="306" y="196" text-anchor="middle" font-size="10" font-weight="600" fill="#16a34a">17.0%</text>
+  <text x="290" y="266" text-anchor="middle" font-size="11" fill="#475569">7 min</text>
+
+  <!-- === Vespene section === -->
+  <text x="550" y="96" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Vespene (Technology)</text>
+
+  <!-- Axes -->
+  <line x1="410" y1="105" x2="410" y2="250" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="410" y1="250" x2="700" y2="250" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- Y gridlines -->
+  <text x="404" y="254" text-anchor="end" font-size="10" fill="#94a3b8">0</text>
+  <line x1="408" y1="221" x2="700" y2="221" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="404" y="225" text-anchor="end" font-size="10" fill="#94a3b8">10</text>
+  <line x1="408" y1="192" x2="700" y2="192" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="404" y="196" text-anchor="end" font-size="10" fill="#94a3b8">20</text>
+  <line x1="408" y1="163" x2="700" y2="163" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="404" y="167" text-anchor="end" font-size="10" fill="#94a3b8">30</text>
+  <line x1="408" y1="105" x2="700" y2="105" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="404" y="109" text-anchor="end" font-size="10" fill="#94a3b8">50</text>
+
+  <!-- 3-min bars: Before=46.1%, After=19.1% -->
+  <rect x="430" y="116" width="28" height="134" rx="3" fill="url(#barBefore)"/>
+  <text x="444" y="112" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">46.1%</text>
+  <rect x="462" y="194" width="28" height="56" rx="3" fill="url(#barAfter)"/>
+  <text x="476" y="190" text-anchor="middle" font-size="10" font-weight="600" fill="#16a34a">19.1%</text>
+  <text x="460" y="266" text-anchor="middle" font-size="11" fill="#475569">3 min</text>
+
+  <!-- 5-min bars: Before=47.6%, After=37.8% -->
+  <rect x="520" y="112" width="28" height="138" rx="3" fill="url(#barBefore)"/>
+  <text x="534" y="108" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">47.6%</text>
+  <rect x="552" y="140" width="28" height="110" rx="3" fill="url(#barAfter)"/>
+  <text x="566" y="136" text-anchor="middle" font-size="10" font-weight="600" fill="#16a34a">37.8%</text>
+  <text x="550" y="266" text-anchor="middle" font-size="11" fill="#475569">5 min</text>
+
+  <!-- 7-min bars: Before=46.4%, After=42.0% -->
+  <rect x="610" y="115" width="28" height="135" rx="3" fill="url(#barBefore)"/>
+  <text x="624" y="111" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">46.4%</text>
+  <rect x="642" y="128" width="28" height="122" rx="3" fill="url(#barAfter)"/>
+  <text x="656" y="124" text-anchor="middle" font-size="10" font-weight="600" fill="#16a34a">42.0%</text>
+  <text x="640" y="266" text-anchor="middle" font-size="11" fill="#475569">7 min</text>
+
+  <!-- Bottom insight -->
+  <rect x="40" y="286" width="640" height="82" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="360" y="308" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">Aggregate gap after fix (sum across 236 player runs)</text>
+  <text x="200" y="330" text-anchor="middle" font-size="11" fill="#475569">Minerals at 5-min:</text>
+  <text x="200" y="347" text-anchor="middle" font-size="13" font-weight="700" fill="#16a34a">EM 122,275 vs GT 119,150 → 2.6% gap</text>
+  <text x="520" y="330" text-anchor="middle" font-size="11" fill="#475569">Vespene at 5-min:</text>
+  <text x="520" y="347" text-anchor="middle" font-size="13" font-weight="700" fill="#dc2626">EM 33,150 vs GT 25,075 → 32% gap (structural)</text>
+</svg>
