@@ -11,7 +11,7 @@ branch:
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
-- [ ] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
+- [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [ ] casehubio/quarkmind#539 — Vespene balance income deficit
 - [ ] casehubio/quarkmind#556 — Gas geyser distance calibration
