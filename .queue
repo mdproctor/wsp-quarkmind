@@ -9,14 +9,14 @@ status: active
 - project-sha: 
 - date: 2026-11-06
 active_issue: 
-branch: 
+branch: issue-534-emulated-game-100-accuracy
 
 ## Queue
 - [x] casehubio/quarkmind#548 — Creep Tumor undercount
 - [x] casehubio/quarkmind#549 — Unit mode tracking
-- [ ] casehubio/quarkmind#550 — Add-on cost over-deduction ← active
-- [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
-- [ ] casehubio/quarkmind#539 — Vespene balance income deficit
+- [x] casehubio/quarkmind#550 — Add-on cost over-deduction
+- [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
+- [ ] casehubio/quarkmind#539 — Vespene balance income deficit ← active
 - [ ] casehubio/quarkmind#551 — Tech spending structural gap
 - [ ] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [ ] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
