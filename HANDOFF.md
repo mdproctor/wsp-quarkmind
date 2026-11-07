@@ -20,12 +20,17 @@ Improved vespene balance (#539) on Epic #534. Two fixes to gas income model:
 
 mineralsCurrent gap is spending-driven, not income-driven. EM income is within 10% of GT, but spending is systematically lower because spending categories are recorded at completion time while GT records at commitment. However, fixing this timing directly disrupts the death-subtraction accounting and makes things worse. A different approach is needed — possibly separate InProgress tracking that doesn't interact with the Current/death accounting.
 
-## Remaining Queue (2 items)
+## Remaining Queue (7 items, priority ordered)
 
-| # | Title | Scale | Complexity | Impact |
-|---|-------|-------|------------|--------|
-| #538 | Mineral balance — map geometry variance | M | High | Research: mineralsCurrent 54-84% MAPE |
-| #539 | Vespene balance — income deficit + spending | M | Med | Improved: vespeneCurrent 39-77% MAPE (was 46-101%) |
+| # | Title | Scale | Complexity | Blocked by |
+|---|-------|-------|------------|------------|
+| #552 | Floor mineral balance at zero | XS | Low | — |
+| #553 | Per-replay economy divergence diagnostic | S | Med | — |
+| #538 | Mineral balance — per-replay variance | M | High | #553 |
+| #539 | Vespene balance — income deficit | M | Med | #553 |
+| #556 | Gas geyser distance calibration | S | Med | #553 |
+| #554 | Worker transfer to expansions | M | High | #553 |
+| #555 | InProgress spending tracker | M | High | #553 |
 
 ## References
 
