@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 320">
+  <defs>
+    <style>
+      text { font-family: 'Inter', 'Segoe UI', sans-serif; }
+      .title { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+      .label { font-size: 11px; fill: #555; }
+      .value { font-size: 11px; font-weight: 600; }
+      .axis-label { font-size: 10px; fill: #888; }
+      .bar-gt { fill: #4a90d9; }
+      .bar-em-phys { fill: #e8a838; }
+      .bar-em-formula { fill: #5cb85c; }
+      .line { stroke: #ccc; stroke-width: 1; }
+      .ratio-line { stroke: #d9534f; stroke-width: 2; stroke-dasharray: 6,3; }
+    </style>
+  </defs>
+
+  <text x="340" y="24" text-anchor="middle" class="title">Per-Worker Gas Efficiency: Physical Simulation vs Formula</text>
+
+  <!-- Axis -->
+  <line x1="80" y1="250" x2="620" y2="250" class="line"/>
+  <line x1="80" y1="60" x2="80" y2="250" class="line"/>
+
+  <!-- Y axis labels -->
+  <text x="70" y="250" text-anchor="end" class="axis-label">0</text>
+  <text x="70" y="202" text-anchor="end" class="axis-label">20</text>
+  <text x="70" y="155" text-anchor="end" class="axis-label">40</text>
+  <text x="70" y="107" text-anchor="end" class="axis-label">60</text>
+  <text x="70" y="60" text-anchor="end" class="axis-label">80</text>
+  <text x="30" y="155" text-anchor="middle" transform="rotate(-90, 30, 155)" class="label">Rate per worker</text>
+
+  <!-- Grid lines -->
+  <line x1="80" y1="202" x2="620" y2="202" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="155" x2="620" y2="155" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="107" x2="620" y2="107" stroke="#eee" stroke-width="1"/>
+
+  <!-- 1 min group -->
+  <text x="170" y="270" text-anchor="middle" class="label">1 min</text>
+  <rect x="115" y="207" width="30" height="43" class="bar-gt" rx="2"/>
+  <rect x="150" y="195" width="30" height="55" class="bar-em-phys" rx="2"/>
+  <rect x="185" y="168" width="30" height="82" class="bar-em-formula" rx="2"/>
+  <text x="130" y="203" text-anchor="middle" class="value" fill="#4a90d9">18</text>
+  <text x="165" y="191" text-anchor="middle" class="value" fill="#e8a838">24</text>
+  <text x="200" y="164" text-anchor="middle" class="value" fill="#5cb85c">34</text>
+
+  <!-- 3 min group -->
+  <text x="310" y="270" text-anchor="middle" class="label">3 min</text>
+  <rect x="255" y="131" width="30" height="119" class="bar-gt" rx="2"/>
+  <rect x="290" y="140" width="30" height="110" class="bar-em-phys" rx="2"/>
+  <rect x="325" y="141" width="30" height="109" class="bar-em-formula" rx="2"/>
+  <text x="270" y="127" text-anchor="middle" class="value" fill="#4a90d9">50</text>
+  <text x="305" y="136" text-anchor="middle" class="value" fill="#e8a838">46</text>
+  <text x="340" y="137" text-anchor="middle" class="value" fill="#5cb85c">46</text>
+
+  <!-- 5 min group -->
+  <text x="450" y="270" text-anchor="middle" class="label">5 min</text>
+  <rect x="395" y="121" width="30" height="129" class="bar-gt" rx="2"/>
+  <rect x="430" y="140" width="30" height="110" class="bar-em-phys" rx="2"/>
+  <rect x="465" y="141" width="30" height="109" class="bar-em-formula" rx="2"/>
+  <text x="410" y="117" text-anchor="middle" class="value" fill="#4a90d9">54</text>
+  <text x="445" y="136" text-anchor="middle" class="value" fill="#e8a838">46</text>
+  <text x="480" y="137" text-anchor="middle" class="value" fill="#5cb85c">46</text>
+
+  <!-- 7 min group -->
+  <text x="580" y="270" text-anchor="middle" class="label">7 min</text>
+  <rect x="525" y="87" width="30" height="163" class="bar-gt" rx="2"/>
+  <rect x="560" y="141" width="30" height="109" class="bar-em-phys" rx="2"/>
+  <rect x="595" y="139" width="30" height="111" class="bar-em-formula" rx="2"/>
+  <text x="540" y="83" text-anchor="middle" class="value" fill="#4a90d9">68</text>
+  <text x="575" y="137" text-anchor="middle" class="value" fill="#e8a838">46</text>
+  <text x="610" y="135" text-anchor="middle" class="value" fill="#5cb85c">47</text>
+
+  <!-- Legend -->
+  <rect x="200" y="290" width="12" height="12" class="bar-gt" rx="2"/>
+  <text x="218" y="300" class="label">Ground Truth</text>
+  <rect x="320" y="290" width="12" height="12" class="bar-em-phys" rx="2"/>
+  <text x="338" y="300" class="label">Physical Walk</text>
+  <rect x="455" y="290" width="12" height="12" class="bar-em-formula" rx="2"/>
+  <text x="473" y="300" class="label">Formula Rate</text>
+</svg>
