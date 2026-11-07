@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="Inter, system-ui, -apple-system, sans-serif">
+  <rect width="720" height="320" rx="8" fill="#1e1e2e"/>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" fill="#cdd6f4" font-size="14" font-weight="600">Per-Race Error Decomposition — 5-minute checkpoint</text>
+  <text x="360" y="46" text-anchor="middle" fill="#6b7280" font-size="11">Mean absolute error per component (minerals)</text>
+
+  <!-- Legend -->
+  <rect x="480" y="56" width="12" height="12" rx="2" fill="#89b4fa"/>
+  <text x="498" y="67" fill="#a6adc8" font-size="11">Income error</text>
+  <rect x="580" y="56" width="12" height="12" rx="2" fill="#f9e2af"/>
+  <text x="598" y="67" fill="#a6adc8" font-size="11">Spending error</text>
+
+  <!-- Y-axis -->
+  <line x1="120" y1="75" x2="120" y2="265" stroke="#45475a" stroke-width="1"/>
+
+  <!-- Y-axis labels -->
+  <text x="115" y="270" text-anchor="end" fill="#6b7280" font-size="10">0</text>
+  <text x="115" y="222" text-anchor="end" fill="#6b7280" font-size="10">100</text>
+  <text x="115" y="174" text-anchor="end" fill="#6b7280" font-size="10">200</text>
+  <text x="115" y="126" text-anchor="end" fill="#6b7280" font-size="10">300</text>
+  <text x="115" y="82" text-anchor="end" fill="#6b7280" font-size="10">400+</text>
+
+  <!-- Grid lines -->
+  <line x1="120" y1="218" x2="660" y2="218" stroke="#313244" stroke-width="1"/>
+  <line x1="120" y1="170" x2="660" y2="170" stroke="#313244" stroke-width="1"/>
+  <line x1="120" y1="122" x2="660" y2="122" stroke="#313244" stroke-width="1"/>
+  <line x1="120" y1="78" x2="660" y2="78" stroke="#313244" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Baseline -->
+  <line x1="120" y1="265" x2="660" y2="265" stroke="#45475a" stroke-width="1"/>
+
+  <!-- Protoss group -->
+  <!-- Income: 477 -> capped at bar height ~93px (477/500 * 190 = ~181px from baseline) -->
+  <rect x="170" y="83" width="50" height="182" rx="4" fill="#89b4fa" opacity="0.85"/>
+  <text x="195" y="77" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="600">477</text>
+  <!-- Spending: 197 -> 75px -->
+  <rect x="222" y="190" width="50" height="75" rx="4" fill="#f9e2af" opacity="0.85"/>
+  <text x="247" y="184" text-anchor="middle" fill="#f9e2af" font-size="11" font-weight="600">197</text>
+  <!-- Label -->
+  <text x="210" y="290" text-anchor="middle" fill="#cdd6f4" font-size="12" font-weight="500">Protoss</text>
+
+  <!-- Zerg group -->
+  <!-- Income: 410 -> 156px -->
+  <rect x="340" y="109" width="50" height="156" rx="4" fill="#89b4fa" opacity="0.85"/>
+  <text x="365" y="103" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="600">410</text>
+  <!-- Spending: 293 -> 111px -->
+  <rect x="392" y="154" width="50" height="111" rx="4" fill="#f9e2af" opacity="0.85"/>
+  <text x="417" y="148" text-anchor="middle" fill="#f9e2af" font-size="11" font-weight="600">293</text>
+  <!-- Label -->
+  <text x="383" y="290" text-anchor="middle" fill="#cdd6f4" font-size="12" font-weight="500">Zerg</text>
+
+  <!-- Terran group -->
+  <!-- Income: 326 -> 124px -->
+  <rect x="510" y="141" width="50" height="124" rx="4" fill="#89b4fa" opacity="0.85"/>
+  <text x="535" y="135" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="600">326</text>
+  <!-- Spending: 150 -> 57px -->
+  <rect x="562" y="208" width="50" height="57" rx="4" fill="#f9e2af" opacity="0.85"/>
+  <text x="587" y="202" text-anchor="middle" fill="#f9e2af" font-size="11" font-weight="600">150</text>
+  <!-- Label -->
+  <text x="548" y="290" text-anchor="middle" fill="#cdd6f4" font-size="12" font-weight="500">Terran</text>
+
+  <!-- Annotation -->
+  <text x="360" y="312" text-anchor="middle" fill="#a6adc8" font-size="10">Income error dominates across all three races. Protoss is 2.4x.</text>
+</svg>
