@@ -22,4 +22,4 @@ branch:
 - [ ] casehubio/quarkmind#559 — Spending category death-timing variance
 - [ ] casehubio/quarkmind#560 — Protoss economy accuracy
 - [ ] casehubio/quarkmind#561 — Spending under-deduction
-- [ ] casehubio/quarkmind#562 — Gas income bidirectional variance
+- [x] casehubio/quarkmind#562 — Gas income bidirectional variance
