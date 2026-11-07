@@ -2,18 +2,17 @@
 
 ## Last Session
 
-Closed 5 issues on Epic #534: #545 (OC/Lair morph), #546 (ghost completions), #547 (add-on swaps), #548 (Creep Tumor), #549 (unit mode switches). Filed 2 new issues (#550, #551).
+Closed #550 (add-on cost over-deduction) on Epic #534. Added `AddonKind` enum to `BuildIntent` so TrackerIntentExtractor correctly charges Reactor (50m/50g) and TechLab (50m/25g) instead of parent building cost. Technology spending MAPE roughly halved at all checkpoints.
 
-**Units AND Buildings now 100% at ALL checkpoints.** Upgrades also 100%. The remaining accuracy gaps are economy-only (mineral/vespene balance, spending classification, collection rates).
+**Units, Buildings, Upgrades all 100%.** Remaining gaps are economy research only.
 
-## Remaining Queue (4 items)
+## Remaining Queue (3 items)
 
 | # | Title | Scale | Complexity | Impact |
 |---|-------|-------|------------|--------|
-| #550 | Add-on cost over-deduction | S | Low | Economy: over-deducts ~100m per add-on |
-| #538 | Mineral balance — map geometry variance | M | High | Research: mineralsCurrent 54-94% MAPE |
-| #539 | Vespene balance — income deficit + spending | M | Med | Research: vespeneCurrent 43-105% MAPE |
-| #551 | Tech spending structural gap | M | High | Research: tech spending 16-30% MAPE |
+| #551 | Tech spending structural gap | M | High | Research: tech spending 9-17% MAPE (post-#550) |
+| #538 | Mineral balance — map geometry variance | M | High | Research: mineralsCurrent 54-87% MAPE |
+| #539 | Vespene balance — income deficit + spending | M | Med | Research: vespeneCurrent 46-101% MAPE |
 
 ## References
 
