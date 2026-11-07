@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .label { font-size: 13px; fill: #555; }
+    .title { font-size: 14px; fill: #333; font-weight: 600; }
+    .tag { font-size: 11px; fill: #888; }
+    .event { font-size: 11px; fill: #666; font-style: italic; }
+    .building { stroke-width: 1.5; rx: 4; }
+    .cc { fill: #dbeafe; stroke: #3b82f6; }
+    .oc { fill: #fef3c7; stroke: #f59e0b; }
+    .ghost { fill: #fee2e2; stroke: #ef4444; stroke-dasharray: 4 3; }
+    .arrow { stroke: #999; stroke-width: 1.2; fill: none; marker-end: url(#arrowhead); }
+    .timeline { stroke: #ddd; stroke-width: 1; }
+    .check { fill: #16a34a; font-size: 16px; }
+    .cross { fill: #dc2626; font-size: 16px; font-weight: bold; }
+    .panel { fill: #f8fafc; stroke: #e2e8f0; stroke-width: 1; rx: 6; }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#999"/>
+    </marker>
+  </defs>
+
+  <!-- Panels -->
+  <rect class="panel" x="10" y="10" width="340" height="320"/>
+  <rect class="panel" x="370" y="10" width="340" height="320"/>
+  <text class="title" x="130" y="35">Ground Truth (before fix)</text>
+  <text class="title" x="490" y="35">EmulatedGame</text>
+
+  <!-- GT Side: Timeline -->
+  <line class="timeline" x1="40" y1="60" x2="40" y2="310"/>
+  <text class="tag" x="25" y="80">t₀</text>
+  <text class="tag" x="25" y="150">t₁</text>
+  <text class="tag" x="25" y="220">t₂</text>
+  <text class="tag" x="25" y="290">t₃</text>
+
+  <!-- GT: UnitBorn CC -->
+  <text class="event" x="55" y="75">UnitBorn(CC)</text>
+  <rect class="building cc" x="180" y="65" width="80" height="28"/>
+  <text class="label" x="200" y="84">CC</text>
+  <text class="tag" x="268" y="84">tag-1</text>
+
+  <!-- GT: UnitTypeChange — no handler -->
+  <text class="event" x="55" y="145">UnitTypeChange</text>
+  <text class="event" x="55" y="158">CC → OC</text>
+  <rect class="building ghost" x="180" y="135" width="80" height="28"/>
+  <text class="label" x="195" y="154" fill="#dc2626">CC</text>
+  <text class="tag" x="268" y="154" fill="#dc2626">tag-1</text>
+  <text class="cross" x="300" y="155">✗</text>
+  <text class="tag" x="85" y="178" fill="#dc2626">no handler — ignored</text>
+
+  <!-- GT: Snapshot shows both -->
+  <text class="event" x="55" y="225">snapshot()</text>
+  <rect class="building ghost" x="160" y="240" width="60" height="24"/>
+  <text class="label" x="173" y="257" fill="#dc2626">CC</text>
+  <rect class="building oc" x="240" y="240" width="60" height="24"/>
+  <text class="label" x="253" y="257">OC</text>
+  <text class="tag" x="165" y="280" fill="#dc2626">CC still counted!</text>
+
+  <!-- EM Side: Timeline -->
+  <line class="timeline" x1="400" y1="60" x2="400" y2="310"/>
+  <text class="tag" x="385" y="80">t₀</text>
+  <text class="tag" x="385" y="150">t₁</text>
+  <text class="tag" x="385" y="220">t₂</text>
+
+  <!-- EM: BuildingBorn CC -->
+  <text class="event" x="415" y="75">BuildingBornIntent</text>
+  <rect class="building cc" x="550" y="65" width="80" height="28"/>
+  <text class="label" x="570" y="84">CC</text>
+  <text class="tag" x="638" y="84">tag-1</text>
+
+  <!-- EM: MorphIntent CC→OC -->
+  <text class="event" x="415" y="145">MorphIntent</text>
+  <text class="event" x="415" y="158">CC → OC</text>
+  <rect class="building oc" x="550" y="135" width="80" height="28"/>
+  <text class="label" x="570" y="154">OC</text>
+  <text class="tag" x="638" y="154">tag-1</text>
+  <text class="check" x="640" y="155">✓</text>
+  <text class="tag" x="445" y="178" fill="#16a34a">replaceAllBuildings</text>
+
+  <!-- EM: Snapshot shows correct -->
+  <text class="event" x="415" y="225">snapshot()</text>
+  <rect class="building oc" x="550" y="240" width="60" height="24"/>
+  <text class="label" x="563" y="257">OC</text>
+  <text class="tag" x="525" y="280" fill="#16a34a">CC correctly gone</text>
+</svg>

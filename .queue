@@ -1,0 +1,25 @@
+# Work Plan — Epic #534: EmulatedGame 100% accuracy
+
+## State
+status: active
+- branch: issue-534-emulated-game-100-accuracy
+- state: active
+- issue-repo: casehubio/quarkmind
+- covers: 534
+- project-sha: 
+- date: 2026-11-06
+active_issue: 
+branch: issue-534-emulated-game-100-accuracy
+
+## Queue
+- [x] casehubio/quarkmind#548 — Creep Tumor undercount
+- [x] casehubio/quarkmind#549 — Unit mode tracking
+- [x] casehubio/quarkmind#550 — Add-on cost over-deduction
+- [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
+- [ ] casehubio/quarkmind#539 — Vespene balance income deficit ← active
+- [ ] casehubio/quarkmind#551 — Tech spending structural gap
+- [ ] casehubio/quarkmind#552 — Floor mineral balance at zero
+- [ ] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
+- [ ] casehubio/quarkmind#556 — Gas geyser distance calibration
+- [ ] casehubio/quarkmind#554 — Worker transfer to expansions
+- [ ] casehubio/quarkmind#555 — InProgress spending tracker

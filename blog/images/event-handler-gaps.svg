@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 360">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 14px; fill: #333; font-weight: 600; }
+    .subtitle { font-size: 11px; fill: #888; }
+    .event { font-size: 11px; fill: #333; font-weight: 500; }
+    .handler { font-size: 10px; fill: #555; }
+    .gap-label { font-size: 10px; fill: #dc2626; font-weight: 600; }
+    .fixed-label { font-size: 10px; fill: #16a34a; font-weight: 600; }
+    .box-ok { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 4; }
+    .box-gap { fill: #fee2e2; stroke: #dc2626; stroke-width: 1.5; rx: 4; stroke-dasharray: 4,2; }
+    .box-fixed { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 4; }
+    .arrow { fill: none; stroke: #94a3b8; stroke-width: 1.5; marker-end: url(#arrowhead); }
+    .event-box { fill: #e0e7ff; stroke: #6366f1; stroke-width: 1.5; rx: 4; }
+    .dim { opacity: 0.5; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="180" y="22">SC2 Tracker Events → Handler Map — Five Gaps Found</text>
+  <text class="subtitle" x="160" y="40">Each gap was a silent failure: no error, no warning, just slightly wrong numbers</text>
+
+  <!-- Column headers -->
+  <text class="event" x="80" y="70" text-anchor="middle">SC2 Event</text>
+  <text class="event" x="280" y="70" text-anchor="middle">Handler</text>
+  <text class="event" x="500" y="70" text-anchor="middle">What Was Missing</text>
+
+  <!-- Row 1: PendingCompletion + BuildingDied -->
+  <rect class="event-box" x="15" y="82" width="130" height="28"/>
+  <text class="event" x="80" y="100" text-anchor="middle">BuildingDied</text>
+  <line class="arrow" x1="145" y1="96" x2="195" y2="96"/>
+  <rect class="box-fixed" x="195" y="82" width="170" height="28"/>
+  <text class="handler" x="280" y="100" text-anchor="middle">handleBuildingDied</text>
+  <line class="arrow" x1="365" y1="96" x2="395" y2="96"/>
+  <text class="fixed-label" x="400" y="94">Didn't cancel PendingCompletions</text>
+  <text class="handler" x="400" y="106">→ ghost callbacks recorded spending</text>
+
+  <!-- Row 2: UnitTypeChange for add-ons -->
+  <rect class="event-box" x="15" y="122" width="130" height="28"/>
+  <text class="event" x="80" y="140" text-anchor="middle">UnitTypeChange</text>
+  <line class="arrow" x1="145" y1="136" x2="195" y2="136"/>
+  <rect class="box-fixed" x="195" y="122" width="170" height="28"/>
+  <text class="handler" x="280" y="140" text-anchor="middle">handleMorph</text>
+  <line class="arrow" x1="365" y1="136" x2="395" y2="136"/>
+  <text class="fixed-label" x="400" y="134">No add-on swap targets</text>
+  <text class="handler" x="400" y="146">→ FactoryReactor, StarportTechLab etc.</text>
+
+  <!-- Row 3: UnitDone pre-pass collision -->
+  <rect class="event-box" x="15" y="162" width="130" height="28"/>
+  <text class="event" x="80" y="180" text-anchor="middle">UnitDone</text>
+  <line class="arrow" x1="145" y1="176" x2="195" y2="176"/>
+  <rect class="box-fixed" x="195" y="162" width="170" height="28"/>
+  <text class="handler" x="280" y="180" text-anchor="middle">pre-pass doneLoop map</text>
+  <line class="arrow" x1="365" y1="176" x2="395" y2="176"/>
+  <text class="fixed-label" x="400" y="174">Last-write-wins for multi-morph tags</text>
+  <text class="handler" x="400" y="186">→ CC got OC's completion loop</text>
+
+  <!-- Row 4: CreepTumorBurrowed -->
+  <rect class="event-box" x="15" y="202" width="130" height="28"/>
+  <text class="event" x="80" y="220" text-anchor="middle">UnitTypeChange</text>
+  <line class="arrow" x1="145" y1="216" x2="195" y2="216"/>
+  <rect class="box-fixed" x="195" y="202" width="170" height="28"/>
+  <text class="handler" x="280" y="220" text-anchor="middle">MORPH_BUILDING_TARGETS</text>
+  <line class="arrow" x1="365" y1="216" x2="395" y2="216"/>
+  <text class="fixed-label" x="400" y="214">Missing "CreepTumorBurrowed"</text>
+  <text class="handler" x="400" y="226">→ one entry in a lookup table</text>
+
+  <!-- Row 5: Mode switches + name mismatch -->
+  <rect class="event-box" x="15" y="242" width="130" height="28"/>
+  <text class="event" x="80" y="260" text-anchor="middle">UnitTypeChange</text>
+  <line class="arrow" x1="145" y1="256" x2="195" y2="256"/>
+  <rect class="box-fixed" x="195" y="242" width="170" height="28"/>
+  <text class="handler" x="280" y="260" text-anchor="middle">MORPH_UNIT_TARGETS</text>
+  <line class="arrow" x1="365" y1="256" x2="395" y2="256"/>
+  <text class="fixed-label" x="400" y="254">No mode switch handler +</text>
+  <text class="handler" x="400" y="266">→ enum "RAVAGER" vs SC2 "Ravager"</text>
+
+  <!-- Summary bar -->
+  <rect x="15" y="295" width="670" height="40" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text class="handler" x="350" y="312" text-anchor="middle">Pattern: every gap was a missing entry in a finite lookup table or a handler</text>
+  <text class="handler" x="350" y="326" text-anchor="middle">that didn't account for a lifecycle edge case. No physics bugs. No algorithm errors.</text>
+</svg>
