@@ -6,11 +6,11 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: 552
-branch: issue-552-floor-mineral-balance
+active_issue: 
+branch: 
 
 ## Queue
-- [ ] casehubio/quarkmind#552 — Floor mineral balance at zero
+- [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [ ] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [ ] casehubio/quarkmind#539 — Vespene balance income deficit
