@@ -14,7 +14,7 @@ branch:
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [x] casehubio/quarkmind#539 — Vespene balance income deficit
-- [ ] casehubio/quarkmind#556 — Gas geyser distance calibration
+- [x] casehubio/quarkmind#556 — Gas geyser distance calibration
 - [ ] casehubio/quarkmind#554 — Worker transfer to expansions
 - [ ] casehubio/quarkmind#555 — InProgress spending tracker
 - [ ] casehubio/quarkmind#557 — Mineral collection rate per-base calibration
