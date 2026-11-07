@@ -6,13 +6,13 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#538
-branch: issue-538-mineral-balance-map-geometry
+active_issue: 
+branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
-- [ ] casehubio/quarkmind#538 — Mineral balance map geometry variance
+- [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
 - [ ] casehubio/quarkmind#539 — Vespene balance income deficit
 - [ ] casehubio/quarkmind#556 — Gas geyser distance calibration
 - [ ] casehubio/quarkmind#554 — Worker transfer to expansions
