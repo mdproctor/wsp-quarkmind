@@ -65,6 +65,22 @@ Spending category fields (mineralsUsedCurrentArmy etc.) have 5-35% error. Root c
 
 ---
 
+## Critical Insights for Next Session
+
+1. **Run baselines FIRST.** Three major physics changes landed without standalone baseline validation (oracle data unavailable). Run `StandaloneEmulatedGameBaselineTest` and `DivergenceRegressionTest` before any new work. File issues from whatever the data reveals.
+
+2. **Per-worker income halved.** The acceleration model dropped per-worker mineral income from ~52 to ~26 in unit tests. Gas from ~183 to ~132 gas/min. This could be over-correction — the flat 6-unit patch distance in tests is longer than real SC2 close patches (4-5 units). Replay mode with GT positions may show better numbers. But if the standalone baseline shows regression, diagnose whether the acceleration constant (2.5) or the patch distance model is the cause.
+
+3. **Scouting hooks are infrastructure only.** `onWorkerScouting`/`onWorkerReturnFromScout` exist on EmulatedGame but no caller invokes them. The replay harness needs GT-position-based scout detection (worker far from any base = scouting). Without this, standalone mode still has all workers mining continuously.
+
+4. **Analytical ≠ simulation.** The user explicitly rejected computing trip times from d=½at². Even physics equations evaluated once are formulas. The arrival time must emerge from per-loop stepping. This is a hard constraint — don't propose analytical shortcuts.
+
+5. **The saturation curve test is the mining validation tool.** `WorkerSimulationTest#saturationCurve_thirdWorkerEarnsLessThanSecond` prints per-worker income at 8/12/16/20/24 workers. Run it after any mining or movement change.
+
+6. **File issues aggressively.** Every finding from baseline runs should become an issue. The queue drives the work; unfiled findings get lost.
+
+---
+
 ## Key Code Locations
 
 | What | Where |
