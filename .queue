@@ -6,8 +6,8 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#565
-branch: issue-567-mineral-patch-distance
+active_issue: casehubio/quarkmind#572
+branch: issue-572-worker-activity-modelling
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
@@ -27,6 +27,17 @@ branch: issue-567-mineral-patch-distance
 - [x] casehubio/quarkmind#565 — DivergenceRegressionTest building accuracy regression
 - [x] casehubio/quarkmind#566 — Mineral mining efficiency factor
 - [ ] casehubio/quarkmind#567 — Mineral patch distance calibration ← active
+  - [ ] Batch 1: Saturation
+    - [ ] Task 1: Saturation curve diagnostic test
+  - [ ] Batch 2: Activity States
+    - [ ] Task 2: Add SCOUTING and TRANSFERRING to WorkerTask
+    - [ ] Task 3: Add scoutReturnLoop field
+    - [ ] Task 4: Implement scouting lifecycle
+  - [ ] Batch 3: Transit
+    - [ ] Task 5: Physical walk time for base transfers
+  - [ ] Batch 4: Integration
+    - [ ] Task 6: Wire scouting hooks to EmulatedGame
+    - [ ] Task 7: Full regression verification
 - [x] casehubio/quarkmind#568 — Gas income per-worker rate calibration
 - [x] casehubio/quarkmind#569 — 1-minute gas checkpoint delayed assignment
 - [x] casehubio/quarkmind#570 — Economy structural floor analysis
