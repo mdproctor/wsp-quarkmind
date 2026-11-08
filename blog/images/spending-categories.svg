@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <style>
+    text { font-family: -apple-system, 'Segoe UI', sans-serif; }
+    .title { font-size: 15px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 12px; fill: #333; }
+    .sublabel { font-size: 11px; fill: #666; }
+    .val { font-size: 13px; font-weight: 600; }
+    .good { fill: #2d6a4f; }
+    .bad { fill: #9b2226; }
+    .neutral { fill: #495057; }
+    .box { rx: 6; ry: 6; stroke-width: 1.5; }
+    .arrow { stroke: #495057; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#495057"/>
+    </marker>
+  </defs>
+
+  <text x="360" y="28" text-anchor="middle" class="title">SC2 Spending Categories — Where Research Actually Goes</text>
+
+  <!-- What we assumed -->
+  <text x="180" y="60" text-anchor="middle" class="label" font-weight="600">What we assumed</text>
+
+  <rect x="40" y="75" width="280" height="40" class="box" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="180" y="100" text-anchor="middle" class="label">Technology = buildings + research</text>
+
+  <rect x="40" y="125" width="280" height="40" class="box" fill="#e0f2fe" stroke="#3b82f6"/>
+  <text x="180" y="150" text-anchor="middle" class="label">Army = combat units only</text>
+
+  <text x="180" y="195" text-anchor="middle" class="val bad">42.0% MAPE (tech)</text>
+  <text x="180" y="215" text-anchor="middle" class="val good">7.4% MAPE (army)</text>
+
+  <!-- Arrow -->
+  <path d="M 350,140 L 390,140" class="arrow"/>
+
+  <!-- What SC2 actually does -->
+  <text x="540" y="60" text-anchor="middle" class="label" font-weight="600">What SC2 actually does</text>
+
+  <rect x="400" y="75" width="280" height="40" class="box" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="540" y="100" text-anchor="middle" class="label">Technology = buildings only</text>
+
+  <rect x="400" y="125" width="280" height="40" class="box" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="540" y="150" text-anchor="middle" class="label">Army = combat units + research</text>
+
+  <text x="540" y="195" text-anchor="middle" class="val good">15.4% MAPE (tech)</text>
+  <text x="540" y="215" text-anchor="middle" class="val neutral">35.4% MAPE (army)</text>
+
+  <!-- Evidence box -->
+  <rect x="100" y="245" width="520" height="70" class="box" fill="#f8f9fa" stroke="#dee2e6"/>
+  <text x="360" y="268" text-anchor="middle" class="sublabel" font-weight="600">Evidence: buildings-only EM tech vs GT tech = 1.1% MAPE</text>
+  <text x="360" y="288" text-anchor="middle" class="sublabel">Zerg replays: GT vespeneUsedCurrentTechnology = 0</text>
+  <text x="360" y="305" text-anchor="middle" class="sublabel">while EM showed 200g from completed research → not in Technology</text>
+</svg>

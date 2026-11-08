@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380">
+  <style>
+    text { font-family: -apple-system, 'Segoe UI', sans-serif; }
+    .title { font-size: 15px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 12px; fill: #333; }
+    .sublabel { font-size: 11px; fill: #666; }
+    .val { font-size: 12px; font-weight: 600; fill: #1a1a2e; }
+    .bar-label { font-size: 11px; fill: white; font-weight: 600; }
+    .bar-label-dark { font-size: 11px; fill: #333; font-weight: 600; }
+  </style>
+
+  <text x="360" y="28" text-anchor="middle" class="title">Mineral Income Error at 7 Minutes — Per Race</text>
+  <text x="360" y="48" text-anchor="middle" class="sublabel">Error in minerals per player, decomposed by source</text>
+
+  <!-- Y axis labels -->
+  <text x="95" y="105" text-anchor="end" class="label">Protoss</text>
+  <text x="95" y="195" text-anchor="end" class="label">Terran</text>
+  <text x="95" y="285" text-anchor="end" class="label">Zerg</text>
+
+  <!-- Scale line -->
+  <line x1="100" y1="320" x2="680" y2="320" stroke="#ccc" stroke-width="1"/>
+  <text x="100" y="340" text-anchor="middle" class="sublabel">0</text>
+  <text x="255" y="340" text-anchor="middle" class="sublabel">250</text>
+  <text x="410" y="340" text-anchor="middle" class="sublabel">500</text>
+  <text x="565" y="340" text-anchor="middle" class="sublabel">750</text>
+  <text x="680" y="340" text-anchor="middle" class="sublabel">~1000</text>
+  <text x="390" y="365" text-anchor="middle" class="sublabel">Minerals per player</text>
+
+  <!-- Grid lines -->
+  <line x1="255" y1="70" x2="255" y2="320" stroke="#eee" stroke-width="1"/>
+  <line x1="410" y1="70" x2="410" y2="320" stroke="#eee" stroke-width="1"/>
+  <line x1="565" y1="70" x2="565" y2="320" stroke="#eee" stroke-width="1"/>
+
+  <!-- Scale: 580px = 1000 minerals. 1 mineral = 0.58px -->
+
+  <!-- Protoss: building pause=77, untracked=822, total=899 -->
+  <rect x="100" y="80" width="45" height="45" rx="3" fill="#3b82f6"/>
+  <text x="122" y="107" text-anchor="middle" class="bar-label">77</text>
+
+  <rect x="145" y="80" width="477" height="45" rx="3" fill="#ef4444"/>
+  <text x="383" y="107" text-anchor="middle" class="bar-label">822 — untracked worker activity (~3 workers)</text>
+
+  <text x="630" y="107" class="val">899</text>
+
+  <!-- Terran: building pause=539, remaining=52, total=591 -->
+  <rect x="100" y="170" width="313" height="45" rx="3" fill="#3b82f6"/>
+  <text x="256" y="197" text-anchor="middle" class="bar-label">539 — SCV building pause</text>
+
+  <rect x="413" y="170" width="30" height="45" rx="3" fill="#ef4444"/>
+  <text x="428" y="197" text-anchor="middle" class="bar-label-dark" fill="#ef4444">52</text>
+
+  <text x="455" y="197" class="val">591</text>
+
+  <!-- Zerg: building pause=0, untracked=457, total=457 -->
+  <rect x="100" y="260" width="265" height="45" rx="3" fill="#ef4444"/>
+  <text x="233" y="287" text-anchor="middle" class="bar-label">457 — untracked activity</text>
+
+  <text x="375" y="287" class="val">457</text>
+
+  <!-- Legend -->
+  <rect x="100" y="345" width="14" height="14" rx="2" fill="#3b82f6"/>
+  <text x="120" y="357" class="sublabel">Explained by building pause fix</text>
+  <rect x="330" y="345" width="14" height="14" rx="2" fill="#ef4444"/>
+  <text x="350" y="357" class="sublabel">Remaining — untracked worker activities</text>
+</svg>
