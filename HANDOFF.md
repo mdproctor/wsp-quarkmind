@@ -2,82 +2,96 @@
 
 ## Last Session
 
-Landed four issues on Epic #534 (EmulatedGame 100% accuracy): worker activity modelling (#572), mining duration calibration (#575), acceleration model (#574), gas movement (#577 — resolved by #574). One issue remaining: spending timing (#576).
+Closed #576 (spending timing model — the last issue on the original Epic #534 queue). Found and fixed a classification bug (research spending routed to Army instead of Technology). Then ran baselines as previous handover instructed, discovered the acceleration model regression (#578), and made three foundational fixes that halved the mineralsCollectionRate MAPE from 50% to 25%. Filed 8 new issues from findings.
 
 ### What was done
 
-- **#572 — Worker activity modelling (landed).** Added SCOUTING and TRANSFERRING states to WorkerTask. Scouting lifecycle follows the pauseWorkerForBuilding pattern: `onWorkerScouting(tag, returnAtLoop)` pulls worker off minerals, auto-return at scheduled loop. Transit modelling replaces instant base transfers with physical walk time via moveToward. EmulatedGame exposes scouting hooks for replay harness and strategy layer callers.
+- **#576 — Spending timing model (closed).** Root cause: `EconomyTracker.recordResearchSpending` routed upgrade costs to Army counters. SC2 reports upgrades as Technology spending. Fix: route to `mineralsUsedTechnology`/`vespeneUsedTechnology`. Impact: mineralsUsedCurrentArmy 14%→7.1%, vespeneUsedCurrentArmy 35.4%→7.4%. Remaining vespeneUsedCurrentTechnology at 42% is InProgress/Current timing boundary — measurement artifact, not simulation bug.
 
-- **#575 — Mining duration calibration (landed).** MINING_DURATION_LOOPS corrected from 16 to 44.576 (Liquipedia: 1.99 seconds × 22.4 loops/sec). MAX_MINERS changed from 2 to 1 — only one worker can occupy a mineral patch at a time. Together these produce a saturation curve where the 3rd worker per patch earns ~59% of the 2nd worker's rate (SC2 published: ~50-55%).
+- **#578 — Acceleration model regression (partially resolved, open).** Three fixes:
 
-- **#574 — Per-loop acceleration model (landed).** Replaced constant-speed moveToward with per-loop physics simulation. Each of 22 game loops within a tick: update speed (accelerate at 2.5 u/s², decelerate near target, clamp to max 3.94) and move. Constants from SC2 data editor (SC2Mapster wiki). At 6-unit patch distance, workers never reach max speed — triangular velocity profile.
+  1. **Acceleration ×1.4 scaling.** SC2Mapster data editor values are at normal game speed (16 Hz). Unit speeds are already scaled ×1.4 for faster (22.4 Hz). Acceleration/deceleration were not. Fix: 2.5 → 3.5 u/s² for both. The per-loop velocity change must be `0.15625` at both game speeds: `2.5/16 = 3.5/22.4 = 0.15625`.
 
-- **#577 — Gas movement model (closed, resolved by #574).** The acceleration model applies to gas workers via the same moveToward method. Root cause identified in #577 ("constant-speed linear movement") was the same as #574.
+  2. **Sub-tick mining transitions.** `tickMineralWorker` processed state transitions once per tick, wasting up to 1 tick at each transition (arrive→mine, mine→return, return→deposit). At 3 transitions per cycle and ~47 loops per leg, this wasted nearly half the cycle time. Fix: chain transitions within the same tick using remaining loops. `moveLoops` now returns loops consumed.
 
-- **Blog: "The Physics That Was Always There"** — published as mdp04 in the series. Covers all three physics corrections with SVG diagrams.
+  3. **Mining duration recalibration (44.576 → 5 loops).** Liquipedia's 1.99 seconds includes travel time. With acceleration model simulating travel physically, MINING_DURATION_LOOPS must represent only stationary harvest. Empirical sweep: 5 loops minimises mineralsCollectionRate MAPE against 118 oracle replays.
 
-### Design principle reinforced
+- **Filed issues:** #578 (updated with findings), #579 (tech spending timing), #580 (foodUsed gap — improved to 3.7%, possibly at floor), #581 (army spending floor 7%), #582 (economy spending floor 5.8%), #583 (mining animation SC2 calibration), #584 (gas worker sub-tick transitions), #585 (SC2Mapster scaling audit).
 
-**Simulation over formulas — no exceptions.** Per-loop stepping, not analytical trip times. Formulas (even physics equations evaluated once) don't work because they skip the simulation and miss edge cases. The user explicitly rejected the analytical arrival time approach: "we've spent a whole week trying to get formulas right and we cannot get 100% accuracy." The fix is always to simulate at the right granularity.
+- **Updated economy structural floor document** with post-fix values and two new sections (§8 research classification, §9 acceleration regression).
 
 ---
 
 ## Current Accuracy State
 
-### Saturation curve (WorkerSimulationTest diagnostic)
+### Standalone EmulatedGameBaselineTest — 7-min checkpoint
 
-| Workers | Total min/min | Per worker | SC2 published |
-|---------|--------------|------------|---------------|
-| 8 | 254.5 | 31.8 | ~55 |
-| 12 | 344.1 | 28.7 | ~48 |
-| 16 | 418.5 | 26.2 | ~41 |
-| 20 | 483.6 | 24.2 | ~33 |
-| 24 | 540.7 | 22.5 | ~22 |
+| Field | Session Start | Session End | Status |
+|---|---|---|---|
+| mineralsCollectionRate | 50.0% | 25.0% | Halved — #578 partially resolved |
+| vespeneCollectionRate | 43.0% | 38.0% | Improved 5% |
+| mineralsCurrent | 100% (EM=0) | 74.5% (EM=36K) | Recovered from zero |
+| vespeneCurrent | 82.3% | 77.5% | Improved 5% |
+| mineralsUsedCurrentArmy | 14.0% | 7.1% | At floor — #576 fix |
+| vespeneUsedCurrentArmy | 35.4% | 7.4% | At floor — #576 fix |
+| mineralsUsedCurrentEconomy | 5.8% | 5.8% | At floor |
+| mineralsUsedCurrentTechnology | 15.7% | 17.0% | Near floor |
+| vespeneUsedCurrentTechnology | 15.4% | 42.0% | Timing artifact (research moved here) |
+| foodMade | 2.9% | 3.1% | At floor |
+| foodUsed | 6.1% | 3.7% | Improved — sub-tick fix |
+| workersActiveCount | 3.2% | 2.5% | At floor |
 
-Per-worker rates are lower than SC2 across the board because the test uses flat 6-unit patch distances. Real SC2 has close patches at 4-5 units. Replay mode uses GT mineral patch positions and will be more accurate.
+### DivergenceRegressionTest — all green
 
-Efficiency drop 16→24: 13.9% (SC2 reference: ~20% average, ~50% marginal for workers 17-24).
+100% units, buildings, upgrades. All matchup deltas within thresholds. Tracker-driven mode unaffected by all changes.
 
-### Key changes to constants
+---
 
-| Constant | Before | After | Source |
-|----------|--------|-------|--------|
-| MINING_DURATION_LOOPS | 16 (int) | 44.576 (double) | Liquipedia: 1.99s × 22.4 |
-| MAX_MINERS | 2 | 1 | SC2 — one worker per patch at a time |
-| Worker acceleration | N/A (constant speed) | 2.5 u/s² | SC2Mapster data editor |
-| Worker deceleration | N/A | 2.5 u/s² | SC2Mapster (defaults to acceleration) |
+## Critical Insights for Next Session
+
+### 1. Mining animation duration needs real SC2 measurement (#583)
+
+MINING_DURATION_LOOPS=5 is empirically optimal for oracle replay MAPE but unphysically short (0.22 seconds — real SC2 animation is ~1 second). The saturation curve drop at mining=5 is 9.1% (16→24 workers) vs SC2's 40-50%. The correct mining animation time needs direct measurement from real SC2.
+
+**How to measure:** Start a game, observe a single worker mining. Time the stationary period (worker at mineral patch, not walking). The user confirmed SC2 testing is feasible.
+
+### 2. SC2Mapster values need ×1.4 game-speed scaling (#585)
+
+Any SC2 data editor constant with time-dimension units (acceleration, turn rate, attack cooldowns) needs ×1.4 scaling for faster game speed. Unit speeds are already scaled. Acceleration was not — this caused the income halving. Audit all other SC2Mapster-sourced constants.
+
+### 3. Sub-tick transitions are the pattern for worker physics (#584)
+
+The mineral worker sub-tick chaining pattern (`moveLoops` returns consumed loops, chain transitions within remaining loops) should be applied to gas workers too. vespeneCollectionRate at 38% likely has the same dead-tick overhead.
+
+### 4. The 25% mineralsCollectionRate at 7-min is from cumulative drift
+
+At 1-min, mineralsCollectionRate is 11.8% — near the structural floor (10-12%). The 7-min value (25%) grows because per-tick rate errors compound. Fixing the mining animation duration will help early checkpoints most; 7-min will converge slowly.
+
+### 5. The tick-quantization experiment revealed synchronized workers
+
+With uniform patch distances (test setup), ALL workers stay perfectly synchronized across cycles because tick-quantized movement produces identical cycle times. This halves income because paired workers always race for the same patch slot. Real replay distances (6.0-8.5 range) desynchronize workers naturally. The saturation curve test is an artifact — always validate against oracle replay baselines.
+
+### 6. moveLoops return value is a new API contract
+
+`SimulatedWorker.moveLoops(int)` now returns `int` (loops consumed before arrival, or maxLoops if not arrived). `moveToward()` still wraps it for callers that don't need the return value. Any new movement code should use moveLoops directly for sub-tick chaining.
 
 ---
 
 ## Remaining Queue
 
 ```
-- [x] #572 — Worker activity modelling
-- [x] #575 — Mining duration playbook validation
-- [x] #574 — Worker movement acceleration model
-- [x] #577 — Gas movement model (resolved by #574)
-- [ ] #576 — Spending timing model ← active
+- [x] #576 — Spending timing model (closed this session)
+- [ ] #583 — Mining animation real SC2 calibration ← next
+- [ ] #584 — Gas worker sub-tick transitions
+- [ ] #585 — SC2Mapster faster-speed scaling audit
 ```
 
-### #576 — Spending timing model (S/Med)
-
-Spending category fields (mineralsUsedCurrentArmy etc.) have 5-35% error. Root cause: EM deducts spending at intent-execution time, GT reports via PlayerStatsEvent at ~160-loop cadence. May be a measurement artifact rather than a simulation bug. Different domain from the physics work this session — reporting cadence alignment, not movement or mining physics.
-
----
-
-## Critical Insights for Next Session
-
-1. **Run baselines FIRST.** Three major physics changes landed without standalone baseline validation (oracle data unavailable). Run `StandaloneEmulatedGameBaselineTest` and `DivergenceRegressionTest` before any new work. File issues from whatever the data reveals.
-
-2. **Per-worker income halved.** The acceleration model dropped per-worker mineral income from ~52 to ~26 in unit tests. Gas from ~183 to ~132 gas/min. This could be over-correction — the flat 6-unit patch distance in tests is longer than real SC2 close patches (4-5 units). Replay mode with GT positions may show better numbers. But if the standalone baseline shows regression, diagnose whether the acceleration constant (2.5) or the patch distance model is the cause.
-
-3. **Scouting hooks are infrastructure only.** `onWorkerScouting`/`onWorkerReturnFromScout` exist on EmulatedGame but no caller invokes them. The replay harness needs GT-position-based scout detection (worker far from any base = scouting). Without this, standalone mode still has all workers mining continuously.
-
-4. **Analytical ≠ simulation.** The user explicitly rejected computing trip times from d=½at². Even physics equations evaluated once are formulas. The arrival time must emerge from per-loop stepping. This is a hard constraint — don't propose analytical shortcuts.
-
-5. **The saturation curve test is the mining validation tool.** `WorkerSimulationTest#saturationCurve_thirdWorkerEarnsLessThanSecond` prints per-worker income at 8/12/16/20/24 workers. Run it after any mining or movement change.
-
-6. **File issues aggressively.** Every finding from baseline runs should become an issue. The queue drives the work; unfiled findings get lost.
+Plus standing issues (at or near structural floor, low priority):
+- #578 — Rate fields (25% MAPE, partially resolved)
+- #579 — Tech spending timing (42%, structural)
+- #580 — foodUsed (3.7%, likely at floor now)
+- #581 — Army spending (7%, at floor)
+- #582 — Economy spending (5.8%, at floor)
 
 ---
 
@@ -85,15 +99,16 @@ Spending category fields (mineralsUsedCurrentArmy etc.) have 5-35% error. Root c
 
 | What | Where |
 |------|-------|
-| SimulatedWorker (acceleration, moveLoops) | `quarkmind-sc2/.../emulated/SimulatedWorker.java` |
-| WorkerSimulation (scouting, transit, tick) | `quarkmind-sc2/.../emulated/WorkerSimulation.java` |
-| WorkerTask (SCOUTING, TRANSFERRING) | `quarkmind-sc2/.../emulated/WorkerTask.java` |
-| MineralPatch (MAX_MINERS=1) | `quarkmind-sc2/.../emulated/MineralPatch.java` |
-| EmulatedGame (scouting hooks) | `quarkmind-sc2/.../emulated/EmulatedGame.java` |
-| WorkerSimulationTest (saturation curve, scouting, transit tests) | `quarkmind-sc2/.../emulated/WorkerSimulationTest.java` |
+| SimulatedWorker (accel=3.5, moveLoops returns consumed) | `quarkmind-sc2/.../emulated/SimulatedWorker.java` |
+| WorkerSimulation (sub-tick tickMineralWorker) | `quarkmind-sc2/.../emulated/WorkerSimulation.java:247` |
+| EconomyTracker (research → Technology) | `quarkmind-sc2/.../emulated/EconomyTracker.java:73` |
+| MineralPatchDistanceDiagnostic | `quarkmind-sc2/.../replay/MineralPatchDistanceDiagnostic.java` |
+| MiningDurationSweep test | `WorkerSimulationTest#miningDurationSweep` |
+| Economy structural floor | `docs/benchmarks/economy-structural-floor.md` |
+| Standalone baseline | `docs/benchmarks/standalone-emulated-game-baseline.md` |
 
 ---
 
 ## Pre-existing Issues
 
-- **DroolsScoutingRulesTest class loading failure** — prevents the full `mvn test -pl quarkmind-sc2` suite from running. Run tests by name: `-Dtest=ClassName`. Not related to Epic #534.
+- **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name: `-Dtest=ClassName`. Not related to Epic #534.

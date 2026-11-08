@@ -36,4 +36,7 @@ branch:
 - [x] casehubio/quarkmind#575 — Mining_duration_playbook_validation
 - [x] casehubio/quarkmind#574 — Worker_movement_acceleration_model
 - [x] casehubio/quarkmind#577 — Gas_movement_model
-- [ ] casehubio/quarkmind#576 — Spending_timing_model ← active
+- [x] casehubio/quarkmind#576 — Spending_timing_model
+- [ ] casehubio/quarkmind#583 — Mining_animation_real_SC2_calibration
+- [ ] casehubio/quarkmind#584 — Gas_worker_sub-tick_transitions
+- [ ] casehubio/quarkmind#585 — SC2Mapster_faster_speed_scaling_audit
