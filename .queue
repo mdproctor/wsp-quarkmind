@@ -6,8 +6,8 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#572
-branch: issue-572-worker-activity-modelling
+active_issue: casehubio/quarkmind#575
+branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
@@ -26,20 +26,14 @@ branch: issue-572-worker-activity-modelling
 - [x] casehubio/quarkmind#564 — Gas worker assignment accuracy
 - [x] casehubio/quarkmind#565 — DivergenceRegressionTest building accuracy regression
 - [x] casehubio/quarkmind#566 — Mineral mining efficiency factor
-- [ ] casehubio/quarkmind#567 — Mineral patch distance calibration ← active
-  - [x] Batch 1: Saturation
-    - [x] Task 1: Saturation curve diagnostic test
-  - [x] Batch 2: Activity States
-    - [x] Task 2: Add SCOUTING and TRANSFERRING to WorkerTask
-    - [x] Task 3: Add scoutReturnLoop field
-    - [x] Task 4: Implement scouting lifecycle
-  - [x] Batch 3: Transit
-    - [x] Task 5: Physical walk time for base transfers
-  - [x] Batch 4: Integration
-    - [x] Task 6: Wire scouting hooks to EmulatedGame
-    - [x] Task 7: Full regression verification
+- [x] casehubio/quarkmind#567 — Mineral patch distance calibration
 - [x] casehubio/quarkmind#568 — Gas income per-worker rate calibration
 - [x] casehubio/quarkmind#569 — 1-minute gas checkpoint delayed assignment
 - [x] casehubio/quarkmind#570 — Economy structural floor analysis
 - [x] casehubio/quarkmind#573 — Fractional gas harvest duration
 - [x] casehubio/quarkmind#571 — Sub-tick gas harvest carry-forward
+- [x] casehubio/quarkmind#572 — Worker_activity_modelling
+- [ ] casehubio/quarkmind#575 — Mining_duration_playbook_validation ← active
+- [ ] casehubio/quarkmind#574 — Worker_movement_acceleration_model
+- [ ] casehubio/quarkmind#577 — Gas_movement_model
+- [ ] casehubio/quarkmind#576 — Spending_timing_model
