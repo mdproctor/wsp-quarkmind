@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#577
+active_issue: casehubio/quarkmind#576
 branch: 
 
 ## Queue
@@ -35,5 +35,5 @@ branch:
 - [x] casehubio/quarkmind#572 — Worker_activity_modelling
 - [x] casehubio/quarkmind#575 — Mining_duration_playbook_validation
 - [x] casehubio/quarkmind#574 — Worker_movement_acceleration_model
-- [ ] casehubio/quarkmind#577 — Gas_movement_model ← active
-- [ ] casehubio/quarkmind#576 — Spending_timing_model
+- [x] casehubio/quarkmind#577 — Gas_movement_model
+- [ ] casehubio/quarkmind#576 — Spending_timing_model ← active
