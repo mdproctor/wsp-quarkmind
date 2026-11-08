@@ -7,7 +7,7 @@ status: active
 - covers: 534
 - date: 2026-11-07
 active_issue: casehubio/quarkmind#565
-branch: 
+branch: issue-567-mineral-patch-distance
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
@@ -25,10 +25,10 @@ branch:
 - [x] casehubio/quarkmind#562 — Gas income bidirectional variance
 - [x] casehubio/quarkmind#564 — Gas worker assignment accuracy
 - [x] casehubio/quarkmind#565 — DivergenceRegressionTest building accuracy regression
-- [ ] casehubio/quarkmind#566 — Mineral mining efficiency factor ← active
-- [ ] casehubio/quarkmind#567 — Mineral patch distance calibration
-- [ ] casehubio/quarkmind#568 — Gas income per-worker rate calibration
-- [ ] casehubio/quarkmind#569 — 1-minute gas checkpoint delayed assignment
-- [ ] casehubio/quarkmind#570 — Economy structural floor analysis
+- [x] casehubio/quarkmind#566 — Mineral mining efficiency factor
+- [ ] casehubio/quarkmind#567 — Mineral patch distance calibration ← active
+- [x] casehubio/quarkmind#568 — Gas income per-worker rate calibration
+- [x] casehubio/quarkmind#569 — 1-minute gas checkpoint delayed assignment
+- [x] casehubio/quarkmind#570 — Economy structural floor analysis
 - [x] casehubio/quarkmind#573 — Fractional gas harvest duration
 - [x] casehubio/quarkmind#571 — Sub-tick gas harvest carry-forward
