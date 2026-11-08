@@ -194,7 +194,14 @@ TickIncome tick(double tickStartLoop) {
 }
 ```
 
-SCOUTING workers are skipped — they have no assigned patch/gas and their task is not MINING_MINERALS, RETURNING_MINERALS, HARVESTING_GAS, or RETURNING_GAS, so `tickMineralWorker` already returns 0 for them (line 233: `if (w.task == WorkerTask.BUILDING || w.task == WorkerTask.IDLE) return 0`). This guard needs updating to include SCOUTING.
+SCOUTING and TRANSFERRING workers must be excluded from income. Update the guard in `tickMineralWorker` (line 233):
+
+```java
+if (w.task == WorkerTask.BUILDING || w.task == WorkerTask.IDLE
+        || w.task == WorkerTask.SCOUTING || w.task == WorkerTask.TRANSFERRING) return 0;
+```
+
+TRANSFERRING workers are handled separately in the tick loop (before the mineral income loop) so they don't need to enter `tickMineralWorker` at all — the guard is defence-in-depth.
 
 ### Testing Strategy
 
