@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#564
+active_issue: 
 branch: 
 
 ## Queue
@@ -23,5 +23,5 @@ branch:
 - [x] casehubio/quarkmind#560 — Protoss economy accuracy
 - [x] casehubio/quarkmind#561 — Spending under-deduction
 - [x] casehubio/quarkmind#562 — Gas income bidirectional variance
-- [ ] casehubio/quarkmind#564 — Gas worker assignment accuracy
+- [x] casehubio/quarkmind#564 — Gas worker assignment accuracy
 - [ ] casehubio/quarkmind#565 — DivergenceRegressionTest building accuracy regression
