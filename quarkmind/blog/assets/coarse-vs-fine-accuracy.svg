@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    text { fill: #0b0b0b; }
+    .label { font-size: 12px; fill: #52514e; }
+    .value { font-size: 13px; font-weight: 600; }
+    .axis-label { font-size: 11px; fill: #52514e; }
+    .title { font-size: 15px; font-weight: 600; }
+    .subtitle { font-size: 12px; fill: #52514e; }
+    .grid { stroke: #e8e8e5; stroke-width: 1; }
+    .bar-fine { fill: #2a78d6; }
+    .bar-coarse { fill: #1baf7a; }
+    .legend-text { font-size: 12px; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #f0efec; }
+      .label { fill: #c3c2b7; }
+      .axis-label { fill: #c3c2b7; }
+      .subtitle { fill: #c3c2b7; }
+      .grid { stroke: #333; }
+      .bar-fine { fill: #3987e5; }
+      .bar-coarse { fill: #199e70; }
+      rect.bg { fill: #1a1a19; }
+    }
+  </style>
+
+  <rect class="bg" width="640" height="340" fill="#fcfcfb" rx="6"/>
+
+  <!-- Title -->
+  <text x="60" y="30" class="title">Classification accuracy at minute 3</text>
+  <text x="60" y="48" class="subtitle">Fine-grained vs coarse (strategic intent) — tournament replays</text>
+
+  <!-- Legend -->
+  <rect x="460" y="20" width="12" height="12" rx="2" class="bar-fine"/>
+  <text x="476" y="31" class="legend-text">Fine</text>
+  <rect x="520" y="20" width="12" height="12" rx="2" class="bar-coarse"/>
+  <text x="536" y="31" class="legend-text">Coarse</text>
+
+  <!-- Grid lines -->
+  <line x1="100" y1="80" x2="600" y2="80" class="grid"/>
+  <line x1="100" y1="130" x2="600" y2="130" class="grid"/>
+  <line x1="100" y1="180" x2="600" y2="180" class="grid"/>
+  <line x1="100" y1="230" x2="600" y2="230" class="grid"/>
+  <line x1="100" y1="280" x2="600" y2="280" class="grid"/>
+
+  <!-- Y-axis labels -->
+  <text x="90" y="84" class="axis-label" text-anchor="end">100%</text>
+  <text x="90" y="134" class="axis-label" text-anchor="end">75%</text>
+  <text x="90" y="184" class="axis-label" text-anchor="end">50%</text>
+  <text x="90" y="234" class="axis-label" text-anchor="end">25%</text>
+  <text x="90" y="284" class="axis-label" text-anchor="end">0%</text>
+
+  <!-- Baseline -->
+  <line x1="100" y1="280" x2="600" y2="280" stroke="#52514e" stroke-width="1"/>
+
+  <!-- vs_terran: fine=60.8%, coarse=66.7% -->
+  <!-- Bar height: 200px = 100%. fine: 0.608*200=121.6, coarse: 0.667*200=133.4 -->
+  <rect x="140" y="158.4" width="50" height="121.6" rx="4" class="bar-fine"/>
+  <rect x="194" y="146.6" width="50" height="133.4" rx="4" class="bar-coarse"/>
+  <text x="165" y="152" class="value" text-anchor="middle" fill="#2a78d6">60.8%</text>
+  <text x="219" y="140" class="value" text-anchor="middle" fill="#1baf7a">66.7%</text>
+  <text x="192" y="300" class="label" text-anchor="middle">vs_terran</text>
+
+  <!-- vs_zerg: fine=43.5%, coarse=93.9% -->
+  <!-- fine: 0.435*200=87, coarse: 0.939*200=187.8 -->
+  <rect x="310" y="193" width="50" height="87" rx="4" class="bar-fine"/>
+  <rect x="364" y="92.2" width="50" height="187.8" rx="4" class="bar-coarse"/>
+  <text x="335" y="187" class="value" text-anchor="middle" fill="#2a78d6">43.5%</text>
+  <text x="389" y="86" class="value" text-anchor="middle" fill="#1baf7a">93.9%</text>
+  <text x="362" y="300" class="label" text-anchor="middle">vs_zerg</text>
+
+  <!-- vs_protoss: fine=85.2%, coarse=86.9% -->
+  <!-- fine: 0.852*200=170.4, coarse: 0.869*200=173.8 -->
+  <rect x="480" y="109.6" width="50" height="170.4" rx="4" class="bar-fine"/>
+  <rect x="534" y="106.2" width="50" height="173.8" rx="4" class="bar-coarse"/>
+  <text x="505" y="104" class="value" text-anchor="middle" fill="#2a78d6">85.2%</text>
+  <text x="559" y="100" class="value" text-anchor="middle" fill="#1baf7a">86.9%</text>
+  <text x="532" y="300" class="label" text-anchor="middle">vs_protoss</text>
+
+  <!-- Annotation: +50.4pp lift arrow for vs_zerg -->
+  <line x1="335" y1="195" x2="389" y2="93" stroke="#eb6834" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="380" y="148" font-size="13" font-weight="700" fill="#eb6834" text-anchor="end" transform="rotate(-40, 380, 148)">+50pp</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    text { fill: #0b0b0b; }
+    .label { font-size: 12px; fill: #52514e; }
+    .value { font-size: 13px; font-weight: 600; }
+    .title { font-size: 15px; font-weight: 600; }
+    .subtitle { font-size: 12px; fill: #52514e; }
+    .seg-invisible { fill: #2a78d6; }
+    .seg-visible { fill: #1baf7a; }
+    .annotation { font-size: 12px; fill: #52514e; }
+    .callout { font-size: 14px; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #f0efec; }
+      .label { fill: #c3c2b7; }
+      .subtitle { fill: #c3c2b7; }
+      .annotation { fill: #c3c2b7; }
+      .seg-invisible { fill: #3987e5; }
+      .seg-visible { fill: #199e70; }
+      rect.bg { fill: #1a1a19; }
+    }
+  </style>
+
+  <rect class="bg" width="640" height="220" fill="#fcfcfb" rx="6"/>
+
+  <!-- Title -->
+  <text x="40" y="30" class="title">RoachWarren visibility at minute 3</text>
+  <text x="40" y="48" class="subtitle">84 ROACH_RUSH-labelled tournament replays — when does the distinguishing building appear?</text>
+
+  <!-- Full bar: 500px wide -->
+  <!-- 7% visible (before min 3), 89% between 3-5, 4% after 5 -->
+  <!-- Visible at min 3: 7% = 35px. Not visible: 93% = 465px -->
+
+  <!-- The bar -->
+  <rect x="40" y="80" width="35" height="40" rx="4" class="seg-visible"/>
+  <rect x="77" y="80" width="463" height="40" rx="0" class="seg-invisible"/>
+  <rect x="540" y="80" width="0" height="40" rx="4"/>
+
+  <!-- Round right end -->
+  <rect x="536" y="80" width="4" height="40" class="seg-invisible"/>
+
+  <!-- Labels below bar -->
+  <text x="57" y="138" class="label" text-anchor="middle">7%</text>
+  <text x="57" y="152" class="annotation" text-anchor="middle">visible</text>
+
+  <text x="308" y="138" class="label" text-anchor="middle">93% — no RoachWarren yet</text>
+  <text x="308" y="152" class="annotation" text-anchor="middle">feature-indistinguishable from RUSH</text>
+
+  <!-- Legend -->
+  <rect x="40" y="178" width="12" height="12" rx="2" class="seg-visible"/>
+  <text x="56" y="189" class="label">RoachWarren built before min 3 (6 replays)</text>
+  <rect x="320" y="178" width="12" height="12" rx="2" class="seg-invisible"/>
+  <text x="336" y="189" class="label">RoachWarren not yet built at min 3 (78 replays)</text>
+
+  <!-- Callout -->
+  <text x="308" y="100" class="value" text-anchor="middle" fill="#fcfcfb">The model can't see what doesn't exist yet</text>
+</svg>
