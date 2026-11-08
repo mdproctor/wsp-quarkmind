@@ -30,3 +30,5 @@ branch:
 - [ ] casehubio/quarkmind#568 — Gas income per-worker rate calibration
 - [ ] casehubio/quarkmind#569 — 1-minute gas checkpoint delayed assignment
 - [ ] casehubio/quarkmind#570 — Economy structural floor analysis
+- [ ] casehubio/quarkmind#573 — Fractional gas harvest duration
+- [ ] casehubio/quarkmind#571 — Sub-tick gas harvest carry-forward
