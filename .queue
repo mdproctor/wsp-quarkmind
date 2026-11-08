@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#586
+active_issue: casehubio/quarkmind#590
 branch: 
 
 ## Queue
@@ -44,3 +44,6 @@ branch:
 - [ ] casehubio/quarkmind#587 — Deposit_time_modelling
 - [ ] casehubio/quarkmind#588 — Mineral_balance_cumulative_drift
 - [ ] casehubio/quarkmind#589 — Vespene_balance_cumulative_drift
+- [ ] casehubio/quarkmind#590 — Rate_measurement_cadence_alignment
+- [ ] casehubio/quarkmind#591 — Worker_income_direction_analysis
+- [ ] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation
