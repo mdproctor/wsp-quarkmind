@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <style>
+    text { font-family: -apple-system, 'Segoe UI', sans-serif; }
+    .title { font-size: 16px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 13px; fill: #333; }
+    .value { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+    .note { font-size: 11px; fill: #666; }
+    .axis { stroke: #ccc; stroke-width: 1; }
+    .gridline { stroke: #eee; stroke-width: 1; stroke-dasharray: 4,4; }
+  </style>
+
+  <!-- Title -->
+  <text x="360" y="30" text-anchor="middle" class="title">Mineral Mining Efficiency — Calibrated Worker Availability</text>
+
+  <!-- Y-axis labels -->
+  <text x="55" y="92" text-anchor="end" class="note">100%</text>
+  <text x="55" y="152" text-anchor="end" class="note">95%</text>
+  <text x="55" y="212" text-anchor="end" class="note">90%</text>
+  <text x="55" y="272" text-anchor="end" class="note">85%</text>
+
+  <!-- Gridlines -->
+  <line x1="65" y1="88" x2="700" y2="88" class="gridline"/>
+  <line x1="65" y1="148" x2="700" y2="148" class="gridline"/>
+  <line x1="65" y1="208" x2="700" y2="208" class="gridline"/>
+  <line x1="65" y1="268" x2="700" y2="268" class="gridline"/>
+
+  <!-- Axis -->
+  <line x1="65" y1="88" x2="65" y2="290" class="axis"/>
+  <line x1="65" y1="290" x2="700" y2="290" class="axis"/>
+
+  <!-- Protoss bar (0.92 → 8% unavailable) -->
+  <rect x="120" y="128" width="120" height="162" rx="4" fill="#4a90d9" opacity="0.85"/>
+  <rect x="120" y="88" width="120" height="40" rx="4" fill="#4a90d9" opacity="0.25"/>
+  <text x="180" y="225" text-anchor="middle" class="value" fill="white">0.92</text>
+  <text x="180" y="310" text-anchor="middle" class="label">Protoss</text>
+  <text x="180" y="75" text-anchor="middle" class="note">8% unavailable</text>
+
+  <!-- Zerg bar (0.95 → 5% unavailable) -->
+  <rect x="300" y="148" width="120" height="142" rx="4" fill="#6ab04c" opacity="0.85"/>
+  <rect x="300" y="88" width="120" height="60" rx="4" fill="#6ab04c" opacity="0.25"/>
+  <text x="360" y="225" text-anchor="middle" class="value" fill="white">0.95</text>
+  <text x="360" y="310" text-anchor="middle" class="label">Zerg</text>
+  <text x="360" y="75" text-anchor="middle" class="note">5% unavailable</text>
+
+  <!-- Terran bar (1.0 → 0% unavailable) -->
+  <rect x="480" y="88" width="120" height="202" rx="4" fill="#e67e22" opacity="0.85"/>
+  <text x="540" y="195" text-anchor="middle" class="value" fill="white">1.00</text>
+  <text x="540" y="310" text-anchor="middle" class="label">Terran</text>
+  <text x="540" y="75" text-anchor="middle" class="note">already modeled</text>
+
+  <!-- Legend note -->
+  <text x="360" y="338" text-anchor="middle" class="note">Solid = workers actively mining  |  Faded = workers scouting, in transit, or idle</text>
+</svg>
