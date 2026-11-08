@@ -23,3 +23,5 @@ branch:
 - [ ] casehubio/quarkmind#560 — Protoss economy accuracy
 - [ ] casehubio/quarkmind#561 — Spending under-deduction
 - [x] casehubio/quarkmind#562 — Gas income bidirectional variance
+- [ ] casehubio/quarkmind#564 — Gas worker assignment accuracy
+- [ ] casehubio/quarkmind#565 — DivergenceRegressionTest building accuracy regression
