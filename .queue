@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: 
+active_issue: casehubio/quarkmind#560
 branch: 
 
 ## Queue
@@ -19,7 +19,7 @@ branch:
 - [x] casehubio/quarkmind#555 — InProgress spending tracker
 - [x] casehubio/quarkmind#557 — Mineral collection rate per-base calibration
 - [x] casehubio/quarkmind#558 — Supply timing foodUsed
-- [ ] casehubio/quarkmind#559 — Spending category death-timing variance
+- [x] casehubio/quarkmind#559 — Spending category death-timing variance
 - [ ] casehubio/quarkmind#560 — Protoss economy accuracy
 - [ ] casehubio/quarkmind#561 — Spending under-deduction
 - [x] casehubio/quarkmind#562 — Gas income bidirectional variance
