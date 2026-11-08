@@ -7,7 +7,7 @@ status: active
 - covers: 534
 - date: 2026-11-07
 active_issue: casehubio/quarkmind#565
-branch: 
+branch: issue-565-building-accuracy-regression
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
