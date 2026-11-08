@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 534
 - date: 2026-11-07
-active_issue: casehubio/quarkmind#575
+active_issue: casehubio/quarkmind#574
 branch: 
 
 ## Queue
@@ -33,7 +33,7 @@ branch:
 - [x] casehubio/quarkmind#573 — Fractional gas harvest duration
 - [x] casehubio/quarkmind#571 — Sub-tick gas harvest carry-forward
 - [x] casehubio/quarkmind#572 — Worker_activity_modelling
-- [ ] casehubio/quarkmind#575 — Mining_duration_playbook_validation ← active
-- [ ] casehubio/quarkmind#574 — Worker_movement_acceleration_model
+- [x] casehubio/quarkmind#575 — Mining_duration_playbook_validation
+- [ ] casehubio/quarkmind#574 — Worker_movement_acceleration_model ← active
 - [ ] casehubio/quarkmind#577 — Gas_movement_model
 - [ ] casehubio/quarkmind#576 — Spending_timing_model
