@@ -70,9 +70,12 @@ SC2 playbooks prove per-worker rate is within 5%. The 22% aggregate MAPE in orac
 
 Don't fit physics constants against oracle data — the confounding variables lead to wrong answers (1.18 factor that should be 0.95). Use SC2 playbooks for physics, oracle replays for full-system validation.
 
-### 3. Seven SC2 recordings remain
+### 3. Seven SC2 recordings remain — run in parallel with calibration
 
-Run next session with SC2:
+**Completed (3):** cal-mineral-baseline-12w (Protoss), cal-mineral-baseline-terran, cal-mineral-baseline-zerg
+**Remaining (7):** saturation (16w/24w), gas (3w/6w), MULE isolation, expansion transfer, worker speed
+
+Run each with `-Psc2` (the sc2 Maven profile added this session):
 ```bash
 mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMineralSaturated16w
 mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMineralSaturated24w
@@ -83,7 +86,9 @@ mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalExpansi
 mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalWorkerSpeedSingle
 ```
 
-Priority: saturation (16w/24w) gives the curve, gas gives the gas factor, MULE isolation explains Terran.
+**Apply data as it arrives.** Each recording writes a JSON baseline to `src/test/resources/calibration/`. As each lands, immediately compare against EmulatedGame (load the JSON, run EM with same playbook, diff per-tick minerals/vespene). Apply findings to physics constants or the model without waiting for all 7 to complete.
+
+**Priority order:** saturation (16w/24w) first — reveals the saturation curve; gas (3w) next — isolates gas per-worker rate; MULE isolation — explains Terran's large oracle deficit.
 
 ### 4. Gas efficiency factor sweep hit the ceiling
 
