@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 280">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 11px; fill: #1a1a2e; }
+    .dim { font-size: 10px; fill: #6b7280; }
+    .block { rx: 3; ry: 3; }
+    .measured { fill: #10b981; }
+    .overhead { fill: #ef4444; opacity: 0.7; }
+    .separator { stroke: #ffffff; stroke-width: 2; }
+  </style>
+
+  <text x="330" y="24" text-anchor="middle" class="title">What the Mining Constant Actually Contains</text>
+
+  <!-- Real SC2 measurement -->
+  <text x="20" y="60" class="label" font-weight="600">Real SC2 (measured)</text>
+
+  <rect x="20" y="70" width="60" height="40" class="block measured"/>
+  <text x="50" y="95" text-anchor="middle" class="label" fill="white">5</text>
+  <text x="50" y="120" text-anchor="middle" class="dim">mine</text>
+
+  <rect x="84" y="70" width="36" height="40" class="block overhead"/>
+  <text x="102" y="95" text-anchor="middle" class="label" fill="white">2-3</text>
+  <text x="102" y="120" text-anchor="middle" class="dim">deposit</text>
+
+  <rect x="124" y="70" width="36" height="40" class="block overhead"/>
+  <text x="142" y="95" text-anchor="middle" class="label" fill="white">2-3</text>
+  <text x="142" y="120" text-anchor="middle" class="dim">dock</text>
+
+  <rect x="164" y="70" width="24" height="40" class="block overhead"/>
+  <text x="176" y="95" text-anchor="middle" class="label" fill="white">1-2</text>
+  <text x="176" y="120" text-anchor="middle" class="dim">path</text>
+
+  <text x="220" y="95" class="label">= ~12 loops total</text>
+
+  <!-- Simulation (lumped) -->
+  <text x="370" y="60" class="label" font-weight="600">Simulation (lumped constant)</text>
+
+  <rect x="370" y="70" width="144" height="40" class="block measured"/>
+  <rect x="430" y="70" width="84" height="40" class="block overhead" opacity="0.3"/>
+  <line x1="430" y1="70" x2="430" y2="110" class="separator"/>
+  <text x="400" y="95" text-anchor="middle" class="label" fill="white">5</text>
+  <text x="472" y="95" text-anchor="middle" class="label" fill="white">+7</text>
+  <text x="442" y="130" text-anchor="middle" class="dim">mining = 12</text>
+
+  <!-- Arrow -->
+  <text x="310" y="95" text-anchor="middle" class="label" fill="#6b7280">→</text>
+
+  <!-- Bottom: the finding -->
+  <rect x="20" y="160" width="620" height="100" rx="8" ry="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="40" y="185" class="label" font-weight="600">The finding</text>
+  <text x="40" y="205" class="dim">Separating deposit (2 loops) from mining (reducing to 10) should give the same total cycle.</text>
+  <text x="40" y="222" class="dim">It doesn't. The MAPE minimum shifts upward — from 22.8% to 23.1% at the 7-min checkpoint.</text>
+  <text x="40" y="245" class="label" fill="#ef4444">The three overhead components interact. Modeling them separately changes the cycle dynamics,</text>
+  <text x="40" y="260" class="label" fill="#ef4444">not just the cycle length. The lumped constant captures their combined effect more accurately.</text>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 11px; fill: #1a1a2e; }
+    .dim { font-size: 10px; fill: #6b7280; }
+    .phase { rx: 4; ry: 4; }
+    .walk { fill: #3b82f6; }
+    .mine { fill: #10b981; }
+    .deposit { fill: #f59e0b; }
+    .overhead { fill: #ef4444; opacity: 0.15; stroke: #ef4444; stroke-width: 1; stroke-dasharray: 4 2; }
+    .overhead-solid { fill: #ef4444; opacity: 0.7; }
+    .brace { fill: none; stroke: #6b7280; stroke-width: 1.5; }
+    .connector { fill: none; stroke: #9ca3af; stroke-width: 1; stroke-dasharray: 3 3; }
+  </style>
+
+  <!-- Title -->
+  <text x="360" y="24" text-anchor="middle" class="title">Worker Cycle: Lumped vs Split Overhead</text>
+
+  <!-- === LUMPED CONSTANT (top) === -->
+  <text x="20" y="60" class="label" font-weight="600">Lumped (current)</text>
+  <text x="20" y="75" class="dim">mining = 12 loops — absorbs all overhead</text>
+
+  <!-- Walk to patch -->
+  <rect x="20" y="90" width="200" height="36" class="phase walk"/>
+  <text x="120" y="113" text-anchor="middle" class="label" fill="white">Walk to patch (50 loops)</text>
+
+  <!-- Mine (lumped) -->
+  <rect x="224" y="90" width="96" height="36" class="phase mine"/>
+  <text x="272" y="113" text-anchor="middle" class="label" fill="white">Mine (12)</text>
+
+  <!-- Overhead absorbed indicator -->
+  <rect x="224" y="90" width="96" height="36" class="overhead"/>
+
+  <!-- Walk home -->
+  <rect x="324" y="90" width="200" height="36" class="phase walk"/>
+  <text x="424" y="113" text-anchor="middle" class="label" fill="white">Walk home (50 loops)</text>
+
+  <!-- Deposit (instant) -->
+  <rect x="528" y="90" width="4" height="36" class="phase deposit"/>
+
+  <!-- Total -->
+  <text x="560" y="113" class="label">= 112 loops</text>
+  <text x="560" y="128" class="dim">MAPE: 22.8%</text>
+
+  <!-- Overhead label -->
+  <text x="272" y="145" text-anchor="middle" class="dim">deposit + docking + contention</text>
+  <text x="272" y="157" text-anchor="middle" class="dim">absorbed inside mining constant</text>
+
+  <!-- === SPLIT PHASES (bottom) === -->
+  <text x="20" y="200" class="label" font-weight="600">Split (investigated)</text>
+  <text x="20" y="215" class="dim">mining = 15, deposit = 2 — separated overhead</text>
+
+  <!-- Walk to patch -->
+  <rect x="20" y="230" width="200" height="36" class="phase walk"/>
+  <text x="120" y="253" text-anchor="middle" class="label" fill="white">Walk to patch (50 loops)</text>
+
+  <!-- Mine (shorter) -->
+  <rect x="224" y="230" width="120" height="36" class="phase mine"/>
+  <text x="284" y="253" text-anchor="middle" class="label" fill="white">Mine (15)</text>
+
+  <!-- Walk home -->
+  <rect x="348" y="230" width="200" height="36" class="phase walk"/>
+  <text x="448" y="253" text-anchor="middle" class="label" fill="white">Walk home (50 loops)</text>
+
+  <!-- Deposit (explicit) -->
+  <rect x="552" y="230" width="24" height="36" class="phase overhead-solid"/>
+  <text x="564" y="253" text-anchor="middle" class="label" fill="white" font-size="9">2</text>
+
+  <!-- Total -->
+  <text x="600" y="253" class="label">= 117 loops</text>
+  <text x="600" y="268" class="dim">MAPE: 23.1%</text>
+
+  <!-- Deposit label -->
+  <text x="564" y="285" text-anchor="middle" class="dim">explicit</text>
+  <text x="564" y="297" text-anchor="middle" class="dim">deposit</text>
+
+  <!-- Verdict -->
+  <text x="360" y="330" text-anchor="middle" class="label" fill="#ef4444">Split total is longer (117 &gt; 112) and MAPE is worse (23.1% &gt; 22.8%)</text>
+</svg>
