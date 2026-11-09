@@ -47,3 +47,6 @@ branch:
 - [ ] casehubio/quarkmind#590 — Rate_measurement_cadence_alignment
 - [ ] casehubio/quarkmind#591 — Worker_income_direction_analysis
 - [ ] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation
+- [ ] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering
+- [ ] casehubio/quarkmind#594 — Sub_tick_rate_tracking
+- [ ] casehubio/quarkmind#595 — Gas_rate_regression_analysis
