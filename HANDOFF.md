@@ -2,88 +2,146 @@
 
 ## Last Session
 
-Ran SC2 calibration playbooks from #591. Fixed critical bugs in PlaybookSC2Adapter (position-based builds rejected by SC2, Assimilator commands not dispatched, morph/calldown unimplemented). Recorded 5 working mineral baselines + 1 saturation baseline. Gas, MULE, and expansion recordings need one more adapter fix.
+SC2 playbook calibration — recorded 8 baselines against real SC2, diagnosed adapter infrastructure bugs, established per-worker physics accuracy. Filed #596-#599 for remaining calibration work. The critical blocker for 0% error is #596 (EM implementation gap).
 
 ### What was done
 
-- **SC2 adapter fixes (3 bugs):**
-  1. Build commands sent to hardcoded `(30, 30)` → always rejected. Fixed: use debug API `DebugCreateUnit` for supply/tech buildings (bypasses placement validation)
-  2. Assimilator geyser-targeting commands created but never dispatched (build path returned null but command was in the return value). Fixed: route non-null build commands to `sendActions`
-  3. Morph (`CC→OC`) and calldown (`MULE`) actions unimplemented in adapter. Added `translateMorph` and `translateCalldown`
+- **SC2 adapter fixes (3 bugs fixed, 2 remaining):**
+  1. **(Fixed)** Build commands at hardcoded `(30, 30)` → always rejected by SC2. Switched to debug API `DebugCreateUnit` for supply/tech buildings — bypasses placement validation entirely.
+  2. **(Fixed, untested)** Assimilator geyser-targeting commands created but never dispatched — `onStep` build path called `translateStep` but ignored the return value. Fix committed (af5ca46b).
+  3. **(Fixed, untested)** Morph (`CC→OC`) and calldown (`MULE`) actions unimplemented. Added `translateMorph` (targets source building with morph ability) and `translateCalldown` (targets nearest mineral patch with `EFFECT_CALL_DOWN_MULE`).
+  4. **(Remaining — #597)** SC2 does NOT auto-assign workers to completed Assimilators. Adapter needs explicit worker-to-gas assignment action.
+  5. **(Remaining — #598)** Expansion playbook needs rally commands or debug-spawned workers at the expansion location.
 
-- **SC2 calibration findings (from working baselines):**
-  - Per-worker mineral rate: Protoss=57.9, Terran=57.2, Zerg=57.2 minerals/min/worker
-  - EM at real map distances: ~57.8/min/worker → **within 1% of SC2**
-  - EM at test distance (uniform 6.0u): 54.0/min/worker → 7% below SC2 (test distance too short for realistic cycle times)
-  - Efficiency factors reverted to 1.0 — oracle-derived factors (1.18/1.12/1.28) were compensating for allocation gaps, not physics
-  - Saturation: 23 workers on 8 patches → 48.6/min/worker (84% efficiency). EM shows ~90% → 6% too lenient
+- **8 SC2 baselines recorded** (5 working, 3 broken):
+  - **Working mineral baselines:** `cal-mineral-baseline-12w` (Protoss), `cal-mineral-baseline-terran`, `cal-mineral-baseline-zerg` — 12 workers, pure mining, ~5 min each
+  - **Working saturation:** `cal-mineral-saturated-16w` — 12→23 workers via continuous training + debug Pylon
+  - **Working validation:** `cal-worker-speed-single` — 12w with asserts, redundant with 12w baseline
+  - **Broken gas:** `cal-gas-baseline-3w`, `cal-gas-dual-6w` — 0 vespene (Assimilator dispatch bug + no worker-to-gas assignment)
+  - **Broken MULE:** `cal-mule-isolation` — identical to Terran baseline (morph/calldown not dispatched)
 
-- **Remaining adapter fixes needed:**
-  - Assimilator dispatch fix committed but not yet tested against SC2 (gas baselines still show 0 vespene)
-  - SC2 auto-worker-to-gas assignment not triggered by playbooks — may need explicit worker assignment action in adapter
-  - Expansion playbook: debug-created Nexus provides supply but workers don't transfer to 2nd base without rally commands
+- **DualRunCalibrationTest extended:**
+  - `selfBaselineCalWorkerSpeedSingle` — self-baseline for worker-speed playbook
+  - `dualRunCalMineralBaseline12wAgainstSC2` — loads SC2 baseline, runs EM, prints per-tick mineral delta
+
+- **4 new issues filed:** #596 (EM implementation gap), #597 (gas adapter), #598 (MULE/expansion adapter), #599 (saturation contention model)
 
 ---
 
 ## Current Accuracy State
 
-### SC2 Playbook Calibration Results
+### What works — per-worker mineral physics
 
-| Measurement | SC2 Real | EM Model | Delta | Source |
-|---|---|---|---|---|
-| Protoss per-worker mineral rate | 57.9/min | ~57.8 (real dist) | <1% | cal-mineral-baseline-12w |
-| Terran per-worker mineral rate | 57.2/min | ~57.8 (real dist) | ~1% | cal-mineral-baseline-terran |
-| Zerg per-worker mineral rate | 57.2/min | ~57.8 (real dist) | ~1% | cal-mineral-baseline-zerg |
-| Saturation efficiency (23w/8p) | 84% | ~90% | EM 6% too lenient | cal-mineral-saturated-16w |
+SC2 playbook calibration with 12 workers (no buildings, pure mining) on TorchesAIE_v4:
 
-### Standalone EmulatedGameBaselineTest — 7-min checkpoint
+| Race | SC2 per-worker rate | EM at real distances | Delta |
+|---|---|---|---|
+| Protoss | 57.9 minerals/min | ~57.8 (weighted 4×6.6u + 4×7.6u) | **<1%** |
+| Terran | 57.2 minerals/min | ~57.8 | **~1%** |
+| Zerg | 57.2 minerals/min | ~57.8 | **~1%** |
 
-Factors at 1.0 (unchanged from previous session):
+**Conclusion:** Per-worker mineral physics is correct at real map distances. Mining-duration=12, gas-harvest=22, acceleration=3.5 constants are calibrated.
+
+### What doesn't work — EM implementation gap (#596, BLOCKER)
+
+The dual-run comparison (`dualRunCalMineralBaseline12wAgainstSC2`) shows EM producing **3275 minerals vs SC2's 3460 at tick 304** — a cumulative shortfall of 185 minerals (5.3%). The EM's internal per-worker rate is 54.0/min/worker at 6.0u, 15% below the physics formula's predicted 63.4.
+
+**This is the critical blocker.** Until we know WHERE the EM loses loops in its mining cycle, adjusting constants is futile. A single-worker trace diagnostic (print every loop transition) will reveal the source — startup delay, tick-boundary waste, assignment overhead, or cycle mechanics.
+
+### What doesn't work — saturation (#599)
+
+| Workers/patch | SC2 efficiency | EM efficiency | Gap |
+|---|---|---|---|
+| 1.5 (12 workers) | 100% (base) | ~95% | — |
+| 2.9 (23 workers) | **84%** | **~90%** | EM 6% too lenient |
+
+3rd workers per patch add proportionally too much income. The contention model needs steeper penalties.
+
+### What's not yet measured
+
+| Category | Status | Blocker |
+|---|---|---|
+| Gas per-worker rate | No data (0 vespene in baselines) | #597 — Assimilator dispatch + worker assignment |
+| MULE income per calldown | No data | #598 — morph + calldown dispatch |
+| Expansion transfer delay | No data | #598 — rally commands or debug workers |
+| 24w saturation (3/patch) | No data (supply-capped at 15) | Needs re-recording with fixed adapter |
+
+### Standalone EmulatedGameBaselineTest — 7-min checkpoint (oracle replays)
 
 | Field | MAPE | Status |
 |---|---|---|
-| mineralsCollectionRate | 22.1% | Worker allocation gap, not physics (#572) |
+| mineralsCollectionRate | 22.1% | Worker allocation gap, not physics |
 | vespeneCollectionRate | 29.1% | Gas physics not yet SC2-calibrated |
 | mineralsCurrent | 67.5% | Cumulative drift from rate error |
 | vespeneCurrent | 65.4% | Cumulative drift |
-| All other fields | Same as previous session | At floor or structural |
+| foodMade/Used | 3.1%/3.7% | At floor |
+| workersActiveCount | 2.5% | At floor |
 
 ---
 
-## Remaining Queue
+## Issue Map
+
+### Critical path to 0% mineral accuracy
 
 ```
-- [ ] #592 — Overhead absorption limit investigation
-- [ ] #593 — SC2 rate algorithm reverse-engineering
-- [ ] #594 — Sub-tick rate tracking — exact 160-loop window
-- [ ] #595 — Gas rate regression analysis — 176-loop window impact
+#596 — EM implementation gap diagnosis (BLOCKER)
+  ↓ (fix per-worker base rate first)
+#599 — Saturation contention model
+  ↓ (then fix multi-worker behavior)
+#597 — Gas adapter fix (parallel with above)
+#598 — MULE/expansion adapter (parallel with above)
 ```
+
+### Open issues by priority
+
+| # | Title | Scale | Complexity | Blocked by | Status |
+|---|---|---|---|---|---|
+| **596** | EM implementation efficiency gap | M | Med | — | **NEXT — blocker for 0% accuracy** |
+| **599** | Saturation contention model | L | High | #596 | New — needs base rate fix first |
+| **597** | SC2 adapter gas dispatch | S | Med | — | Fix committed, untested |
+| **598** | SC2 adapter MULE/expansion | M | High | — | Morph/calldown implemented, untested |
+| 592 | Overhead absorption limit | S | Med | #596 | May be resolved by #596 |
+| 593 | SC2 rate algorithm RE | M | High | — | Deprioritised — playbook calibration more direct |
+| 594 | Sub-tick rate tracking | S | Med | — | Deprioritised |
+| 595 | Gas rate regression | S | Med | #597 | Needs gas data first |
+
+### Closed this session
+| # | Title | Resolution |
+|---|---|---|
+| 591 | Worker income direction analysis | Factors reverted to 1.0, physics proven correct |
 
 ---
 
-## Critical Insights for Next Session
+## What to do next
 
-### 1. Per-worker physics is calibrated — don't touch mining constants
+### Priority 1 — #596: Single-worker trace diagnostic
 
-SC2 playbook calibration proves per-worker mineral physics is within 1% at real map distances. The mining-duration=12, gas-harvest=22, acceleration=3.5 constants are correct. The 22% rate MAPE in oracle replays is entirely worker allocation — #572 is the fix, not physics.
+Write a test that traces ONE worker's mining cycle loop-by-loop for 100 ticks:
+```
+loop 0: IDLE → assigned to patch 3
+loop 0: start walk to (6.0, 0.0), distance=6.0
+loop 47: arrive at patch, start mining
+loop 59: mining complete, 5 minerals harvested
+loop 59: start walk home to (0, 0)
+loop 106: arrive at base, deposit 5 minerals → total 55
+loop 106: start walk to patch 3...
+```
 
-### 2. Saturation model needs steeper contention
+Compare actual cycle length to the formula. The gap between 54.0 observed and 63.4 predicted must come from one of:
+1. **Startup delay** — workers don't all start at loop 0
+2. **Tick-boundary waste** — loops lost at state transitions despite sub-tick chaining
+3. **Assignment overhead** — finding a free patch takes loops
+4. **MineralPatch contention** — with 12 workers on 8 patches, some wait
 
-SC2 drops to 84% per-worker efficiency at 2.9 workers/patch. EM stays at ~90%. The contention model (patch occupancy during mining duration) needs to penalise 3rd workers more aggressively. This is #572 territory.
+### Priority 2 — #597: Gas calibration
 
-### 3. SC2 adapter needs 2 more fixes for gas/MULE recordings
+1. Verify Assimilator dispatch fix works (run `recordCalGasBaseline3w` once)
+2. If Assimilator appears but vespene=0, add explicit worker-to-gas assignment
+3. Extract per-worker gas rate, calibrate gas-harvest-duration-loops
 
-**Fix 1 — Assimilator dispatch**: Code is committed but untested. The `onStep` fix routes non-null `translateBuild` results to `sendActions`. Run `recordCalGasBaseline3w` to verify. If Assimilator appears but vespene stays 0, SC2 isn't auto-assigning workers — adapter needs an explicit "assign 3 workers to gas" action.
+### Priority 3 — #599: Saturation model
 
-**Fix 2 — Morph/calldown dispatch**: `translateMorph` and `translateCalldown` are implemented but `fired[i]` semantics for morphs may not be right. The MULE calldown uses `loop: continuous` which should retry each tick until OC has energy. Test with `recordCalMuleIsolation`.
-
-### 4. Expansion playbook needs rally command support
-
-Debug-created Nexus provides supply instantly but workers don't mine at the expansion without rally commands. The adapter needs either: (a) SC2 debug API to create workers at the expansion, or (b) rally point commands to transfer workers.
-
-### 5. Test distance vs real distance gap
-
-EM at test distance (6.0u uniform) produces 54.0/min/worker — 7% below SC2's 57.9. At real distances (4 close×6.6u + 4 far×7.6u), the weighted average is ~57.8. Tests use `MineralPatch.PATCH_DISTANCE=6.0f` for stability. Consider adding close/far patch variants for more realistic testing, but do NOT change PATCH_DISTANCE — it would break all existing test assertions.
+After #596 is fixed, compare EM saturation against the 16w baseline tick-by-tick. Steepen contention penalties until EM matches SC2's 84% efficiency at 23 workers.
 
 ---
 
@@ -91,18 +149,20 @@ EM at test distance (6.0u uniform) produces 54.0/min/worker — 7% below SC2's 5
 
 | What | Where |
 |------|-------|
-| PlaybookSC2Adapter (debug build, geyser targeting) | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
-| ResolvedCommand (targetUnitTag) | `quarkmind-sc2/.../real/ResolvedCommand.java` |
-| DualRunCalibrationTest (SC2 comparison) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
-| SC2 calibration baselines (8 files) | `quarkmind-sc2/src/test/resources/calibration/cal-*.json` |
-| Calibration playbooks (10 files) | `quarkmind-sc2/src/test/resources/playbooks/cal-*.yaml` |
-| SC2 physics constants | `docs/sc2-physics-constants.md` |
-| MineralPatch.PATCH_DISTANCE | `quarkmind-sc2/.../emulated/MineralPatch.java:11` |
-| EmulatedGame.tick() (factor wiring) | `quarkmind-sc2/.../emulated/EmulatedGame.java:208-209` |
-| PlaybookSC2RecorderTest (10 scenarios) | `quarkmind-sc2/.../real/PlaybookSC2RecorderTest.java` |
+| PlaybookSC2Adapter (debug build, geyser targeting, morph, calldown) | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
+| ResolvedCommand (targetUnitTag for geyser targeting) | `quarkmind-sc2/.../real/ResolvedCommand.java` |
+| QuarkusSC2Transport.sendActions (targetUnitTag dispatch) | `quarkmind-sc2/.../real/QuarkusSC2Transport.java:285` |
+| DualRunCalibrationTest (SC2 comparison + self-baselines) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
+| PlaybookSC2RecorderTest (10 SC2 recording scenarios) | `quarkmind-sc2/.../real/PlaybookSC2RecorderTest.java` |
+| SC2 calibration baselines (8 JSON files) | `quarkmind-sc2/src/test/resources/calibration/cal-*.json` |
+| Calibration playbooks (10 YAML files) | `quarkmind-sc2/src/test/resources/playbooks/cal-*.yaml` |
+| MineralPatch.PATCH_DISTANCE (6.0f uniform) | `quarkmind-sc2/.../emulated/MineralPatch.java:11` |
+| EmulatedGame.tick() (efficiency factor wiring) | `quarkmind-sc2/.../emulated/EmulatedGame.java:208-209` |
+| SC2 physics constants reference | `docs/sc2-physics-constants.md` |
 
 ---
 
 ## Pre-existing Issues
 
 - **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name: `-Dtest=ClassName`. Not related to Epic #534.
+- **Terran/Zerg unit type mapping** — SCVs and Drones show as `UNKNOWN` in SC2 baselines. `ObservationTranslator` doesn't map all ocraft unit types. Mineral data is correct (unit types don't affect mineral counts).
