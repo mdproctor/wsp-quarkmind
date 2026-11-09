@@ -49,6 +49,6 @@ branch:
 - [x] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation
 - [x] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering
 - [x] casehubio/quarkmind#594 — Sub_tick_rate_tracking
-- [ ] casehubio/quarkmind#595 — Gas_rate_regression_analysis ← active
+- [x] casehubio/quarkmind#595 — Gas_rate_regression_analysis
 - [x] casehubio/quarkmind#600 — Calibrate Terran/Zerg per-race mining efficiency factors
 - [x] casehubio/quarkmind#601 — Sub-tick training resolution
