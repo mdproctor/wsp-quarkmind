@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200">
+  <defs>
+    <marker id="chain-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#4a9eff"/>
+    </marker>
+  </defs>
+  <rect x="20" y="60" width="680" height="80" rx="6" fill="#1a1a2e" stroke="#333" stroke-width="1"/>
+  <text x="360" y="45" text-anchor="middle" fill="#999" font-family="monospace" font-size="12">Same tick = 22 game loops — sub-tick chaining</text>
+  <!-- Walk phase -->
+  <rect x="30" y="70" width="200" height="24" rx="4" fill="#2d5a27"/>
+  <text x="130" y="87" text-anchor="middle" fill="#8fbc8f" font-family="monospace" font-size="11">walk to patch (19 loops)</text>
+  <!-- Arrow showing chain -->
+  <line x1="230" y1="82" x2="238" y2="82" stroke="#4a9eff" stroke-width="2" marker-end="url(#chain-arrow)"/>
+  <!-- Mining chained -->
+  <rect x="240" y="70" width="30" height="24" rx="4" fill="#2d4a5a"/>
+  <text x="255" y="87" text-anchor="middle" fill="#87ceeb" font-family="monospace" font-size="9">3</text>
+  <!-- Tick boundary -->
+  <line x1="270" y1="60" x2="270" y2="140" stroke="#555" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="280" y="55" fill="#666" font-family="monospace" font-size="10">tick boundary</text>
+  <!-- Mining continues -->
+  <rect x="280" y="70" width="80" height="24" rx="4" fill="#2d4a5a"/>
+  <text x="320" y="87" text-anchor="middle" fill="#87ceeb" font-family="monospace" font-size="11">mine (9 loops)</text>
+  <!-- Arrow showing chain -->
+  <line x1="360" y1="82" x2="368" y2="82" stroke="#4a9eff" stroke-width="2" marker-end="url(#chain-arrow)"/>
+  <!-- Return walk chained into same tick -->
+  <rect x="370" y="70" width="160" height="24" rx="4" fill="#2d5a27"/>
+  <text x="450" y="87" text-anchor="middle" fill="#8fbc8f" font-family="monospace" font-size="11">walk home (13 loops)</text>
+  <!-- Next tick -->
+  <line x1="540" y1="60" x2="540" y2="140" stroke="#555" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Continue walk -->
+  <rect x="550" y="70" width="60" height="24" rx="4" fill="#2d5a27"/>
+  <text x="580" y="87" text-anchor="middle" fill="#8fbc8f" font-family="monospace" font-size="11">6 loops</text>
+  <!-- Arrow -->
+  <line x1="610" y1="82" x2="618" y2="82" stroke="#4a9eff" stroke-width="2" marker-end="url(#chain-arrow)"/>
+  <!-- Deposit chained -->
+  <rect x="620" y="70" width="60" height="24" rx="4" fill="#5a4a2d"/>
+  <text x="650" y="87" text-anchor="middle" fill="#daa520" font-family="monospace" font-size="9">deposit+</text>
+  <!-- Bottom annotation -->
+  <line x1="230" y1="100" x2="270" y2="100" stroke="#4a9eff" stroke-width="2" marker-end="url(#chain-arrow)"/>
+  <text x="280" y="105" fill="#4a9eff" font-family="monospace" font-size="10">chains carry remaining loops into next phase</text>
+  <text x="360" y="160" text-anchor="middle" fill="#888" font-family="monospace" font-size="11">After: zero dead loops — every transition chains immediately</text>
+</svg>
