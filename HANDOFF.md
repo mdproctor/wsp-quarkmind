@@ -2,18 +2,26 @@
 
 ## Last Session
 
-Closed 2 issues (#590, #591). Rate cadence alignment implemented — loop-based rate windowing in EconomyTracker. Mining efficiency factors recalibrated — factors > 1.0 needed post sub-tick fixes. Filed 3 new issues (#593-#595) for remaining rate accuracy vectors.
+Closed #590 (rate cadence). Investigated #591 (income direction) — major finding from SC2 playbook calibration: per-worker mining physics is only 5% off, the 22% aggregate MAPE is from worker allocation, not physics. Efficiency factors (1.18/1.12/1.28) were wrong — reverted to 1.0. Filed #593-595 for rate accuracy. Built SC2 calibration infrastructure: 10 playbooks, adapter tick/loop fix, sc2 Maven profile.
 
 ### What was done
 
-- **#590 — Rate measurement cadence alignment (closed).** Replaced tick-counting (RATE_INTERVAL_TICKS=7, 154 loops) with loop-counting (rateIntervalLoops=160, fires every 8 ticks = 176 loops). Added EconomyConfig with `starcraft.economy.rate-interval-loops` property. Diagnostic confirmed PlayerStatsEvent cadence: 96.8% exactly 160 loops across 9183 intervals. MAPE comparison showed mixed effect: mineral rate -0.7% improvement, vespene rate +2.4% regression. Cadence alignment is architecturally correct but not the dominant MAPE factor.
+- **#590 — Rate cadence alignment (closed).** EconomyTracker switched from tick-counting (154 loops) to loop-counting (160 loops, configurable). Empirically confirmed 96.8% of PlayerStatsEvents at exactly 160 loops. Mixed MAPE effect (+/-1-2%). Added EconomyConfig with `starcraft.economy.rate-interval-loops`.
 
-- **#591 — Worker income direction analysis (closed).** Extended efficiency factor sweep from 0.85-1.0 to 0.85-1.30. Found model under-produces income post sub-tick — optimal rate factors all above 1.0: Protoss=1.18 (13.1% rate MAPE), Zerg=1.12 (12.2%), Terran=1.28 (18.1%). Applied via RaceModel.miningEfficiencyFactor() in EmulatedGame.tick(). mineralsCollectionRate MAPE improved from 22.1% to 14.5%. mineralsCurrent MAPE worsened (67.5% → 126.1%) — income increased but spending unchanged.
+- **#591 — Worker income direction (in progress).**
+  - Extended efficiency factor sweep to 0.85-1.30. Oracle-derived factors: Protoss=1.18, Zerg=1.12, Terran=1.28 — all above 1.0, suggesting model under-produces.
+  - Applied factors via RaceModel.miningEfficiencyFactor() in EmulatedGame.tick(). Rate MAPE improved (22.1% → 14.5%) but mineralsCurrent MAPE exploded (67.5% → 126.1%).
+  - **SC2 playbook calibration disproved the factors.** Recorded 3 baselines against real SC2: Protoss=56.9, Terran=56.2, Zerg=56.2 minerals/min/worker. Model produces 60.0. The model OVER-produces per-worker income by 5%. The oracle-derived factors > 1.0 were compensating for worker allocation gaps, not physics.
+  - **Factors reverted to 1.0.** The infrastructure (RaceModel methods, EmulatedGame wiring) stays for future use.
 
-- **New issues filed:**
-  - **#593** — SC2 rate algorithm reverse-engineering (blocked by #591)
-  - **#594** — Sub-tick rate tracking — exact 160-loop window
-  - **#595** — Gas rate regression analysis — 176-loop window impact
+- **SC2 calibration infrastructure built:**
+  - 10 targeted playbooks in `src/test/resources/playbooks/cal-*.yaml`
+  - Fixed PlaybookSC2Adapter: tick/loop conversion, isRunning() race condition
+  - Added `sc2` Maven profile (was impossible to run @Tag("sc2") tests before)
+  - 9 self-baseline tests + 9 SC2 recorder tests in PlaybookSC2RecorderTest
+  - 3 SC2 baselines recorded in `src/test/resources/calibration/`
+
+- **New issues filed:** #593 (SC2 rate algorithm RE), #594 (sub-tick rate tracking), #595 (gas rate regression)
 
 ---
 
@@ -21,24 +29,23 @@ Closed 2 issues (#590, #591). Rate cadence alignment implemented — loop-based 
 
 ### Standalone EmulatedGameBaselineTest — 7-min checkpoint
 
-| Field | Previous Session | This Session | Status |
+Factors at 1.0 — same as before this session for most fields:
+
+| Field | Value | Status |
+|---|---|---|
+| mineralsCollectionRate | 22.1% | Cadence alignment, no net change from factors |
+| vespeneCollectionRate | 29.1% | Unchanged — gas factors not applied |
+| mineralsCurrent | 67.5% | Unchanged |
+| vespeneCurrent | 65.4% | Unchanged |
+| All other fields | Same as previous session | At floor or structural |
+
+### Key calibration data (NEW — from SC2 playbooks)
+
+| Measurement | SC2 Real | EM Model | Delta |
 |---|---|---|---|
-| mineralsCollectionRate | 22.8% | **14.5%** | Improved — efficiency factors |
-| vespeneCollectionRate | 26.7% | **29.1%** | Regressed — cadence alignment |
-| mineralsCurrent | 67.5% | **126.1%** | Worsened — income up, spending unchanged |
-| vespeneCurrent | 65.4% | 65.4% | Unchanged |
-| foodMade | 3.1% | 3.1% | At floor |
-| foodUsed | 3.7% | 3.7% | At floor |
-| workersActiveCount | 2.5% | 2.5% | At floor |
-| mineralsUsedCurrentArmy | 7.1% | 7.1% | At floor |
-| mineralsUsedCurrentEconomy | 5.8% | 5.8% | At floor |
-| mineralsUsedCurrentTechnology | 17.0% | 17.0% | Near floor |
-| vespeneUsedCurrentArmy | 7.4% | 7.4% | At floor |
-| vespeneUsedCurrentTechnology | 42.0% | 42.0% | Structural |
-
-### DivergenceRegressionTest — all green
-
-100% units, buildings, upgrades. All matchup deltas within thresholds. Economy MAPE within 150% ceiling.
+| Protoss per-worker mineral rate | 56.9/min | 60.0/min | +5.5% over |
+| Terran per-worker mineral rate | 56.2/min | 60.0/min | +6.8% over |
+| Zerg per-worker mineral rate | 56.2/min | 60.0/min | +6.8% over |
 
 ---
 
@@ -51,32 +58,40 @@ Closed 2 issues (#590, #591). Rate cadence alignment implemented — loop-based 
 - [ ] #595 — Gas rate regression analysis — 176-loop window impact
 ```
 
-Plus standing issues:
-- #578 — Rate fields (14.5% MAPE, active calibration)
-- #579 — Tech spending timing (42%, structural)
-- mineralsCurrent 126.1% — needs spending accuracy or factor refinement
-
 ---
 
 ## Critical Insights for Next Session
 
-### 1. The Terran factor 1.28 is suspiciously large
+### 1. Per-worker physics is calibrated — allocation is the gap
 
-Workers producing 28% more per trip implies the effective cycle is 28% shorter than modeled. This likely compensates for MULE income under-modeling. Controlled SC2 playbooks (mineral-only, 12 workers, no MULEs) would isolate whether the factor is worker physics or MULE-related. The playbook infrastructure exists (PlaybookSC2RecorderTest, DualRunCalibrationTest).
+SC2 playbooks prove per-worker rate is within 5%. The 22% aggregate MAPE in oracle replays comes from worker ALLOCATION — too many EM workers are non-productive (building pauses, saturation, transit). This is #572's original domain (worker activity modeling). The fix isn't physics constants — it's modeling which workers are actively mining vs paused/scouting/transferring.
 
-### 2. mineralsCurrent MAPE worsened because income and spending are decoupled
+### 2. Oracle replays calibrate behavior, SC2 playbooks calibrate physics
 
-The factors correctly increased income rate (14.5% vs 22.1%), but the extra income accumulates in balance because spending (from TrackerIntents) is unchanged. Two paths forward:
-- **Fix spending accuracy** — the spending fields are at 5-17% MAPE, but the cumulative effect on balance is large
-- **Balance-aware factor calibration** — optimize for a weighted combination of rate and balance MAPE, not rate alone. This would find smaller factors that improve rate less but don't blow up balance.
+Don't fit physics constants against oracle data — the confounding variables lead to wrong answers (1.18 factor that should be 0.95). Use SC2 playbooks for physics, oracle replays for full-system validation.
 
-### 3. Gas factors not yet applied
+### 3. Seven SC2 recordings remain
 
-vespeneCollectionRate MAPE is 29.1% but no gas efficiency factor was applied. A separate gas factor sweep (extending the same pattern) would likely improve gas rate. However, the gas rate regression from cadence alignment (#595) should be investigated first to avoid compounding corrections.
+Run next session with SC2:
+```bash
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMineralSaturated16w
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMineralSaturated24w
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalGasBaseline3w
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalGasDual6w
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMuleIsolation
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalExpansionTransfer
+mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalWorkerSpeedSingle
+```
 
-### 4. Playbook-based calibration is the next accuracy leap
+Priority: saturation (16w/24w) gives the curve, gas gives the gas factor, MULE isolation explains Terran.
 
-Oracle replays have confounding variables (building, scouting, combat). Controlled playbooks against real SC2 would give precise per-worker rate measurements in isolation. The spec for #591 includes deferred Phase 1 (playbooks) for a session with SC2 available.
+### 4. Gas efficiency factor sweep hit the ceiling
+
+Oracle-derived gas factors (1.28-1.30) hit the sweep ceiling at 1.30. Like mineral factors, these are likely wrong — compensating for allocation, not physics. SC2 gas baseline recording will reveal the true per-worker gas rate.
+
+### 5. The efficiency factor infrastructure stays
+
+`RaceModel.miningEfficiencyFactor()` / `gasEfficiencyFactor()` and the EmulatedGame.tick() wiring are committed with default 1.0. Ready for calibrated values once the allocation gap is understood and the factors can be correctly decomposed into physics vs behavior.
 
 ---
 
@@ -86,12 +101,16 @@ Oracle replays have confounding variables (building, scouting, combat). Controll
 |------|-------|
 | EconomyTracker (loop-based rate) | `quarkmind-sc2/.../emulated/EconomyTracker.java` |
 | EconomyConfig (rate-interval-loops) | `quarkmind-sc2/.../emulated/EconomyConfig.java` |
-| EconomyConfigProducer | `quarkmind-sc2/.../emulated/EconomyConfigProducer.java` |
-| RaceModel (efficiency factors) | `quarkmind-sc2/.../emulated/RaceModel.java` |
+| RaceModel (efficiency factor interface) | `quarkmind-sc2/.../emulated/RaceModel.java` |
 | EmulatedGame.tick() (factor application) | `quarkmind-sc2/.../emulated/EmulatedGame.java:208-209` |
-| MiningEfficiencyCalibrationTest (extended sweep) | `quarkmind-sc2/.../replay/MiningEfficiencyCalibrationTest.java` |
+| PlaybookSC2Adapter (tick/loop conversion) | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
+| PlaybookSC2RecorderTest (10 scenarios) | `quarkmind-sc2/.../real/PlaybookSC2RecorderTest.java` |
+| Calibration playbooks | `quarkmind-sc2/src/test/resources/playbooks/cal-*.yaml` |
+| SC2 baselines (3 recorded) | `quarkmind-sc2/src/test/resources/calibration/cal-*.json` |
+| MiningEfficiencyCalibrationTest (extended) | `quarkmind-sc2/.../replay/MiningEfficiencyCalibrationTest.java` |
 | RateCadenceDiagnosticTest | `quarkmind-sc2/.../replay/RateCadenceDiagnosticTest.java` |
 | SC2 physics constants | `docs/sc2-physics-constants.md` |
+| Maven sc2 profile | `quarkmind-sc2/pom.xml` (run with `-Psc2`) |
 
 ---
 
