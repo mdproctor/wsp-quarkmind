@@ -7,7 +7,7 @@ status: active
 - covers: 607
 - date: 2026-11-09
 active_issue: casehubio/quarkmind#578
-branch: issue-592-overhead-absorption-limit
+branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
@@ -52,8 +52,8 @@ branch: issue-592-overhead-absorption-limit
 - [x] casehubio/quarkmind#595 — Gas_rate_regression_analysis
 - [x] casehubio/quarkmind#600 — Calibrate Terran/Zerg per-race mining efficiency factors
 - [x] casehubio/quarkmind#601 — Sub-tick training resolution
-- [ ] casehubio/quarkmind#578 — Mineral rate regression from acceleration model ← active
-- [ ] casehubio/quarkmind#603 — Worker initialization delay
+- [x] casehubio/quarkmind#578 — Mineral rate regression from acceleration model
+- [ ] casehubio/quarkmind#603 — Worker initialization delay ← active
 - [ ] casehubio/quarkmind#606 — Gas harvest contention model
 - [ ] casehubio/quarkmind#605 — Record mineral patch positions
 - [ ] casehubio/quarkmind#602 — Record geyser positions
