@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- Left panel: Clustering (old) -->
+  <text x="180" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Before: all workers → nearest patch</text>
+
+  <!-- Town hall -->
+  <rect x="150" y="140" width="60" height="40" rx="4" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="180" y="164" text-anchor="middle" font-size="10" fill="#1e40af">Nexus</text>
+
+  <!-- Patches - left panel -->
+  <circle cx="100" cy="60" r="10" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1.2"/>
+  <circle cx="140" cy="45" r="10" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1.2"/>
+  <circle cx="180" cy="38" r="10" fill="#f59e0b" opacity="0.9" stroke="#d97706" stroke-width="2"/>
+  <circle cx="220" cy="45" r="10" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1.2"/>
+  <circle cx="260" cy="60" r="10" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1.2"/>
+
+  <!-- Workers clustered on one patch -->
+  <circle cx="172" cy="68" r="4" fill="#ef4444"/>
+  <circle cx="178" cy="72" r="4" fill="#ef4444"/>
+  <circle cx="184" cy="68" r="4" fill="#ef4444"/>
+  <circle cx="188" cy="74" r="4" fill="#ef4444"/>
+  <circle cx="170" cy="76" r="4" fill="#ef4444"/>
+  <circle cx="176" cy="80" r="4" fill="#ef4444"/>
+  <circle cx="182" cy="82" r="4" fill="#ef4444"/>
+  <circle cx="190" cy="80" r="4" fill="#ef4444"/>
+  <circle cx="174" cy="86" r="4" fill="#ef4444"/>
+  <circle cx="180" cy="90" r="4" fill="#ef4444"/>
+  <circle cx="186" cy="88" r="4" fill="#ef4444"/>
+  <circle cx="192" cy="86" r="4" fill="#ef4444"/>
+
+  <!-- Arrow cluster -->
+  <line x1="180" y1="120" x2="180" y2="52" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <text x="180" y="220" text-anchor="middle" font-size="11" fill="#dc2626">12 workers → 1 patch</text>
+  <text x="180" y="236" text-anchor="middle" font-size="11" fill="#dc2626">15.5% of ticks wasted waiting</text>
+
+  <!-- Divider -->
+  <line x1="360" y1="10" x2="360" y2="310" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Right panel: Spreading (new) -->
+  <text x="540" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">After: workers spread by assignment count</text>
+
+  <!-- Town hall -->
+  <rect x="510" y="140" width="60" height="40" rx="4" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="540" y="164" text-anchor="middle" font-size="10" fill="#1e40af">Nexus</text>
+
+  <!-- Patches - right panel -->
+  <circle cx="440" cy="60" r="10" fill="#f59e0b" opacity="0.7" stroke="#d97706" stroke-width="1.5"/>
+  <circle cx="480" cy="45" r="10" fill="#f59e0b" opacity="0.7" stroke="#d97706" stroke-width="1.5"/>
+  <circle cx="520" cy="38" r="10" fill="#f59e0b" opacity="0.7" stroke="#d97706" stroke-width="1.5"/>
+  <circle cx="560" cy="45" r="10" fill="#f59e0b" opacity="0.7" stroke="#d97706" stroke-width="1.5"/>
+  <circle cx="600" cy="60" r="10" fill="#f59e0b" opacity="0.7" stroke="#d97706" stroke-width="1.5"/>
+
+  <!-- Workers spread across patches -->
+  <circle cx="436" cy="78" r="4" fill="#22c55e"/>
+  <circle cx="444" cy="78" r="4" fill="#22c55e"/>
+  <circle cx="476" cy="63" r="4" fill="#22c55e"/>
+  <circle cx="484" cy="63" r="4" fill="#22c55e"/>
+  <circle cx="516" cy="56" r="4" fill="#22c55e"/>
+  <circle cx="524" cy="56" r="4" fill="#22c55e"/>
+  <circle cx="556" cy="63" r="4" fill="#22c55e"/>
+  <circle cx="564" cy="63" r="4" fill="#22c55e"/>
+  <circle cx="596" cy="78" r="4" fill="#22c55e"/>
+  <circle cx="604" cy="78" r="4" fill="#22c55e"/>
+  <!-- 2 extra workers on first two patches -->
+  <circle cx="440" cy="86" r="4" fill="#86efac"/>
+  <circle cx="480" cy="71" r="4" fill="#86efac"/>
+
+  <!-- Arrows spread -->
+  <line x1="522" y1="130" x2="440" y2="72" stroke="#64748b" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="528" y1="130" x2="480" y2="57" stroke="#64748b" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="534" y1="132" x2="520" y2="50" stroke="#64748b" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="546" y1="132" x2="560" y2="57" stroke="#64748b" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="552" y1="130" x2="600" y2="72" stroke="#64748b" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <text x="540" y="220" text-anchor="middle" font-size="11" fill="#16a34a">12 workers → 5 patches (2-3 each)</text>
+  <text x="540" y="236" text-anchor="middle" font-size="11" fill="#16a34a">zero contention waste</text>
+
+  <!-- Legend -->
+  <circle cx="160" cy="280" r="4" fill="#ef4444"/>
+  <text x="170" y="284" font-size="10" fill="#64748b">Worker (old: clustered)</text>
+  <circle cx="160" cy="300" r="4" fill="#22c55e"/>
+  <text x="170" y="304" font-size="10" fill="#64748b">Worker (new: spread)</text>
+  <circle cx="400" cy="280" r="10" fill="#f59e0b" opacity="0.7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="416" y="284" font-size="10" fill="#64748b">Mineral patch</text>
+  <rect x="393" y="294" width="14" height="10" rx="2" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" stroke-width="1"/>
+  <text x="416" y="304" font-size="10" fill="#64748b">Town hall</text>
+</svg>

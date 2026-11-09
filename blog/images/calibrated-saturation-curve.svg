@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 380" font-family="'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif">
+  <!-- Chart area -->
+  <rect x="70" y="30" width="520" height="280" fill="#fafafa" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Grid lines -->
+  <line x1="70" y1="86" x2="590" y2="86" stroke="#f1f5f9" stroke-width="1"/>
+  <line x1="70" y1="142" x2="590" y2="142" stroke="#f1f5f9" stroke-width="1"/>
+  <line x1="70" y1="198" x2="590" y2="198" stroke="#f1f5f9" stroke-width="1"/>
+  <line x1="70" y1="254" x2="590" y2="254" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- Y axis labels -->
+  <text x="62" y="34" text-anchor="end" font-size="10" fill="#94a3b8">100%</text>
+  <text x="62" y="90" text-anchor="end" font-size="10" fill="#94a3b8">80%</text>
+  <text x="62" y="146" text-anchor="end" font-size="10" fill="#94a3b8">60%</text>
+  <text x="62" y="202" text-anchor="end" font-size="10" fill="#94a3b8">40%</text>
+  <text x="62" y="258" text-anchor="end" font-size="10" fill="#94a3b8">20%</text>
+  <text x="62" y="314" text-anchor="end" font-size="10" fill="#94a3b8">0%</text>
+
+  <!-- Y axis title -->
+  <text x="18" y="170" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90, 18, 170)">Per-worker efficiency</text>
+
+  <!-- X axis labels -->
+  <text x="70" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">0</text>
+  <text x="157" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">4</text>
+  <text x="243" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">8</text>
+  <text x="330" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">12</text>
+  <text x="417" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">16</text>
+  <text x="503" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">20</text>
+  <text x="590" y="326" text-anchor="middle" font-size="10" fill="#94a3b8">24</text>
+
+  <!-- X axis title -->
+  <text x="330" y="350" text-anchor="middle" font-size="11" fill="#64748b">Workers per base (8 mineral patches)</text>
+
+  <!-- Optimal zone shading (1-16 workers) -->
+  <rect x="70" y="30" width="347" height="280" fill="#22c55e" opacity="0.03"/>
+  <text x="243" y="296" text-anchor="middle" font-size="9" fill="#86efac">optimal zone (≤2/patch)</text>
+
+  <!-- Saturation zone shading (17-24 workers) -->
+  <rect x="417" y="30" width="173" height="280" fill="#f59e0b" opacity="0.03"/>
+  <text x="503" y="296" text-anchor="middle" font-size="9" fill="#fbbf24">saturation zone</text>
+
+  <!-- OLD curve (before fix) — nearly flat then sudden drop -->
+  <polyline points="70,30 157,30 243,30 330,32 417,34 460,62 503,146 546,172 590,202"
+            fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,4" opacity="0.7"/>
+
+  <!-- NEW curve (calibrated) — flat then smooth drop -->
+  <polyline points="70,30 157,30 243,30 330,30 417,30 460,60 503,88 546,108 590,130"
+            fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+
+  <!-- SC2 reference points -->
+  <circle cx="330" cy="32" r="6" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <text x="330" y="48" text-anchor="middle" font-size="9" fill="#16a34a" font-weight="600">57.9</text>
+
+  <circle cx="546" cy="98" r="6" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <text x="562" y="94" text-anchor="start" font-size="9" fill="#16a34a" font-weight="600">48.6</text>
+
+  <!-- Data points on new curve -->
+  <circle cx="70" cy="30" r="3" fill="#3b82f6"/>
+  <circle cx="243" cy="30" r="3" fill="#3b82f6"/>
+  <circle cx="330" cy="30" r="3" fill="#3b82f6"/>
+  <circle cx="417" cy="30" r="3" fill="#3b82f6"/>
+  <circle cx="460" cy="60" r="3" fill="#3b82f6"/>
+  <circle cx="503" cy="88" r="3" fill="#3b82f6"/>
+  <circle cx="546" cy="108" r="3" fill="#3b82f6"/>
+  <circle cx="590" cy="130" r="3" fill="#3b82f6"/>
+
+  <!-- Legend -->
+  <line x1="100" y1="365" x2="130" y2="365" stroke="#3b82f6" stroke-width="2.5"/>
+  <text x="136" y="369" font-size="10" fill="#334155">Calibrated model (DISTANCE=7.0, DOCKING=34)</text>
+
+  <line x1="400" y1="365" x2="430" y2="365" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,4" opacity="0.7"/>
+  <text x="436" y="369" font-size="10" fill="#334155">Before fix (clustering + no docking)</text>
+
+  <circle cx="545" cy="365" r="5" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <text x="555" y="369" font-size="10" fill="#334155">SC2 measured</text>
+</svg>
