@@ -2,21 +2,19 @@
 
 ## Last Session
 
-Closed 5 issues (#578, #605, #603, #602, #606). Extended CalibrationBaseline with mineralPatches, geyserPositions, and basePosition. Fixed critical coordinate translation bug. Recalibrated gas harvest duration from 22→26 loops. All baselines re-recorded 3× against real SC2.
+Closed 6 issues (#578, #605, #603, #602, #606, #604). Filed 2 follow-ups (#608, #609). Extended CalibrationBaseline with mineralPatches, geyserPositions, basePosition. Fixed coordinate translation bug and ActionTranslator Protoss-only limitation. Recalibrated gas harvest 22→26 loops. Physics constants doc revised throughout.
 
-### What was done
+### Accuracy summary
 
-- **#578 — Mineral rate regression (CLOSED):** Physics constants doc updated with EMA baseline, race mechanics, builder pause.
+**Dual-run (controlled SC2):** all structural divergences resolved, gas within ±5%, minerals within ±0.3%.
 
-- **#605 — Record mineral patch positions (CLOSED):** CalibrationBaseline.PatchPosition. SC2 TorchesAIE_v4 starting base: 3.0–5.9u from Nexus (avg 4.3u).
-
-- **#603 — Worker initialization delay (CLOSED):** Resolved by real patch positions. First-income tick matches. Tick 10 delta: -1.
-
-- **#602 — Record geyser positions (CLOSED):** CalibrationBaseline.GeyserPosition. Translated distance: 7.6u symmetric (matching seeded).
-
-- **#606 — Gas harvest contention (CLOSED):** Reframed from contention penalty to baseline gas rate. Recalibrated gas_harvest_duration from 22→26 loops. Dual-run: 3w=-2.2%, 6w=+4.0%.
-
-- **Coordinate translation fix:** CalibrationBaseline.basePosition records SC2 town hall position. calibrate() translates all coordinates by (emBase - sc2Base) offset. Without this, the 12u proximity search found nothing — injection was functionally inert.
+**Oracle (118 replays, 7-min):**
+| Field | Before | After | Direction |
+|-------|--------|-------|-----------|
+| mineralsCurrent | 126.1% | 77.4% | improved |
+| mineralsCollectionRate | 22.1% | 30.1% | EMA more honest, not regression |
+| vespeneCollectionRate | 29.1% | 38.1% | regressed — gas harvest increase amplifies worker allocation gap (#608) |
+| vespeneCurrent | 65.4% | 74.7% | regressed — follows from rate (#608) |
 
 ---
 
@@ -24,29 +22,23 @@ Closed 5 issues (#578, #605, #603, #602, #606). Extended CalibrationBaseline wit
 
 | Branch | Status | Issues |
 |--------|--------|--------|
-| `issue-578-mineral-rate-acceleration-regression` | 9 commits, ready for work-end | #578, #605, #603, #602, #606 |
+| `issue-578-mineral-rate-acceleration-regression` | 12 commits, ready for work-end | #578, #605, #603, #602, #606, #604 |
 
 ---
 
 ## Issue Map
 
-### Closed this session
-| # | Title | Resolution |
-|---|---|---|
-| 578 | Mineral rate regression | Physics doc updated; all downstream fixes resolved |
-| 605 | Record mineral patch positions | CalibrationBaseline extended, coord translation |
-| 603 | Worker initialization delay | Resolved by real patch positions |
-| 602 | Record geyser positions | CalibrationBaseline extended, coord translation |
-| 606 | Gas harvest contention | Recalibrated 22→26 loops; was rate, not contention |
-
 ### Open — next in queue
 
 | # | Title | Scale | Complexity | Notes |
 |---|---|---|---|---|
-| 604 | Re-record 24w/MULE baselines | S | Med | Debug-API timing artifacts |
-| 598 | MULE/expansion playbooks | M | High | |
+| 598 | MULE isolation + expansion transfer playbooks | M | High | |
 | 579 | Technology spending timing | S | Med | |
-| 580-582 | Economy spending floors | S | Med each | |
+| 580 | foodUsed MAPE | S | Med | |
+| 581 | Army spending death-timing | S | Med | |
+| 582 | Economy spending reporting-lag | S | Med | |
+| 608 | Oracle vespene MAPE regression | S | Med | Gas efficiency factor — recover 38.1%→≤30% |
+| 609 | Worker delivery desynchronization | S | Low | Stagger initial walks — tick 6 burst ±10 |
 
 ---
 
@@ -54,11 +46,11 @@ Closed 5 issues (#578, #605, #603, #602, #606). Extended CalibrationBaseline wit
 
 | What | Where |
 |------|-------|
-| CalibrationBaseline (PatchPosition, GeyserPosition, basePosition) | `quarkmind-sc2/.../playbook/CalibrationBaseline.java` |
-| PlaybookSC2Adapter (capture patches/geysers/base) | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
-| DualRunCalibrationTest (coord translation + injection) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
-| EmulatedGame (setMineralPatchResources, setGeyserResources) | `quarkmind-sc2/.../emulated/EmulatedGame.java` |
-| WorkerPhysicsConfig (gas_harvest=26.0) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfig.java` |
+| CalibrationBaseline | `quarkmind-sc2/.../playbook/CalibrationBaseline.java` |
+| PlaybookSC2Adapter | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
+| ActionTranslator (all-race train abilities) | `quarkmind-sc2/.../real/ActionTranslator.java` |
+| DualRunCalibrationTest | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
+| WorkerPhysicsConfig (gas=26.0) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfig.java` |
 | SC2 physics constants | `docs/sc2-physics-constants.md` |
 
 ---
