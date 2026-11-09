@@ -65,7 +65,7 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 | # | Title | Scale | Complexity | Blocked by | Status |
 |---|---|---|---|---|---|
 | **599** | Saturation contention model | L | High | — | All 4 baselines PASS: 12w/Terran/Zerg exact, 16w structural (±1 tolerance, 6.5% mineral delta) |
-| **597** | SC2 adapter gas dispatch | S | Med | — | Fix committed, untested — needs SC2 running |
+| **597** | SC2 adapter gas dispatch | S | Med | — | SC2 baselines recorded, debug-API Assimilator + worker assignment working. EM gas rate 108% of SC2 (8% gap remaining) |
 | **598** | SC2 adapter MULE/expansion | M | High | — | Morph/calldown implemented, untested |
 | 592 | Overhead absorption limit | S | Med | — | May be resolved by calibration work |
 
@@ -78,17 +78,15 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 
 ## What to do next
 
-### Priority 1 — #597: Gas calibration
+### Priority 1 — Close remaining 8% gas rate gap
 
-1. Verify Assimilator dispatch fix works (run `recordCalGasBaseline3w` with SC2)
-2. If vespene=0, add explicit worker-to-gas assignment
-3. Calibrate gas-harvest-duration-loops against SC2 gas baseline
+EM produces 108% of SC2 gas rate (644 vs 596 vespene at tick 304). The GAS_HARVEST_DURATION_LOOPS=22 gives 45.9 vespene/min/worker vs SC2 44.3. Options: (a) increase harvest duration slightly (~24 loops), (b) accept 8% as within tolerance.
 
-### Priority 4 — Record more SC2 baselines
+### Priority 2 — Record more SC2 baselines
 
-- 24w saturation baseline (3/patch) — validate steep 3rd-worker penalty
-- Re-record gas baselines with fixed adapter
+- Re-record 24w and MULE baselines (currently have unit count divergence from debug-API building timing)
 - Record patch positions in baseline JSON for exact distance matching
+- Record a pure gas-only baseline (no training, fixed 12 workers, 3 on gas) for cleaner gas rate isolation
 
 ---
 
