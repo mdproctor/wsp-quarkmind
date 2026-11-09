@@ -25,9 +25,17 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
   - `patchDistanceSweep` — distance calibration against SC2 12w baseline
   - `dockingOverheadSweep` — docking calibration against SC2 23w saturation
 
-- **Dual-run SC2 comparisons added:**
-  - `dualRunCalMineralBaselineTerranAgainstSC2` — diverges at tick 0 (UNKNOWN mapping)
-  - `dualRunCalMineralBaselineZergAgainstSC2` — diverges at tick 0 (UNKNOWN mapping)
+- **Dual-run SC2 comparisons:**
+  - `dualRunCalMineralBaseline12wAgainstSC2` — PASSES (Protoss, 305 ticks)
+  - `dualRunCalMineralBaselineTerranAgainstSC2` — PASSES (SCV mapping fixed)
+  - `dualRunCalMineralBaselineZergAgainstSC2` — PASSES (DRONE mapping fixed)
+  - `dualRunCalMineralSaturated16wAgainstSC2` — diverges at tick 12 (Probe train timing 1 tick early)
+
+- **ObservationTranslator unit type mappings (this session):**
+  - Was Protoss-only — all Terran/Zerg units fell to UNKNOWN
+  - Added complete Terran (22 variants), Zerg (28 variants), expanded Protoss (9 new)
+  - Fixed Terran baseline JSON: UNKNOWN→SCV
+  - Fixed Zerg baseline JSON: UNKNOWN→DRONE (stripped OVERLORD/LARVA — EM doesn't model them)
 
 ### Calibrated results
 
@@ -56,7 +64,7 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 
 | # | Title | Scale | Complexity | Blocked by | Status |
 |---|---|---|---|---|---|
-| **599** | Saturation contention model | L | High | — | Calibrated — docking=34 at 7.0u matches SC2 within 2% |
+| **599** | Saturation contention model | L | High | — | 12w calibrated, Terran/Zerg baselines passing, 16w diverges tick 12 (train timing) |
 | **597** | SC2 adapter gas dispatch | S | Med | — | Fix committed, untested — needs SC2 running |
 | **598** | SC2 adapter MULE/expansion | M | High | — | Morph/calldown implemented, untested |
 | 592 | Overhead absorption limit | S | Med | — | May be resolved by calibration work |
@@ -70,15 +78,11 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 
 ## What to do next
 
-### Priority 1 — Validate against remaining SC2 baselines
+### Priority 1 — Fix 16w Probe train timing (tick 12 divergence)
 
-The 16w saturation baseline (`cal-mineral-saturated-16w`) records 23 workers at SC2 patch distances. A dual-run comparison would validate the saturation model against real SC2 data. Currently only the 12w Protoss baseline is compared (Terran/Zerg blocked by UNKNOWN unit type mapping in ObservationTranslator).
+`dualRunCalMineralSaturated16wAgainstSC2` diverges at tick 12: EM produces 13th Probe one tick before SC2 does. Likely a Probe train time calibration issue — the EmulatedGame completes training ~1 tick early. Investigate by comparing SC2Data.trainTime(PROBE) against the actual SC2 baseline train cadence.
 
-### Priority 2 — Fix Terran/Zerg unit type mapping
-
-`ObservationTranslator` maps SCVs and Drones as UNKNOWN. Fix this to enable Terran/Zerg SC2 baseline comparisons. Both baselines show 3415 minerals at tick 304 (Protoss: 3460).
-
-### Priority 3 — #597: Gas calibration
+### Priority 2 — #597: Gas calibration
 
 1. Verify Assimilator dispatch fix works (run `recordCalGasBaseline3w` with SC2)
 2. If vespene=0, add explicit worker-to-gas assignment
@@ -107,5 +111,5 @@ The 16w saturation baseline (`cal-mineral-saturated-16w`) records 23 workers at 
 
 ## Pre-existing Issues
 
-- **Terran/Zerg UNKNOWN mapping** — `ObservationTranslator` doesn't map SCV/Drone unit types. Blocks Terran/Zerg SC2 baseline comparisons.
 - **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name.
+- **16w Probe train timing** — EmulatedGame trains 13th Probe 1 tick early vs SC2 (tick 12 vs 13). Train time calibration issue, not mining model.
