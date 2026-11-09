@@ -2,24 +2,18 @@
 
 ## Last Session
 
-Closed 4 issues (#586, #587, #588, #589). Gas harvest recalibrated 31.696 → 22.0 loops via oracle MAPE sweep. Deposit time modelling investigated and found that lumped constants (mining=12, gas=22) beat split phases — explicit deposit=2 shifted the MAPE minimum upward. Closed cumulative drift issues as rate-dependent. Filed 3 new issues (#590-592) for remaining accuracy vectors.
+Closed 2 issues (#590, #591). Rate cadence alignment implemented — loop-based rate windowing in EconomyTracker. Mining efficiency factors recalibrated — factors > 1.0 needed post sub-tick fixes. Filed 3 new issues (#593-#595) for remaining rate accuracy vectors.
 
 ### What was done
 
-- **#586 — Gas harvest duration recalibration (closed).** Oracle MAPE sweep across 118 replays found 22.0 loops optimal, down from Liquipedia's 31.696. Same pattern as mining (#583): sub-tick fix changed cycle structure, exposing need for recalibration. vespeneCollectionRate 37.1% → 26.7%, vespeneCurrent 77.4% → 65.4%.
+- **#590 — Rate measurement cadence alignment (closed).** Replaced tick-counting (RATE_INTERVAL_TICKS=7, 154 loops) with loop-counting (rateIntervalLoops=160, fires every 8 ticks = 176 loops). Added EconomyConfig with `starcraft.economy.rate-interval-loops` property. Diagnostic confirmed PlayerStatsEvent cadence: 96.8% exactly 160 loops across 9183 intervals. MAPE comparison showed mixed effect: mineral rate -0.7% improvement, vespene rate +2.4% regression. Cadence alignment is architecturally correct but not the dominant MAPE factor.
 
-- **#587 — Deposit time investigation (closed).** Added DEPOSITING_MINERALS/DEPOSITING_GAS worker states with sub-tick chaining. Oracle sweep with deposit=2 (SC2 API measurement) showed no improvement — mineralsCollectionRate 22.8% → 23.1% at optimal mining=15. The lumped constant captures overhead interactions (deposit + docking + contention) more accurately than split phases. Default set to 0; infrastructure available via `-Dstarcraft.worker.deposit-duration-loops=2`.
-
-- **#588/#589 — Cumulative drift (closed).** mineralsCurrent (67.5%) and vespeneCurrent (65.4%) are rate integrals — no separate fix exists. Balance accuracy improves automatically with rate accuracy.
+- **#591 — Worker income direction analysis (closed).** Extended efficiency factor sweep from 0.85-1.0 to 0.85-1.30. Found model under-produces income post sub-tick — optimal rate factors all above 1.0: Protoss=1.18 (13.1% rate MAPE), Zerg=1.12 (12.2%), Terran=1.28 (18.1%). Applied via RaceModel.miningEfficiencyFactor() in EmulatedGame.tick(). mineralsCollectionRate MAPE improved from 22.1% to 14.5%. mineralsCurrent MAPE worsened (67.5% → 126.1%) — income increased but spending unchanged.
 
 - **New issues filed:**
-  - **#590** — Rate measurement cadence alignment (structural floor from ~6-loop sampling mismatch)
-  - **#591** — Worker income direction analysis (EM consistently under-produces)
-  - **#592** — Overhead absorption limit (lumped vs explicit phases investigation)
-
-- **Blog written:** "When One Number Beats Three" — lumped constants, gas recalibration, deposit investigation, what this means for simulation work.
-
-- **docs/sc2-physics-constants.md** fully revised — gas harvest=22, deposit investigation findings, cumulative drift numbers updated, overhead gap table updated with #587 status, GasHarvestCalibrationTest added.
+  - **#593** — SC2 rate algorithm reverse-engineering (blocked by #591)
+  - **#594** — Sub-tick rate tracking — exact 160-loop window
+  - **#595** — Gas rate regression analysis — 176-loop window impact
 
 ---
 
@@ -29,10 +23,10 @@ Closed 4 issues (#586, #587, #588, #589). Gas harvest recalibrated 31.696 → 22
 
 | Field | Previous Session | This Session | Status |
 |---|---|---|---|
-| mineralsCollectionRate | 22.3% | **22.8%** | Near structural floor |
-| vespeneCollectionRate | 37.1% | **26.7%** | Improved — gas recalibration |
-| mineralsCurrent | 67.6% | **67.5%** | Rate-dependent |
-| vespeneCurrent | 77.4% | **65.4%** | Improved — gas rate fix cascade |
+| mineralsCollectionRate | 22.8% | **14.5%** | Improved — efficiency factors |
+| vespeneCollectionRate | 26.7% | **29.1%** | Regressed — cadence alignment |
+| mineralsCurrent | 67.5% | **126.1%** | Worsened — income up, spending unchanged |
+| vespeneCurrent | 65.4% | 65.4% | Unchanged |
 | foodMade | 3.1% | 3.1% | At floor |
 | foodUsed | 3.7% | 3.7% | At floor |
 | workersActiveCount | 2.5% | 2.5% | At floor |
@@ -40,48 +34,49 @@ Closed 4 issues (#586, #587, #588, #589). Gas harvest recalibrated 31.696 → 22
 | mineralsUsedCurrentEconomy | 5.8% | 5.8% | At floor |
 | mineralsUsedCurrentTechnology | 17.0% | 17.0% | Near floor |
 | vespeneUsedCurrentArmy | 7.4% | 7.4% | At floor |
-| vespeneUsedCurrentTechnology | 42.0% | 42.0% | Structural — InProgress/Current timing |
+| vespeneUsedCurrentTechnology | 42.0% | 42.0% | Structural |
 
 ### DivergenceRegressionTest — all green
 
-100% units, buildings, upgrades. All matchup deltas within thresholds.
+100% units, buildings, upgrades. All matchup deltas within thresholds. Economy MAPE within 150% ceiling.
 
 ---
 
 ## Remaining Queue
 
 ```
-- [ ] #590 — Rate measurement cadence alignment ← next
-- [ ] #591 — Worker income direction analysis
 - [ ] #592 — Overhead absorption limit investigation
+- [ ] #593 — SC2 rate algorithm reverse-engineering
+- [ ] #594 — Sub-tick rate tracking — exact 160-loop window
+- [ ] #595 — Gas rate regression analysis — 176-loop window impact
 ```
 
-Plus standing issues (at or near structural floor):
-- #578 — Rate fields (22.8% MAPE, near floor)
-- #579 — Tech spending timing (42%, structural — InProgress/Current boundary)
-- #580 — foodUsed (3.7%, at floor)
-- #581 — Army spending (7%, at floor)
-- #582 — Economy spending (5.8%, at floor)
+Plus standing issues:
+- #578 — Rate fields (14.5% MAPE, active calibration)
+- #579 — Tech spending timing (42%, structural)
+- mineralsCurrent 126.1% — needs spending accuracy or factor refinement
 
 ---
 
 ## Critical Insights for Next Session
 
-### 1. Rate cadence mismatch is the likely structural floor (#590)
+### 1. The Terran factor 1.28 is suspiciously large
 
-SC2 emits PlayerStatsEvents every ~160 game loops. EconomyTracker samples at RATE_INTERVAL_TICKS=7 (154 loops). The ~6-loop offset creates irreducible error. Aligning the intervals or interpolating between GT sample points could reveal the true physics accuracy floor.
+Workers producing 28% more per trip implies the effective cycle is 28% shorter than modeled. This likely compensates for MULE income under-modeling. Controlled SC2 playbooks (mineral-only, 12 workers, no MULEs) would isolate whether the factor is worker physics or MULE-related. The playbook infrastructure exists (PlaybookSC2RecorderTest, DualRunCalibrationTest).
 
-### 2. EM consistently under-produces income (#591)
+### 2. mineralsCurrent MAPE worsened because income and spending are decoupled
 
-At 7-min: mineral GT=89788 vs EM=59425 (34% deficit), gas GT=52228 vs EM=28844 (45% deficit). The deficit grows with time. Possible causes: worker speed underestimate, mineral patch distance overestimate, residual idle time at state transitions.
+The factors correctly increased income rate (14.5% vs 22.1%), but the extra income accumulates in balance because spending (from TrackerIntents) is unchanged. Two paths forward:
+- **Fix spending accuracy** — the spending fields are at 5-17% MAPE, but the cumulative effect on balance is large
+- **Balance-aware factor calibration** — optimize for a weighted combination of rate and balance MAPE, not rate alone. This would find smaller factors that improve rate less but don't blow up balance.
 
-### 3. Lumped constants are at their accuracy ceiling (#592)
+### 3. Gas factors not yet applied
 
-The deposit investigation proved that the current model architecture (fixed-duration phases + lumped overhead) can't improve further by splitting constants. Next-level accuracy requires either modeling worker collision (spatial contention) or accepting the current floor. Joint 3D sweep (deposit × mining × gas) might find a slightly better triple.
+vespeneCollectionRate MAPE is 29.1% but no gas efficiency factor was applied. A separate gas factor sweep (extending the same pattern) would likely improve gas rate. However, the gas rate regression from cadence alignment (#595) should be investigated first to avoid compounding corrections.
 
-### 4. Deposit infrastructure is in place but dormant
+### 4. Playbook-based calibration is the next accuracy leap
 
-`DEPOSITING_MINERALS`/`DEPOSITING_GAS` states, configurable via Quarkus config. Default 0.0. Activates with `-Dstarcraft.worker.deposit-duration-loops=2`. Useful if worker collision is ever modeled.
+Oracle replays have confounding variables (building, scouting, combat). Controlled playbooks against real SC2 would give precise per-worker rate measurements in isolation. The spec for #591 includes deferred Phase 1 (playbooks) for a session with SC2 available.
 
 ---
 
@@ -89,13 +84,14 @@ The deposit investigation proved that the current model architecture (fixed-dura
 
 | What | Where |
 |------|-------|
-| WorkerPhysicsConfig (all constants + deposit) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfig.java` |
-| WorkerTask (DEPOSITING states) | `quarkmind-sc2/.../emulated/WorkerTask.java` |
-| SimulatedWorker (deposit field + setters) | `quarkmind-sc2/.../emulated/SimulatedWorker.java` |
-| WorkerSimulation (deposit fast path + sub-tick) | `quarkmind-sc2/.../emulated/WorkerSimulation.java` |
-| GasHarvestCalibrationTest (oracle sweep) | `quarkmind-sc2/.../emulated/GasHarvestCalibrationTest.java` |
-| SC2 physics constants reference | `docs/sc2-physics-constants.md` |
-| Standalone baseline | `docs/benchmarks/standalone-emulated-game-baseline.md` |
+| EconomyTracker (loop-based rate) | `quarkmind-sc2/.../emulated/EconomyTracker.java` |
+| EconomyConfig (rate-interval-loops) | `quarkmind-sc2/.../emulated/EconomyConfig.java` |
+| EconomyConfigProducer | `quarkmind-sc2/.../emulated/EconomyConfigProducer.java` |
+| RaceModel (efficiency factors) | `quarkmind-sc2/.../emulated/RaceModel.java` |
+| EmulatedGame.tick() (factor application) | `quarkmind-sc2/.../emulated/EmulatedGame.java:208-209` |
+| MiningEfficiencyCalibrationTest (extended sweep) | `quarkmind-sc2/.../replay/MiningEfficiencyCalibrationTest.java` |
+| RateCadenceDiagnosticTest | `quarkmind-sc2/.../replay/RateCadenceDiagnosticTest.java` |
+| SC2 physics constants | `docs/sc2-physics-constants.md` |
 
 ---
 
