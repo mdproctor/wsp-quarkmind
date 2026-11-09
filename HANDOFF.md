@@ -2,95 +2,81 @@
 
 ## Last Session
 
-Worker mining contention fix (#596, closed) and saturation calibration (#599). Got the EM to match SC2 calibration baselines within 2% across both reference points.
+Calibration roadmap issues #600 and #601. Per-race mining efficiency factors calibrated. Sub-tick training resolution implemented. 16w gap root-caused to Probe arrival timing, not per-worker rate.
 
 ### What was done
 
-- **#596 — Contention fix (CLOSED):**
-  1. `assignToNearestPatch` counts assigned workers (excluding self) instead of active miners
-  2. Wake-up pass after tick processing — freed patches start waiting workers immediately
-  3. Eliminated 15.5% worker-tick waste from clustering
+- **#600 — Per-race mining efficiency factors (CLOSED):**
+  1. SC2 dual-run sweep: factor 0.984 matches Terran/Zerg baselines exactly (3415 at tick 304)
+  2. `TerranRaceModel.miningEfficiencyFactor()` → 0.984
+  3. `ZergRaceModel.miningEfficiencyFactor()` → 0.984
+  4. Added `perRaceMineralAccuracy` tests (±0.5% assertion per race)
+  5. Added `miningEfficiencyFactorSweep` diagnostic
 
-- **#599 — Saturation model + calibration (5 commits):**
-  1. `MineralPatch.lockEndLoop` — post-mining docking overhead locks patch after miner departs
-  2. Sub-tick lock resolution — waiting workers consume lock time within the tick
-  3. `PATCH_DISTANCE` changed from 6.0 to 7.0u — calibrated from SC2 baseline sweep
-  4. `PATCH_DOCKING_OVERHEAD` changed from 30 to 34 — calibrated from 23-worker saturation sweep
-  5. `WorkerPhysicsConfig` and `WorkerPhysicsConfigProducer` support docking overhead config
+- **#601 — Sub-tick training resolution (CLOSED):**
+  1. `PendingCompletion.completesAtLoop` replaces `completesAtTick` (loop precision)
+  2. `fireCompletions(gameFrame * LOOPS_PER_TICK)` — loop-level comparison
+  3. All production (train/build/research/morph) + Chrono Boost use loop scheduling
+  4. Probe cadence corrected: [13, 12, 13, 12, 12] (was [12, 12, 13, 12, 12])
+  5. Protoss factor refined to 0.997 (12w now 0.0% delta, was +0.3%)
+  6. 11 existing tests updated for loop-precision timing
 
-- **Diagnostic tests added (`MiningCycleDiagnosticTest`, @Tag("diagnostic")):**
-  - `singleWorkerCycleTrace` / `singleWorkerPerLoopTrace` — per-tick/per-loop state traces
-  - `twelveWorkerContentionAnalysis` — waiting worker-tick measurement
-  - `rateComparison_1v8v12workers` — full 1-30 worker saturation curve
-  - `patchDistanceSweep` — distance calibration against SC2 12w baseline
-  - `dockingOverheadSweep` — docking calibration against SC2 23w saturation
+### Key finding — 16w gap root cause
 
-- **Dual-run SC2 comparisons:**
-  - `dualRunCalMineralBaseline12wAgainstSC2` — PASSES (Protoss, 305 ticks)
-  - `dualRunCalMineralBaselineTerranAgainstSC2` — PASSES (SCV mapping fixed)
-  - `dualRunCalMineralBaselineZergAgainstSC2` — PASSES (DRONE mapping fixed)
-  - `dualRunCalMineralSaturated16wAgainstSC2` — diverges at tick 12 (Probe train timing 1 tick early)
+The 16w saturation gap (6.6%, was 6.9%) is NOT from per-worker rate:
+- **Pure 16w mining:** EM produces exactly 16/12 = 1.333× of 12w (perfect ratio, no contention at 2w/patch)
+- **Steady-state rate (ticks 150-304):** EM and SC2 produce at identical rates (both ~18.3 minerals/tick at 23 workers)
+- **The entire gap is from the ramp-up phase (ticks 0-150).** SC2 trains 23 Probes (not 16 — continuous to supply cap). The EM reaches Probe milestones slightly earlier, accumulating 285 extra worker-tick income
 
-- **ObservationTranslator unit type mappings (this session):**
-  - Was Protoss-only — all Terran/Zerg units fell to UNKNOWN
-  - Added complete Terran (22 variants), Zerg (28 variants), expanded Protoss (9 new)
-  - Fixed Terran baseline JSON: UNKNOWN→SCV
-  - Fixed Zerg baseline JSON: UNKNOWN→DRONE (stripped OVERLORD/LARVA — EM doesn't model them)
+The fix is NOT a physics constant change — it requires matching the EM's Probe arrival timing to SC2's. Investigation needed: per-tick Probe count comparison between EM and SC2 baseline.
 
 ### Calibrated results
 
 | Metric | EM | SC2 | Delta |
 |--------|-----|-----|-------|
-| 12w mineral baseline (tick 304) | 3470 | 3460 | **+0.3%** |
-| 1-worker rate (7.0u) | 57.0/min | 57.9/min | -1.6% |
-| 23-worker rate (2.9/patch) | 47.7/min | 48.6/min | -1.8% |
-| Saturation efficiency at 23w | 83.7% | ~84% | **match** |
+| 12w Protoss (tick 304) | 3460 | 3460 | **0.0%** |
+| 12w Terran (tick 304) | 3415 | 3415 | **0.0%** |
+| 12w Zerg (tick 304) | 3415 | 3415 | **0.0%** |
+| 16w dual-run (tick 304) | 4539 | 4260 | +6.6% |
 
-### Saturation curve (PATCH_DISTANCE=7.0u, DOCKING=34)
+---
 
-| Workers | W/Patch | Rate/worker/min | Efficiency |
-|---------|---------|----------------|------------|
-| 1-16    | ≤2.0    | 57.0           | 100%       |
-| 20      | 2.5     | 50.9           | 89.3%      |
-| 23      | 2.9     | 47.7           | 83.7%      |
-| 24      | 3.0     | 46.8           | 82.1%      |
-| 30      | 3.8     | 37.5           | 65.7%      |
+## Branches
+
+| Branch | Status | Issues |
+|--------|--------|--------|
+| `issue-600-per-race-mining-efficiency` | Complete, not merged | #600 |
+| `issue-601-sub-tick-training` | Complete, not merged | #601 |
 
 ---
 
 ## Issue Map
 
-### Open issues by priority
-
-| # | Title | Scale | Complexity | Blocked by | Status |
-|---|---|---|---|---|---|
-| **599** | Saturation contention model | L | High | — | All 4 baselines PASS: 12w/Terran/Zerg exact, 16w structural (±1 tolerance, 6.5% mineral delta) |
-| **597** | SC2 adapter gas dispatch | S | Med | — | SC2 baselines recorded, debug-API Assimilator + worker assignment working. EM gas rate 108% of SC2 (8% gap remaining) |
-| **598** | SC2 adapter MULE/expansion | M | High | — | Morph/calldown implemented, untested |
-| 592 | Overhead absorption limit | S | Med | — | May be resolved by calibration work |
-
 ### Closed this session
 | # | Title | Resolution |
 |---|---|---|
-| 596 | EM implementation efficiency gap | Contention fix — assignment-based spreading + wake-up pass |
+| 600 | Terran/Zerg mining efficiency | Factor 0.984 — exact SC2 match |
+| 601 | Sub-tick training resolution | Loop-precision PendingCompletion. Protoss factor 0.997 |
 
----
+### Open — calibration roadmap
 
-## What to do next — calibration accuracy roadmap
+| # | Gap | Current | Target | Blocked by | Notes |
+|---|-----|---------|--------|------------|-------|
+| 602 | Geyser position recording | +8.1% gas | ±3% | — | Needs SC2 |
+| 603 | Worker initialization delay | ±30 minerals | ±5 | 605 | |
+| 604 | 24w/MULE baseline re-record | diverge | pass | 601 ✅ | Unblocked |
+| 605 | Mineral patch position recording | approx 7.0u | exact | — | Needs SC2 |
+| 606 | Gas harvest contention (6w) | unknown | ±5% | 602 | |
 
-All gaps now tracked as issues:
+### Open — other
 
-| # | Gap | Current | Target | Blocked by |
-|---|-----|---------|--------|------------|
-| 600 | Terran/Zerg mining efficiency | +1.6% | ±0.5% | — |
-| 601 | Sub-tick training resolution | +6.9% (16w) | ±2% | — |
-| 602 | Geyser position recording | +8.1% gas | ±3% | — |
-| 603 | Worker initialization delay | ±30 minerals early | ±5 | 605 |
-| 604 | 24w/MULE baseline re-record | diverge | pass | 601 |
-| 605 | Mineral patch position recording | approx 7.0u | exact | — |
-| 606 | Gas harvest contention (6w) | unknown | ±5% | 602 |
+| # | Title | Scale | Complexity | Status |
+|---|---|---|---|---|
+| 597 | SC2 adapter gas dispatch | S | Med | EM gas rate 108% of SC2 |
+| 598 | SC2 adapter MULE/expansion | M | High | Morph/calldown implemented, untested |
+| 592 | Overhead absorption limit | S | Med | May be resolved by calibration |
 
-Recommended order: 600 (quick win) → 605+602 (position data) → 603 (init delay) → 601 (sub-tick) → 604 (re-record) → 606 (gas contention)
+Recommended order: 604 (unblocked by #601) → 605+602 (need SC2) → 603 → 606
 
 ---
 
@@ -98,11 +84,12 @@ Recommended order: 600 (quick win) → 605+602 (position data) → 603 (init del
 
 | What | Where |
 |------|-------|
-| WorkerSimulation (contention fix + wake-up + docking lock) | `quarkmind-sc2/.../emulated/WorkerSimulation.java` |
-| MineralPatch (PATCH_DISTANCE=7.0, lockEndLoop) | `quarkmind-sc2/.../emulated/MineralPatch.java` |
-| SimulatedWorker (PATCH_DOCKING_OVERHEAD_LOOPS=34) | `quarkmind-sc2/.../emulated/SimulatedWorker.java` |
-| WorkerPhysicsConfig (configurable docking) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfig.java` |
-| MiningCycleDiagnosticTest (saturation + sweeps) | `quarkmind-sc2/.../emulated/MiningCycleDiagnosticTest.java` |
+| PhysicsState (loop-precision PendingCompletion) | `quarkmind-sc2/.../emulated/PhysicsState.java` |
+| EmulatedGame (fireCompletions, startTraining) | `quarkmind-sc2/.../emulated/EmulatedGame.java` |
+| ProtossRaceModel (factor 0.997) | `quarkmind-sc2/.../emulated/ProtossRaceModel.java` |
+| TerranRaceModel (factor 0.984) | `quarkmind-sc2/.../emulated/TerranRaceModel.java` |
+| ZergRaceModel (factor 0.984) | `quarkmind-sc2/.../emulated/ZergRaceModel.java` |
+| MiningCycleDiagnosticTest (sweeps) | `quarkmind-sc2/.../emulated/MiningCycleDiagnosticTest.java` |
 | DualRunCalibrationTest (SC2 comparisons) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
 
 ---
@@ -110,4 +97,3 @@ Recommended order: 600 (quick win) → 605+602 (position data) → 603 (init del
 ## Pre-existing Issues
 
 - **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name.
-- **16w mineral income gap (6.5%)** — EM 4260 vs SC2 4555 at tick 304. Composed of: ~2% per-worker rate gap (calibrated), ~4.5% from Probe ramp-up timing differences (integer-division phase shift in 272/22 train time). Not a physics bug — fractional loop accumulation distributes differently.
