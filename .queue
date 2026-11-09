@@ -7,7 +7,7 @@ status: active
 - covers: 534
 - date: 2026-11-07
 active_issue: casehubio/quarkmind#592
-branch: issue-592-overhead-absorption-limit
+branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
@@ -47,8 +47,8 @@ branch: issue-592-overhead-absorption-limit
 - [x] casehubio/quarkmind#590 — Rate_measurement_cadence_alignment
 - [x] casehubio/quarkmind#591 — Worker_income_direction_analysis
 - [x] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation
-- [ ] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering ← active
-- [ ] casehubio/quarkmind#594 — Sub_tick_rate_tracking
+- [x] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering
+- [ ] casehubio/quarkmind#594 — Sub_tick_rate_tracking ← active
 - [ ] casehubio/quarkmind#595 — Gas_rate_regression_analysis
 - [x] casehubio/quarkmind#600 — Calibrate Terran/Zerg per-race mining efficiency factors
 - [x] casehubio/quarkmind#601 — Sub-tick training resolution
