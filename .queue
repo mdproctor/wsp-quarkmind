@@ -7,7 +7,7 @@ status: active
 - covers: 534
 - date: 2026-11-07
 active_issue: casehubio/quarkmind#592
-branch: issue-572-worker-activity-modelling
+branch: issue-601-sub-tick-training
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
@@ -37,16 +37,18 @@ branch: issue-572-worker-activity-modelling
 - [x] casehubio/quarkmind#574 — Worker_movement_acceleration_model
 - [x] casehubio/quarkmind#577 — Gas_movement_model
 - [x] casehubio/quarkmind#576 — Spending_timing_model
-- [ ] casehubio/quarkmind#583 — Mining_animation_real_SC2_calibration
-- [ ] casehubio/quarkmind#584 — Gas_worker_sub-tick_transitions
-- [ ] casehubio/quarkmind#585 — SC2Mapster_faster_speed_scaling_audit
-- [ ] casehubio/quarkmind#586 — Gas_harvest_duration_recalibration
-- [ ] casehubio/quarkmind#587 — Deposit_time_modelling
-- [ ] casehubio/quarkmind#588 — Mineral_balance_cumulative_drift
-- [ ] casehubio/quarkmind#589 — Vespene_balance_cumulative_drift
-- [ ] casehubio/quarkmind#590 — Rate_measurement_cadence_alignment
-- [ ] casehubio/quarkmind#591 — Worker_income_direction_analysis
-- [ ] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation
+- [x] casehubio/quarkmind#583 — Mining_animation_real_SC2_calibration
+- [x] casehubio/quarkmind#584 — Gas_worker_sub-tick_transitions
+- [x] casehubio/quarkmind#585 — SC2Mapster_faster_speed_scaling_audit
+- [x] casehubio/quarkmind#586 — Gas_harvest_duration_recalibration
+- [x] casehubio/quarkmind#587 — Deposit_time_modelling
+- [x] casehubio/quarkmind#588 — Mineral_balance_cumulative_drift
+- [x] casehubio/quarkmind#589 — Vespene_balance_cumulative_drift
+- [x] casehubio/quarkmind#590 — Rate_measurement_cadence_alignment
+- [x] casehubio/quarkmind#591 — Worker_income_direction_analysis
+- [ ] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation ← active
 - [ ] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering
 - [ ] casehubio/quarkmind#594 — Sub_tick_rate_tracking
 - [ ] casehubio/quarkmind#595 — Gas_rate_regression_analysis
+- [x] casehubio/quarkmind#600 — Calibrate Terran/Zerg per-race mining efficiency factors
+- [x] casehubio/quarkmind#601 — Sub-tick training resolution
