@@ -46,8 +46,8 @@ branch: issue-592-overhead-absorption-limit
 - [x] casehubio/quarkmind#589 — Vespene_balance_cumulative_drift
 - [x] casehubio/quarkmind#590 — Rate_measurement_cadence_alignment
 - [x] casehubio/quarkmind#591 — Worker_income_direction_analysis
-- [ ] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation ← active
-- [ ] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering
+- [x] casehubio/quarkmind#592 — Overhead_absorption_limit_investigation
+- [ ] casehubio/quarkmind#593 — SC2_rate_algorithm_reverse_engineering ← active
 - [ ] casehubio/quarkmind#594 — Sub_tick_rate_tracking
 - [ ] casehubio/quarkmind#595 — Gas_rate_regression_analysis
 - [x] casehubio/quarkmind#600 — Calibrate Terran/Zerg per-race mining efficiency factors
