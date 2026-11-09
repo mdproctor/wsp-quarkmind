@@ -56,7 +56,7 @@ branch:
 - [x] casehubio/quarkmind#603 — Worker initialization delay
 - [ ] casehubio/quarkmind#606 — Gas harvest contention model
 - [x] casehubio/quarkmind#605 — Record mineral patch positions ← active
-- [ ] casehubio/quarkmind#602 — Record geyser positions
+- [x] casehubio/quarkmind#602 — Record geyser positions
 - [ ] casehubio/quarkmind#604 — Re-record 24w and MULE baselines
 - [ ] casehubio/quarkmind#598 — MULE isolation and expansion transfer playbooks
 - [ ] casehubio/quarkmind#579 — Technology spending timing boundary
