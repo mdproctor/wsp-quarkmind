@@ -2,7 +2,7 @@
 
 ## Last Session
 
-Worker mining contention fix (#596) and saturation model (#599). Fixed two independent issues: artificial contention from worker clustering, and missing patch occupation contention for 3+ workers per patch.
+Worker mining contention fix (#596, closed) and saturation calibration (#599). Got the EM to match SC2 calibration baselines within 2% across both reference points.
 
 ### What was done
 
@@ -11,36 +11,42 @@ Worker mining contention fix (#596) and saturation model (#599). Fixed two indep
   2. Wake-up pass after tick processing — freed patches start waiting workers immediately
   3. Eliminated 15.5% worker-tick waste from clustering
 
-- **#599 — Saturation model (3 commits):**
-  1. `MineralPatch.lockEndLoop` — post-mining docking overhead locks the patch after miner departs
-  2. Sub-tick lock resolution — waiting workers consume lock time within the tick, not per-tick
-  3. Configurable `PATCH_DOCKING_OVERHEAD_LOOPS` (default 30.0) via `WorkerPhysicsConfig`
+- **#599 — Saturation model + calibration (5 commits):**
+  1. `MineralPatch.lockEndLoop` — post-mining docking overhead locks patch after miner departs
+  2. Sub-tick lock resolution — waiting workers consume lock time within the tick
+  3. `PATCH_DISTANCE` changed from 6.0 to 7.0u — calibrated from SC2 baseline sweep
+  4. `PATCH_DOCKING_OVERHEAD` changed from 30 to 34 — calibrated from 23-worker saturation sweep
+  5. `WorkerPhysicsConfig` and `WorkerPhysicsConfigProducer` support docking overhead config
 
-- **`MiningCycleDiagnosticTest` (@Tag("diagnostic")):**
-  - Single-worker cycle trace (per-tick and per-loop)
-  - 12-worker contention analysis
-  - Full saturation curve: 1-30 workers with SC2 reference points
+- **Diagnostic tests added (`MiningCycleDiagnosticTest`, @Tag("diagnostic")):**
+  - `singleWorkerCycleTrace` / `singleWorkerPerLoopTrace` — per-tick/per-loop state traces
+  - `twelveWorkerContentionAnalysis` — waiting worker-tick measurement
+  - `rateComparison_1v8v12workers` — full 1-30 worker saturation curve
+  - `patchDistanceSweep` — distance calibration against SC2 12w baseline
+  - `dockingOverheadSweep` — docking calibration against SC2 23w saturation
 
-### Saturation curve (8 patches, 6.0u, docking=30)
+- **Dual-run SC2 comparisons added:**
+  - `dualRunCalMineralBaselineTerranAgainstSC2` — diverges at tick 0 (UNKNOWN mapping)
+  - `dualRunCalMineralBaselineZergAgainstSC2` — diverges at tick 0 (UNKNOWN mapping)
 
-| Workers | W/Patch | Rate/worker/min | Efficiency | SC2 ref |
-|---------|---------|----------------|------------|---------|
-| 1-8     | ≤1.0    | 64.1           | 100%       | —       |
-| 16      | 2.0     | 63.6           | 99.3%      | 57.9    |
-| 23      | 2.9     | 52.9           | 82.6%      | 48.6    |
-| 24      | 3.0     | 51.8           | 80.7%      | —       |
-| 30      | 3.8     | 41.4           | 64.6%      | —       |
+### Calibrated results
 
-SC2 at 23w: 48.6/min = ~81% efficiency → EM at 82.6% — good match.
+| Metric | EM | SC2 | Delta |
+|--------|-----|-----|-------|
+| 12w mineral baseline (tick 304) | 3470 | 3460 | **+0.3%** |
+| 1-worker rate (7.0u) | 57.0/min | 57.9/min | -1.6% |
+| 23-worker rate (2.9/patch) | 47.7/min | 48.6/min | -1.8% |
+| Saturation efficiency at 23w | 83.7% | ~84% | **match** |
 
-### Standalone baseline impact (7-min checkpoint, oracle replays)
+### Saturation curve (PATCH_DISTANCE=7.0u, DOCKING=34)
 
-| Field | Before (old bug) | After contention fix | After docking | Direction |
-|-------|-----------------|---------------------|---------------|-----------|
-| mineralsCurrent MAPE | 67.5% | 132.2% | 87.9% | Recovering |
-| mineralsCollectionRate MAPE | 22.1% | 19.0% | 32.4% | Regressed |
-
-**Root cause of remaining regression:** The EM distributes workers perfectly and mines at maximum efficiency. Real SC2 workers have inherent AI overhead (path-finding delays, momentary idle, suboptimal patch selection). The docking overhead models physical patch contention but not worker AI inefficiency. The collection rate regression (32.4%) is from the docking overhead reducing rate at all worker counts, even when contention isn't the issue.
+| Workers | W/Patch | Rate/worker/min | Efficiency |
+|---------|---------|----------------|------------|
+| 1-16    | ≤2.0    | 57.0           | 100%       |
+| 20      | 2.5     | 50.9           | 89.3%      |
+| 23      | 2.9     | 47.7           | 83.7%      |
+| 24      | 3.0     | 46.8           | 82.1%      |
+| 30      | 3.8     | 37.5           | 65.7%      |
 
 ---
 
@@ -50,10 +56,10 @@ SC2 at 23w: 48.6/min = ~81% efficiency → EM at 82.6% — good match.
 
 | # | Title | Scale | Complexity | Blocked by | Status |
 |---|---|---|---|---|---|
-| **599** | Saturation contention model | L | High | — | Docking model landed — needs calibration sweep for docking value |
-| **597** | SC2 adapter gas dispatch | S | Med | — | Fix committed, untested |
+| **599** | Saturation contention model | L | High | — | Calibrated — docking=34 at 7.0u matches SC2 within 2% |
+| **597** | SC2 adapter gas dispatch | S | Med | — | Fix committed, untested — needs SC2 running |
 | **598** | SC2 adapter MULE/expansion | M | High | — | Morph/calldown implemented, untested |
-| 592 | Overhead absorption limit | S | Med | — | May be resolved by #599 |
+| 592 | Overhead absorption limit | S | Med | — | May be resolved by calibration work |
 
 ### Closed this session
 | # | Title | Resolution |
@@ -64,22 +70,25 @@ SC2 at 23w: 48.6/min = ~81% efficiency → EM at 82.6% — good match.
 
 ## What to do next
 
-### Priority 1 — Calibrate docking overhead
+### Priority 1 — Validate against remaining SC2 baselines
 
-The 30-loop default was chosen to match SC2's saturation curve at 6.0u. At real distances (~7u), the curve shape should be validated. A sweep test (`MiningEfficiencyCalibrationTest`-style) across docking values 10-50 against oracle replays would find the MAPE-minimizing value.
+The 16w saturation baseline (`cal-mineral-saturated-16w`) records 23 workers at SC2 patch distances. A dual-run comparison would validate the saturation model against real SC2 data. Currently only the 12w Protoss baseline is compared (Terran/Zerg blocked by UNKNOWN unit type mapping in ObservationTranslator).
 
-### Priority 2 — #597: Gas calibration
+### Priority 2 — Fix Terran/Zerg unit type mapping
 
-1. Verify Assimilator dispatch fix works (run `recordCalGasBaseline3w` once with SC2)
-2. If vespene=0 in baselines, add explicit worker-to-gas assignment
-3. Extract per-worker gas rate, calibrate gas-harvest-duration-loops
+`ObservationTranslator` maps SCVs and Drones as UNKNOWN. Fix this to enable Terran/Zerg SC2 baseline comparisons. Both baselines show 3415 minerals at tick 304 (Protoss: 3460).
 
-### Priority 3 — Collection rate regression
+### Priority 3 — #597: Gas calibration
 
-The mineralsCollectionRate MAPE went from 19.0% to 32.4%. Investigate whether this is from:
-- Docking overhead applied at all worker counts (even 1/patch where it's irrelevant)
-- Worker distribution being too efficient vs real SC2
-- A bug in the lock timing at specific worker/patch ratios
+1. Verify Assimilator dispatch fix works (run `recordCalGasBaseline3w` with SC2)
+2. If vespene=0, add explicit worker-to-gas assignment
+3. Calibrate gas-harvest-duration-loops against SC2 gas baseline
+
+### Priority 4 — Record more SC2 baselines
+
+- 24w saturation baseline (3/patch) — validate steep 3rd-worker penalty
+- Re-record gas baselines with fixed adapter
+- Record patch positions in baseline JSON for exact distance matching
 
 ---
 
@@ -88,16 +97,15 @@ The mineralsCollectionRate MAPE went from 19.0% to 32.4%. Investigate whether th
 | What | Where |
 |------|-------|
 | WorkerSimulation (contention fix + wake-up + docking lock) | `quarkmind-sc2/.../emulated/WorkerSimulation.java` |
-| MineralPatch (lockEndLoop field) | `quarkmind-sc2/.../emulated/MineralPatch.java` |
-| SimulatedWorker (PATCH_DOCKING_OVERHEAD_LOOPS) | `quarkmind-sc2/.../emulated/SimulatedWorker.java` |
-| WorkerPhysicsConfig (DEFAULT_PATCH_DOCKING_OVERHEAD=30.0) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfig.java` |
-| WorkerPhysicsConfigProducer (CDI config wiring) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfigProducer.java` |
-| MiningCycleDiagnosticTest (saturation curve) | `quarkmind-sc2/.../emulated/MiningCycleDiagnosticTest.java` |
-| DualRunCalibrationTest (SC2 comparison) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
+| MineralPatch (PATCH_DISTANCE=7.0, lockEndLoop) | `quarkmind-sc2/.../emulated/MineralPatch.java` |
+| SimulatedWorker (PATCH_DOCKING_OVERHEAD_LOOPS=34) | `quarkmind-sc2/.../emulated/SimulatedWorker.java` |
+| WorkerPhysicsConfig (configurable docking) | `quarkmind-sc2/.../emulated/WorkerPhysicsConfig.java` |
+| MiningCycleDiagnosticTest (saturation + sweeps) | `quarkmind-sc2/.../emulated/MiningCycleDiagnosticTest.java` |
+| DualRunCalibrationTest (SC2 comparisons) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
 
 ---
 
 ## Pre-existing Issues
 
-- **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name: `-Dtest=ClassName`.
-- **Terran/Zerg unit type mapping** — SCVs and Drones show as `UNKNOWN` in SC2 baselines. Mineral data is correct.
+- **Terran/Zerg UNKNOWN mapping** — `ObservationTranslator` doesn't map SCV/Drone unit types. Blocks Terran/Zerg SC2 baseline comparisons.
+- **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name.
