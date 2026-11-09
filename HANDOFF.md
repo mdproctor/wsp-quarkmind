@@ -76,17 +76,21 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 
 ---
 
-## What to do next
+## What to do next — calibration accuracy roadmap
 
-### Priority 1 — Close remaining 8% gas rate gap
+All gaps now tracked as issues:
 
-EM produces 108% of SC2 gas rate (644 vs 596 vespene at tick 304). The GAS_HARVEST_DURATION_LOOPS=22 gives 45.9 vespene/min/worker vs SC2 44.3. Options: (a) increase harvest duration slightly (~24 loops), (b) accept 8% as within tolerance.
+| # | Gap | Current | Target | Blocked by |
+|---|-----|---------|--------|------------|
+| 600 | Terran/Zerg mining efficiency | +1.6% | ±0.5% | — |
+| 601 | Sub-tick training resolution | +6.9% (16w) | ±2% | — |
+| 602 | Geyser position recording | +8.1% gas | ±3% | — |
+| 603 | Worker initialization delay | ±30 minerals early | ±5 | 605 |
+| 604 | 24w/MULE baseline re-record | diverge | pass | 601 |
+| 605 | Mineral patch position recording | approx 7.0u | exact | — |
+| 606 | Gas harvest contention (6w) | unknown | ±5% | 602 |
 
-### Priority 2 — Record more SC2 baselines
-
-- Re-record 24w and MULE baselines (currently have unit count divergence from debug-API building timing)
-- Record patch positions in baseline JSON for exact distance matching
-- Record a pure gas-only baseline (no training, fixed 12 workers, 3 on gas) for cleaner gas rate isolation
+Recommended order: 600 (quick win) → 605+602 (position data) → 603 (init delay) → 601 (sub-tick) → 604 (re-record) → 606 (gas contention)
 
 ---
 
