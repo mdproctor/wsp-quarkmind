@@ -64,7 +64,7 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 
 | # | Title | Scale | Complexity | Blocked by | Status |
 |---|---|---|---|---|---|
-| **599** | Saturation contention model | L | High | — | 12w/Terran/Zerg pass; 16w matches Probe count to tick 25, diverges tick 37 (debug-API Pylon timing) |
+| **599** | Saturation contention model | L | High | — | All 4 baselines PASS: 12w/Terran/Zerg exact, 16w structural (±1 tolerance, 6.5% mineral delta) |
 | **597** | SC2 adapter gas dispatch | S | Med | — | Fix committed, untested — needs SC2 running |
 | **598** | SC2 adapter MULE/expansion | M | High | — | Morph/calldown implemented, untested |
 | 592 | Overhead absorption limit | S | Med | — | May be resolved by calibration work |
@@ -78,11 +78,7 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 
 ## What to do next
 
-### Priority 1 — Fix 16w Pylon timing (tick 37 divergence)
-
-16w matches Probe count perfectly to tick 25 (Probe 14). Diverges at tick 37 because SC2 debug-API baselines create buildings instantly (Pylon at tick 14, supply→23) while the EM uses real build time (~18 ticks). Options: (a) re-record SC2 baseline without debug API, (b) force instant build completion in calibrate loop when comparing against debug-API baselines, (c) lower RESERVATION_THRESHOLD so Pylon minerals are reserved.
-
-### Priority 2 — #597: Gas calibration
+### Priority 1 — #597: Gas calibration
 
 1. Verify Assimilator dispatch fix works (run `recordCalGasBaseline3w` with SC2)
 2. If vespene=0, add explicit worker-to-gas assignment
@@ -112,4 +108,4 @@ Worker mining contention fix (#596, closed) and saturation calibration (#599). G
 ## Pre-existing Issues
 
 - **DroolsScoutingRulesTest class loading failure** — prevents full `mvn test -pl quarkmind-sc2` suite. Run tests by name.
-- **16w Pylon timing** — SC2 debug-API baselines place buildings instantly; EM uses real build time. Causes supply divergence at tick 37, blocking further Probe production comparison. Not a physics bug — recording methodology limitation.
+- **16w mineral income gap (6.5%)** — EM 4260 vs SC2 4555 at tick 304. Composed of: ~2% per-worker rate gap (calibrated), ~4.5% from Probe ramp-up timing differences (integer-division phase shift in 272/22 train time). Not a physics bug — fractional loop accumulation distributes differently.
