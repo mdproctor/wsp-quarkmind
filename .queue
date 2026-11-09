@@ -54,7 +54,7 @@ branch:
 - [x] casehubio/quarkmind#601 — Sub-tick training resolution
 - [x] casehubio/quarkmind#578 — Mineral rate regression from acceleration model
 - [x] casehubio/quarkmind#603 — Worker initialization delay
-- [ ] casehubio/quarkmind#606 — Gas harvest contention model
+- [x] casehubio/quarkmind#606 — Gas harvest contention model
 - [x] casehubio/quarkmind#605 — Record mineral patch positions ← active
 - [x] casehubio/quarkmind#602 — Record geyser positions
 - [ ] casehubio/quarkmind#604 — Re-record 24w and MULE baselines
