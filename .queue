@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#606
+active_issue: casehubio/quarkmind#598
 branch: 
 
 ## Queue
@@ -63,3 +63,5 @@ branch:
 - [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor
 - [ ] casehubio/quarkmind#581 — Army spending death-timing floor
 - [ ] casehubio/quarkmind#582 — Economy spending reporting-lag floor
+- [ ] casehubio/quarkmind#608 — Oracle vespene MAPE regression from gas recalibration
+- [ ] casehubio/quarkmind#609 — Worker delivery desynchronization
