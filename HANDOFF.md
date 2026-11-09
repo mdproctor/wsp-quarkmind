@@ -2,50 +2,51 @@
 
 ## Last Session
 
-Closed #590 (rate cadence). Investigated #591 (income direction) — major finding from SC2 playbook calibration: per-worker mining physics is only 5% off, the 22% aggregate MAPE is from worker allocation, not physics. Efficiency factors (1.18/1.12/1.28) were wrong — reverted to 1.0. Filed #593-595 for rate accuracy. Built SC2 calibration infrastructure: 10 playbooks, adapter tick/loop fix, sc2 Maven profile.
+Ran SC2 calibration playbooks from #591. Fixed critical bugs in PlaybookSC2Adapter (position-based builds rejected by SC2, Assimilator commands not dispatched, morph/calldown unimplemented). Recorded 5 working mineral baselines + 1 saturation baseline. Gas, MULE, and expansion recordings need one more adapter fix.
 
 ### What was done
 
-- **#590 — Rate cadence alignment (closed).** EconomyTracker switched from tick-counting (154 loops) to loop-counting (160 loops, configurable). Empirically confirmed 96.8% of PlayerStatsEvents at exactly 160 loops. Mixed MAPE effect (+/-1-2%). Added EconomyConfig with `starcraft.economy.rate-interval-loops`.
+- **SC2 adapter fixes (3 bugs):**
+  1. Build commands sent to hardcoded `(30, 30)` → always rejected. Fixed: use debug API `DebugCreateUnit` for supply/tech buildings (bypasses placement validation)
+  2. Assimilator geyser-targeting commands created but never dispatched (build path returned null but command was in the return value). Fixed: route non-null build commands to `sendActions`
+  3. Morph (`CC→OC`) and calldown (`MULE`) actions unimplemented in adapter. Added `translateMorph` and `translateCalldown`
 
-- **#591 — Worker income direction (in progress).**
-  - Extended efficiency factor sweep to 0.85-1.30. Oracle-derived factors: Protoss=1.18, Zerg=1.12, Terran=1.28 — all above 1.0, suggesting model under-produces.
-  - Applied factors via RaceModel.miningEfficiencyFactor() in EmulatedGame.tick(). Rate MAPE improved (22.1% → 14.5%) but mineralsCurrent MAPE exploded (67.5% → 126.1%).
-  - **SC2 playbook calibration disproved the factors.** Recorded 3 baselines against real SC2: Protoss=56.9, Terran=56.2, Zerg=56.2 minerals/min/worker. Model produces 60.0. The model OVER-produces per-worker income by 5%. The oracle-derived factors > 1.0 were compensating for worker allocation gaps, not physics.
-  - **Factors reverted to 1.0.** The infrastructure (RaceModel methods, EmulatedGame wiring) stays for future use.
+- **SC2 calibration findings (from working baselines):**
+  - Per-worker mineral rate: Protoss=57.9, Terran=57.2, Zerg=57.2 minerals/min/worker
+  - EM at real map distances: ~57.8/min/worker → **within 1% of SC2**
+  - EM at test distance (uniform 6.0u): 54.0/min/worker → 7% below SC2 (test distance too short for realistic cycle times)
+  - Efficiency factors reverted to 1.0 — oracle-derived factors (1.18/1.12/1.28) were compensating for allocation gaps, not physics
+  - Saturation: 23 workers on 8 patches → 48.6/min/worker (84% efficiency). EM shows ~90% → 6% too lenient
 
-- **SC2 calibration infrastructure built:**
-  - 10 targeted playbooks in `src/test/resources/playbooks/cal-*.yaml`
-  - Fixed PlaybookSC2Adapter: tick/loop conversion, isRunning() race condition
-  - Added `sc2` Maven profile (was impossible to run @Tag("sc2") tests before)
-  - 9 self-baseline tests + 9 SC2 recorder tests in PlaybookSC2RecorderTest
-  - 3 SC2 baselines recorded in `src/test/resources/calibration/`
-
-- **New issues filed:** #593 (SC2 rate algorithm RE), #594 (sub-tick rate tracking), #595 (gas rate regression)
+- **Remaining adapter fixes needed:**
+  - Assimilator dispatch fix committed but not yet tested against SC2 (gas baselines still show 0 vespene)
+  - SC2 auto-worker-to-gas assignment not triggered by playbooks — may need explicit worker assignment action in adapter
+  - Expansion playbook: debug-created Nexus provides supply but workers don't transfer to 2nd base without rally commands
 
 ---
 
 ## Current Accuracy State
 
+### SC2 Playbook Calibration Results
+
+| Measurement | SC2 Real | EM Model | Delta | Source |
+|---|---|---|---|---|
+| Protoss per-worker mineral rate | 57.9/min | ~57.8 (real dist) | <1% | cal-mineral-baseline-12w |
+| Terran per-worker mineral rate | 57.2/min | ~57.8 (real dist) | ~1% | cal-mineral-baseline-terran |
+| Zerg per-worker mineral rate | 57.2/min | ~57.8 (real dist) | ~1% | cal-mineral-baseline-zerg |
+| Saturation efficiency (23w/8p) | 84% | ~90% | EM 6% too lenient | cal-mineral-saturated-16w |
+
 ### Standalone EmulatedGameBaselineTest — 7-min checkpoint
 
-Factors at 1.0 — same as before this session for most fields:
+Factors at 1.0 (unchanged from previous session):
 
-| Field | Value | Status |
+| Field | MAPE | Status |
 |---|---|---|
-| mineralsCollectionRate | 22.1% | Cadence alignment, no net change from factors |
-| vespeneCollectionRate | 29.1% | Unchanged — gas factors not applied |
-| mineralsCurrent | 67.5% | Unchanged |
-| vespeneCurrent | 65.4% | Unchanged |
+| mineralsCollectionRate | 22.1% | Worker allocation gap, not physics (#572) |
+| vespeneCollectionRate | 29.1% | Gas physics not yet SC2-calibrated |
+| mineralsCurrent | 67.5% | Cumulative drift from rate error |
+| vespeneCurrent | 65.4% | Cumulative drift |
 | All other fields | Same as previous session | At floor or structural |
-
-### Key calibration data (NEW — from SC2 playbooks)
-
-| Measurement | SC2 Real | EM Model | Delta |
-|---|---|---|---|
-| Protoss per-worker mineral rate | 56.9/min | 60.0/min | +5.5% over |
-| Terran per-worker mineral rate | 56.2/min | 60.0/min | +6.8% over |
-| Zerg per-worker mineral rate | 56.2/min | 60.0/min | +6.8% over |
 
 ---
 
@@ -62,41 +63,27 @@ Factors at 1.0 — same as before this session for most fields:
 
 ## Critical Insights for Next Session
 
-### 1. Per-worker physics is calibrated — allocation is the gap
+### 1. Per-worker physics is calibrated — don't touch mining constants
 
-SC2 playbooks prove per-worker rate is within 5%. The 22% aggregate MAPE in oracle replays comes from worker ALLOCATION — too many EM workers are non-productive (building pauses, saturation, transit). This is #572's original domain (worker activity modeling). The fix isn't physics constants — it's modeling which workers are actively mining vs paused/scouting/transferring.
+SC2 playbook calibration proves per-worker mineral physics is within 1% at real map distances. The mining-duration=12, gas-harvest=22, acceleration=3.5 constants are correct. The 22% rate MAPE in oracle replays is entirely worker allocation — #572 is the fix, not physics.
 
-### 2. Oracle replays calibrate behavior, SC2 playbooks calibrate physics
+### 2. Saturation model needs steeper contention
 
-Don't fit physics constants against oracle data — the confounding variables lead to wrong answers (1.18 factor that should be 0.95). Use SC2 playbooks for physics, oracle replays for full-system validation.
+SC2 drops to 84% per-worker efficiency at 2.9 workers/patch. EM stays at ~90%. The contention model (patch occupancy during mining duration) needs to penalise 3rd workers more aggressively. This is #572 territory.
 
-### 3. Seven SC2 recordings remain — run in parallel with calibration
+### 3. SC2 adapter needs 2 more fixes for gas/MULE recordings
 
-**Completed (3):** cal-mineral-baseline-12w (Protoss), cal-mineral-baseline-terran, cal-mineral-baseline-zerg
-**Remaining (7):** saturation (16w/24w), gas (3w/6w), MULE isolation, expansion transfer, worker speed
+**Fix 1 — Assimilator dispatch**: Code is committed but untested. The `onStep` fix routes non-null `translateBuild` results to `sendActions`. Run `recordCalGasBaseline3w` to verify. If Assimilator appears but vespene stays 0, SC2 isn't auto-assigning workers — adapter needs an explicit "assign 3 workers to gas" action.
 
-Run each with `-Psc2` (the sc2 Maven profile added this session):
-```bash
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMineralSaturated16w
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMineralSaturated24w
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalGasBaseline3w
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalGasDual6w
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalMuleIsolation
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalExpansionTransfer
-mvn test -pl quarkmind-sc2 -Psc2 -Dtest=PlaybookSC2RecorderTest#recordCalWorkerSpeedSingle
-```
+**Fix 2 — Morph/calldown dispatch**: `translateMorph` and `translateCalldown` are implemented but `fired[i]` semantics for morphs may not be right. The MULE calldown uses `loop: continuous` which should retry each tick until OC has energy. Test with `recordCalMuleIsolation`.
 
-**Apply data as it arrives.** Each recording writes a JSON baseline to `src/test/resources/calibration/`. As each lands, immediately compare against EmulatedGame (load the JSON, run EM with same playbook, diff per-tick minerals/vespene). Apply findings to physics constants or the model without waiting for all 7 to complete.
+### 4. Expansion playbook needs rally command support
 
-**Priority order:** saturation (16w/24w) first — reveals the saturation curve; gas (3w) next — isolates gas per-worker rate; MULE isolation — explains Terran's large oracle deficit.
+Debug-created Nexus provides supply instantly but workers don't mine at the expansion without rally commands. The adapter needs either: (a) SC2 debug API to create workers at the expansion, or (b) rally point commands to transfer workers.
 
-### 4. Gas efficiency factor sweep hit the ceiling
+### 5. Test distance vs real distance gap
 
-Oracle-derived gas factors (1.28-1.30) hit the sweep ceiling at 1.30. Like mineral factors, these are likely wrong — compensating for allocation, not physics. SC2 gas baseline recording will reveal the true per-worker gas rate.
-
-### 5. The efficiency factor infrastructure stays
-
-`RaceModel.miningEfficiencyFactor()` / `gasEfficiencyFactor()` and the EmulatedGame.tick() wiring are committed with default 1.0. Ready for calibrated values once the allocation gap is understood and the factors can be correctly decomposed into physics vs behavior.
+EM at test distance (6.0u uniform) produces 54.0/min/worker — 7% below SC2's 57.9. At real distances (4 close×6.6u + 4 far×7.6u), the weighted average is ~57.8. Tests use `MineralPatch.PATCH_DISTANCE=6.0f` for stability. Consider adding close/far patch variants for more realistic testing, but do NOT change PATCH_DISTANCE — it would break all existing test assertions.
 
 ---
 
@@ -104,18 +91,15 @@ Oracle-derived gas factors (1.28-1.30) hit the sweep ceiling at 1.30. Like miner
 
 | What | Where |
 |------|-------|
-| EconomyTracker (loop-based rate) | `quarkmind-sc2/.../emulated/EconomyTracker.java` |
-| EconomyConfig (rate-interval-loops) | `quarkmind-sc2/.../emulated/EconomyConfig.java` |
-| RaceModel (efficiency factor interface) | `quarkmind-sc2/.../emulated/RaceModel.java` |
-| EmulatedGame.tick() (factor application) | `quarkmind-sc2/.../emulated/EmulatedGame.java:208-209` |
-| PlaybookSC2Adapter (tick/loop conversion) | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
-| PlaybookSC2RecorderTest (10 scenarios) | `quarkmind-sc2/.../real/PlaybookSC2RecorderTest.java` |
-| Calibration playbooks | `quarkmind-sc2/src/test/resources/playbooks/cal-*.yaml` |
-| SC2 baselines (3 recorded) | `quarkmind-sc2/src/test/resources/calibration/cal-*.json` |
-| MiningEfficiencyCalibrationTest (extended) | `quarkmind-sc2/.../replay/MiningEfficiencyCalibrationTest.java` |
-| RateCadenceDiagnosticTest | `quarkmind-sc2/.../replay/RateCadenceDiagnosticTest.java` |
+| PlaybookSC2Adapter (debug build, geyser targeting) | `quarkmind-sc2/.../real/PlaybookSC2Adapter.java` |
+| ResolvedCommand (targetUnitTag) | `quarkmind-sc2/.../real/ResolvedCommand.java` |
+| DualRunCalibrationTest (SC2 comparison) | `quarkmind-sc2/.../playbook/DualRunCalibrationTest.java` |
+| SC2 calibration baselines (8 files) | `quarkmind-sc2/src/test/resources/calibration/cal-*.json` |
+| Calibration playbooks (10 files) | `quarkmind-sc2/src/test/resources/playbooks/cal-*.yaml` |
 | SC2 physics constants | `docs/sc2-physics-constants.md` |
-| Maven sc2 profile | `quarkmind-sc2/pom.xml` (run with `-Psc2`) |
+| MineralPatch.PATCH_DISTANCE | `quarkmind-sc2/.../emulated/MineralPatch.java:11` |
+| EmulatedGame.tick() (factor wiring) | `quarkmind-sc2/.../emulated/EmulatedGame.java:208-209` |
+| PlaybookSC2RecorderTest (10 scenarios) | `quarkmind-sc2/.../real/PlaybookSC2RecorderTest.java` |
 
 ---
 
