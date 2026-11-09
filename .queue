@@ -7,7 +7,7 @@ status: active
 - covers: 607
 - date: 2026-11-09
 active_issue: casehubio/quarkmind#578
-branch: 
+branch: issue-592-overhead-absorption-limit
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
