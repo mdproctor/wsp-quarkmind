@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#621
+active_issue: casehubio/quarkmind#632
 branch: 
 
 ## Queue
@@ -79,3 +79,7 @@ branch:
 - [ ] casehubio/quarkmind#622 — Record per-worker SC2 12w delivery baseline
 - [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
 - [ ] casehubio/quarkmind#624 — Remove mining efficiency compensation factor
+- [ ] casehubio/quarkmind#631 — Edge-to-edge targets not wired
+- [ ] casehubio/quarkmind#632 — Re-measure per-tick mismatch
+- [ ] casehubio/quarkmind#633 — Per-race mineral income gap
+- [ ] casehubio/quarkmind#634 — Worker cycle variance gap
