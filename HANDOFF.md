@@ -2,42 +2,42 @@
 
 ## Last Session
 
-Closed 3 issues (#611, #612, #613). Filed 8 issues (#617-624). Foundational tick-alignment audit identified as top priority — 80% of per-tick mineral deliveries mismatch SC2. CLAUDE.md updated with priority and design rules. Physics constants doc revised throughout.
+Closed #621, #622. Made significant progress on #623/#625. Filed #625-#629. The foundational insight: the EM needs **complete per-loop physics simulation** — not constant tuning — to match SC2 tick-for-tick.
 
-### Key finding: per-tick delivery cadence mismatch (#618)
+### The physics gap
 
-Diagnostic showed 242/304 ticks (80%) have mineral delivery mismatches in a controlled 12w economy-only scenario. The efficiency factor (1.006) forces convergence at tick 304 but individual ticks are wrong (±24 minerals oscillation). Workers deliver on different ticks (±1-2 from SC2). SC2 deltas are clean multiples of 5; EM has non-5-multiples from the factor artifact.
+SC2 simulates every unit every game loop (22.4 loops/second): acceleration, collision, pathfinding. The EM processes workers sequentially with no collision. This creates two specific gaps:
 
-**Root cause:** EM worker delivery cadence doesn't match SC2. The stagger model (uniform `i×6` loops) is an approximation of SC2's natural desynchronization. The efficiency factor compensates at aggregate level but 80% of individual ticks are wrong.
+1. **Walk distance** — EM workers walk center-to-center (Nexus center → patch center = ~7u). SC2 workers walk edge-to-edge (~3.5u). Fixed: edge-to-edge targets via `edgePoint()`.
 
-**Fix path (issues #621-624):**
-1. Instrument SC2 observation for per-worker delivery events (#621) — next
-2. Record per-worker SC2 12w delivery baseline (#622)
-3. Fix EM delivery timing to match SC2 per-tick cadence (#623)
-4. Remove compensation factor, revert to 1.0 (#624)
+2. **Collision** — EM workers pass through each other. SC2 workers push apart and repath. Without collision, EM cycle variance is 4-6 ticks per worker; SC2 is 2-17 ticks. Added initial opposing-path lateral dodge, but need per-loop simultaneous resolution + all-pairs collision + steering avoidance for full match.
 
-### Changes this session
+### What changed this session
 
-1. **Mining efficiency unification (#611):** All three race models set to 1.006 (was Protoss=0.997, Terran/Zerg=0.984). SC2 dual-run shows both Protoss and Terran produce 3460 minerals at tick 304 — no race-specific difference. Old per-race factors were oracle sweep noise.
-2. **§6 baseline refresh (#612):** Added gas baselines (3w: −2.9%, 6w: +3.6%), 24w saturation (+5.9%), updated 16w (4235/4519, +6.7%). Table now covers all 7 dual-run baselines.
-3. **MULE lifetime (#613):** Calibrated to 1452 loops (64.8s) from SC2 dual-run. Was 1434 loops (64.0s) — 1.3% short. MULE income rate (277.8 min/min) needs cleaner playbook for validation.
-4. **CLAUDE.md priority (#617):** Added "Current Priority: Foundational Tick-Alignment" section with design rules (compensation constants forbidden, double arithmetic, dual-run calibration, exact 5-mineral deltas).
-5. **Delivery cadence diagnostic (#618):** New test `deliveryCadenceDiagnostic()` in DualRunCalibrationTest comparing per-tick deltas.
+1. **#621 (closed)** — Per-worker orders/buffs extraction from SC2 API. `WorkerAction` enum, `WorkerSnapshot`/`WorkerCadenceSnapshot` records, `ObservationTranslator.toWorkerSnapshot()`, `EmulatedGame.workerSnapshots()`. 20 tests.
+
+2. **#622 (closed)** — SC2 12w delivery cadence baseline recorded (12 workers × 305 ticks). Both cadence and calibration baselines now from same game run. Key finding: SC2 delivery cadence varies ~0.3% between runs.
+
+3. **#623/#625 (in progress)** — Three physics changes applied:
+   - Edge-to-edge walk distances (3.56u instead of 7.08u)
+   - Worker collision (lateral dodge on opposing paths)
+   - Mining efficiency factor removed (1.006→1.0 for all races)
+   - Mining duration recalibrated (12→14 loops)
+   - **Result: +5 minerals final gap without compensation, 243/304 mismatch ticks**
+
+4. **#624 (done within #623)** — Factor removed as part of the physics fix.
+
+5. **#625-#629 filed** — Complete physics simulation path.
 
 ### Accuracy summary
 
-**Dual-run (controlled SC2):**
+**Dual-run (controlled SC2, no efficiency factor):**
 
 | Baseline | SC2 | EM | Delta |
 |----------|-----|-----|-------|
-| 12w Protoss (tick 304) | 3460 | 3460 | 0.0% |
-| 12w Terran (tick 304) | 3460 | 3460 | 0.0% |
-| 16w saturation (tick 304) | 4235 | 4519 | +6.7% |
-| 24w saturation (tick 304) | 3955 | 4190 | +5.9% |
-| 3w gas (tick 304) | gas 552 | gas 536 | −2.9% |
-| 6w gas (tick 304) | gas 1012 | gas 1048 | +3.6% |
+| 12w Protoss (tick 304) | 3460 | 3465 | +0.1% |
 
-**Per-tick accuracy:** 80% of ticks have delivery mismatches (±24 mineral oscillation). This is the foundational issue to fix.
+**Per-tick accuracy:** 243/304 mismatch ticks (80%), ±30 mineral oscillation, +5 final gap. Target: 0% mismatch — requires complete collision physics (#625-#629).
 
 ---
 
@@ -45,20 +45,22 @@ Diagnostic showed 242/304 ticks (80%) have mineral delivery mismatches in a cont
 
 | Branch | Status | Issues |
 |--------|--------|--------|
-| `issue-578-mineral-rate-acceleration-regression` | 22 commits, active | #578, #605, #603, #602, #606, #604, #609, #598, #608, #610, #611, #612, #613, #618 |
+| `issue-578-mineral-rate-acceleration-regression` | 28 commits, active | #578...#613, #618, #621, #622, #623, #625 |
 
 ---
 
-## Queue — foundational issues first
+## Queue — physics simulation first
+
+The path to 0% mismatch is complete per-loop physics simulation. Worker collision proves the approach; full unit physics completes it.
 
 ```
-[ ] #621 — Instrument SC2 observation for per-worker delivery events (S/Med) ← next
-[ ] #622 — Record per-worker SC2 12w delivery baseline (S/Low)
-[ ] #623 — Fix EM delivery timing to match SC2 per-tick cadence (M/High)
-[ ] #624 — Remove mining efficiency compensation factor (S/Low)
+[ ] #626 — Per-loop simultaneous collision resolution (M/High) ← next
+[ ] #627 — Cross-path collision at mineral line (S/Med) — blocked by #626
+[ ] #628 — Pathfinding-based collision avoidance (M/High) — blocked by #626, #627
+[ ] #629 — Full unit physics simulation for all unit types (L/High) — blocked by #625
 [ ] #619 — Worker initialization desynchronization (S/Med)
 [ ] #620 — Mining cycle decomposition (M/High)
-[ ] #614 — Expansion transfer delay analysis (S/Low) — needs cleaner playbook
+[ ] #614 — Expansion transfer delay analysis (S/Low)
 [ ] #579 — Technology spending timing (S/Med)
 [ ] #580 — foodUsed MAPE (S/Med)
 [ ] #581 — Army spending death-timing (S/Med)
@@ -75,31 +77,39 @@ Diagnostic showed 242/304 ticks (80%) have mineral delivery mismatches in a cont
 
 | # | Title | Status |
 |---|---|---|
-| 607 | Standalone economy accuracy | Active — spending issues deferred for foundations |
+| 607 | Standalone economy accuracy | Active — spending issues deferred for physics |
 | 617 | Foundational tick-alignment audit | Active — top priority |
 
-### Open — foundational (priority)
+### Physics simulation chain (#625→#629)
 
-| # | Title | Scale | Complexity | Blocked by | Notes |
+| # | Title | Scale | Complexity | Blocked by | Status |
 |---|---|---|---|---|---|
-| 621 | Instrument SC2 observation for per-worker delivery events | S | Med | — | Extend ObservationTranslator for orders/buffs |
-| 622 | Record per-worker SC2 12w delivery baseline | S | Low | #621 | Run with instrumentation, save baseline JSON |
-| 623 | Fix EM delivery timing to match SC2 per-tick cadence | M | High | #622 | Core fix — make workers deliver at same ticks |
-| 624 | Remove mining efficiency compensation factor | S | Low | #623 | Revert factor to 1.0, verify convergence |
-| 619 | Worker initialization desynchronization | S | Med | #618 | Match SC2's natural worker desync |
-| 620 | Mining cycle decomposition | M | High | #618 | Decompose lumped mining=12 into explicit phases |
+| 625 | Worker collision model | M | High | — | In progress — lateral dodge implemented, needs per-loop resolution |
+| 626 | Per-loop simultaneous collision | M | High | #625 | Open — restructure tick loop to all-workers-per-loop |
+| 627 | Cross-path collision (all pairs) | S | Med | #626 | Open — remove opposing-task filter |
+| 628 | Pathfinding collision avoidance | M | High | #626, #627 | Open — steering waypoints instead of lateral dodge |
+| 629 | Full unit physics for all types | L | High | #625-#628 | Open — PhysicsEngine for workers + army + buildings |
 
-### Open — deferred
+### Other foundational
+
+| # | Title | Scale | Complexity | Blocked by | Status |
+|---|---|---|---|---|---|
+| 623 | Fix EM delivery timing | M | High | #622 | Partially done — edge-to-edge + factor removal done, 0% mismatch needs #625-#628 |
+| 624 | Remove compensation factor | S | Low | #623 | Done — factor set to 1.0 |
+| 619 | Worker initialization desync | S | Med | #618 | Open |
+| 620 | Mining cycle decomposition | M | High | #618 | Open |
+
+### Deferred
 
 | # | Title | Scale | Complexity | Notes |
 |---|---|---|---|---|
-| 614 | Expansion transfer delay analysis | S | Low | Baseline confounded — needs cleaner playbook |
-| 579 | Technology spending timing | S | Med | InProgress/Current timing boundary |
+| 614 | Expansion transfer delay | S | Low | Needs cleaner playbook |
+| 579 | Technology spending timing | S | Med | InProgress/Current boundary |
 | 580 | foodUsed MAPE | S | Med | 6.1% vs target 2-3% |
 | 581 | Army spending death-timing | S | Med | 7% MAPE |
 | 582 | Economy spending reporting-lag | S | Med | 5.8% MAPE |
-| 615 | Gas worker allocation modeling | M | Med | Replace 1.20× override with proper allocation |
-| 616 | SC2 morph via ability API | S | Med | Research — why MORPH_ORBITAL_COMMAND rejected |
+| 615 | Gas worker allocation | M | Med | Replace 1.20× override |
+| 616 | SC2 morph via ability API | S | Med | Research |
 
 ---
 
@@ -107,28 +117,36 @@ Diagnostic showed 242/304 ticks (80%) have mineral delivery mismatches in a cont
 
 | What | Where |
 |------|-------|
-| Mining efficiency factor | `ProtossRaceModel.miningEfficiencyFactor()` (all 3 race models return 1.006) |
-| MULE lifetime | `SC2Data.MULE_LIFETIME_LOOPS` (1452) |
+| Worker collision | `SimulatedWorker.moveLoopsWithCollision()`, `resolveOverlaps()` |
+| Edge-to-edge targets | `WorkerSimulation.edgePoint()`, `returnTarget()`, `miningTarget()`, `depositTarget()` |
+| Edge-to-edge toggle | `WorkerSimulation.useEdgeToEdge` (currently true) |
+| Mining duration | `WorkerPhysicsConfig.DEFAULT_MINING_DURATION_LOOPS` (14.0) |
+| Mining efficiency factor | `ProtossRaceModel.miningEfficiencyFactor()` (1.0 — all races) |
+| Worker cadence snapshot | `ObservationTranslator.toWorkerSnapshot()`, `EmulatedGame.workerSnapshots()` |
+| Cadence comparison diagnostic | `WorkerCadenceComparisonTest.compareDeliveryCadence()` |
+| Edge calibration sweep | `EdgeToEdgeCalibrationTest.sweepMiningDurationAtEdgeDistances()` |
 | Delivery cadence diagnostic | `DualRunCalibrationTest.deliveryCadenceDiagnostic()` |
-| ObservationTranslator | `quarkmind-sc2/.../real/ObservationTranslator.java` — needs extension for orders/buffs |
-| Domain Unit record | `quarkmind-sc2/.../domain/Unit.java` — no order/cargo fields yet |
-| CalibrationSnapshot | `quarkmind-sc2/.../playbook/CalibrationSnapshot.java` — aggregate only |
-| SimulatedWorker | `quarkmind-sc2/.../emulated/SimulatedWorker.java` — has rich per-worker state |
-| WorkerSimulation | `quarkmind-sc2/.../emulated/WorkerSimulation.java` — tick logic |
+| SC2 cadence baseline | `src/test/resources/calibration/cal-worker-cadence-12w.json` |
 | SC2 physics constants | `docs/sc2-physics-constants.md` |
-| Priority & design rules | `CLAUDE.md` — "Current Priority: Foundational Tick-Alignment" section |
 
 ---
 
-## SC2 API capability (for #621)
+## Design Direction
 
-The SC2 API provides per-worker data that ObservationTranslator currently ignores:
-- `u.getOrders()` — ability ID, target, progress (HARVEST_GATHER = mining, HARVEST_RETURN = carrying)
-- `u.getBuffs()` — includes CARRY_MINERAL_FIELD_MINERALS (worker carrying resources)
-- `u.getCargoSpaceTaken()` — cargo state
-- `u.getAssignedHarvesters()` / `u.getIdealHarvesters()` — town hall/geyser worker counts
+**The EM needs to be a per-loop physics simulation, not a per-tick constant-driven model.**
 
-The EM's SimulatedWorker has equivalent rich state (WorkerTask enum, position, cargo, assignedPatch, currentSpeed) but this isn't surfaced through GameState or CalibrationSnapshot.
+Every compensation constant (mining efficiency factor, lumped mining duration, docking overhead) exists because the EM lacks physics that SC2 has. The fix path is to add the missing physics, not tune constants:
+
+- Mining efficiency factor → removed (edge-to-edge walk + collision produces correct total)
+- Lumped mining=12 → recalibrated to 14 at correct walk distances
+- Per-tick mismatch → requires complete collision (#626-#628)
+- Full simulation → PhysicsEngine for all unit types (#629)
+
+**Design rules (from CLAUDE.md):**
+- No compensation constants — fix root cause
+- No formulas — physics simulation only
+- Calibrate from SC2 dual-run, not oracle replays
+- Per-tick deltas must be exact multiples of 5
 
 ---
 
