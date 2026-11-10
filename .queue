@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#598
+active_issue: casehubio/quarkmind#611
 branch: 
 
 ## Queue
@@ -55,13 +55,19 @@ branch:
 - [x] casehubio/quarkmind#578 — Mineral rate regression from acceleration model
 - [x] casehubio/quarkmind#603 — Worker initialization delay
 - [x] casehubio/quarkmind#606 — Gas harvest contention model
-- [x] casehubio/quarkmind#605 — Record mineral patch positions ← active
+- [x] casehubio/quarkmind#605 — Record mineral patch positions
 - [x] casehubio/quarkmind#602 — Record geyser positions
 - [x] casehubio/quarkmind#604 — Re-record 24w and MULE baselines
-- [ ] casehubio/quarkmind#598 — MULE isolation and expansion transfer playbooks
-- [ ] casehubio/quarkmind#579 — Technology spending timing boundary
-- [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor
+- [x] casehubio/quarkmind#598 — MULE isolation and expansion transfer playbooks
+- [x] casehubio/quarkmind#579 — Technology spending timing boundary
+- [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor ← active
 - [ ] casehubio/quarkmind#581 — Army spending death-timing floor
 - [ ] casehubio/quarkmind#582 — Economy spending reporting-lag floor
 - [ ] casehubio/quarkmind#608 — Oracle vespene MAPE regression from gas recalibration
 - [ ] casehubio/quarkmind#609 — Worker delivery desynchronization
+- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
+- [ ] casehubio/quarkmind#612 — Dual-run baseline document refresh
+- [ ] casehubio/quarkmind#613 — MULE income isolation analysis
+- [ ] casehubio/quarkmind#614 — Expansion transfer delay analysis
+- [ ] casehubio/quarkmind#615 — Gas worker allocation modeling
+- [ ] casehubio/quarkmind#616 — SC2 morph via ability API investigation
