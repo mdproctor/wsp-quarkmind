@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <text x="360" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#1e293b">Mining Cycle: Lumped vs Decomposed</text>
+
+  <!-- BEFORE: lumped constant -->
+  <text x="80" y="68" font-size="12" font-weight="600" fill="#64748b">Before</text>
+
+  <!-- Walk to patch -->
+  <rect x="80" y="78" width="200" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="180" y="100" text-anchor="middle" font-size="11" font-weight="500" fill="#1e40af">Walk to patch</text>
+  <text x="180" y="110" text-anchor="middle" font-size="9" fill="#3b82f6">50 loops</text>
+
+  <!-- Mine (lumped 14) -->
+  <rect x="284" y="78" width="116" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="342" y="100" text-anchor="middle" font-size="11" font-weight="500" fill="#92400e">Mine</text>
+  <text x="342" y="110" text-anchor="middle" font-size="9" fill="#d97706">14 loops (lumped)</text>
+
+  <!-- Walk home -->
+  <rect x="404" y="78" width="200" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="504" y="100" text-anchor="middle" font-size="11" font-weight="500" fill="#1e40af">Walk home</text>
+  <text x="504" y="110" text-anchor="middle" font-size="9" fill="#3b82f6">50 loops</text>
+
+  <!-- Total -->
+  <text x="640" y="100" font-size="11" font-weight="600" fill="#334155">= 114</text>
+
+  <!-- Arrow connectors -->
+  <path d="M280,96 L284,96" fill="none" stroke="#94a3b8" stroke-width="1"/>
+  <path d="M400,96 L404,96" fill="none" stroke="#94a3b8" stroke-width="1"/>
+
+  <!-- AFTER: decomposed -->
+  <text x="80" y="160" font-size="12" font-weight="600" fill="#334155">After</text>
+
+  <!-- Walk to patch -->
+  <rect x="80" y="170" width="152" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="156" y="192" text-anchor="middle" font-size="11" font-weight="500" fill="#1e40af">Walk to patch</text>
+  <text x="156" y="202" text-anchor="middle" font-size="9" fill="#3b82f6">50 loops</text>
+
+  <!-- Approach/dock -->
+  <rect x="236" y="170" width="60" height="36" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="266" y="189" text-anchor="middle" font-size="10" font-weight="500" fill="#4338ca">Dock</text>
+  <text x="266" y="202" text-anchor="middle" font-size="9" fill="#6366f1">7</text>
+
+  <!-- Mine (real animation) -->
+  <rect x="300" y="170" width="44" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="322" y="189" text-anchor="middle" font-size="10" font-weight="500" fill="#92400e">Mine</text>
+  <text x="322" y="202" text-anchor="middle" font-size="9" fill="#d97706">5</text>
+
+  <!-- Walk home -->
+  <rect x="348" y="170" width="152" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="424" y="192" text-anchor="middle" font-size="11" font-weight="500" fill="#1e40af">Walk home</text>
+  <text x="424" y="202" text-anchor="middle" font-size="9" fill="#3b82f6">50 loops</text>
+
+  <!-- Deposit -->
+  <rect x="504" y="170" width="40" height="36" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
+  <text x="524" y="189" text-anchor="middle" font-size="10" font-weight="500" fill="#15803d">Dep</text>
+  <text x="524" y="202" text-anchor="middle" font-size="9" fill="#22c55e">3</text>
+
+  <!-- Total -->
+  <text x="580" y="192" font-size="11" font-weight="600" fill="#334155">= 115</text>
+
+  <!-- Arrow connectors -->
+  <path d="M232,188 L236,188" fill="none" stroke="#94a3b8" stroke-width="1"/>
+  <path d="M296,188 L300,188" fill="none" stroke="#94a3b8" stroke-width="1"/>
+  <path d="M344,188 L348,188" fill="none" stroke="#94a3b8" stroke-width="1"/>
+  <path d="M500,188 L504,188" fill="none" stroke="#94a3b8" stroke-width="1"/>
+
+  <!-- Annotation -->
+  <text x="80" y="240" font-size="11" fill="#475569">Same total overhead. Same per-tick accuracy. The decomposition itself</text>
+  <text x="80" y="255" font-size="11" fill="#475569">changes nothing — it's infrastructure for making each phase variable.</text>
+</svg>
