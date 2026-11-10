@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#635
+active_issue: casehubio/quarkmind#614
 branch: 
 
 ## Queue
@@ -69,7 +69,7 @@ branch:
 - [x] casehubio/quarkmind#622 — Record per-worker SC2 12w delivery baseline
 - [x] casehubio/quarkmind#624 — Remove mining efficiency compensation factor
 - [x] casehubio/quarkmind#632 — Re-measure per-tick mismatch
-- [ ] casehubio/quarkmind#635 — CDI record proxy deployment error
+- [x] casehubio/quarkmind#635 — CDI record proxy deployment error
 - [ ] casehubio/quarkmind#614 — Expansion transfer delay analysis
 - [ ] casehubio/quarkmind#579 — Technology spending timing boundary
 - [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor
