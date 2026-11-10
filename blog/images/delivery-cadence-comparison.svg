@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320">
+  <style>
+    text { font-family: 'SF Mono', 'Fira Code', monospace; }
+    .title { font-size: 13px; font-weight: bold; fill: #1a1a2e; }
+    .label { font-size: 10px; fill: #555; }
+    .axis { stroke: #999; stroke-width: 1; }
+    .sc2-bar { fill: #2d6a4f; }
+    .em-bar { fill: #e07a5f; }
+    .grid { stroke: #e0e0e0; stroke-width: 0.5; stroke-dasharray: 3,3; }
+    .legend-text { font-size: 11px; fill: #333; }
+    .tick-label { font-size: 9px; fill: #666; text-anchor: middle; }
+    .y-label { font-size: 9px; fill: #666; text-anchor: end; }
+    .annotation { font-size: 9px; fill: #888; font-style: italic; }
+  </style>
+
+  <text x="360" y="20" text-anchor="middle" class="title">Per-tick mineral delivery: SC2 vs Emulator (ticks 295–304)</text>
+
+  <!-- Legend -->
+  <rect x="200" y="30" width="12" height="12" class="sc2-bar"/>
+  <text x="216" y="41" class="legend-text">SC2 (real)</text>
+  <rect x="320" y="30" width="12" height="12" class="em-bar"/>
+  <text x="336" y="41" class="legend-text">Emulator</text>
+
+  <!-- Axes -->
+  <line x1="80" y1="260" x2="680" y2="260" class="axis"/>
+  <line x1="80" y1="60" x2="80" y2="260" class="axis"/>
+
+  <!-- Y-axis gridlines and labels -->
+  <line x1="80" y1="220" x2="680" y2="220" class="grid"/>
+  <text x="75" y="224" class="y-label">+5</text>
+  <line x1="80" y1="180" x2="680" y2="180" class="grid"/>
+  <text x="75" y="184" class="y-label">+10</text>
+  <line x1="80" y1="140" x2="680" y2="140" class="grid"/>
+  <text x="75" y="144" class="y-label">+15</text>
+  <line x1="80" y1="100" x2="680" y2="100" class="grid"/>
+  <text x="75" y="104" class="y-label">+20</text>
+
+  <text x="75" y="264" class="y-label">0</text>
+
+  <!-- X-axis label -->
+  <text x="380" y="290" text-anchor="middle" class="label">Tick</text>
+  <text x="30" y="165" text-anchor="middle" class="label" transform="rotate(-90,30,165)">Minerals delivered</text>
+
+  <!-- Tick 295: SC2=+0, EM=+15 -->
+  <text x="140" y="275" class="tick-label">295</text>
+  <!-- SC2: 0 -->
+  <rect x="121" y="260" width="18" height="0" class="sc2-bar"/>
+  <!-- EM: +15 -->
+  <rect x="141" y="140" width="18" height="120" class="em-bar"/>
+
+  <!-- Tick 296: SC2=+15, EM=+10 -->
+  <text x="200" y="275" class="tick-label">296</text>
+  <rect x="181" y="140" width="18" height="120" class="sc2-bar"/>
+  <rect x="201" y="180" width="18" height="80" class="em-bar"/>
+
+  <!-- Tick 297: SC2=+10, EM=+5 -->
+  <text x="260" y="275" class="tick-label">297</text>
+  <rect x="241" y="180" width="18" height="80" class="sc2-bar"/>
+  <rect x="261" y="220" width="18" height="40" class="em-bar"/>
+
+  <!-- Tick 298: SC2=+15, EM=+15 -->
+  <text x="320" y="275" class="tick-label">298</text>
+  <rect x="301" y="140" width="18" height="120" class="sc2-bar"/>
+  <rect x="321" y="140" width="18" height="120" class="em-bar"/>
+
+  <!-- Tick 299: SC2=+15, EM=+5 -->
+  <text x="380" y="275" class="tick-label">299</text>
+  <rect x="361" y="140" width="18" height="120" class="sc2-bar"/>
+  <rect x="381" y="220" width="18" height="40" class="em-bar"/>
+
+  <!-- Tick 300: SC2=+5, EM=+20 -->
+  <text x="440" y="275" class="tick-label">300</text>
+  <rect x="421" y="220" width="18" height="40" class="sc2-bar"/>
+  <rect x="441" y="100" width="18" height="160" class="em-bar"/>
+
+  <!-- Tick 301: SC2=+5, EM=+15 -->
+  <text x="500" y="275" class="tick-label">301</text>
+  <rect x="481" y="220" width="18" height="40" class="sc2-bar"/>
+  <rect x="501" y="140" width="18" height="120" class="em-bar"/>
+
+  <!-- Tick 302: SC2=+15, EM=+5 -->
+  <text x="560" y="275" class="tick-label">302</text>
+  <rect x="541" y="140" width="18" height="120" class="sc2-bar"/>
+  <rect x="561" y="220" width="18" height="40" class="em-bar"/>
+
+  <!-- Tick 303: SC2=+15, EM=+15 -->
+  <text x="620" y="275" class="tick-label">303</text>
+  <rect x="601" y="140" width="18" height="120" class="sc2-bar"/>
+  <rect x="621" y="140" width="18" height="120" class="em-bar"/>
+
+  <!-- Annotation -->
+  <text x="380" y="310" text-anchor="middle" class="annotation">Same total income. Different delivery timing at 80% of ticks.</text>
+</svg>

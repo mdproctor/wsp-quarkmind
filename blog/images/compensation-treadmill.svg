@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280">
+  <style>
+    text { font-family: 'SF Mono', 'Fira Code', monospace; }
+    .title { font-size: 13px; font-weight: bold; fill: #1a1a2e; }
+    .box { rx: 6; ry: 6; stroke-width: 1.5; }
+    .problem { fill: #fff3e0; stroke: #e07a5f; }
+    .fix { fill: #e8f5e9; stroke: #2d6a4f; }
+    .debt { fill: #fce4ec; stroke: #c62828; }
+    .arrow { stroke: #666; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+    .cycle-arrow { stroke: #c62828; stroke-width: 2; fill: none; marker-end: url(#redarrow); stroke-dasharray: 6,3; }
+    .box-text { font-size: 10px; fill: #333; text-anchor: middle; }
+    .box-title { font-size: 11px; font-weight: bold; fill: #1a1a2e; text-anchor: middle; }
+    .vs-text { font-size: 12px; font-weight: bold; fill: #666; text-anchor: middle; }
+    .label { font-size: 9px; fill: #888; text-anchor: middle; font-style: italic; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#666"/>
+    </marker>
+    <marker id="redarrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#c62828"/>
+    </marker>
+  </defs>
+
+  <text x="360" y="22" text-anchor="middle" class="title">Compensation vs Foundation</text>
+
+  <!-- Top row: The treadmill -->
+  <text x="180" y="50" text-anchor="middle" class="label">The treadmill</text>
+
+  <rect x="30" y="60" width="120" height="50" class="box problem"/>
+  <text x="90" y="82" class="box-title">Timing off</text>
+  <text x="90" y="96" class="box-text">workers ±1-2 ticks</text>
+
+  <path d="M 150 85 L 185 85" class="arrow"/>
+
+  <rect x="190" y="60" width="120" height="50" class="box debt"/>
+  <text x="250" y="82" class="box-title">Add factor</text>
+  <text x="250" y="96" class="box-text">1.006× → 5.03/trip</text>
+
+  <path d="M 310 85 L 345 85" class="arrow"/>
+
+  <rect x="350" y="60" width="130" height="50" class="box problem"/>
+  <text x="415" y="82" class="box-title">Change physics</text>
+  <text x="415" y="96" class="box-text">stagger, accel, ...</text>
+
+  <path d="M 480 85 L 515 85" class="arrow"/>
+
+  <rect x="520" y="60" width="130" height="50" class="box debt"/>
+  <text x="585" y="82" class="box-title">Re-sweep factor</text>
+  <text x="585" y="96" class="box-text">0.997 → 1.006 → ?</text>
+
+  <!-- Cycle arrow back -->
+  <path d="M 585 110 C 585 145, 415 145, 415 110" class="cycle-arrow"/>
+  <text x="500" y="148" class="label">repeat forever</text>
+
+  <!-- VS -->
+  <text x="360" y="180" class="vs-text">vs</text>
+
+  <!-- Bottom row: The fix -->
+  <text x="180" y="198" text-anchor="middle" class="label">The fix</text>
+
+  <rect x="30" y="208" width="140" height="50" class="box fix"/>
+  <text x="100" y="228" class="box-title">Match SC2 timing</text>
+  <text x="100" y="242" class="box-text">per-worker cadence</text>
+
+  <path d="M 170 233 L 225 233" class="arrow"/>
+
+  <rect x="230" y="208" width="140" height="50" class="box fix"/>
+  <text x="300" y="228" class="box-title">Factor = 1.0</text>
+  <text x="300" y="242" class="box-text">no compensation</text>
+
+  <path d="M 370 233 L 425 233" class="arrow"/>
+
+  <rect x="430" y="208" width="160" height="50" class="box fix"/>
+  <text x="510" y="228" class="box-title">Physics changes work</text>
+  <text x="510" y="242" class="box-text">no re-sweeping needed</text>
+</svg>
