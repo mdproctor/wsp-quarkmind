@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    text { font-size: 11px; fill: #333; }
+    .title { font-size: 14px; font-weight: 600; }
+    .label { font-size: 10px; fill: #666; }
+    .axis { stroke: #333; stroke-width: 1.5; fill: none; }
+    .grid { stroke: #e2e8f0; stroke-width: 0.5; }
+    .target { stroke: #16a34a; stroke-width: 1.5; stroke-dasharray: 6,4; }
+    .data-line { fill: none; stroke: #2563eb; stroke-width: 2; }
+    .data-point { fill: #2563eb; }
+    .best-point { fill: #16a34a; stroke: #16a34a; stroke-width: 2; }
+    .annotation { font-size: 11px; fill: #16a34a; font-weight: 600; }
+  </style>
+
+  <text x="320" y="24" text-anchor="middle" class="title">Collision Speed Factor Calibration</text>
+  <text x="320" y="42" text-anchor="middle" class="label">12 workers, Protoss, 304 ticks. SC2 target: 3460 minerals</text>
+
+  <!-- Chart area -->
+  <g transform="translate(80, 55)">
+    <!-- Grid lines -->
+    <line x1="0" y1="0" x2="500" y2="0" class="grid"/>
+    <line x1="0" y1="50" x2="500" y2="50" class="grid"/>
+    <line x1="0" y1="100" x2="500" y2="100" class="grid"/>
+    <line x1="0" y1="150" x2="500" y2="150" class="grid"/>
+    <line x1="0" y1="200" x2="500" y2="200" class="grid"/>
+
+    <!-- Axes -->
+    <line x1="0" y1="0" x2="0" y2="220" class="axis"/>
+    <line x1="0" y1="220" x2="500" y2="220" class="axis"/>
+
+    <!-- Y axis labels (minerals: 1000 to 4000) -->
+    <text x="-8" y="4" text-anchor="end" class="label">4000</text>
+    <text x="-8" y="54" text-anchor="end" class="label">3500</text>
+    <text x="-8" y="104" text-anchor="end" class="label">3000</text>
+    <text x="-8" y="154" text-anchor="end" class="label">2500</text>
+    <text x="-8" y="204" text-anchor="end" class="label">2000</text>
+
+    <!-- X axis labels (factor 0.0 to 1.0) -->
+    <text x="0" y="238" text-anchor="middle" class="label">0.0</text>
+    <text x="100" y="238" text-anchor="middle" class="label">0.2</text>
+    <text x="200" y="238" text-anchor="middle" class="label">0.4</text>
+    <text x="250" y="238" text-anchor="middle" class="label">0.5</text>
+    <text x="300" y="238" text-anchor="middle" class="label">0.6</text>
+    <text x="350" y="238" text-anchor="middle" class="label">0.7</text>
+    <text x="400" y="238" text-anchor="middle" class="label">0.8</text>
+    <text x="450" y="238" text-anchor="middle" class="label">0.9</text>
+    <text x="500" y="238" text-anchor="middle" class="label">1.0</text>
+
+    <!-- Axis titles -->
+    <text x="250" y="260" text-anchor="middle" font-size="12" fill="#333">Collision speed factor</text>
+    <text x="-50" y="110" text-anchor="middle" font-size="12" fill="#333" transform="rotate(-90, -50, 110)">EM minerals</text>
+
+    <!-- SC2 target line -->
+    <line x1="0" y1="36" x2="500" y2="36" class="target"/>
+    <text x="505" y="40" class="annotation">SC2: 3460</text>
+
+    <!-- Data points: (factor, minerals) mapped to chart coordinates -->
+    <!-- factor 0.0→x=0, 1.0→x=500; minerals 1000→y=200, 4000→y=0 -->
+    <!-- 0.0:1285 → (0, 181) -->
+    <!-- 0.3:1460 → (150, 170) -->
+    <!-- 0.5:1615 → (250, 159) -->
+    <!-- 0.6:1805 → (300, 146) -->
+    <!-- 0.7:1990 → (350, 134) -->
+    <!-- 0.8:2380 → (400, 108) -->
+    <!-- 0.85:2680 → (425, 88) -->
+    <!-- 0.9:3130 → (450, 58) -->
+    <!-- 0.952:3455 → (476, 36) -->
+    <!-- 0.95:3410 → (475, 39) -->
+    <!-- 1.0:3730 → (500, 18) -->
+
+    <polyline class="data-line" points="0,181 150,170 250,159 300,146 350,134 400,108 425,88 450,58 476,36 500,18"/>
+
+    <circle cx="0" cy="181" r="3" class="data-point"/>
+    <circle cx="150" cy="170" r="3" class="data-point"/>
+    <circle cx="250" cy="159" r="3" class="data-point"/>
+    <circle cx="300" cy="146" r="3" class="data-point"/>
+    <circle cx="350" cy="134" r="3" class="data-point"/>
+    <circle cx="400" cy="108" r="3" class="data-point"/>
+    <circle cx="425" cy="88" r="3" class="data-point"/>
+    <circle cx="450" cy="58" r="3" class="data-point"/>
+    <circle cx="500" cy="18" r="3" class="data-point"/>
+
+    <!-- Best point -->
+    <circle cx="476" cy="36" r="5" class="best-point"/>
+    <text x="476" y="28" text-anchor="middle" class="annotation">0.952</text>
+    <text x="476" y="52" text-anchor="middle" font-size="10" fill="#16a34a">3455 (0.1%)</text>
+
+    <!-- No-collision reference -->
+    <text x="500" y="12" text-anchor="end" font-size="10" fill="#dc2626">no collision</text>
+    <text x="0" y="196" text-anchor="start" font-size="10" fill="#dc2626">full stop</text>
+  </g>
+</svg>

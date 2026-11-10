@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    text { font-size: 12px; fill: #333; }
+    .title { font-size: 14px; font-weight: 600; }
+    .label { font-size: 11px; fill: #666; }
+    .worker-a { fill: #2563eb; }
+    .worker-b { fill: #dc2626; }
+    .worker-a-light { fill: #93bbfd; }
+    .worker-b-light { fill: #fca5a5; }
+    .tick-bg { fill: #f8fafc; stroke: #e2e8f0; }
+    .arrow { fill: none; stroke: #94a3b8; stroke-width: 1.5; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Sequential model -->
+  <text x="180" y="24" text-anchor="middle" class="title">Sequential (old)</text>
+  <text x="180" y="42" text-anchor="middle" class="label">Worker A processes all 22 loops, then Worker B</text>
+
+  <rect x="20" y="55" width="320" height="120" rx="6" class="tick-bg"/>
+  <text x="30" y="72" class="label">Tick N (22 game loops)</text>
+
+  <!-- Worker A block -->
+  <rect x="30" y="80" width="300" height="28" rx="4" class="worker-a"/>
+  <text x="180" y="99" text-anchor="middle" fill="white" font-size="11">Worker A: loops 0-21 (moves, collides, arrives)</text>
+
+  <!-- Worker B block -->
+  <rect x="30" y="116" width="300" height="28" rx="4" class="worker-b"/>
+  <text x="180" y="135" text-anchor="middle" fill="white" font-size="11">Worker B: loops 0-21 (sees A's FINAL position)</text>
+
+  <text x="180" y="165" text-anchor="middle" class="label">B never sees A's intermediate positions</text>
+
+  <!-- Simultaneous model -->
+  <text x="540" y="24" text-anchor="middle" class="title">Simultaneous (new)</text>
+  <text x="540" y="42" text-anchor="middle" class="label">All workers advance one loop at a time</text>
+
+  <rect x="380" y="55" width="320" height="120" rx="6" class="tick-bg"/>
+  <text x="390" y="72" class="label">Tick N (22 game loops)</text>
+
+  <!-- Interleaved blocks -->
+  <rect x="390" y="80" width="40" height="12" rx="2" class="worker-a"/>
+  <rect x="390" y="94" width="40" height="12" rx="2" class="worker-b"/>
+  <rect x="390" y="108" width="40" height="12" rx="2" fill="#e2e8f0"/>
+  <text x="410" y="118" text-anchor="middle" font-size="9" fill="#666">collide</text>
+
+  <rect x="435" y="80" width="40" height="12" rx="2" class="worker-a"/>
+  <rect x="435" y="94" width="40" height="12" rx="2" class="worker-b"/>
+  <rect x="435" y="108" width="40" height="12" rx="2" fill="#e2e8f0"/>
+
+  <rect x="480" y="80" width="40" height="12" rx="2" class="worker-a"/>
+  <rect x="480" y="94" width="40" height="12" rx="2" class="worker-b"/>
+  <rect x="480" y="108" width="40" height="12" rx="2" fill="#e2e8f0"/>
+
+  <text x="535" y="100" text-anchor="middle" font-size="16" fill="#94a3b8">...</text>
+
+  <rect x="555" y="80" width="40" height="12" rx="2" class="worker-a"/>
+  <rect x="555" y="94" width="40" height="12" rx="2" class="worker-b"/>
+  <rect x="555" y="108" width="40" height="12" rx="2" fill="#e2e8f0"/>
+
+  <rect x="600" y="80" width="40" height="12" rx="2" class="worker-a"/>
+  <rect x="600" y="94" width="40" height="12" rx="2" class="worker-b"/>
+  <rect x="600" y="108" width="40" height="12" rx="2" fill="#e2e8f0"/>
+
+  <rect x="645" y="80" width="40" height="12" rx="2" class="worker-a"/>
+  <rect x="645" y="94" width="40" height="12" rx="2" class="worker-b"/>
+  <rect x="645" y="108" width="40" height="12" rx="2" fill="#e2e8f0"/>
+
+  <text x="540" y="138" text-anchor="middle" class="label">Loop 0</text>
+  <text x="420" y="138" text-anchor="middle" font-size="9" fill="#999">0</text>
+  <text x="465" y="138" text-anchor="middle" font-size="9" fill="#999">1</text>
+  <text x="510" y="138" text-anchor="middle" font-size="9" fill="#999">2</text>
+  <text x="585" y="138" text-anchor="middle" font-size="9" fill="#999">20</text>
+  <text x="630" y="138" text-anchor="middle" font-size="9" fill="#999">21</text>
+
+  <text x="540" y="165" text-anchor="middle" class="label">Both see each other's position every loop</text>
+
+  <!-- Bottom comparison -->
+  <rect x="20" y="190" width="680" height="140" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="360" y="212" text-anchor="middle" class="title">Why it matters</text>
+
+  <rect x="40" y="225" width="300" height="90" rx="6" fill="white" stroke="#e2e8f0"/>
+  <text x="190" y="246" text-anchor="middle" font-size="12" font-weight="600" fill="#2563eb">Sequential: asymmetric friction</text>
+  <text x="190" y="265" text-anchor="middle" font-size="11" fill="#666">Worker A pushed, B unaffected</text>
+  <text x="190" y="282" text-anchor="middle" font-size="11" fill="#666">A detours while B walks straight</text>
+  <text x="190" y="299" text-anchor="middle" font-size="11" fill="#666">Net: high friction, slower cycles</text>
+
+  <rect x="380" y="225" width="300" height="90" rx="6" fill="white" stroke="#e2e8f0"/>
+  <text x="530" y="246" text-anchor="middle" font-size="12" font-weight="600" fill="#dc2626">Simultaneous: symmetric push</text>
+  <text x="530" y="265" text-anchor="middle" font-size="11" fill="#666">Both workers pushed equally</text>
+  <text x="530" y="282" text-anchor="middle" font-size="11" fill="#666">Neither detours as far</text>
+  <text x="530" y="299" text-anchor="middle" font-size="11" fill="#666">Net: less friction, faster cycles</text>
+</svg>
