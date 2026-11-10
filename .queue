@@ -59,15 +59,15 @@ branch:
 - [x] casehubio/quarkmind#602 — Record geyser positions
 - [x] casehubio/quarkmind#604 — Re-record 24w and MULE baselines
 - [x] casehubio/quarkmind#598 — MULE isolation and expansion transfer playbooks
-- [x] casehubio/quarkmind#579 — Technology spending timing boundary
-- [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor ← active
-- [ ] casehubio/quarkmind#581 — Army spending death-timing floor
-- [ ] casehubio/quarkmind#582 — Economy spending reporting-lag floor
-- [ ] casehubio/quarkmind#608 — Oracle vespene MAPE regression from gas recalibration
-- [ ] casehubio/quarkmind#609 — Worker delivery desynchronization
-- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
+- [x] casehubio/quarkmind#608 — Oracle vespene MAPE regression from gas recalibration
+- [x] casehubio/quarkmind#609 — Worker delivery desynchronization
+- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger ← active
 - [ ] casehubio/quarkmind#612 — Dual-run baseline document refresh
 - [ ] casehubio/quarkmind#613 — MULE income isolation analysis
 - [ ] casehubio/quarkmind#614 — Expansion transfer delay analysis
+- [ ] casehubio/quarkmind#579 — Technology spending timing boundary
+- [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor
+- [ ] casehubio/quarkmind#581 — Army spending death-timing floor
+- [ ] casehubio/quarkmind#582 — Economy spending reporting-lag floor
 - [ ] casehubio/quarkmind#615 — Gas worker allocation modeling
 - [ ] casehubio/quarkmind#616 — SC2 morph via ability API investigation
