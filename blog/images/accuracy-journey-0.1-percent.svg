@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', system-ui, sans-serif; }
+      .title { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+      .label { font-size: 11px; fill: #555; }
+      .value { font-size: 11px; fill: #1a1a2e; font-weight: 600; }
+      .axis { stroke: #ccc; stroke-width: 1; }
+      .gridline { stroke: #eee; stroke-width: 0.5; }
+      .bar-physics { fill: #2196F3; }
+      .bar-spending { fill: #4CAF50; }
+      .bar-supply { fill: #FF9800; }
+      .bar-gas { fill: #9C27B0; }
+      .bar-routing { fill: #607D8B; }
+      .bar-stagger { fill: #E91E63; }
+      .annotation { font-size: 9px; fill: #888; }
+    </style>
+  </defs>
+  <text x="360" y="24" text-anchor="middle" class="title">12-Worker Mineral Accuracy: The Journey to 0.1%</text>
+  <!-- Y axis -->
+  <line x1="100" y1="50" x2="100" y2="280" class="axis"/>
+  <!-- X axis -->
+  <line x1="100" y1="280" x2="700" y2="280" class="axis"/>
+  <!-- Y labels -->
+  <text x="95" y="284" text-anchor="end" class="label">0%</text>
+  <text x="95" y="234" text-anchor="end" class="label">2%</text>
+  <line x1="100" y1="230" x2="700" y2="230" class="gridline"/>
+  <text x="95" y="184" text-anchor="end" class="label">4%</text>
+  <line x1="100" y1="180" x2="700" y2="180" class="gridline"/>
+  <text x="95" y="134" text-anchor="end" class="label">6%</text>
+  <line x1="100" y1="130" x2="700" y2="130" class="gridline"/>
+  <text x="95" y="84" text-anchor="end" class="label">8%</text>
+  <line x1="100" y1="80" x2="700" y2="80" class="gridline"/>
+  <!-- Bars: each fix and its resulting accuracy -->
+  <!-- Before any fixes: ~8% (from early calibration) -->
+  <rect x="120" y="80" width="70" height="200" class="bar-physics" opacity="0.3"/>
+  <text x="155" y="74" text-anchor="middle" class="value">~8%</text>
+  <text x="155" y="298" text-anchor="middle" class="label">Pre-physics</text>
+  <text x="155" y="310" text-anchor="middle" class="annotation">formulas</text>
+  <!-- After acceleration + sub-tick: 1.5% -->
+  <rect x="210" y="243" width="70" height="37" class="bar-physics"/>
+  <text x="245" y="237" text-anchor="middle" class="value">1.5%</text>
+  <text x="245" y="298" text-anchor="middle" class="label">Acceleration</text>
+  <text x="245" y="310" text-anchor="middle" class="annotation">#578</text>
+  <!-- After collision model: 0.7% -->
+  <rect x="300" y="263" width="70" height="17" class="bar-physics"/>
+  <text x="335" y="257" text-anchor="middle" class="value">0.7%</text>
+  <text x="335" y="298" text-anchor="middle" class="label">Collision</text>
+  <text x="335" y="310" text-anchor="middle" class="annotation">#625-630</text>
+  <!-- After decomposed mining: 0.7% (unchanged) -->
+  <rect x="390" y="263" width="70" height="17" class="bar-spending"/>
+  <text x="425" y="257" text-anchor="middle" class="value">0.7%</text>
+  <text x="425" y="298" text-anchor="middle" class="label">Decomposed</text>
+  <text x="425" y="310" text-anchor="middle" class="annotation">#620</text>
+  <!-- After patch affinity: 0.7% (unchanged) -->
+  <rect x="480" y="263" width="70" height="17" class="bar-routing"/>
+  <text x="515" y="257" text-anchor="middle" class="value">0.7%</text>
+  <text x="515" y="298" text-anchor="middle" class="label">Routing</text>
+  <text x="515" y="310" text-anchor="middle" class="annotation">#620</text>
+  <!-- After initial walk delay: 0.1% -->
+  <rect x="570" y="278" width="70" height="2" class="bar-stagger"/>
+  <text x="605" y="272" text-anchor="middle" class="value" fill="#E91E63">0.1%</text>
+  <text x="605" y="298" text-anchor="middle" class="label">Walk delay</text>
+  <text x="605" y="310" text-anchor="middle" class="annotation">#619</text>
+  <!-- Legend -->
+  <rect x="120" y="325" width="10" height="10" class="bar-physics"/>
+  <text x="135" y="335" class="annotation">Physics</text>
+  <rect x="200" y="325" width="10" height="10" class="bar-spending"/>
+  <text x="215" y="335" class="annotation">Decomposition</text>
+  <rect x="310" y="325" width="10" height="10" class="bar-routing"/>
+  <text x="325" y="335" class="annotation">Routing</text>
+  <rect x="400" y="325" width="10" height="10" class="bar-stagger"/>
+  <text x="415" y="335" class="annotation">Timing</text>
+</svg>

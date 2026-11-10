@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', system-ui, sans-serif; }
+      .title { font-size: 13px; font-weight: 600; fill: #1a1a2e; }
+      .label { font-size: 10px; fill: #555; }
+      .small { font-size: 9px; fill: #888; }
+      .worker { fill: #2196F3; }
+      .patch { fill: #4CAF50; }
+      .base { fill: #FF9800; }
+      .arrow { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .arrow-wrong { stroke: #E91E63; stroke-width: 1.5; fill: none; stroke-dasharray: 4,3; marker-end: url(#arrowhead-red); }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#E91E63"/>
+    </marker>
+  </defs>
+  <!-- Left: Reassignment model -->
+  <text x="180" y="22" text-anchor="middle" class="title">Before: Reassign Every Trip</text>
+  <rect x="155" y="120" width="50" height="30" rx="4" class="base"/>
+  <text x="180" y="140" text-anchor="middle" class="label" fill="white">Base</text>
+  <!-- Patches -->
+  <circle cx="100" cy="50" r="14" class="patch"/>
+  <text x="100" y="54" text-anchor="middle" class="small" fill="white">P1</text>
+  <circle cx="180" cy="40" r="14" class="patch"/>
+  <text x="180" y="44" text-anchor="middle" class="small" fill="white">P2</text>
+  <circle cx="260" cy="50" r="14" class="patch"/>
+  <text x="260" y="54" text-anchor="middle" class="small" fill="white">P3</text>
+  <!-- Worker bouncing between patches -->
+  <circle cx="180" cy="165" r="8" class="worker"/>
+  <text x="180" y="169" text-anchor="middle" class="small" fill="white">W</text>
+  <!-- Arrows showing different patches each trip -->
+  <path d="M 180 157 Q 140 100 105 64" class="arrow"/>
+  <path d="M 180 157 Q 180 100 180 54" class="arrow-wrong"/>
+  <path d="M 180 157 Q 220 100 255 64" class="arrow-wrong"/>
+  <text x="180" y="195" text-anchor="middle" class="small">Worker picks "least loaded"</text>
+  <text x="180" y="208" text-anchor="middle" class="small">each trip — may get different</text>
+  <text x="180" y="221" text-anchor="middle" class="small">patch every time</text>
+  <!-- Right: Affinity model -->
+  <text x="540" y="22" text-anchor="middle" class="title">After: Patch Affinity (SC2)</text>
+  <rect x="515" y="120" width="50" height="30" rx="4" class="base"/>
+  <text x="540" y="140" text-anchor="middle" class="label" fill="white">Base</text>
+  <!-- Patches -->
+  <circle cx="460" cy="50" r="14" class="patch"/>
+  <text x="460" y="54" text-anchor="middle" class="small" fill="white">P1</text>
+  <circle cx="540" cy="40" r="14" class="patch"/>
+  <text x="540" y="44" text-anchor="middle" class="small" fill="white">P2</text>
+  <circle cx="620" cy="50" r="14" class="patch"/>
+  <text x="620" y="54" text-anchor="middle" class="small" fill="white">P3</text>
+  <!-- Worker always going to P1 -->
+  <circle cx="540" cy="165" r="8" class="worker"/>
+  <text x="540" y="169" text-anchor="middle" class="small" fill="white">W</text>
+  <path d="M 535 157 Q 495 100 465 64" class="arrow"/>
+  <text x="540" y="195" text-anchor="middle" class="small">Worker returns to its patch</text>
+  <text x="540" y="208" text-anchor="middle" class="small">every trip — same distance,</text>
+  <text x="540" y="221" text-anchor="middle" class="small">predictable cadence</text>
+  <!-- Divider -->
+  <line x1="360" y1="10" x2="360" y2="240" stroke="#ddd" stroke-width="1"/>
+  <!-- Bottom annotation -->
+  <text x="360" y="265" text-anchor="middle" class="label">SC2 workers have patch affinity. They return to the same mineral patch each mining trip.</text>
+  <text x="360" y="280" text-anchor="middle" class="label">Reassignment only happens when the patch is depleted or the worker is transferred.</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', system-ui, sans-serif; }
+      .title { font-size: 13px; font-weight: 600; fill: #1a1a2e; }
+      .label { font-size: 10px; fill: #555; }
+      .tick-label { font-size: 9px; fill: #888; }
+      .em-bar { fill: #2196F3; opacity: 0.7; }
+      .sc2-bar { fill: #4CAF50; opacity: 0.7; }
+      .report-line { stroke: #E91E63; stroke-width: 2; stroke-dasharray: 6,3; }
+      .axis { stroke: #999; stroke-width: 1; }
+    </style>
+  </defs>
+  <text x="360" y="22" text-anchor="middle" class="title">Spending Alignment: SC2 Reports Every 160 Loops</text>
+  <!-- Timeline -->
+  <line x1="60" y1="130" x2="680" y2="130" class="axis"/>
+  <!-- Loop markers -->
+  <text x="60" y="148" text-anchor="middle" class="tick-label">loop 0</text>
+  <text x="215" y="148" text-anchor="middle" class="tick-label">loop 160</text>
+  <text x="370" y="148" text-anchor="middle" class="tick-label">loop 320</text>
+  <text x="525" y="148" text-anchor="middle" class="tick-label">loop 480</text>
+  <text x="680" y="148" text-anchor="middle" class="tick-label">loop 640</text>
+  <!-- SC2 report boundaries -->
+  <line x1="215" y1="45" x2="215" y2="130" class="report-line"/>
+  <line x1="370" y1="45" x2="370" y2="130" class="report-line"/>
+  <line x1="525" y1="45" x2="525" y2="130" class="report-line"/>
+  <line x1="680" y1="45" x2="680" y2="130" class="report-line"/>
+  <text x="215" y="40" text-anchor="middle" class="label" fill="#E91E63">PlayerStatsEvent</text>
+  <text x="370" y="40" text-anchor="middle" class="label" fill="#E91E63">PlayerStatsEvent</text>
+  <!-- Research completions (happen at arbitrary loops) -->
+  <rect x="140" y="60" width="4" height="70" class="em-bar"/>
+  <text x="142" y="55" text-anchor="middle" class="tick-label">R₁</text>
+  <rect x="280" y="60" width="4" height="70" class="em-bar"/>
+  <text x="282" y="55" text-anchor="middle" class="tick-label">R₂</text>
+  <rect x="340" y="60" width="4" height="70" class="em-bar"/>
+  <text x="342" y="55" text-anchor="middle" class="tick-label">R₃</text>
+  <rect x="450" y="60" width="4" height="70" class="em-bar"/>
+  <text x="452" y="55" text-anchor="middle" class="tick-label">R₄</text>
+  <!-- Before: EM reports immediately -->
+  <g transform="translate(0,160)">
+    <text x="50" y="15" text-anchor="end" class="label">Before:</text>
+    <text x="55" y="15" class="label">EM records R₁ at loop 140. SC2 hasn't reported yet — still "InProgress".</text>
+    <text x="55" y="30" class="label">At any snapshot, EM shows more "Current" spending than SC2. MAPE: 42%.</text>
+  </g>
+  <!-- After: EM reports at boundaries -->
+  <g transform="translate(0,210)">
+    <text x="50" y="15" text-anchor="end" class="label">After:</text>
+    <text x="55" y="15" class="label">EM buffers R₁, flushes at loop 160 boundary. Both sides report R₁ as "Current"</text>
+    <text x="55" y="30" class="label">at the same time. R₂ and R₃ flush together at loop 320. MAPE: 15%.</text>
+  </g>
+  <!-- Legend -->
+  <rect x="60" y="255" width="12" height="12" class="em-bar"/>
+  <text x="78" y="265" class="label">Research completion</text>
+  <line x1="160" y1="261" x2="185" y2="261" class="report-line"/>
+  <text x="190" y="265" class="label">SC2 reporting boundary (every 160 loops ≈ 7 seconds)</text>
+</svg>
