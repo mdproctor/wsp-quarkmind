@@ -6,7 +6,7 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#632
+active_issue: casehubio/quarkmind#635
 branch: 
 
 ## Queue
@@ -83,3 +83,5 @@ branch:
 - [ ] casehubio/quarkmind#632 — Re-measure per-tick mismatch
 - [ ] casehubio/quarkmind#633 — Per-race mineral income gap
 - [ ] casehubio/quarkmind#634 — Worker cycle variance gap
+- [ ] casehubio/quarkmind#635 — CDI record proxy deployment error
+- [ ] casehubio/quarkmind#636 — Variable approach docking
