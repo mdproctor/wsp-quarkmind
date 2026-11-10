@@ -64,7 +64,13 @@ branch:
 - [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
 - [x] casehubio/quarkmind#612 — Dual-run baseline document refresh
 - [x] casehubio/quarkmind#613 — MULE income isolation analysis
-- [ ] casehubio/quarkmind#614 — Expansion transfer delay analysis ← active
+- [x] casehubio/quarkmind#618 — Per-worker delivery cadence diagnostic
+- [x] casehubio/quarkmind#621 — Instrument SC2 observation for per-worker delivery events
+- [x] casehubio/quarkmind#622 — Record per-worker SC2 12w delivery baseline
+- [x] casehubio/quarkmind#624 — Remove mining efficiency compensation factor
+- [x] casehubio/quarkmind#632 — Re-measure per-tick mismatch
+- [ ] casehubio/quarkmind#635 — CDI record proxy deployment error
+- [ ] casehubio/quarkmind#614 — Expansion transfer delay analysis
 - [ ] casehubio/quarkmind#579 — Technology spending timing boundary
 - [ ] casehubio/quarkmind#580 — foodUsed MAPE above structural floor
 - [ ] casehubio/quarkmind#581 — Army spending death-timing floor
@@ -72,16 +78,10 @@ branch:
 - [ ] casehubio/quarkmind#615 — Gas worker allocation modeling
 - [ ] casehubio/quarkmind#616 — SC2 morph via ability API investigation
 - [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
-- [ ] casehubio/quarkmind#618 — Per-worker delivery cadence diagnostic
-- [ ] casehubio/quarkmind#619 — Worker initialization desynchronization
 - [ ] casehubio/quarkmind#620 — Mining cycle decomposition
-- [ ] casehubio/quarkmind#621 — Instrument SC2 observation for per-worker delivery events
-- [ ] casehubio/quarkmind#622 — Record per-worker SC2 12w delivery baseline
-- [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
-- [ ] casehubio/quarkmind#624 — Remove mining efficiency compensation factor
-- [ ] casehubio/quarkmind#631 — Edge-to-edge targets not wired
-- [ ] casehubio/quarkmind#632 — Re-measure per-tick mismatch
-- [ ] casehubio/quarkmind#633 — Per-race mineral income gap
-- [ ] casehubio/quarkmind#634 — Worker cycle variance gap
-- [ ] casehubio/quarkmind#635 — CDI record proxy deployment error
 - [ ] casehubio/quarkmind#636 — Variable approach docking
+- [ ] casehubio/quarkmind#634 — Worker cycle variance gap
+- [ ] casehubio/quarkmind#619 — Worker initialization desynchronization
+- [ ] casehubio/quarkmind#633 — Per-race mineral income gap
+- [ ] casehubio/quarkmind#631 — Edge-to-edge targets not wired
+- [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
