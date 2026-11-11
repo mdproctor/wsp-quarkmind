@@ -39,7 +39,7 @@ You are working on EmulatedGame physics accuracy — making the economy simulati
 
 ## Last Session
 
-Queue triage session. Marked 11 already-closed issues as done in the `.queue` (had fallen out of sync with GitHub). Added #641 to the queue. Triaged all 9 remaining open issues — all still relevant, none resolved by #631 work.
+Queue triage + #641 fix. Marked 11 already-closed issues as done in `.queue` (had fallen out of sync with GitHub). Triaged all 9 remaining open issues — all still relevant. Fixed #641 (SC2 process not terminated on LOSS): removed the `quitting` guard from `RequestQuit` in `QuarkusSC2Transport.gameLoop()` finally block so SC2 is always asked to shut down when the game loop exits. Investigated #633 per-race mineral gap: confirmed EM is correctly race-invariant (worker speed, collision radius, town hall radius all identical across races in SC2). The 1.2% Terran/Zerg gap likely comes from map geometry differences per starting position, not physics — needs SC2 calibration testing.
 
 ---
 
@@ -55,41 +55,44 @@ Queue triage session. Marked 11 already-closed issues as done in the `.queue` (h
 
 **Recommended order based on dependency analysis:**
 
-1. **#641 — SC2 process not terminated on LOSS** (XS/Low). Quick fix, unrelated to physics. Blocks clean SC2 test runs and prevents 9.6GB zombie processes.
+1. **#616 — SC2 morph via ability API** (S/Med). Independent of the cadence chain. Blocks accurate Orbital/PF morph in calibration playbooks. Needs SC2 for investigation.
 
-2. **#616 — SC2 morph via ability API** (S/Med). Independent of the cadence chain. Blocks accurate Orbital/PF morph in calibration playbooks.
-
-3. **Cadence variance chain** (the core remaining physics work):
+2. **Cadence variance chain** (the core remaining physics work):
    - **#620 — Mining cycle decomposition** (M/High). Phase infra built but approach is still a fixed constant (11 loops). Make approach state-dependent: zero when patch is idle, longer when queued. EM uncontested cycle is 62 vs SC2 66 loops (4-loop gap).
    - **#636 — Variable approach docking** (M/High). Core of the cadence gap. Fixed approach (7 loops) can't produce SC2's σ≈3+ variance. Per-patch approach code exists but is disabled (APPROACH_DISTANCE_SCALE=0).
-   - **#634 — Worker cycle variance gap** (M/High). EM σ≈0.5 vs SC2 σ≈3+. Depends on #636 — variable approach docking would increase variance naturally. Two approaches tried and failed (#628).
+   - **#634 — Worker cycle variance gap** (M/High). EM σ≈0.5 vs SC2 σ≈3+. Depends on #636 — variable approach docking would increase variance naturally.
    - **#623 — Fix EM delivery timing** (M/High). Umbrella fix for 80% per-tick mismatch. Blocked by #620 and #636.
 
-4. **Independent side tasks** (can be done in any order):
-   - **#633 — Per-race mineral income gap** (S/Med). 1.2% gap for Terran/Zerg — likely different worker/building radii per race.
+3. **Independent side tasks** (can be done in any order):
+   - **#633 — Per-race mineral income gap** (S/Med). 1.2% gap for Terran/Zerg. EM physics are correctly race-invariant — gap likely from map geometry per starting position. Needs SC2 calibration testing.
    - **#639 — vespeneCollectionRate structural floor** (S/Med). 35.2% MAPE insensitive to gas constants — structural EMA/concurrent geyser model issue.
 
-5. **#617 — Foundational tick-alignment audit** (L/High). Parent epic for the cadence chain. Close when #620/#636/#634/#623 land.
+4. **#617 — Foundational tick-alignment audit** (L/High). Parent epic for the cadence chain. Close when #620/#636/#634/#623 land.
 
 ## Queue
 
 ```
 [x] #631 — Edge-to-edge walk targets — DONE
-[ ] #641 — SC2 process not terminated on LOSS (XS/Low) — quick fix
-[ ] #616 — SC2 morph via ability API (S/Med) — independent
+[x] #641 — SC2 process not terminated on LOSS — DONE (this session)
+[ ] #616 — SC2 morph via ability API (S/Med) — needs SC2
 [ ] #620 — Mining cycle decomposition (M/High) — approach state-dependency
 [ ] #636 — Variable approach docking (M/High) — core cadence gap
 [ ] #634 — Worker cycle variance gap (M/High) — depends on #636
 [ ] #623 — Fix EM delivery timing (M/High) — blocked by #620 + #636
-[ ] #633 — Per-race mineral income gap (S/Med) — independent
-[ ] #639 — vespeneCollectionRate structural floor (S/Med) — independent
+[ ] #633 — Per-race mineral income gap (S/Med) — needs SC2 calibration
+[ ] #639 — vespeneCollectionRate structural floor (S/Med) — diagnostic
 [ ] #617 — Foundational tick-alignment audit (L/High) — parent epic
 ```
 
-### Key findings (carried forward)
+### Key findings (carried forward + new)
 
-1. **SC2 mining is fixed-duration, all-or-nothing** — 1.99s occupation time, worker takes min(5, remaining) at the end. No volume-based transfer during animation.
-2. **SC2 contested cycles add exactly 1 tick (22 loops)** — the patch lockout. Previous EM value of 34 loops over-penalised contention.
-3. **Compensation constants vs wait times** — constants that absorb errors elsewhere are forbidden. Constants that represent real animation durations are legitimate. The test: does the value change when you fix something else?
-4. **12w +7.2% is the honest gap** — straight-line walks are faster than SC2's path-dependent navigation. Previous 0.0% was compensating errors cancelling out.
-5. **Straight-line movement is the cadence ceiling** — SC2 cycles span 2-17 ticks (σ≈3+), EM spans 4-9 (σ≈0.5). Only dynamic routing will add the variance.
+1. **SC2 mining is fixed-duration, all-or-nothing** — 1.99s occupation time, worker takes min(5, remaining) at the end.
+2. **SC2 contested cycles add exactly 1 tick (22 loops)** — the patch lockout.
+3. **Compensation constants vs wait times** — constants that absorb errors elsewhere are forbidden. Constants that represent real animation durations are legitimate.
+4. **12w +7.2% is the honest gap** — straight-line walks are faster than SC2's path-dependent navigation.
+5. **Straight-line movement is the cadence ceiling** — SC2 cycles span 2-17 ticks (σ≈3+), EM spans 4-9 (σ≈0.5).
+6. **Worker physics are race-invariant** — Probe/SCV/Drone all use 3.94 u/s speed, 0.375 collision radius. Nexus/CC/Hatchery all 2.5 radius. Per-race mineral gap (1.2%) is not from unit physics.
+
+### Physics constants doc discrepancy
+
+Section 6 of `docs/sc2-physics-constants.md` says "SC2 dual-run shows Protoss and Terran produce identical minerals (3460)" but the calibration table in the same section shows Terran at 3955/-19.5%. One of these values is stale — verify in next session.
