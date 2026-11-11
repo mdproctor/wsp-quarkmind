@@ -2,19 +2,21 @@
 
 ## Last Session
 
-12w mineral accuracy at **0.0%** (exact match). Per-patch approach docking implemented (#636) — per-tick cadence mismatch reduced from 80.9% to 75.3%. Saturation accuracy halved (16w +4.4%→+2.0%). Gas entrance queuing investigated and ruled out (#639). Physics constants doc swept for 15 staleness/gap/consistency issues. Blog entry written: "The Quantum That Blocked Zero."
+12w mineral accuracy at **0.0%** (exact match). Discovered delivery quantization in deterministic simulations. Per-patch approach formula implemented then reverted — it was a compensation constant, not physics. Collision experiments showed the straight-line movement model is the cadence ceiling. Gas entrance queuing investigated and ruled out. Physics doc swept (15 fixes). Blog written.
 
 ### What changed
 
-1. **#578 (stagger recalibration)** — Fine sweep found stagger=7.5 (with per-patch approach scale=2.5) produces exactly 682 deliveries matching SC2. Approach-docking sweep revealed delivery count quantization: uniform constants produce discrete totals (683 or 673, no intermediate values).
+1. **#578 (stagger=6.1)** — Fine sweep found stagger=6.1 produces exactly 682 deliveries matching SC2 at tick 304. Approach-docking sweep revealed delivery count quantization: uniform constants produce discrete totals (683 or 673, nothing between).
 
-2. **#636 (per-patch approach docking)** — Approach time now varies per mineral patch based on distance from town hall. Close patches get MORE approach (modeling mineral-line contention), far patches get LESS. Formula: `approach = BASE + SCALE * (avgDist - patchDist)`, SCALE=2.5. Broke delivery quantization, improved cadence and saturation accuracy.
+2. **#636 (per-patch approach — implemented then reverted)** — Formula `approach = base + scale * (avgDist - patchDist)` improved cadence 81.6%→75.3% but was a compensation constant, not simulation. Reverted to SCALE=0. Per-patch infrastructure retained for physics-driven values.
 
-3. **#639 (gas queuing investigated)** — Added configurable entry lock to GasSlot (ENTRY_LOCK_DURATION). 2D sweep showed entry lock has NO effect — workers never collide. The 3w/6w gap is structural.
+3. **Collision experiments** — Same-lane collision factor (symmetric 0.75 and asymmetric yielding) both either broke mineral total or worsened cadence. The straight-line movement model is the ceiling — workers cross paths for 1-2 loops, not the sustained blocking that creates SC2's 2-17 tick cadence range.
 
-4. **Physics doc sweep** — 15 fixes: stale values, missing per-patch approach section, gas sweep findings, calibration test table, config properties.
+4. **#639 (gas queuing investigated)** — Entry lock has no effect. The 3w/6w gap is structural.
 
-5. **Blog entry** — "The Quantum That Blocked Zero" — delivery quantization in deterministic simulations, per-entity heterogeneity as the fix, relevance to digital twins and agent-based models.
+5. **Physics doc sweep** — 15 staleness/gap/consistency fixes.
+
+6. **Blog** — "The Quantum That Blocked Zero" — needs revision to reflect formula revert.
 
 ### Accuracy
 
@@ -22,17 +24,17 @@
 |----------|-----------|-------|----------|
 | 12w Protoss | **0.0%** | — | +0.1% |
 | 12w Terran | **0.0%** | — | +0.1% |
-| 16w saturation | **+2.0%** | — | +4.4% |
-| 24w saturation | **+3.0%** | — | +4.0% |
-| 3w gas | **-0.1%** | -8.0% | +1.4% |
-| 6w gas | **+0.9%** | -1.2% | +2.4% |
+| 16w saturation | +3.4% | — | +4.4% |
+| 24w saturation | +3.8% | — | +4.0% |
+| 3w gas | +1.3% | -8.0% | +1.4% |
+| 6w gas | +1.9% | -1.2% | +2.4% |
 
 | Oracle MAPE (7-min) | Value | Previous |
 |---------------------|-------|----------|
-| mineralsCollectionRate | 27.4% | 30.1% |
-| vespeneCollectionRate | 34.9% | 35.2% |
-| mineralsCurrent | 72.7% | 77.4% |
-| Per-tick mismatch (12w) | **75.3%** | 80.9% |
+| mineralsCollectionRate | 26.5% | 30.1% |
+| vespeneCollectionRate | 35.0% | 35.2% |
+| mineralsCurrent | 74.1% | 77.4% |
+| Per-tick mismatch (12w) | 81.6% | 80.9% |
 
 ---
 
@@ -40,24 +42,25 @@
 
 | Branch | Status | Issues |
 |--------|--------|--------|
-| `issue-578-mineral-rate-acceleration-regression` | Active, ~60 commits | #578...#640 |
+| `issue-578-mineral-rate-acceleration-regression` | Active, ~63 commits | #578...#640 |
 
 ---
 
 ## Queue
 
 ```
-[ ] #634 — Worker cycle variance gap (S/Low) — SC2 cycles 2-17 ticks, EM 4-9; per-trip randomness needed
-[ ] #631 — Edge-to-edge targets not wired (S/Low)
+[ ] #631 — Edge-to-edge walk targets (S/Low) — workers should walk to patch/town hall edges, not centers; creates natural distance-dependent cycles
+[ ] #634 — Worker cycle variance gap (S/Low) — SC2 cycles 2-17 ticks, EM 4-9; blocked by straight-line movement model
 [ ] #633 — Per-race mineral income gap
-[ ] #623 — Fix EM delivery timing (M/High) — partially addressed by #636
+[ ] #623 — Fix EM delivery timing (M/High) — blocked by movement model ceiling
 [ ] #616 — SC2 morph via ability API (needs SC2)
 ```
 
 ### Key findings
 
-1. **Delivery count is quantized** — uniform phase constants produce discrete totals. Per-patch approach docking breaks this quantization by giving workers genuinely different cycle times.
-2. **Gas entrance queuing is ineffective** — workers never collide at geyser entrance due to walk cycle stagger.
-3. **SC2 cycle variance is extreme** — avg 4.4 ticks (min 2, max 17, σ≈3+). EM is 5.2 ticks (min 4, max 9, σ≈0.5). Per-trip variance modeling needed for further reduction.
-4. **Docking overhead can't fix saturation without breaking gas** — sweeping docking from 34 to 37 improves 16w but regresses 24w and gas. The constants are coupled.
-5. **16w/24w saturation gaps are training-timing compound** — both SC2 and EM train 23 Probes. The gap is from each EM Probe arriving slightly earlier, compounding over 11 cycles.
+1. **Delivery count is quantized** — uniform phase constants produce discrete totals. The SC2 target sits between two plateaus that no single constant value can reach.
+2. **The formula approach was a dead end** — per-patch approach docking improved numbers but was a compensation constant. The approach time should emerge from simulation physics.
+3. **Straight-line movement is the cadence ceiling** — workers cross paths for 1-2 loops. SC2 workers block each other through shared mineral-line corridors for sustained periods. Collision strength changes can't overcome this.
+4. **Edge-to-edge walk targets (#631) is the next physics improvement** — workers walking to patch/town hall edges creates naturally distance-dependent cycles and convergence-based collisions.
+5. **Gas entrance queuing is ineffective** — workers never collide at geyser entrance.
+6. **Docking overhead can't fix saturation without breaking gas** — the constants are coupled.
