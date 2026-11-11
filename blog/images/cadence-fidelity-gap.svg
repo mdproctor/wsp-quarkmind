@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="11">
+  <defs>
+    <style>
+      text { fill: #2d2d2d; }
+      .title { font-size: 13px; font-weight: 600; }
+      .label { font-size: 10px; fill: #666; }
+      .axis { stroke: #999; stroke-width: 1; }
+      .grid { stroke: #e0e0e0; stroke-width: 0.5; }
+      .em-bar { fill: #4a90d9; opacity: 0.85; }
+      .sc2-bar { fill: #d94a4a; opacity: 0.85; }
+      .match { fill: #4ad97a; opacity: 0.3; }
+      .mismatch { fill: #d94a4a; opacity: 0.08; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="24" text-anchor="middle" class="title">Per-Tick Mineral Delivery: Emulated vs SC2</text>
+  <text x="360" y="40" text-anchor="middle" class="label">12 workers, ticks 280–304 (same total: 3460 minerals)</text>
+
+  <!-- SC2 panel -->
+  <text x="30" y="72" class="label" font-weight="600">SC2 (real)</text>
+  <text x="680" y="72" class="label" text-anchor="end">σ ≈ 3.2</text>
+
+  <!-- SC2 axis -->
+  <line x1="30" y1="150" x2="690" y2="150" class="axis"/>
+  <line x1="30" y1="80" x2="30" y2="150" class="axis"/>
+  <text x="22" y="86" class="label" text-anchor="end">+15</text>
+  <text x="22" y="110" class="label" text-anchor="end">+10</text>
+  <text x="22" y="133" class="label" text-anchor="end">+5</text>
+  <text x="22" y="153" class="label" text-anchor="end">0</text>
+
+  <!-- SC2 grid lines -->
+  <line x1="30" y1="84" x2="690" y2="84" class="grid"/>
+  <line x1="30" y1="107" x2="690" y2="107" class="grid"/>
+  <line x1="30" y1="130" x2="690" y2="130" class="grid"/>
+
+  <!-- SC2 bars — variable cadence (high variance) -->
+  <rect x="44" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="70" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="96" y="84" width="22" height="66" class="sc2-bar"/>
+  <rect x="122" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="148" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="174" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="200" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="226" y="107" width="22" height="43" class="sc2-bar"/>
+  <rect x="252" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="278" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="304" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="330" y="84" width="22" height="66" class="sc2-bar"/>
+  <rect x="356" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="382" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="408" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="434" y="107" width="22" height="43" class="sc2-bar"/>
+  <rect x="460" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="486" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="512" y="84" width="22" height="66" class="sc2-bar"/>
+  <rect x="538" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="564" y="130" width="22" height="20" class="sc2-bar"/>
+  <rect x="590" y="150" width="22" height="0" class="sc2-bar"/>
+  <rect x="616" y="107" width="22" height="43" class="sc2-bar"/>
+  <rect x="642" y="130" width="22" height="20" class="sc2-bar"/>
+
+  <!-- EM panel -->
+  <text x="30" y="186" class="label" font-weight="600">Emulated</text>
+  <text x="680" y="186" class="label" text-anchor="end">σ ≈ 0.5</text>
+
+  <!-- EM axis -->
+  <line x1="30" y1="264" x2="690" y2="264" class="axis"/>
+  <line x1="30" y1="194" x2="30" y2="264" class="axis"/>
+  <text x="22" y="200" class="label" text-anchor="end">+15</text>
+  <text x="22" y="224" class="label" text-anchor="end">+10</text>
+  <text x="22" y="247" class="label" text-anchor="end">+5</text>
+  <text x="22" y="267" class="label" text-anchor="end">0</text>
+
+  <!-- EM grid lines -->
+  <line x1="30" y1="198" x2="690" y2="198" class="grid"/>
+  <line x1="30" y1="221" x2="690" y2="221" class="grid"/>
+  <line x1="30" y1="244" x2="690" y2="244" class="grid"/>
+
+  <!-- EM bars — uniform cadence (low variance, metronomic) -->
+  <rect x="44" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="70" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="96" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="122" y="264" width="22" height="0" class="em-bar"/>
+  <rect x="148" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="174" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="200" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="226" y="264" width="22" height="0" class="em-bar"/>
+  <rect x="252" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="278" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="304" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="330" y="264" width="22" height="0" class="em-bar"/>
+  <rect x="356" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="382" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="408" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="434" y="264" width="22" height="0" class="em-bar"/>
+  <rect x="460" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="486" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="512" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="538" y="264" width="22" height="0" class="em-bar"/>
+  <rect x="564" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="590" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="616" y="244" width="22" height="20" class="em-bar"/>
+  <rect x="642" y="264" width="22" height="0" class="em-bar"/>
+
+  <!-- Annotations -->
+  <text x="360" y="296" text-anchor="middle" class="label">← ticks →</text>
+
+  <!-- Summary -->
+  <text x="360" y="324" text-anchor="middle" font-size="11" fill="#555">Both produce 3460 minerals at tick 304. At 80% of individual ticks, the delivery count is different.</text>
+</svg>
