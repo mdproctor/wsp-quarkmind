@@ -4,7 +4,7 @@
 
 You are working on EmulatedGame physics accuracy — making the economy simulation match real SC2 tick-for-tick. The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go** when you change constants, find stale values, or discover new physics. It is a living document, not a snapshot.
 
-**Current state:** All mining cycle constants are now data-driven from SC2 per-worker observation data (1366 cargo transitions, 12w economy scenario). The constants represent real animation wait times, not swept compensation values.
+**Current state:** All mining cycle constants are now data-driven from SC2 per-worker observation data (1366 cargo transitions, 12w economy scenario). The constants represent real animation wait times, not swept compensation values. The 12w +7.2% gap is structural — straight-line walks vs SC2's path-dependent routing. No constant will close it.
 
 | Constant | Value | Source |
 |----------|-------|--------|
@@ -24,20 +24,6 @@ You are working on EmulatedGame physics accuracy — making the economy simulati
 | 6w gas | **+0.7%** |
 | Vespene (6w) | -2.8% |
 
-**The 12w +7.2% gap is structural.** EM workers walk straight lines; SC2 workers navigate around each other with path-dependent routing. No constant will close this gap — only movement physics changes will. The previous 0.0% was an artifact of compensating errors.
-
-**What was done this session (#631):**
-- Wired `depositTarget()` and `miningTarget()` into the three state machine transition sites (previously used center-of-building positions)
-- Walk distances halved: 7.0u center-to-center → 3.5u edge-to-edge
-- Recalibrated all mining cycle constants from SC2 observation data (not sweeps)
-- Ruled out volume-based mineral transfer — SC2 mining is fixed-duration, all-or-nothing (community 1.99s occupation time + observation confirmation)
-- SC2 depletion test written (`MiningAnimationMeasurementTest#measureVolumeBasedTransfer`) — needs no-opponent game mode for clean depletion data (#641)
-
-**What to work on next:**
-- **#634 — Worker cycle variance gap.** SC2 cycles span 2-17 ticks (σ≈3+), EM spans 4-9 (σ≈0.5). The variance gap is the root cause of per-tick cadence mismatch (~80%). Requires dynamic worker routing — workers choosing patches based on current occupancy, not fixed assignment.
-- **#620 — Mining cycle decomposition.** The phase decomposition infrastructure is in place. Next step: make approach duration state-dependent (zero when patch is idle, longer when queued).
-- **#641 — SC2 process not terminated on LOSS exit path.** QuarkusSC2Transport doesn't kill SC2 after test runs that end in LOSS. XS fix.
-
 **Design rules (from CLAUDE.md):**
 - Never use compensation constants. If the EM doesn't match SC2, fix the root cause.
 - Constants that represent real animation wait times (deposit, mining, lockout) are legitimate — they are fixed durations in the SC2 engine.
@@ -53,17 +39,7 @@ You are working on EmulatedGame physics accuracy — making the economy simulati
 
 ## Last Session
 
-Wired edge-to-edge walk targets (#631). Three-line fix halved walk distances. Instead of sweeping constants, measured real SC2 phase durations from per-worker observation data (1366 transitions). Set all mining cycle constants to observed values. Multi-worker scenarios improved dramatically (16w: +3.4%→-2.0%, 6w gas: +1.9%→+0.7%). 12w regressed from 0.0% to +7.2% — the honest structural gap from straight-line vs path-dependent walking. Ruled out volume-based mineral transfer. Blog written: "The Methods Nobody Called."
-
-### Accuracy
-
-| Baseline | Mineral Δ | Gas Δ |
-|----------|-----------|-------|
-| 12w Protoss | **+7.2%** | — |
-| 16w saturation | **-2.0%** | — |
-| 24w saturation | -5.4% | — |
-| 3w gas | +2.8% | -8.0% |
-| 6w gas | **+0.7%** | -2.8% |
+Queue triage session. Marked 11 already-closed issues as done in the `.queue` (had fallen out of sync with GitHub). Added #641 to the queue. Triaged all 9 remaining open issues — all still relevant, none resolved by #631 work.
 
 ---
 
@@ -75,18 +51,42 @@ Wired edge-to-edge walk targets (#631). Three-line fix halved walk distances. In
 
 ---
 
+## What to Work On Next
+
+**Recommended order based on dependency analysis:**
+
+1. **#641 — SC2 process not terminated on LOSS** (XS/Low). Quick fix, unrelated to physics. Blocks clean SC2 test runs and prevents 9.6GB zombie processes.
+
+2. **#616 — SC2 morph via ability API** (S/Med). Independent of the cadence chain. Blocks accurate Orbital/PF morph in calibration playbooks.
+
+3. **Cadence variance chain** (the core remaining physics work):
+   - **#620 — Mining cycle decomposition** (M/High). Phase infra built but approach is still a fixed constant (11 loops). Make approach state-dependent: zero when patch is idle, longer when queued. EM uncontested cycle is 62 vs SC2 66 loops (4-loop gap).
+   - **#636 — Variable approach docking** (M/High). Core of the cadence gap. Fixed approach (7 loops) can't produce SC2's σ≈3+ variance. Per-patch approach code exists but is disabled (APPROACH_DISTANCE_SCALE=0).
+   - **#634 — Worker cycle variance gap** (M/High). EM σ≈0.5 vs SC2 σ≈3+. Depends on #636 — variable approach docking would increase variance naturally. Two approaches tried and failed (#628).
+   - **#623 — Fix EM delivery timing** (M/High). Umbrella fix for 80% per-tick mismatch. Blocked by #620 and #636.
+
+4. **Independent side tasks** (can be done in any order):
+   - **#633 — Per-race mineral income gap** (S/Med). 1.2% gap for Terran/Zerg — likely different worker/building radii per race.
+   - **#639 — vespeneCollectionRate structural floor** (S/Med). 35.2% MAPE insensitive to gas constants — structural EMA/concurrent geyser model issue.
+
+5. **#617 — Foundational tick-alignment audit** (L/High). Parent epic for the cadence chain. Close when #620/#636/#634/#623 land.
+
 ## Queue
 
 ```
-[x] #631 — Edge-to-edge walk targets (S/Low) — DONE
-[ ] #634 — Worker cycle variance gap (S/Low) — next: dynamic routing
-[ ] #620 — Mining cycle decomposition — approach state-dependency
-[ ] #641 — SC2 process not terminated on LOSS (XS/Low)
-[ ] #633 — Per-race mineral income gap
-[ ] #623 — Fix EM delivery timing (M/High)
+[x] #631 — Edge-to-edge walk targets — DONE
+[ ] #641 — SC2 process not terminated on LOSS (XS/Low) — quick fix
+[ ] #616 — SC2 morph via ability API (S/Med) — independent
+[ ] #620 — Mining cycle decomposition (M/High) — approach state-dependency
+[ ] #636 — Variable approach docking (M/High) — core cadence gap
+[ ] #634 — Worker cycle variance gap (M/High) — depends on #636
+[ ] #623 — Fix EM delivery timing (M/High) — blocked by #620 + #636
+[ ] #633 — Per-race mineral income gap (S/Med) — independent
+[ ] #639 — vespeneCollectionRate structural floor (S/Med) — independent
+[ ] #617 — Foundational tick-alignment audit (L/High) — parent epic
 ```
 
-### Key findings
+### Key findings (carried forward)
 
 1. **SC2 mining is fixed-duration, all-or-nothing** — 1.99s occupation time, worker takes min(5, remaining) at the end. No volume-based transfer during animation.
 2. **SC2 contested cycles add exactly 1 tick (22 loops)** — the patch lockout. Previous EM value of 34 loops over-penalised contention.
