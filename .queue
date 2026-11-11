@@ -7,7 +7,7 @@ status: active
 - covers: 607
 - date: 2026-11-09
 active_issue: casehubio/quarkmind#616
-branch: 
+branch: issue-616-sc2-morph-ability-api
 
 ## Queue
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
