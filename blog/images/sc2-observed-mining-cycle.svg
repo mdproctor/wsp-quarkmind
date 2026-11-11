@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" font-family="system-ui, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#475569" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <text x="380" y="22" text-anchor="middle" font-size="14" font-weight="600" fill="#1e293b">SC2 mining cycle — observed from 1366 cargo transitions</text>
+
+  <!-- Timeline axis -->
+  <line x1="40" y1="80" x2="720" y2="80" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- Phase blocks — SC2 observed -->
+  <!-- Walk to patch: 33 loops -->
+  <rect x="60" y="55" width="130" height="50" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="125" y="76" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="500">Walk to patch</text>
+  <text x="125" y="92" text-anchor="middle" font-size="10" fill="#3b82f6">~33 loops</text>
+
+  <!-- Approach: 11 loops -->
+  <rect x="195" y="55" width="70" height="50" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="230" y="76" text-anchor="middle" font-size="10" fill="#92400e" font-weight="500">Approach</text>
+  <text x="230" y="92" text-anchor="middle" font-size="10" fill="#b45309">11 loops</text>
+
+  <!-- Mining: 22 loops -->
+  <rect x="270" y="55" width="100" height="50" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="320" y="76" text-anchor="middle" font-size="11" fill="#15803d" font-weight="500">Mining</text>
+  <text x="320" y="92" text-anchor="middle" font-size="10" fill="#22c55e">22 loops (1 tick)</text>
+
+  <!-- Walk to base: 33 loops -->
+  <rect x="375" y="55" width="130" height="50" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="440" y="76" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="500">Walk to base</text>
+  <text x="440" y="92" text-anchor="middle" font-size="10" fill="#3b82f6">~33 loops</text>
+
+  <!-- Deposit: 7 loops -->
+  <rect x="510" y="55" width="60" height="50" rx="4" fill="#fce7f3" stroke="#ec4899" stroke-width="1.5"/>
+  <text x="540" y="76" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="500">Deposit</text>
+  <text x="540" y="92" text-anchor="middle" font-size="10" fill="#be185d">7 loops</text>
+
+  <!-- Total -->
+  <line x1="60" y1="118" x2="570" y2="118" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="60" y1="113" x2="60" y2="123" stroke="#475569" stroke-width="1"/>
+  <text x="315" y="135" text-anchor="middle" font-size="11" fill="#475569" font-weight="600">Full cycle: ~106 loops (4.8 ticks)</text>
+
+  <!-- SC2 observed brackets -->
+  <text x="380" y="165" text-anchor="middle" font-size="13" font-weight="600" fill="#1e293b">SC2 observed phase durations</text>
+
+  <!-- Mine-side bracket -->
+  <rect x="60" y="182" width="310" height="44" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="215" y="200" text-anchor="middle" font-size="11" fill="#334155" font-weight="500">Deposit → Pickup: 3.5 ticks avg (76 loops)</text>
+  <text x="215" y="216" text-anchor="middle" font-size="10" fill="#64748b">uncontested: 3 ticks (66L) | contested: 4 ticks (88L)</text>
+
+  <!-- Return-side bracket -->
+  <rect x="375" y="182" width="195" height="44" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="473" y="200" text-anchor="middle" font-size="11" fill="#334155" font-weight="500">Pickup → Deposit: 1.8 ticks avg (40 loops)</text>
+  <text x="473" y="216" text-anchor="middle" font-size="10" fill="#64748b">min: 1 tick | max: 3 ticks</text>
+
+  <!-- Key insight -->
+  <rect x="60" y="245" width="660" height="56" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+  <text x="390" y="266" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">Key finding: contested cycles add exactly 1 tick (22 loops) — the patch lockout duration.</text>
+  <text x="390" y="284" text-anchor="middle" font-size="10" fill="#3b82f6">Each constant is a real physical wait time, not a compensation factor.</text>
+</svg>
