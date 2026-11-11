@@ -89,4 +89,4 @@ branch:
 - [x] casehubio/quarkmind#638 — countWorkersPerBase position gap
 - [ ] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
 - [x] casehubio/quarkmind#640 — Twin-spawn supply audit
-- [ ] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
+- [x] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
