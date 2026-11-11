@@ -90,3 +90,5 @@ branch:
 - [ ] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
 - [x] casehubio/quarkmind#640 — Twin-spawn supply audit
 - [x] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
+- [ ] casehubio/quarkmind#642 — ocraft ResponseObservation deserialization crash
+- [ ] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
