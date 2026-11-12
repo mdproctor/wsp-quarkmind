@@ -6,10 +6,19 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#616
-branch: issue-616-sc2-morph-ability-api
+active_issue: casehubio/quarkmind#641
+branch: issue-641-sc2-process-loss-exit
 
 ## Queue
+- [ ] casehubio/quarkmind#639 — vespeneCollectionRate structural floor ← active
+- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
+- [ ] casehubio/quarkmind#613 — MULE income isolation analysis
+- [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
+- [ ] casehubio/quarkmind#633 — Per-race mineral income gap
+- [ ] casehubio/quarkmind#634 — Worker cycle variance gap
+- [ ] casehubio/quarkmind#636 — Variable approach docking
+- [ ] casehubio/quarkmind#620 — Mining cycle decomposition
+- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
@@ -61,9 +70,7 @@ branch: issue-616-sc2-morph-ability-api
 - [x] casehubio/quarkmind#598 — MULE isolation and expansion transfer playbooks
 - [x] casehubio/quarkmind#608 — Oracle vespene MAPE regression from gas recalibration
 - [x] casehubio/quarkmind#609 — Worker delivery desynchronization
-- [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
 - [x] casehubio/quarkmind#612 — Dual-run baseline document refresh
-- [x] casehubio/quarkmind#613 — MULE income isolation analysis
 - [x] casehubio/quarkmind#618 — Per-worker delivery cadence diagnostic
 - [x] casehubio/quarkmind#621 — Instrument SC2 observation for per-worker delivery events
 - [x] casehubio/quarkmind#622 — Record per-worker SC2 12w delivery baseline
@@ -76,19 +83,12 @@ branch: issue-616-sc2-morph-ability-api
 - [x] casehubio/quarkmind#581 — Army spending death-timing floor
 - [x] casehubio/quarkmind#582 — Economy spending reporting-lag floor
 - [x] casehubio/quarkmind#615 — Gas worker allocation modeling
-- [ ] casehubio/quarkmind#616 — SC2 morph via ability API investigation
-- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
-- [ ] casehubio/quarkmind#620 — Mining cycle decomposition
-- [ ] casehubio/quarkmind#636 — Variable approach docking
-- [ ] casehubio/quarkmind#634 — Worker cycle variance gap
+- [x] casehubio/quarkmind#616 — SC2 morph via ability API investigation
 - [x] casehubio/quarkmind#619 — Worker initialization desynchronization
-- [ ] casehubio/quarkmind#633 — Per-race mineral income gap
 - [x] casehubio/quarkmind#631 — Edge-to-edge targets not wired
-- [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
 - [x] casehubio/quarkmind#637 — Per-worker patch pairing
 - [x] casehubio/quarkmind#638 — countWorkersPerBase position gap
-- [ ] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
 - [x] casehubio/quarkmind#640 — Twin-spawn supply audit
 - [x] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
-- [ ] casehubio/quarkmind#642 — ocraft ResponseObservation deserialization crash
-- [ ] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
+- [x] casehubio/quarkmind#642 — ocraft ResponseObservation deserialization crash
+- [x] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
