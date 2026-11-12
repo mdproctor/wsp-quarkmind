@@ -39,7 +39,20 @@ You are working on EmulatedGame physics accuracy — making the economy simulati
 
 ## Last Session
 
-Queue triage + #641 fix. Marked 11 already-closed issues as done in `.queue` (had fallen out of sync with GitHub). Triaged all 9 remaining open issues — all still relevant. Fixed #641 (SC2 process not terminated on LOSS): removed the `quitting` guard from `RequestQuit` in `QuarkusSC2Transport.gameLoop()` finally block so SC2 is always asked to shut down when the game loop exits. Investigated #633 per-race mineral gap: confirmed EM is correctly race-invariant (worker speed, collision radius, town hall radius all identical across races in SC2). The 1.2% Terran/Zerg gap likely comes from map geometry differences per starting position, not physics — needs SC2 calibration testing.
+**#639 — vespeneCollectionRate structural floor diagnosis and fix.**
+
+Wrote `VespeneRateDecompositionTest` diagnostic to decompose the 30% vespene rate MAPE into three independent components:
+- **Cumulative income error** — does EM mine the right total gas?
+- **Rate algorithm error** — does EMA misrepresent the income?
+- **Worker count estimation** — are we assigning the right number of gas workers?
+
+**Key finding:** Rate(EMA) and Rate(SimpleWindow) produce identical MAPE at 7-min (30.3% each). The EMA algorithm (fixed three days ago) is correct but is not an accuracy lever — the rate tracks the income, not the smoothing method.
+
+**Root cause:** `GAS_PER_WORKER_PER_MIN=54` was too high. EM's actual per-worker gas rate is ~34 gas/min. Dividing GT rate by 54 systematically under-estimated worker count, causing -114 gas bias per replay. Sweep across 118 oracle replays confirmed 34 is optimal (income MAPE floors at 15.2% in the 30-44 range).
+
+**Fix:** Recalibrated GAS_PER_WORKER_PER_MIN from 54 to 34 in all 6 test harness files. Rate MAPE dropped from 30.3% to 25.1%. Remaining 25% is structural floor from per-worker gas harvest physics approximation, integer worker count rounding, and PlayerStatsEvent cadence mismatch.
+
+**Docs updated:** `economy-structural-floor.md` §10, `sc2-physics-constants.md` §4/§16/§18, CLAUDE.md diagnostic test list.
 
 ---
 
@@ -65,7 +78,7 @@ Queue triage + #641 fix. Marked 11 already-closed issues as done in `.queue` (ha
 
 3. **Independent side tasks** (can be done in any order):
    - **#633 — Per-race mineral income gap** (S/Med). 1.2% gap for Terran/Zerg. EM physics are correctly race-invariant — gap likely from map geometry per starting position. Needs SC2 calibration testing.
-   - **#639 — vespeneCollectionRate structural floor** (S/Med). 35.2% MAPE insensitive to gas constants — structural EMA/concurrent geyser model issue.
+   - ~~**#639 — vespeneCollectionRate structural floor** (S/Med).~~ DONE — 30.3%→25.1% MAPE. Remaining 25% is structural floor (gas harvest physics, integer rounding, cadence mismatch).
 
 4. **#617 — Foundational tick-alignment audit** (L/High). Parent epic for the cadence chain. Close when #620/#636/#634/#623 land.
 
@@ -80,7 +93,7 @@ Queue triage + #641 fix. Marked 11 already-closed issues as done in `.queue` (ha
 [ ] #634 — Worker cycle variance gap (M/High) — depends on #636
 [ ] #623 — Fix EM delivery timing (M/High) — blocked by #620 + #636
 [ ] #633 — Per-race mineral income gap (S/Med) — needs SC2 calibration
-[ ] #639 — vespeneCollectionRate structural floor (S/Med) — diagnostic
+[x] #639 — vespeneCollectionRate structural floor (S/Med) — DONE: 54→34, 30%→25% MAPE
 [ ] #617 — Foundational tick-alignment audit (L/High) — parent epic
 ```
 
