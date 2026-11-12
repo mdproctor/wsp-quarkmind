@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f9fa"/>
+      <stop offset="100%" stop-color="#e9ecef"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="420" rx="8" fill="url(#bg)"/>
+  <text x="360" y="32" text-anchor="middle" font-size="16" font-weight="600" fill="#212529">vespeneCollectionRate MAPE — Decomposition</text>
+  <text x="360" y="52" text-anchor="middle" font-size="11" fill="#868e96">118 oracle replays, 236 player runs, 7-minute checkpoint</text>
+
+  <!-- Y axis -->
+  <line x1="90" y1="80" x2="90" y2="340" stroke="#adb5bd" stroke-width="1"/>
+  <text x="82" y="86" text-anchor="end" font-size="10" fill="#868e96">40%</text>
+  <line x1="85" y1="80" x2="90" y2="80" stroke="#adb5bd"/>
+  <text x="82" y="151" text-anchor="end" font-size="10" fill="#868e96">30%</text>
+  <line x1="85" y1="145" x2="90" y2="145" stroke="#adb5bd"/>
+  <text x="82" y="216" text-anchor="end" font-size="10" fill="#868e96">20%</text>
+  <line x1="85" y1="210" x2="90" y2="210" stroke="#adb5bd"/>
+  <text x="82" y="281" text-anchor="end" font-size="10" fill="#868e96">10%</text>
+  <line x1="85" y1="275" x2="90" y2="275" stroke="#adb5bd"/>
+  <text x="82" y="346" text-anchor="end" font-size="10" fill="#868e96">0%</text>
+  <line x1="85" y1="340" x2="90" y2="340" stroke="#adb5bd"/>
+
+  <!-- Grid lines -->
+  <line x1="90" y1="145" x2="680" y2="145" stroke="#dee2e6" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <line x1="90" y1="210" x2="680" y2="210" stroke="#dee2e6" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <line x1="90" y1="275" x2="680" y2="275" stroke="#dee2e6" stroke-width="0.5" stroke-dasharray="4,4"/>
+
+  <!-- X axis -->
+  <line x1="90" y1="340" x2="680" y2="340" stroke="#adb5bd" stroke-width="1"/>
+
+  <!-- Structural floor line at 25% -->
+  <line x1="90" y1="177.5" x2="680" y2="177.5" stroke="#e03131" stroke-width="1.5" stroke-dasharray="8,4" opacity="0.6"/>
+  <text x="685" y="181" font-size="9" fill="#e03131" font-style="italic">structural floor ~25%</text>
+
+  <!-- Group: GAS_PER_WORKER = 54 (old) -->
+  <text x="230" y="365" text-anchor="middle" font-size="12" font-weight="500" fill="#495057">Constant = 54 (old)</text>
+
+  <!-- Bar: Income MAPE 17.7% -->
+  <rect x="155" y="224.7" width="40" height="115.3" rx="3" fill="#339af0" opacity="0.85"/>
+  <text x="175" y="219" text-anchor="middle" font-size="11" font-weight="600" fill="#1971c2">17.7%</text>
+  <text x="175" y="385" text-anchor="middle" font-size="9" fill="#868e96">Income</text>
+
+  <!-- Bar: Rate EMA MAPE 30.3% -->
+  <rect x="210" y="142.1" width="40" height="197.9" rx="3" fill="#f76707" opacity="0.85"/>
+  <text x="230" y="137" text-anchor="middle" font-size="11" font-weight="600" fill="#e8590c">30.3%</text>
+  <text x="230" y="385" text-anchor="middle" font-size="9" fill="#868e96">Rate EMA</text>
+
+  <!-- Bar: Rate SW MAPE 30.3% -->
+  <rect x="265" y="142.1" width="40" height="197.9" rx="3" fill="#ae3ec9" opacity="0.85"/>
+  <text x="285" y="137" text-anchor="middle" font-size="11" font-weight="600" fill="#9c36b5">30.3%</text>
+  <text x="285" y="385" text-anchor="middle" font-size="9" fill="#868e96">Rate SW</text>
+
+  <!-- Group: GAS_PER_WORKER = 34 (new) -->
+  <text x="510" y="365" text-anchor="middle" font-size="12" font-weight="500" fill="#495057">Constant = 34 (new)</text>
+
+  <!-- Bar: Income MAPE 15.4% -->
+  <rect x="435" y="239.7" width="40" height="100.3" rx="3" fill="#339af0" opacity="0.85"/>
+  <text x="455" y="234" text-anchor="middle" font-size="11" font-weight="600" fill="#1971c2">15.4%</text>
+  <text x="455" y="385" text-anchor="middle" font-size="9" fill="#868e96">Income</text>
+
+  <!-- Bar: Rate EMA MAPE 25.1% -->
+  <rect x="490" y="176.2" width="40" height="163.8" rx="3" fill="#f76707" opacity="0.85"/>
+  <text x="510" y="171" text-anchor="middle" font-size="11" font-weight="600" fill="#e8590c">25.1%</text>
+  <text x="510" y="385" text-anchor="middle" font-size="9" fill="#868e96">Rate EMA</text>
+
+  <!-- Bar: Rate SW MAPE 26.3% -->
+  <rect x="545" y="168.4" width="40" height="171.6" rx="3" fill="#ae3ec9" opacity="0.85"/>
+  <text x="565" y="163" text-anchor="middle" font-size="11" font-weight="600" fill="#9c36b5">26.3%</text>
+  <text x="565" y="385" text-anchor="middle" font-size="9" fill="#868e96">Rate SW</text>
+
+  <!-- Arrow showing improvement -->
+  <path d="M 320 155 C 350 130, 400 130, 430 168" stroke="#2b8a3e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="380" y="122" text-anchor="middle" font-size="10" font-weight="600" fill="#2b8a3e">-5.2%</text>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2b8a3e"/>
+    </marker>
+  </defs>
+
+  <!-- Legend -->
+  <rect x="100" y="400" width="12" height="8" rx="2" fill="#339af0" opacity="0.85"/>
+  <text x="116" y="408" font-size="9" fill="#495057">Cumulative income</text>
+  <rect x="230" y="400" width="12" height="8" rx="2" fill="#f76707" opacity="0.85"/>
+  <text x="246" y="408" font-size="9" fill="#495057">Rate (EMA α=0.35)</text>
+  <rect x="380" y="400" width="12" height="8" rx="2" fill="#ae3ec9" opacity="0.85"/>
+  <text x="396" y="408" font-size="9" fill="#495057">Rate (simple window)</text>
+</svg>
