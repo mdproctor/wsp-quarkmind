@@ -6,18 +6,18 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#639
+active_issue: 
 branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
-- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger ← active
-- [ ] casehubio/quarkmind#613 — MULE income isolation analysis
+- [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
+- [ ] casehubio/quarkmind#613 — MULE income isolation analysis ← active
 - [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
-- [ ] casehubio/quarkmind#633 — Per-race mineral income gap
+- [x] casehubio/quarkmind#633 — Per-race mineral income gap
 - [ ] casehubio/quarkmind#634 — Worker cycle variance gap
 - [ ] casehubio/quarkmind#636 — Variable approach docking
-- [ ] casehubio/quarkmind#620 — Mining cycle decomposition
+- [x] casehubio/quarkmind#620 — Mining cycle decomposition
 - [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
@@ -92,3 +92,6 @@ branch:
 - [x] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
 - [x] casehubio/quarkmind#642 — ocraft ResponseObservation deserialization crash
 - [x] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
+- [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
+- [ ] casehubio/quarkmind#646 — 6w gas baseline not verified
+- [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
