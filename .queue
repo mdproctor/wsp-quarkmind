@@ -7,11 +7,11 @@ status: active
 - covers: 607
 - date: 2026-11-09
 active_issue: casehubio/quarkmind#639
-branch: issue-639-vespene-rate-structural-floor
+branch: 
 
 ## Queue
-- [ ] casehubio/quarkmind#639 — vespeneCollectionRate structural floor ← active
-- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
+- [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
+- [ ] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger ← active
 - [ ] casehubio/quarkmind#613 — MULE income isolation analysis
 - [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
 - [ ] casehubio/quarkmind#633 — Per-race mineral income gap
