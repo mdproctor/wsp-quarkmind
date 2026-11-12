@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" font-family="'Segoe UI', system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="#475569"/>
+    </marker>
+    <marker id="arr-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="#16a34a"/>
+    </marker>
+    <marker id="arr-b" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="380" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Dual-Run Validation: Emulator vs Real SC2</text>
+
+  <!-- Left column: Real SC2 -->
+  <text x="175" y="62" text-anchor="middle" font-size="12" font-weight="600" fill="#2563eb">Real SC2 (recorded baseline)</text>
+
+  <rect x="60" y="75" width="230" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="175" y="100" text-anchor="middle" font-size="12" fill="#1e40af">SC2 Client (Base96883)</text>
+
+  <rect x="60" y="135" width="230" height="36" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="175" y="158" text-anchor="middle" font-size="11" fill="#1e40af">Playbook → debug API commands</text>
+
+  <rect x="60" y="191" width="230" height="36" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="175" y="214" text-anchor="middle" font-size="11" fill="#1e40af">Snapshot at each tick → JSON</text>
+
+  <line x1="175" y1="115" x2="175" y2="133" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arr-b)"/>
+  <line x1="175" y1="171" x2="175" y2="189" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arr-b)"/>
+
+  <!-- Right column: EmulatedGame -->
+  <text x="575" y="62" text-anchor="middle" font-size="12" font-weight="600" fill="#16a34a">EmulatedGame (physics sim)</text>
+
+  <rect x="460" y="75" width="230" height="40" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="575" y="100" text-anchor="middle" font-size="12" fill="#166534">EmulatedGame (no SC2)</text>
+
+  <rect x="460" y="135" width="230" height="36" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+  <text x="575" y="158" text-anchor="middle" font-size="11" fill="#166534">Same playbook → intent queue</text>
+
+  <rect x="460" y="191" width="230" height="36" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+  <text x="575" y="214" text-anchor="middle" font-size="11" fill="#166534">Snapshot at each tick → compare</text>
+
+  <line x1="575" y1="115" x2="575" y2="133" stroke="#16a34a" stroke-width="1.2" marker-end="url(#arr-g)"/>
+  <line x1="575" y1="171" x2="575" y2="189" stroke="#16a34a" stroke-width="1.2" marker-end="url(#arr-g)"/>
+
+  <!-- Centre: comparison -->
+  <rect x="260" y="255" width="240" height="44" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="380" y="275" text-anchor="middle" font-size="12" font-weight="600" fill="#854d0e">Tick-by-tick comparison</text>
+  <text x="380" y="291" text-anchor="middle" font-size="10" fill="#92400e">minerals, vespene, units, buildings</text>
+
+  <line x1="175" y1="227" x2="320" y2="255" stroke="#475569" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="575" y1="227" x2="440" y2="255" stroke="#475569" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Results table -->
+  <rect x="105" y="320" width="550" height="90" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="130" y="342" font-size="11" font-weight="600" fill="#334155">Baseline</text>
+  <text x="340" y="342" font-size="11" font-weight="600" fill="#334155">SC2</text>
+  <text x="430" y="342" font-size="11" font-weight="600" fill="#334155">EM</text>
+  <text x="530" y="342" font-size="11" font-weight="600" fill="#334155">Delta</text>
+
+  <line x1="120" y1="348" x2="640" y2="348" stroke="#e2e8f0" stroke-width="0.5"/>
+
+  <text x="130" y="364" font-size="10" fill="#475569">12w Protoss (tick 304)</text>
+  <text x="340" y="364" font-size="10" fill="#475569">3460</text>
+  <text x="430" y="364" font-size="10" fill="#475569">3459</text>
+  <text x="530" y="364" font-size="10" font-weight="600" fill="#16a34a">−0.03%</text>
+
+  <text x="130" y="380" font-size="10" fill="#475569">16w saturated (tick 304)</text>
+  <text x="340" y="380" font-size="10" fill="#475569">4260</text>
+  <text x="430" y="380" font-size="10" fill="#475569">4539</text>
+  <text x="530" y="380" font-size="10" font-weight="600" fill="#dc2626">+6.6%</text>
+
+  <text x="130" y="396" font-size="10" fill="#475569">Gas 3w (tick 304, vespene)</text>
+  <text x="340" y="396" font-size="10" fill="#475569">596</text>
+  <text x="430" y="396" font-size="10" fill="#475569">644</text>
+  <text x="530" y="396" font-size="10" font-weight="600" fill="#f59e0b">+8.1%</text>
+</svg>
