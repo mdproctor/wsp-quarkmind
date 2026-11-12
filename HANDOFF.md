@@ -39,20 +39,27 @@ You are working on EmulatedGame physics accuracy — making the economy simulati
 
 ## Last Session
 
-**#639 — vespeneCollectionRate structural floor diagnosis and fix.**
+**Major session — #639 fix + #578 branch landing + physics doc revision.**
 
-Wrote `VespeneRateDecompositionTest` diagnostic to decompose the 30% vespene rate MAPE into three independent components:
-- **Cumulative income error** — does EM mine the right total gas?
-- **Rate algorithm error** — does EMA misrepresent the income?
-- **Worker count estimation** — are we assigning the right number of gas workers?
+### 1. #639 — vespeneCollectionRate structural floor (CLOSED)
 
-**Key finding:** Rate(EMA) and Rate(SimpleWindow) produce identical MAPE at 7-min (30.3% each). The EMA algorithm (fixed three days ago) is correct but is not an accuracy lever — the rate tracks the income, not the smoothing method.
+VespeneRateDecompositionTest decomposes 30% rate MAPE into income vs algorithm components. Root cause: GAS_PER_WORKER_PER_MIN=54 too high (actual ~34). Recalibrated → rate MAPE 30.3%→25.1%. Remaining 25% is structural floor.
 
-**Root cause:** `GAS_PER_WORKER_PER_MIN=54` was too high. EM's actual per-worker gas rate is ~34 gas/min. Dividing GT rate by 54 systematically under-estimated worker count, causing -114 gas bias per replay. Sweep across 118 oracle replays confirmed 34 is optimal (income MAPE floors at 15.2% in the 30-44 range).
+### 2. #578 branch landed (28 squashed commits from 79)
 
-**Fix:** Recalibrated GAS_PER_WORKER_PER_MIN from 54 to 34 in all 6 test harness files. Rate MAPE dropped from 30.3% to 25.1%. Remaining 25% is structural floor from per-worker gas harvest physics approximation, integer worker count rounding, and PlayerStatsEvent cadence mismatch.
+The full economy calibration branch (issues #578–#641, 38 issues) landed on main. Includes edge-to-edge walks, collision physics, SC2-observed mining constants, worker stagger, gas entrance queuing, MULE lifetime calibration, and more. Squashed from 79→28 commits (chronological, no reorder). 5 test fixes applied post-landing.
 
-**Docs updated:** `economy-structural-floor.md` §10, `sc2-physics-constants.md` §4/§16/§18, CLAUDE.md diagnostic test list.
+### 3. Issues closed: #639, #611, #620, #633 (4 total)
+### 4. Issues filed: #644 (Zerg baseline), #645 (12w over-production), #646 (6w gas verification)
+
+### 5. Physics constants doc — comprehensive revision
+
+Every numeric value cross-referenced against code. Fixed: §3 (approach 7→11, docking 34→22, added deposit/stagger/collision), §6 (fresh dual-run table), §14 (full cycle rewrite), §16 (vespene 35→25.1%), §19 (config block aligned).
+
+### 6. Blog entries
+
+- **"How Wrong Is Your Simulation?"** — revised capstone covering the full calibration arc
+- **"The Constant That Explained Everything"** — #639 decomposition methodology
 
 ---
 
@@ -66,35 +73,38 @@ Wrote `VespeneRateDecompositionTest` diagnostic to decompose the 30% vespene rat
 
 ## What to Work On Next
 
-**Recommended order based on dependency analysis:**
+**Recommended order:**
 
-1. **#616 — SC2 morph via ability API** (S/Med). Independent of the cadence chain. Blocks accurate Orbital/PF morph in calibration playbooks. Needs SC2 for investigation.
+1. **Quick verification tasks:**
+   - **#644 — Zerg dual-run baseline diverges** (S/Low). Unit count mismatch at tick 0. Fix playbook or EM Zerg initialization.
+   - **#646 — 6w gas baseline not verified** (XS/Low). Run the test, record result, update §6 table.
 
-2. **Cadence variance chain** (the core remaining physics work):
-   - **#620 — Mining cycle decomposition** (M/High). Phase infra built but approach is still a fixed constant (11 loops). Make approach state-dependent: zero when patch is idle, longer when queued. EM uncontested cycle is 62 vs SC2 66 loops (4-loop gap).
-   - **#636 — Variable approach docking** (M/High). Core of the cadence gap. Fixed approach (7 loops) can't produce SC2's σ≈3+ variance. Per-patch approach code exists but is disabled (APPROACH_DISTANCE_SCALE=0).
-   - **#634 — Worker cycle variance gap** (M/High). EM σ≈0.5 vs SC2 σ≈3+. Depends on #636 — variable approach docking would increase variance naturally.
-   - **#623 — Fix EM delivery timing** (M/High). Umbrella fix for 80% per-tick mismatch. Blocked by #620 and #636.
+2. **MULE income validation:**
+   - **#613 — MULE income rate validation** (S/Med). Lifetime done (1452 loops). Income rate (277.8 min/min) NOT validated — needs cleaner playbook (requires SC2).
 
-3. **Independent side tasks** (can be done in any order):
-   - **#633 — Per-race mineral income gap** (S/Med). 1.2% gap for Terran/Zerg. EM physics are correctly race-invariant — gap likely from map geometry per starting position. Needs SC2 calibration testing.
-   - ~~**#639 — vespeneCollectionRate structural floor** (S/Med).~~ DONE — 30.3%→25.1% MAPE. Remaining 25% is structural floor (gas harvest physics, integer rounding, cadence mismatch).
+3. **Cadence variance chain** (core remaining physics):
+   - **#623 — Fix EM delivery timing** (M/High). Cadence at 75.3%. Needs path-dependent routing.
+   - **#636 — Variable approach docking** (M/High). Infrastructure ready (SCALE=0), waiting for collision to produce approach naturally.
+   - **#634 — Worker cycle variance gap** (M/High). EM σ≈0.5 vs SC2 σ≈3+.
+   - **#645 — 12w mineral over-production +7.2%** (M/High). Straight-line vs path-dependent routing ceiling.
 
-4. **#617 — Foundational tick-alignment audit** (L/High). Parent epic for the cadence chain. Close when #620/#636/#634/#623 land.
+4. **#617 — Tick-alignment audit (Epic)** (L/High). Close when #623/#634/#636 resolve.
 
 ## Queue
 
 ```
-[x] #631 — Edge-to-edge walk targets — DONE
-[x] #641 — SC2 process not terminated on LOSS — DONE (this session)
-[ ] #616 — SC2 morph via ability API (S/Med) — needs SC2
-[ ] #620 — Mining cycle decomposition (M/High) — approach state-dependency
-[ ] #636 — Variable approach docking (M/High) — core cadence gap
-[ ] #634 — Worker cycle variance gap (M/High) — depends on #636
-[ ] #623 — Fix EM delivery timing (M/High) — blocked by #620 + #636
-[ ] #633 — Per-race mineral income gap (S/Med) — needs SC2 calibration
-[x] #639 — vespeneCollectionRate structural floor (S/Med) — DONE: 54→34, 30%→25% MAPE
-[ ] #617 — Foundational tick-alignment audit (L/High) — parent epic
+[x] #639 — vespeneCollectionRate structural floor — DONE
+[x] #611 — Mining efficiency recalibration — superseded by #623
+[x] #620 — Mining cycle decomposition — DONE (mine=22/deposit=7/approach=11)
+[x] #633 — Per-race mineral income gap — finding: race-invariant, map geometry
+[ ] #644 — Zerg dual-run baseline diverges (S/Low)
+[ ] #646 — 6w gas baseline not verified (XS/Low)
+[ ] #613 — MULE income rate validation (S/Med) — needs SC2
+[ ] #623 — Fix EM delivery timing (M/High) — cadence 75.3%
+[ ] #636 — Variable approach docking (M/High)
+[ ] #634 — Worker cycle variance gap (M/High)
+[ ] #645 — 12w mineral over-production +7.2% (M/High)
+[ ] #617 — Tick-alignment audit epic (L/High)
 ```
 
 ### Key findings (carried forward + new)
