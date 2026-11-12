@@ -6,8 +6,8 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: casehubio/quarkmind#641
-branch: issue-641-sc2-process-loss-exit
+active_issue: casehubio/quarkmind#639
+branch: issue-639-vespene-rate-structural-floor
 
 ## Queue
 - [ ] casehubio/quarkmind#639 — vespeneCollectionRate structural floor ← active
