@@ -10,9 +10,9 @@ tags: [economy, calibration, gas, diagnostics, emulated-game]
 
 # The Constant That Explained Everything
 
-Three days ago I wrote about fixing the rate computation algorithm — switching from a simple windowed average to an EMA that matched SC2's actual reporting. The algorithm was wrong by 39%. We fixed it. The accuracy did not move. The reporter changed; the source stayed the same.
+QuarkMind simulates StarCraft II's economy tick-by-tick — 22 game loops per tick, real worker physics, real harvest durations. The simulation's vespene gas collection rate was 30% wrong, measured against 118 real SC2 replays. I'd already fixed the rate computation algorithm (SC2 uses EMA smoothing, not a simple window — a 39% algorithmic error that, once corrected, changed nothing about accuracy). Sweeping the gas worker estimation constant from 30 to 41 didn't help either. Same MAPE regardless of the constant, regardless of the algorithm.
 
-That left a 30% MAPE on vespeneCollectionRate at the 7-minute checkpoint. The issue said sweeping the gas worker estimation constant from 30 to 41 gas/min didn't change the number either. Same MAPE, different constants, different algorithms. The error was somewhere else entirely — or that was the working hypothesis.
+The error was somewhere else entirely — or that was the working hypothesis.
 
 I was wrong about the "somewhere else" part.
 
@@ -70,10 +70,14 @@ The remaining 25% rate MAPE isn't going anywhere. It comes from three things tha
 
 None of these are bugs. They are architectural limits of converting a discrete, lossy observation signal (GT rate every 160 loops, integer-rounded worker count) into a continuous economic simulation. The 25% is a structural floor.
 
-## Why This Matters Beyond SC2
+## Decomposition as Methodology
 
-Every simulation of a real system faces the same decomposition question. When the output doesn't match, you have a number. The number is useless until you split it into components and identify which ones you can move.
+Every simulation of a real system faces the same problem. The output doesn't match. You have one aggregate error metric. You try adjusting parameters. Some help, some don't, and you can't tell why.
 
-In our case, the number was 30%. It decomposed into 5% from a miscalibrated estimation constant and 25% from physics approximation. The 5% took one line to fix. The 25% would take a fundamentally different simulation architecture — individual worker scheduling with animation state machines, frame-level entry/exit at the geyser, per-map geyser distance calibration. That work exists. It's not next.
+The instinct is to keep sweeping. Try different constants, different algorithms, different smoothing windows. Run the oracle replays again. The MAPE moves a point or two, or it doesn't. You have no signal about whether you're tuning the right thing.
 
-The decomposition itself is the methodology. Measure the income separately from the rate computation. Apply both algorithms to the same income stream. Compare bias direction, not just magnitude. The first thing you learn is which component to ignore — in this case, the EMA vs simple window comparison that initially looked like the obvious suspect. The second thing you learn is where the floor is. And once you know the floor, you stop trying to push through it with parameter sweeps and start deciding whether the architecture earns a redesign.
+Decomposition breaks the feedback loop. Measure the income separately from the rate computation. Apply both candidate algorithms to the same income stream. Compare bias direction, not just magnitude. Three comparisons, and the picture is clear: the income is the source, the algorithm is the reporter, and the estimation constant is the bridge between observation and simulation.
+
+In our case, 30% decomposed into 5% from a miscalibrated constant and 25% from physics approximation. The 5% took one line to fix. The 25% would take a fundamentally different simulation architecture — individual worker scheduling with animation state machines, frame-level entry/exit at the geyser, per-map distance calibration. That architecture exists as a design option. It is not proportional to the accuracy it would buy.
+
+The first thing the decomposition taught was which component to ignore. The EMA vs simple window comparison looked like the obvious suspect — we'd just discovered SC2 uses EMA, we'd just changed our algorithm. It wasn't the problem. The second thing it taught was where the floor is. Once you know the floor, you stop pushing parameter sweeps through it and start deciding whether the architecture earns a redesign. Most of the time, it doesn't. Knowing that is worth more than the fix itself.
