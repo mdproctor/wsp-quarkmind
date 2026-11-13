@@ -10,15 +10,21 @@ active_issue:
 branch: 
 
 ## Queue
+- [ ] casehubio/quarkmind#649 — Remove dead direction-dependent collision code ← active
+- [ ] casehubio/quarkmind#646 — 6w gas baseline not verified
+- [ ] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
+- [ ] casehubio/quarkmind#651 — Calibrate default close/far mineral patch distances
+- [ ] casehubio/quarkmind#636 — Variable approach docking
+- [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
+- [ ] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
+- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
 - [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
 - [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
-- [ ] casehubio/quarkmind#613 — MULE income isolation analysis ← active
-- [ ] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
+- [x] casehubio/quarkmind#613 — MULE income isolation analysis
+- [x] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
 - [x] casehubio/quarkmind#633 — Per-race mineral income gap
-- [ ] casehubio/quarkmind#634 — Worker cycle variance gap
-- [ ] casehubio/quarkmind#636 — Variable approach docking
+- [x] casehubio/quarkmind#634 — Worker cycle variance gap
 - [x] casehubio/quarkmind#620 — Mining cycle decomposition
-- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
@@ -92,6 +98,5 @@ branch:
 - [x] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
 - [x] casehubio/quarkmind#642 — ocraft ResponseObservation deserialization crash
 - [x] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
-- [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
-- [ ] casehubio/quarkmind#646 — 6w gas baseline not verified
-- [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
+- [x] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
+- [x] casehubio/quarkmind#648 — Re-validate mining deposit docking parameters
