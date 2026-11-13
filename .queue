@@ -15,8 +15,8 @@ branch:
 - [x] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
 - [x] casehubio/quarkmind#651 — Calibrate default close/far mineral patch distances
 - [ ] casehubio/quarkmind#636 — Variable approach docking ← active
-  - [ ] Batch 1: Contention infrastructure
-    - [ ] Task 1: Conditional approach + waiting
+  - [x] Batch 1: Contention infrastructure
+    - [x] Task 1: Conditional approach + waiting
   - [ ] Batch 2: Wait-then-reroute
     - [ ] Task 2: Dynamic patch reassignment
   - [ ] Batch 3: Calibration
