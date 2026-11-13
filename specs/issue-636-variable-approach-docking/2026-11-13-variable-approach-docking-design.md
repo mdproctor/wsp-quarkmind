@@ -63,7 +63,7 @@ When a worker arrives at its assigned patch and it is ACTIVE or COOLDOWN:
    - Estimate travel time to each idle patch (distance / worker speed)
    - Estimate remaining wait at current patch (`phaseEndLoop` of active miner - `currentLoop`, or `lockEndLoop - currentLoop` for COOLDOWN)
    - If travel time to nearest idle patch < remaining wait → reassign `assignedPatch`, set new `targetPosition`, clear `waitingSinceLoop`
-   - If no better option exists → keep waiting (do not re-check until next tick)
+   - If no better option exists → keep waiting (re-checks each loop — O(patches) per waiting worker is trivial)
 4. `waitingSinceLoop` is cleared when mining starts or when the worker is reassigned
 
 The `rerouteThresholdLoops` is a config property (`starcraft.worker.reroute-threshold-loops`) with a default value determined by the calibration phase.
