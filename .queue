@@ -17,8 +17,8 @@ branch:
 - [x] casehubio/quarkmind#636 — Variable approach docking
 - [x] casehubio/quarkmind#645 — 12w mineral over-production path routing
 - [x] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
-- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit ← active
-- [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
+- [x] casehubio/quarkmind#617 — Foundational tick-alignment audit
+- [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor ← active
 - [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
 - [x] casehubio/quarkmind#613 — MULE income isolation analysis
 - [x] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
@@ -100,3 +100,12 @@ branch:
 - [x] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
 - [x] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
 - [x] casehubio/quarkmind#648 — Re-validate mining deposit docking parameters
+- [ ] casehubio/quarkmind#653 — Remove dead APPROACH_DISTANCE_SCALE
+- [ ] casehubio/quarkmind#654 — Reset waitingSinceLoop on transitions
+- [ ] casehubio/quarkmind#657 — Fix diagnostic test cycle measurement
+- [ ] casehubio/quarkmind#658 — Physics doc stale values audit
+- [ ] casehubio/quarkmind#660 — Clean up untracked spec files
+- [ ] casehubio/quarkmind#659 — 3w gas mineral deficit investigation
+- [ ] casehubio/quarkmind#652 — Gas entrance queuing model
+- [ ] casehubio/quarkmind#655 — 16w saturation curve
+- [ ] casehubio/quarkmind#656 — Mineral-line pathfinding
