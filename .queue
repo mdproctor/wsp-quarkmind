@@ -17,8 +17,8 @@ branch:
 - [ ] casehubio/quarkmind#636 — Variable approach docking ← active
   - [x] Batch 1: Contention infrastructure
     - [x] Task 1: Conditional approach + waiting
-  - [ ] Batch 2: Wait-then-reroute
-    - [ ] Task 2: Dynamic patch reassignment
+  - [x] Batch 2: Wait-then-reroute
+    - [x] Task 2: Dynamic patch reassignment
   - [ ] Batch 3: Calibration
     - [ ] Task 3: Diagnostic and validation
 - [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
