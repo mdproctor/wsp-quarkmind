@@ -10,11 +10,17 @@ active_issue:
 branch: 
 
 ## Queue
-- [ ] casehubio/quarkmind#649 — Remove dead direction-dependent collision code ← active
-- [ ] casehubio/quarkmind#646 — 6w gas baseline not verified
-- [ ] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
-- [ ] casehubio/quarkmind#651 — Calibrate default close/far mineral patch distances
-- [ ] casehubio/quarkmind#636 — Variable approach docking
+- [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
+- [x] casehubio/quarkmind#646 — 6w gas baseline not verified
+- [x] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
+- [x] casehubio/quarkmind#651 — Calibrate default close/far mineral patch distances
+- [ ] casehubio/quarkmind#636 — Variable approach docking ← active
+  - [ ] Batch 1: Contention infrastructure
+    - [ ] Task 1: Conditional approach + waiting
+  - [ ] Batch 2: Wait-then-reroute
+    - [ ] Task 2: Dynamic patch reassignment
+  - [ ] Batch 3: Calibration
+    - [ ] Task 3: Diagnostic and validation
 - [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
 - [ ] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
 - [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
