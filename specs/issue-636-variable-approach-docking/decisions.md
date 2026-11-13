@@ -35,3 +35,15 @@
 **Exploration:** quick
 **Depends on:** D1 (contention model architecture)
 **Status:** captured
+
+## D4: Calibration approach
+
+**Choice:** Diagnostic test analyzing #622 worker snapshots, fall back to new SC2 dual-run if insufficient
+**Alternatives:**
+- Sweep-based calibration — sweep wait threshold against dual-run baselines; risks compensation-constant territory
+**Rationale:** #622 per-worker snapshot data (position + orders + buffs at every tick) already exists. Re-routing events should be detectable as workers changing nearest mineral patch between consecutive delivery cycles. Free data before new SC2 runs. If per-tick resolution is insufficient for re-routing detection, fall back to a dedicated SC2 dual-run with contention instrumentation.
+**Trade-offs:** Per-tick position data may lack the per-loop resolution needed to measure exact wait-before-reroute timing. Fallback to SC2 dual-run adds a recording step.
+**Sources:** Issue #622 (per-worker SC2 baseline), WorkerSnapshotEmTest.java, DualRunCalibrationTest.java
+**Exploration:** quick
+**Depends on:** D3 (re-routing trigger — defines what we're calibrating)
+**Status:** captured
