@@ -19,8 +19,8 @@ branch:
     - [x] Task 1: Conditional approach + waiting
   - [x] Batch 2: Wait-then-reroute
     - [x] Task 2: Dynamic patch reassignment
-  - [ ] Batch 3: Calibration
-    - [ ] Task 3: Diagnostic and validation
+  - [x] Batch 3: Calibration
+    - [x] Task 3: Diagnostic and validation
 - [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
 - [ ] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
 - [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
