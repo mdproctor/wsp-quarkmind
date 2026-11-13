@@ -7,23 +7,17 @@ status: active
 - covers: 607
 - date: 2026-11-09
 active_issue: 
-branch: issue-636-variable-approach-docking
+branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
 - [x] casehubio/quarkmind#646 — 6w gas baseline not verified
 - [x] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
 - [x] casehubio/quarkmind#651 — Calibrate default close/far mineral patch distances
-- [ ] casehubio/quarkmind#636 — Variable approach docking ← active
-  - [x] Batch 1: Contention infrastructure
-    - [x] Task 1: Conditional approach + waiting
-  - [x] Batch 2: Wait-then-reroute
-    - [x] Task 2: Dynamic patch reassignment
-  - [x] Batch 3: Calibration
-    - [x] Task 3: Diagnostic and validation
-- [ ] casehubio/quarkmind#645 — 12w mineral over-production path routing
-- [ ] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
-- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit
+- [x] casehubio/quarkmind#636 — Variable approach docking
+- [x] casehubio/quarkmind#645 — 12w mineral over-production path routing
+- [x] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
+- [ ] casehubio/quarkmind#617 — Foundational tick-alignment audit ← active
 - [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
 - [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
 - [x] casehubio/quarkmind#613 — MULE income isolation analysis
