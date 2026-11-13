@@ -4,25 +4,24 @@
 
 You are working on EmulatedGame physics accuracy — making the economy simulation match real SC2 tick-for-tick. The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go** when you change constants, find stale values, or discover new physics. It is a living document, not a snapshot.
 
-**Current state:** All mining cycle constants are now data-driven from SC2 per-worker observation data (1366 cargo transitions, 12w economy scenario). The constants represent real animation wait times, not swept compensation values. The 12w +7.2% gap is structural — straight-line walks vs SC2's path-dependent routing. No constant will close it.
+**Current state:** All mining cycle constants are data-driven from SC2 per-worker observation data (1366 cargo transitions, 12w economy scenario). Post-#636: conditional approach docking (0 loops idle / 11 loops contested) and wait-then-reroute (22-loop threshold) reduce the 12w mineral surplus from +7.2% to **+3.8%**. The 0-approach for idle patches compensates for straight-line walks being faster than SC2's path-dependent routing — documented in physics doc as an intentional trade-off, not physics-accurate.
 
 | Constant | Value | Source |
 |----------|-------|--------|
 | Mining duration | 22 loops | Position stability at patch (1 tick) |
 | Deposit duration | 7 loops | Return phase (40L) minus walk (33L) |
 | Patch docking lockout | 22 loops | Contested vs uncontested cycle delta |
-| Approach docking | 11 loops | Uncontested mine cycle (66L) minus walk (33L) minus mine (22L) |
+| Approach docking | 0 or 11 loops | 0 if patch idle on arrival, 11 if worker waited (#636) |
+| Reroute threshold | 22 loops | Wait before scanning for idle patches (#636) |
 
-**Calibration after #631 edge-to-edge wiring:**
+**Calibration post-#636:**
 
 | Baseline | Delta |
 |----------|-------|
-| 12w Protoss | **+7.2%** |
+| 12w Protoss | **+3.8%** (was +7.2%) |
 | 16w saturation | **-2.0%** |
-| 24w saturation | -5.4% |
-| 3w gas | +2.8% |
-| 6w gas | **+0.7%** |
-| Vespene (6w) | -2.8% |
+| 3w gas | -8.7% (gas entrance queuing — see #652) |
+| 6w gas | -2.8% |
 
 **Design rules (from CLAUDE.md):**
 - Never use compensation constants. If the EM doesn't match SC2, fix the root cause.
@@ -39,27 +38,30 @@ You are working on EmulatedGame physics accuracy — making the economy simulati
 
 ## Last Session
 
-**Major session — #639 fix + #578 branch landing + physics doc revision.**
+**#636 — Variable approach docking with contention-based re-routing.**
 
-### 1. #639 — vespeneCollectionRate structural floor (CLOSED)
+### 1. #636 — Variable approach docking (COMPLETE)
 
-VespeneRateDecompositionTest decomposes 30% rate MAPE into income vs algorithm components. Root cause: GAS_PER_WORKER_PER_MIN=54 too high (actual ~34). Recalibrated → rate MAPE 30.3%→25.1%. Remaining 25% is structural floor.
+Replaced fixed 11-loop approach/docking with contention-based model:
+- **Conditional approach:** 0 loops when patch is idle on arrival, 11 loops when worker waited at occupied patch
+- **Wait-then-reroute:** workers waiting >22 loops scan for idle patches, reroute if travel time < remaining wait
+- 12w mineral surplus improved from +7.2% to +3.8% (3590 EM vs 3460 SC2)
+- 22 reroute events per 304 ticks in 12w diagnostic
+- 3361 tests pass, zero regressions
 
-### 2. #578 branch landed (28 squashed commits from 79)
+### 2. Code review findings fixed
 
-The full economy calibration branch (issues #578–#641, 38 issues) landed on main. Includes edge-to-edge walks, collision physics, SC2-observed mining constants, worker stagger, gas entrance queuing, MULE lifetime calibration, and more. Squashed from 79→28 commits (chronological, no reorder). 5 test fixes applied post-landing.
+Unused import removed, diagnostic cycle measurement corrected (was double-counting deliveries), physics constants doc §3 and §6 updated for post-#636 numbers.
 
-### 3. Issues closed: #639, #611, #620, #633 (4 total)
-### 4. Issues filed: #644 (Zerg baseline), #645 (12w over-production), #646 (6w gas verification)
+### 3. Issues filed: #652 (gas queuing), #653 (dead APPROACH_DISTANCE_SCALE), #654 (waitingSinceLoop reset)
 
-### 5. Physics constants doc — comprehensive revision
+### 4. Physics constants doc — comprehensive update
 
-Every numeric value cross-referenced against code. Fixed: §3 (approach 7→11, docking 34→22, added deposit/stagger/collision), §6 (fresh dual-run table), §14 (full cycle rewrite), §16 (vespene 35→25.1%), §19 (config block aligned).
+§3 table: approach row annotated conditional, reroute threshold added. SC2 observed cycle table: EM column updated (55L uncontested). Conditional approach entry: clarified that 0-approach compensates for straight-line walks. §6 dual-run table: marked pre-#636, annotated post-#636 improvement.
 
-### 6. Blog entries
+### 5. Blog entry
 
-- **"How Wrong Is Your Simulation?"** — revised capstone covering the full calibration arc
-- **"The Constant That Explained Everything"** — #639 decomposition methodology
+- **"The Compensation That Isn't"** — honest account of why the improvement works for the wrong reason, and the ML training readiness assessment
 
 ---
 
@@ -73,20 +75,17 @@ Every numeric value cross-referenced against code. Fixed: §3 (approach 7→11, 
 
 ## What to Work On Next
 
-**Recommended order:**
+**Recommended order (from .queue):**
 
-1. **Quick verification tasks:**
-   - **#644 — Zerg dual-run baseline diverges** (S/Low). Unit count mismatch at tick 0. Fix playbook or EM Zerg initialization.
-   - **#646 — 6w gas baseline not verified** (XS/Low). Run the test, record result, update §6 table.
+1. **#645 — 12w mineral over-production path routing** (M/High). Remaining +3.8% gap from straight-line walks vs SC2 path-dependent routing. May need mineral-line navmesh.
 
-2. **MULE income validation:**
-   - **#613 — MULE income rate validation** (S/Med). Lifetime done (1452 loops). Income rate (277.8 min/min) NOT validated — needs cleaner playbook (requires SC2).
+2. **#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58** (M/High). 7+ tick collision stacking tail. Contention model may have partially addressed this (fewer walking workers = fewer collisions). Re-measure.
 
-3. **Cadence variance chain** (core remaining physics):
-   - **#623 — Fix EM delivery timing** (M/High). Cadence at 75.3%. Needs path-dependent routing.
-   - **#636 — Variable approach docking** (M/High). Infrastructure ready (SCALE=0), waiting for collision to produce approach naturally.
-   - **#634 — Worker cycle variance gap** (M/High). EM σ≈0.5 vs SC2 σ≈3+.
-   - **#645 — 12w mineral over-production +7.2%** (M/High). Straight-line vs path-dependent routing ceiling.
+3. **#652 — Gas entrance queuing model** (M/High). **The ML gate.** 3w gas deficit −8.7% is a directional bias for gas-heavy strategies. Fix the concurrent geyser access model.
+
+4. **#653 — Remove dead APPROACH_DISTANCE_SCALE** (XS/Low). Cleanup.
+
+5. **#654 — Reset waitingSinceLoop on task transitions** (XS/Low). Cleanup.
 
 4. **#617 — Tick-alignment audit (Epic)** (L/High). Close when #623/#634/#636 resolve.
 
