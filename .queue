@@ -7,7 +7,7 @@ status: active
 - covers: 607
 - date: 2026-11-09
 active_issue: 
-branch: 
+branch: issue-636-variable-approach-docking
 
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
