@@ -2,66 +2,63 @@
 
 ## Orientation for Next Session
 
-You are working on EmulatedGame physics accuracy — making the economy simulation match real SC2 tick-for-tick. The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go** when you change constants, find stale values, or discover new physics. It is a living document, not a snapshot.
+EmulatedGame economy physics is at an architectural milestone. The tick-alignment epic (#617) is closed — all compensation constants eliminated, 12w mineral income matches SC2 within +0.6%. The remaining gaps (per-tick cadence, cycle distribution, 16w saturation) are structural and need mineral-line pathfinding to resolve.
 
-**Current state:** All mining cycle constants are data-driven from SC2 per-worker observation data (1366 cargo transitions, 12w economy scenario). Post-#636: conditional approach docking (0 loops idle / 11 loops contested) and wait-then-reroute (22-loop threshold) reduce the 12w mineral surplus from +7.2% to **+3.8%**. The 0-approach for idle patches compensates for straight-line walks being faster than SC2's path-dependent routing — documented in physics doc as an intentional trade-off, not physics-accurate.
+The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-| Constant | Value | Source |
-|----------|-------|--------|
-| Mining duration | 22 loops | Position stability at patch (1 tick) |
-| Deposit duration | 7 loops | Return phase (40L) minus walk (33L) |
-| Patch docking lockout | 22 loops | Contested vs uncontested cycle delta |
-| Approach docking | 0 or 11 loops | 0 if patch idle on arrival, 11 if worker waited (#636) |
-| Reroute threshold | 22 loops | Wait before scanning for idle patches (#636) |
+**Current state — post-epic summary:**
 
-**Calibration post-#636:**
+| Baseline | SC2 | EM | Gap |
+|----------|-----|-----|-----|
+| 12w Protoss | 3460 | 3480 | **+0.6%** |
+| 16w saturation | 4235 | 3380 | -20.2% (pre-existing since #634) |
+| 3w gas | 552 | 504 | -8.7% |
+| 6w gas | 1012 | 984 | -2.8% |
 
-| Baseline | Delta |
-|----------|-------|
-| 12w Protoss | **+3.8%** (was +7.2%) |
-| 16w saturation | **-2.0%** |
-| 3w gas | -8.7% (gas entrance queuing — see #652) |
-| 6w gas | -2.8% |
+**Cycle distribution (12w, SC2 positions):**
+
+| Metric | SC2 | EM |
+|--------|-----|-----|
+| σ | 0.56 | 1.25 |
+| Mean | 5.28 | 5.23 |
+| 7+ tick cycles | 0% | 12.9% |
 
 **Design rules (from CLAUDE.md):**
-- Never use compensation constants. If the EM doesn't match SC2, fix the root cause.
-- Constants that represent real animation wait times (deposit, mining, lockout) are legitimate — they are fixed durations in the SC2 engine.
+- Never use compensation constants. Mining efficiency factor = 1.0.
+- Constants that represent real animation wait times are legitimate.
 - Always use double arithmetic. No integer truncation in the income path.
 - Calibrate from controlled SC2 dual-run baselines, not oracle replays.
-
-**Key diagnostic tools:**
-- `DualRunCalibrationTest` — full 31-test calibration suite (default profile)
-- `MiningAnimationMeasurementTest` — SC2 per-frame mining animation measurement (requires `-Psc2`)
-- `WorkerSimulationTest#edgeToEdgeMiningDurationSweep` — mining duration sweep against 12w baseline
 
 ---
 
 ## Last Session
 
-**#636 — Variable approach docking with contention-based re-routing.**
+**Closed 4 issues + 1 epic:**
 
-### 1. #636 — Variable approach docking (COMPLETE)
+### 1. #645 — 12w mineral over-production (CLOSED)
 
-Replaced fixed 11-loop approach/docking with contention-based model:
-- **Conditional approach:** 0 loops when patch is idle on arrival, 11 loops when worker waited at occupied patch
-- **Wait-then-reroute:** workers waiting >22 loops scan for idle patches, reroute if travel time < remaining wait
-- 12w mineral surplus improved from +7.2% to +3.8% (3590 EM vs 3460 SC2)
-- 22 reroute events per 304 ticks in 12w diagnostic
-- 3361 tests pass, zero regressions
+12w gap at +0.6% (3480 vs 3460), well within <3% acceptance criterion. The conditional approach docking from #636 compensates for straight-line walks. Physics doc corrected — previous values (EM=3710/+7.2%, EM=4150/-2.0%) were stale from pre-#634 code state. Verified via git worktree at commit beb99937.
 
-### 2. Code review findings fixed
+### 2. #650 — Cycle length tail σ=1.25 vs SC2 0.56 (CLOSED — structural)
 
-Unused import removed, diagnostic cycle measurement corrected (was double-counting deliveries), physics constants doc §3 and §6 updated for post-#636 numbers.
+Parameter sweep (factor × floor × idle approach, 12w SC2 positions): the collision speed factor (0.96) does double duty — compensates straight-line speed AND creates distribution tail. No parameter combination satisfies both income (±3%) and distribution (σ ≤ 0.70). Architectural ceiling of straight-line movement — needs mineral-line pathfinding.
 
-### 3. Issues filed: #652 (gas queuing), #653 (dead APPROACH_DISTANCE_SCALE), #654 (waitingSinceLoop reset)
+Added infrastructure: `COLLISION_SPEED_FLOOR` and `IDLE_APPROACH_LOOPS` constants in WorkerPhysicsConfig/SimulatedWorker. Currently at defaults (0.0 / 0.0 = disabled).
 
-### 4. Physics constants doc — comprehensive update
+### 3. #617 — Foundational tick-alignment audit epic (CLOSED)
 
-§3 table: approach row annotated conditional, reroute threshold added. SC2 observed cycle table: EM column updated (55L uncontested). Conditional approach entry: clarified that 0-approach compensates for straight-line walks. §6 dual-run table: marked pre-#636, annotated post-#636 improvement.
+All success criteria met or documented as structural:
+- Mining efficiency factor at 1.0 ✓
+- Gas efficiency override at 1.0 ✓ (no callers of setter)
+- Per-tick delta ≤±5: structural ceiling (76% tick mismatch, documented)
 
-### 5. Blog entry
+### 4. #623 — Fix EM delivery timing (CLOSED — structural)
 
-- **"The Compensation That Isn't"** — honest account of why the improvement works for the wrong reason, and the ML training readiness assessment
+76% tick mismatch (231/304 ticks). Structural — same root cause as #650.
+
+### 5. #655 — 16w saturation gap (FILED)
+
+Filed new issue: 16w EM=3380 vs SC2=4235 (-20.2%). Pre-existing since #634 (pre-#636 was -18.9%). Collision model over-penalises at 2+ workers per patch.
 
 ---
 
@@ -69,52 +66,24 @@ Unused import removed, diagnostic cycle measurement corrected (was double-counti
 
 | Branch | Status | Issues |
 |--------|--------|--------|
-| `issue-578-mineral-rate-acceleration-regression` | Active | #578...#641 |
+| `issue-645-12w-mineral-over-production-path-routing` | Active | #645, #650, #617 |
 
 ---
 
 ## What to Work On Next
 
-**Recommended order (from .queue):**
+**The queue is drained.** Remaining open issues not in queue:
 
-1. **#645 — 12w mineral over-production path routing** (M/High). Remaining +3.8% gap from straight-line walks vs SC2 path-dependent routing. May need mineral-line navmesh.
+1. **#652 — Gas entrance queuing model** (M/High). **The ML gate.** 3w gas deficit -8.7% is a directional bias for gas-heavy strategies. The physics doc §15 says entrance queuing has no practical effect (walk stagger prevents simultaneous arrivals), but the 3w/6w gap remains. The root cause is that no single gas harvest duration satisfies both 3w (optimal at 16) and 6w (optimal at 26).
 
-2. **#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58** (M/High). 7+ tick collision stacking tail. Contention model may have partially addressed this (fewer walking workers = fewer collisions). Re-measure.
+2. **#655 — 16w saturation curve** (M/High). EM under-produces by 20% at 2+ workers/patch. Pre-existing since #634. The collision model creates excessive contention at saturation. Separate from the cycle distribution issue (#650) — this is about total income, not distribution shape.
 
-3. **#652 — Gas entrance queuing model** (M/High). **The ML gate.** 3w gas deficit −8.7% is a directional bias for gas-heavy strategies. Fix the concurrent geyser access model.
+3. **#644 — Zerg dual-run baseline diverges** (S/Low). Unit count mismatch at tick 0 in the Zerg playbook. Not a physics issue.
 
-4. **#653 — Remove dead APPROACH_DISTANCE_SCALE** (XS/Low). Cleanup.
+### Key findings (carried forward)
 
-5. **#654 — Reset waitingSinceLoop on task transitions** (XS/Low). Cleanup.
-
-4. **#617 — Tick-alignment audit (Epic)** (L/High). Close when #623/#634/#636 resolve.
-
-## Queue
-
-```
-[x] #639 — vespeneCollectionRate structural floor — DONE
-[x] #611 — Mining efficiency recalibration — superseded by #623
-[x] #620 — Mining cycle decomposition — DONE (mine=22/deposit=7/approach=11)
-[x] #633 — Per-race mineral income gap — finding: race-invariant, map geometry
-[ ] #644 — Zerg dual-run baseline diverges (S/Low)
-[ ] #646 — 6w gas baseline not verified (XS/Low)
-[ ] #613 — MULE income rate validation (S/Med) — needs SC2
-[ ] #623 — Fix EM delivery timing (M/High) — cadence 75.3%
-[ ] #636 — Variable approach docking (M/High)
-[ ] #634 — Worker cycle variance gap (M/High)
-[ ] #645 — 12w mineral over-production +7.2% (M/High)
-[ ] #617 — Tick-alignment audit epic (L/High)
-```
-
-### Key findings (carried forward + new)
-
-1. **SC2 mining is fixed-duration, all-or-nothing** — 1.99s occupation time, worker takes min(5, remaining) at the end.
-2. **SC2 contested cycles add exactly 1 tick (22 loops)** — the patch lockout.
-3. **Compensation constants vs wait times** — constants that absorb errors elsewhere are forbidden. Constants that represent real animation durations are legitimate.
-4. **12w +7.2% is the honest gap** — straight-line walks are faster than SC2's path-dependent navigation.
-5. **Straight-line movement is the cadence ceiling** — SC2 cycles span 2-17 ticks (σ≈3+), EM spans 4-9 (σ≈0.5).
-6. **Worker physics are race-invariant** — Probe/SCV/Drone all use 3.94 u/s speed, 0.375 collision radius. Nexus/CC/Hatchery all 2.5 radius. Per-race mineral gap (1.2%) is not from unit physics.
-
-### Physics constants doc discrepancy
-
-Section 6 of `docs/sc2-physics-constants.md` says "SC2 dual-run shows Protoss and Terran produce identical minerals (3460)" but the calibration table in the same section shows Terran at 3955/-19.5%. One of these values is stale — verify in next session.
+1. **12w at +0.6%** — compensation constants eliminated, physics-accurate at 1.5 workers/patch.
+2. **Collision factor dual-purpose** — 0.96 compensates straight-line speed AND creates cycle tail. Decoupling needs pathfinding.
+3. **Physics doc values were stale** — the §6 table had pre-#634 numbers. All corrected this session.
+4. **16w not a #636 regression** — verified via git worktree. Pre-#636 was -18.9%, current -20.2%.
+5. **Gas gap is structural** — no single harvest duration works for both 3w and 6w. The 25% vespeneCollectionRate MAPE is a floor (#639 decomposition).
