@@ -22,3 +22,16 @@
 **Exploration:** quick
 **Depends on:** D1 (contention model architecture)
 **Status:** captured
+
+## D3: Re-routing trigger and behavior
+
+**Choice:** Wait-then-scan with travel-time comparison
+**Alternatives:**
+- Fixed threshold, always re-route — simpler but causes workers to walk to far patches when current patch is about to free up
+- Queue-position-based — re-route if queue > 1; adds queue tracking infrastructure without clear SC2 correspondence
+**Rationale:** Workers only switch when it's genuinely faster (travel time to idle patch < estimated remaining wait). Prevents pathological ping-ponging. Wait threshold is the single calibration parameter; the comparison itself is a cheap distance calculation.
+**Trade-offs:** Requires estimating "remaining wait time" at the current patch — depends on knowing how long the active miner has left. Estimation may be imprecise, but the alternative (no comparison) is worse.
+**Sources:** WorkerSimulation.java (stepOneMineralLoop busy-wait pattern), MineralPatch.java (lockEndLoop timing)
+**Exploration:** quick
+**Depends on:** D1 (contention model architecture)
+**Status:** captured
