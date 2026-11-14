@@ -6,8 +6,8 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: 
-branch: 
+active_issue: 655
+branch: issue-655-16w-saturation-curve
 
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
@@ -18,13 +18,13 @@ branch:
 - [x] casehubio/quarkmind#645 — 12w mineral over-production path routing
 - [x] casehubio/quarkmind#650 — Cycle length tail EM σ=0.90 vs SC2 σ=0.58
 - [x] casehubio/quarkmind#617 — Foundational tick-alignment audit
-- [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor ← active
+- [x] casehubio/quarkmind#639 — vespeneCollectionRate structural floor
 - [x] casehubio/quarkmind#611 — Recalibrate mining efficiency factors after worker stagger
 - [x] casehubio/quarkmind#613 — MULE income isolation analysis
 - [x] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
 - [x] casehubio/quarkmind#633 — Per-race mineral income gap
 - [x] casehubio/quarkmind#634 — Worker cycle variance gap
-- [x] casehubio/quarkmind#620 — Mining cycle decomposition
+- [x] casehubio/quarkmind#620 — Mining cycle decomposition ← active
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
