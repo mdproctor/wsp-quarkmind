@@ -27,12 +27,12 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ## Last Session
 
-**Closed 7 issues. Key diagnostic finding on gas mineral deficits.**
+**Closed 7 issues. Code review fix. Blog. Key diagnostic finding on gas mineral deficits.**
 
 ### 1. XS cleanup batch (5 issues)
 
 - **#653** — Removed dead `APPROACH_DISTANCE_SCALE` field, dead formula branch in `MineralPatch.computeApproachDocking()`, and two sweep tests (`cadenceWithDistanceScale12w`, `sweepApproachDistanceScale12w`)
-- **#654** — Reset `waitingSinceLoop=0` in `pauseWorkerForBuilding()`, `onWorkerScouting()`, and both gas worker transfer paths. Prevents stale wait times triggering immediate reroutes
+- **#654** — Reset `waitingSinceLoop=0` in `pauseWorkerForBuilding()`, `onWorkerScouting()`, both gas worker transfer paths, and TRANSFERRING transition (code review catch). Prevents stale wait times triggering immediate reroutes
 - **#657** — Fixed `ContentionCalibrationDiagnosticTest` cycle measurement. Was attributing deliveries to all workers with `MINING && cargo==0`; now tracks per-worker `MINING→RETURNING` transitions
 - **#658** — Physics doc stale values audit: fixed 10 stale values across §1b, §2, §3, §14, §19. SC2 σ 0.58→0.56, EM σ 0.90→1.25, +3.8%→+0.6%, per-tick cadence 75.3%→76%
 - **#660** — Committed two untracked design specs from #572 worker activity modelling
@@ -43,7 +43,15 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 Evidence: SC2 gains +425 minerals from 3w gas (extra probes offset gas workers). EM loses -95. The 520-mineral swing is from saturation, not gas mechanics.
 
-### 3. #652 — Gas entrance queuing (CLOSED — already investigated)
+### 3. Code review
+
+Code review caught a missed `waitingSinceLoop` reset on the TRANSFERRING transition (expansion worker transfer). Same pattern as the scouting/building/gas fixes — fixed in a follow-up commit.
+
+### 4. Blog
+
+"The Bug That Wasn't There" — how the 3w gas mineral deficit looked like a gas worker transfer bug but turned out to be the saturation curve. SVG diagram mapping all three deficits onto one accuracy curve.
+
+### 5. #652 — Gas entrance queuing (CLOSED — already investigated)
 
 The 2D sweep in #639 proved entrance queuing has no practical effect. Infrastructure exists (`GasSlot.ENTRY_LOCK_DURATION`). The 3w gas vespene gap (-8.7%) is from per-geyser walk-distance rate interaction — no single harvest duration works for both 3w and 6w.
 
