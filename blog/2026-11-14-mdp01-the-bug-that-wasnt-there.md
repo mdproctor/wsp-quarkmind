@@ -10,13 +10,13 @@ tags: [economy, calibration, saturation, physics, emulated-game, gas, investigat
 
 # The Bug That Wasn't There
 
-The gas economy has a mineral deficit. When three workers go to a vespene geyser and nine stay on minerals, the emulated game produces 3385 minerals at tick 304. StarCraft II produces 3885. That is a 12.9% gap, and it looks like a gas worker transfer bug — workers being assigned at the wrong time, or mineral mining being disrupted by the handoff.
+The gas economy had a mineral deficit. When three workers went to a vespene geyser and nine stayed on minerals, the emulated game produced 3385 minerals at tick 304. StarCraft II produced 3885. A 12.9% gap that looked like a gas worker transfer bug — workers being assigned at the wrong time, or mineral mining disrupted by the handoff.
 
 I spent the session investigating. The answer was hiding in the probe production timeline.
 
 ## The Misleading Symptom
 
-The 12-worker mineral-only baseline matches SC2 to within 0.6%. Twenty minerals out of 3460. So when the 3-worker gas scenario shows a 500-mineral deficit, the natural hypothesis is: something breaks when workers move to gas. Maybe the EM assigns gas workers too early. Maybe the remaining mineral workers get disrupted — patch reassignment, reroute storms, a desynchronised cadence.
+The 12-worker mineral-only baseline matched SC2 to within 0.6%. Twenty minerals out of 3460. So when the 3-worker gas scenario showed a 500-mineral deficit, the natural hypothesis was: something breaks when workers move to gas. Maybe the EM assigns gas workers too early. Maybe the remaining mineral workers get disrupted — patch reassignment, reroute storms, a desynchronised cadence.
 
 None of that turned out to be the problem.
 
@@ -46,21 +46,21 @@ The gas scenario finishes with *more* minerals than 12w. The 11 extra probes min
 
 ## The Saturation Curve
 
-Twenty workers on eight mineral patches is 2.5 workers per patch. At that density, the EM's collision model — the same speed factor 0.96 that produces correct income at 1.5 workers/patch — becomes a compounding penalty. Workers collide more frequently, slow down more, and mine less per cycle.
+Twenty workers on eight mineral patches is 2.5 workers per patch. At that density, the EM's collision model — the same speed factor 0.96 that produces correct income at 1.5 workers/patch — was becoming a compounding penalty. Workers collided more frequently, slowed down more, and mined less per cycle.
 
-The 16-worker saturation test already shows this. At 2.0 workers per patch, the EM underproduces by 20.2%. The gas mineral deficit is the same physics, just reached by a different path: probe training pushes the worker count past the collision model's accuracy ceiling.
+The 16-worker saturation test showed this clearly. At 2.0 workers per patch, the EM underproduced by 20.2%. The gas mineral deficit was the same physics, just reached by a different path: probe training pushes the worker count past the collision model's accuracy ceiling.
 
 <figure>
 
 ```
-Workers/patch | EM accuracy
---------------|------------
-         1.50 |     +0.6%    ← 12w mineral-only
-         2.00 |    -20.2%    ← 16w saturation test
-         2.50 |    -12.9%    ← 3w gas (20 mineral workers)
+Workers/patch | Before fix  | After fix
+--------------|-------------|----------
+         1.50 |     +0.6%   |   +2.3%
+         2.00 |    -20.2%   |   -1.2%
+         2.50 |    -12.9%   |   -0.5%
 ```
 
-<figcaption>EM accuracy degrades as mineral worker density exceeds 2.0 workers per patch. The gas mineral deficit falls on the same curve as the 16w saturation test.</figcaption>
+<figcaption>EM accuracy by mineral worker density. Before: the collision model's compounding penalty collapsed accuracy above 2.0/patch. After: three targeted physics changes brought all densities within 2.5% of SC2.</figcaption>
 </figure>
 
 ## Why It Looked Like a Gas Bug
@@ -69,14 +69,26 @@ The issue was filed as "investigate gas worker transfer impact." When you see a 
 
 But the 12w baseline never trains probes. It runs with exactly 12 workers the entire game — 1.5 per patch, well within the collision model's sweet spot. The gas playbook builds Pylons and Assimilators, which means it also trains probes, which means it pushes mineral worker count past the point where straight-line movement plus collision penalties can represent SC2's pathing-based contention.
 
-The gas mechanics are fine. The geyser vespene gap (-8.7%) is a separate, smaller issue from harvest duration calibration. The mineral deficit is the saturation curve.
+The gas mechanics were fine. The geyser vespene gap (−8.7%) is a separate, smaller issue from harvest duration calibration. The mineral deficit was the saturation curve.
 
-![Saturation deficit: three scenarios fall on the same accuracy curve](images/saturation-deficit-three-faces.svg)
+## Three Fixes, No Pathfinding
 
-## One Problem, Three Faces
+The investigation pointed to mineral-line pathfinding as the fix path — workers that navigate around patches would have naturally longer paths, removing the collision factor's double duty as both path-length compensation and contention penalty.
 
-The 16w saturation deficit (-20.2%), the 3w gas mineral deficit (-12.9%), and the 6w gas mineral deficit (-16.6%) share a single root cause: the collision speed factor does double duty as path-length compensation and contention penalty, and it cannot do both at high worker densities.
+That turned out to be the wrong conclusion. Three targeted physics changes fixed the saturation curve without touching the pathfinding model:
 
-The fix path is unchanged: mineral-line pathfinding. Workers that navigate around patches and each other would have naturally longer paths at all densities, removing the need for the collision factor to absorb the path-length gap. That would free it to model only contention — or to be removed entirely.
+**Lockout bypass.** When a miner finishes at a patch, the next waiting worker starts immediately rather than waiting through a 22-loop lockout. SC2 workers hand off with near-zero delay; the EM was forcing every handoff through a full docking cycle that existed for initial approach, not for queued workers.
 
-For now, the simulation is accurate at the operating point that matters most for ML training data: the first 12 workers, before the economy ramps up and the saturation curve diverges.
+**Unconditional approach docking.** Every mining start now pays 11.5 loops of approach overhead — no special case for idle patches. The previous model skipped approach for uncontested patches, which saved time the EM shouldn't have been saving. SC2 always plays the approach animation. The unconditional 11.5 loops models the positioning overhead that straight-line walks omit.
+
+**Collision speed cap.** At high density, workers were accumulating 5+ collision events per loop, each applying the 0.96 speed factor. The compound penalty (0.96⁵ = 0.82) far exceeded SC2's actual contention. Capping at 2 effective collisions per loop (0.96² = 0.92) prevents the compounding runaway while preserving the contention signal at lower densities.
+
+The result: 16w went from −20.2% to −1.2%. The 3w gas mineral deficit went from −12.9% to −0.5%. The 6w gas deficit went from −16.6% to −0.7%.
+
+![Saturation curve: before and after — three fixes brought all densities within 2.5% of SC2](images/saturation-before-after.svg)
+
+## The Lesson
+
+When the symptom and the cause are in different subsystems, the diagnostic that traces the actual data path wins. The gas deficit was real, but the gas mechanics were not the problem. Following the mineral income through the probe production timeline — watching the worker count rise past the collision model's accuracy ceiling — is what connected the symptom to the root cause.
+
+The fix was not in the subsystem where the symptom appeared, and it was not the architectural change the investigation predicted. Three constants, carefully chosen, did what a pathfinding rewrite was supposed to do.
