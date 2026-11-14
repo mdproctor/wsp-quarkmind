@@ -6,24 +6,16 @@ EmulatedGame economy physics is at an architectural milestone. The tick-alignmen
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**Current state — post-epic summary:**
+**Current state — post-cleanup summary:**
 
 | Baseline | SC2 | EM | Gap |
 |----------|-----|-----|-----|
 | 12w Protoss | 3460 | 3480 | **+0.6%** |
-| 16w saturation | 4235 | 3380 | -20.2% (pre-existing since #634) |
-| 3w gas minerals | 3885 | 3385 | -12.9% |
-| 3w gas vespene | 552 | 504 | -8.7% |
-| 6w gas minerals | 3375 | 2815 | -16.6% |
+| 16w saturation | 4235 | 3380 | -20.2% (structural) |
+| 3w gas minerals | 3885 | 3385 | -12.9% (saturation — see below) |
+| 3w gas vespene | 552 | 504 | -8.7% (structural floor) |
+| 6w gas minerals | 3375 | 2815 | -16.6% (saturation) |
 | 6w gas vespene | 1012 | 984 | -2.8% |
-
-**Cycle distribution (12w, SC2 positions):**
-
-| Metric | SC2 | EM |
-|--------|-----|-----|
-| σ | 0.56 | 1.25 |
-| Mean | 5.28 | 5.23 |
-| 7+ tick cycles | 0% | 12.9% |
 
 **Design rules (from CLAUDE.md):**
 - Never use compensation constants. Mining efficiency factor = 1.0.
@@ -35,50 +27,25 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ## Last Session
 
-**Closed 4 issues + 1 epic. Code review. Blog. Filed 6 new issues.**
+**Closed 7 issues. Key diagnostic finding on gas mineral deficits.**
 
-### 1. #645 — 12w mineral over-production (CLOSED)
+### 1. XS cleanup batch (5 issues)
 
-12w gap at +0.6% (3480 vs 3460), well within <3% acceptance criterion. The conditional approach docking from #636 compensates for straight-line walks. Physics doc corrected — previous values (EM=3710/+7.2%, EM=4150/-2.0%) were stale from pre-#634 code state. Verified via git worktree at commit beb99937.
+- **#653** — Removed dead `APPROACH_DISTANCE_SCALE` field, dead formula branch in `MineralPatch.computeApproachDocking()`, and two sweep tests (`cadenceWithDistanceScale12w`, `sweepApproachDistanceScale12w`)
+- **#654** — Reset `waitingSinceLoop=0` in `pauseWorkerForBuilding()`, `onWorkerScouting()`, and both gas worker transfer paths. Prevents stale wait times triggering immediate reroutes
+- **#657** — Fixed `ContentionCalibrationDiagnosticTest` cycle measurement. Was attributing deliveries to all workers with `MINING && cargo==0`; now tracks per-worker `MINING→RETURNING` transitions
+- **#658** — Physics doc stale values audit: fixed 10 stale values across §1b, §2, §3, §14, §19. SC2 σ 0.58→0.56, EM σ 0.90→1.25, +3.8%→+0.6%, per-tick cadence 75.3%→76%
+- **#660** — Committed two untracked design specs from #572 worker activity modelling
 
-### 2. #650 — Cycle length tail σ=1.25 vs SC2 0.56 (CLOSED — structural)
+### 2. #659 — 3w gas mineral deficit (CLOSED — diagnostic)
 
-Parameter sweep (factor × floor × idle approach, 12w SC2 positions): the collision speed factor (0.96) does double duty — compensates straight-line speed AND creates distribution tail. No parameter combination satisfies both income (±3%) and distribution (σ ≤ 0.70). Architectural ceiling of straight-line movement — needs mineral-line pathfinding (#656).
+**The 3w/6w gas mineral deficits are the saturation curve problem, not gas worker transfer timing.** Both playbooks train probes continuously, reaching 23 probes (supply-capped). With 3 on gas, 20 mine minerals at 2.5 workers/patch — where the collision model over-penalises. The 12w baseline never trains probes (stays at 12, 1.5/patch), which is why it's accurate.
 
-Added infrastructure: `COLLISION_SPEED_FLOOR` and `IDLE_APPROACH_LOOPS` constants in WorkerPhysicsConfig/SimulatedWorker. Currently at defaults (0.0 / 0.0 = disabled). Kept for future use when pathfinding decouples income from distribution.
+Evidence: SC2 gains +425 minerals from 3w gas (extra probes offset gas workers). EM loses -95. The 520-mineral swing is from saturation, not gas mechanics.
 
-### 3. #617 — Foundational tick-alignment audit epic (CLOSED)
+### 3. #652 — Gas entrance queuing (CLOSED — already investigated)
 
-All success criteria met or documented as structural:
-- Mining efficiency factor at 1.0 ✓
-- Gas efficiency override at 1.0 ✓ (no callers of setter)
-- Per-tick delta ≤±5: structural ceiling (76% tick mismatch, documented)
-
-### 4. #623 — Fix EM delivery timing (CLOSED — structural)
-
-76% tick mismatch (231/304 ticks). Structural — same root cause as #650.
-
-### 5. Code review fixes
-
-- Physics doc §6: removed stale "16w -2.0%" paragraph that contradicted new -20.2% text
-- Updated 3w/6w gas gap descriptions with current mineral deficit numbers
-- MiningCycleDiagnosticTest: removed unused `savedFactor` variable
-- WorkerCadenceComparisonTest: wrapped sweep in try/finally for static field cleanup
-
-### 6. New issues filed
-
-| Issue | Title | Scale |
-|-------|-------|-------|
-| #655 | 16w saturation curve -20.2% | M/High |
-| #656 | Mineral-line pathfinding | L/High |
-| #657 | Fix diagnostic test cycle measurement | XS/Low |
-| #658 | Physics doc stale values audit | XS/Low |
-| #659 | 3w gas mineral deficit -12.9% | S/Med |
-| #660 | Clean up untracked spec files | XS/Low |
-
-### 7. Blog
-
-"The Constant That Does Two Jobs" — why one collision constant can't fix both income accuracy and cycle distribution. SVG trade-off diagram.
+The 2D sweep in #639 proved entrance queuing has no practical effect. Infrastructure exists (`GasSlot.ENTRY_LOCK_DURATION`). The 3w gas vespene gap (-8.7%) is from per-geyser walk-distance rate interaction — no single harvest duration works for both 3w and 6w.
 
 ---
 
@@ -86,33 +53,26 @@ All success criteria met or documented as structural:
 
 | Branch | Status | Issues |
 |--------|--------|--------|
-| `issue-645-12w-mineral-over-production-path-routing` | Active | #645, #650, #617, #650 review |
+| `issue-645-12w-mineral-over-production-path-routing` | Active | #653, #654, #657, #658, #659, #660, #652 |
 
 ---
 
 ## What to Work On Next
 
-**Queue has 10 items scheduled (cleanup → investigation → core gaps → structural):**
+**Queue has 2 items remaining:**
 
 | # | Issue | Title | Scale |
 |---|-------|-------|-------|
-| 1 | #653 | Remove dead APPROACH_DISTANCE_SCALE | XS/Low |
-| 2 | #654 | Reset waitingSinceLoop on transitions | XS/Low |
-| 3 | #657 | Fix diagnostic test cycle measurement | XS/Low |
-| 4 | #658 | Physics doc stale values audit | XS/Low |
-| 5 | #660 | Clean up untracked spec files | XS/Low |
-| 6 | #659 | 3w gas mineral deficit investigation | S/Med |
-| 7 | #652 | Gas entrance queuing model | M/High |
-| 8 | #655 | 16w saturation curve | M/High |
-| 9 | #656 | Mineral-line pathfinding | L/High |
+| 1 | #655 | 16w saturation curve -20.2% | M/High |
+| 2 | #656 | Mineral-line pathfinding | L/High |
 
-**Recommended:** Start with the XS cleanup batch (#653, #654, #657, #658, #660) — five quick wins in one session. Then #659 and #652 together (both gas-related). #655 and #656 are the structural work.
+**#655 is the single structural issue.** It's the root cause of the 16w (-20.2%), 3w gas mineral (-12.9%), and 6w gas mineral (-16.6%) deficits. The collision model (speed factor 0.96, collision radius 0.75) and patch docking overhead (22 loops) create excessive contention at >2 workers per patch. Fixing this unblocks #656 (pathfinding) — which decouples income accuracy from cycle distribution accuracy.
 
 ### Key findings (carried forward)
 
 1. **12w at +0.6%** — compensation constants eliminated, physics-accurate at 1.5 workers/patch.
 2. **Collision factor dual-purpose** — 0.96 compensates straight-line speed AND creates cycle tail. Decoupling needs pathfinding (#656).
-3. **Physics doc values were stale** — the §6 table had pre-#634 numbers. Corrected. §3 still has stale σ values (#658).
-4. **16w not a #636 regression** — verified via git worktree. Pre-#636 was -18.9%, current -20.2%.
-5. **Gas gap is structural** — no single harvest duration works for both 3w and 6w. The 25% vespeneCollectionRate MAPE is a floor.
-6. **3w/6w mineral deficit newly quantified** — 3w minerals at -12.9%, 6w at -16.6%. Much worse than gas deficits. May be from gas worker transfer timing (#659).
+3. **3w/6w gas mineral deficit = saturation** — not gas worker transfer. Playbooks train 23 probes → 2.5 workers/patch (confirmed #659).
+4. **Gas entrance queuing has no effect** — 2D sweep proved it (#639, #652). 25.1% vespene MAPE is structural floor.
+5. **16w not a #636 regression** — verified via git worktree. Pre-#636 was -18.9%, current -20.2%.
+6. **Physics doc fully audited** — all stale values corrected (#658). SC2 σ=0.56, EM σ=1.25.
