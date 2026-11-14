@@ -2,7 +2,7 @@
 
 ## Orientation for Next Session
 
-Saturation curve fixed (#655). Post-#655 hygiene batch complete — 9 issues closed on `issue-664-regenerate-standalone-baseline`. The remaining open work is M/High+ economy physics: gas queuing (#652), gas rate floor (#665), pathfinding (#656), cycle speed (#661), forward simulation (#666), plus one XS leftover (#667).
+Saturation curve fixed (#655). Post-#655 hygiene complete — 10 issues closed across two batches. The remaining open work is M/High+ economy physics: gas queuing (#652), gas rate floor (#665), pathfinding (#656), cycle speed (#661), forward simulation (#666).
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
@@ -28,9 +28,9 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ## Last Session
 
-**Hygiene batch — 9 issues closed on `issue-664-regenerate-standalone-baseline`. Code review, blog revision, 1 follow-up issue filed.**
+**10 hygiene issues closed across two batches. Blog revised. No issues remaining below M.**
 
-### Issues closed
+### Issues closed (this session)
 
 | # | Title | Type |
 |---|-------|------|
@@ -43,20 +43,11 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 | #663 | 3w gas calibration table entry — fix mislabeled row | Doc fix |
 | #662 | Reroute threshold at 2 workers/patch | Investigation (no code change needed) |
 | #659 | 3w gas mineral deficit — already fixed by #655 | Verification close |
-
-### Code review findings
-
-1. Physics doc said "11.0 loops" in per-patch approach section — fixed to 11.5 (current DEFAULT_APPROACH_DOCKING_LOOPS).
-2. `waitingSinceLoop` not reset in `transferWorkersToBase()` — filed as #667 (XS/Low).
-3. All other changes clean — no thread safety, dead code, or wiring issues.
+| #667 | Reset waitingSinceLoop on expansion transfer | Bug fix (code review finding from #654) |
 
 ### Blog
 
-Revised "The Bug That Wasn't There" — added #655 resolution section showing how three targeted physics changes fixed the saturation curve without pathfinding. New before/after SVG. Entry now has full narrative arc: investigation → root cause → resolution.
-
-### Follow-up issue filed
-
-- **#667** — Reset waitingSinceLoop on expansion transfer (XS/Low). Same pattern as #654 — found during code review.
+Revised "The Bug That Wasn't There" — added #655 resolution section showing how three targeted physics changes fixed the saturation curve without pathfinding. New before/after SVG.
 
 ---
 
@@ -64,7 +55,8 @@ Revised "The Bug That Wasn't There" — added #655 resolution section showing ho
 
 | Branch | Status | Issues |
 |--------|--------|--------|
-| `issue-664-regenerate-standalone-baseline` | Ready to close | #664, #653, #654, #657, #658, #660, #663, #662, #659 |
+| `issue-664-regenerate-standalone-baseline` | Closed | #664, #653, #654, #657, #658, #660, #663, #662, #659 |
+| `issue-667-waitingSinceLoop-transfer` | Closed | #667 |
 
 ---
 
@@ -74,16 +66,13 @@ Revised "The Bug That Wasn't There" — added #655 resolution section showing ho
 
 | # | Title | Scale | Complexity |
 |---|-------|-------|------------|
-| #667 | Reset waitingSinceLoop on expansion transfer | XS | Low |
 | #652 | Gas entrance queuing model | M | High |
 | #665 | Gas rate structural floor — 33.8% MAPE | M | Med |
 | #656 | Mineral-line pathfinding | L | High |
 | #661 | EM base cycle speed — edge-to-edge walks 25% faster | L | High |
 | #666 | Forward simulation economy mode | L | High |
 
-**#667 is a quick fix** — add `w.waitingSinceLoop = 0` in `transferWorkersToBase()`. Same pattern applied four times in #654.
-
-**#652 is the next substantial issue** — gas entrance queuing model. Previous investigation (#639) showed 25.1% vespene MAPE is a structural floor from single harvest duration.
+**#652 is the next issue** — gas entrance queuing model. Previous investigation (#639) showed 25.1% vespene MAPE is a structural floor from single harvest duration.
 
 ### Key findings (current)
 
