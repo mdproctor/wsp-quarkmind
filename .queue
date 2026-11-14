@@ -109,3 +109,9 @@ branch: issue-655-16w-saturation-curve
 - [ ] casehubio/quarkmind#652 — Gas entrance queuing model
 - [ ] casehubio/quarkmind#655 — 16w saturation curve
 - [ ] casehubio/quarkmind#656 — Mineral-line pathfinding
+- [ ] casehubio/quarkmind#663 — 3w gas calibration table entry
+- [ ] casehubio/quarkmind#662 — Reroute threshold at 2 workers per patch
+- [ ] casehubio/quarkmind#661 — EM base cycle speed edge-to-edge walks
+- [ ] casehubio/quarkmind#664 — Regenerate standalone baseline post-655
+- [ ] casehubio/quarkmind#665 — Gas rate structural floor 33pct MAPE
+- [ ] casehubio/quarkmind#666 — Forward simulation economy mode
