@@ -2,29 +2,20 @@
 
 ## Orientation for Next Session
 
-Gas rate structural floor addressed (#665). Edge-to-edge gas walks, SC2 API measurement, per-loop cycle decomposition. Gas MAPE 34.4% → 29.9%. Remaining gap is data pipeline: TrackerIntentExtractor misses 14% of expansion gas buildings (#671). The physics model is calibrated (dual-run ±7%).
+Gas building accuracy fixed (#671). Root cause was not in TrackerIntentExtractor (which was 100% accurate) but in WorkerSimulation's position-based gas slot dedup — geysers at 4.0 units apart on some maps were rejected by a `distance < 5.0` check. Tag-based dedup restored 100% accuracy. Gas rate MAPE dropped from ~30% to 27%. Remaining gap is per-worker gas cycle timing (#675).
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**Current state — post-#665:**
+**Current state — post-#671:**
 
-| Baseline | SC2 | EM | Gap |
-|----------|-----|-----|-----|
-| 12w Protoss | 3460 | 3540 | **+2.3%** |
-| 16w saturation | 4235 | 4185 | **−1.2%** |
-| 24w saturation | 3955 | 4025 | **+1.8%** |
-| 3w gas minerals | 3885 | 3925 | +1.0% |
-| 3w gas vespene | 552 | 552 | **0% exact** |
-| 6w gas minerals | 3375 | 3495 | +3.6% |
-| 6w gas vespene | 1012 | 1080 | +6.7% |
-
-**Oracle MAPE improvements (5-min, 118 replays):**
-
-| Metric | Before | After |
-|--------|--------|-------|
-| Gas rate MAPE | 34.4% | **29.9%** |
-| Mineral rate MAPE | 16.9% | **15.8%** |
-| Per-worker gas ratio | 0.71 | **0.77** |
+| Metric | Before #671 | After #671 |
+|--------|-------------|------------|
+| Gas building count accuracy (5-min) | 86% (144/168) | **100% (168/168)** |
+| Gas rate MAPE (5-min) | ~30% | **27.0%** |
+| Gas rate MAPE Protoss | — | 27.2% |
+| Gas rate MAPE Terran | — | 24.0% |
+| Gas rate MAPE Zerg | — | 31.8% |
+| Full test suite | 3362 pass | 3362 pass |
 
 **Design rules (from CLAUDE.md):**
 - Never use compensation constants. Mining efficiency factor = 1.0.
@@ -36,36 +27,30 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ## Last Session
 
-**Branch:** `issue-665-gas-rate-distance-dependent` (7 commits, not yet merged)
+**Branch:** `issue-671-gas-building-extraction` (4 commits, ready for work-end)
 
 **What was done:**
-- Measured gas building radius (1.69) and town hall radius (2.75) from SC2 API via `GasCycleProfilerTest`
-- Added edge-to-edge gas walks: `GAS_BUILDING_RADIUS=1.75`, `gasTarget()`/`gasReturnTarget()` helpers
-- Corrected `TOWN_HALL_RADIUS` from 2.5 to 2.75 per SC2 API
-- Per-loop gas cycle decomposition: harvest inside geyser = exactly 32 loops (range=32-32)
-- Recalibrated `GAS_HARVEST_DURATION_LOOPS` from 26 to 66 (absorbs arrival-threshold walk compensation)
-- Gas worker count fidelity diagnostic: EM misses 14% of gas buildings at 5-min (27% at 7-min)
-- Blog entry: "Where the Gas Workers Walk" (`docs/blog/2026-11-15-mdp01-where-the-gas-workers-walk.md`)
+- Diagnostic proving TrackerIntentExtractor extracts 100% of gas building events (479/479, zero mismatches)
+- Pipeline trace identifying the exact gap: buildings created and completed, but gas slots not registered
+- Inter-geyser distance analysis: 8.9% of geyser pairs < 5.0u (dominant cluster at exactly 4.0u)
+- Fix: `WorkerSimulation.onGasBuildingCompleted` — position-based dedup (`distance < 5.0`) → tag-based dedup (`buildingTag.equals(tag)`)
+- Updated `docs/sc2-physics-constants.md` §4 with inter-geyser distance data
+- Blog entry: "The Geysers Were Too Close"
 
-**Key finding:** The `GAS_HARVEST_DURATION_LOOPS=66` is a composite: 32 loops real harvest + 34 loops compensating for the 0.5u `ARRIVAL_THRESHOLD` shortening gas walks. Fixing this properly requires either a gas-specific arrival model or removing edge subtraction for gas walks (#672).
+**Key finding:** SC2 maps place geysers as close as 4 units apart at the same base. The position-based duplicate check (introduced to prevent double-registering the same geyser) was catching these distinct geysers as false duplicates. The old check was correct in spirit but wrong in threshold — tag-based dedup eliminates the false positive entirely.
 
 **Issues filed this session:**
-- #668 Gas approach docking (closed — no separate phase, absorbed into walk)
-- #669 Gas worker count fidelity (closed — 14% building miss found)
-- #670 Town hall radius correction (closed — fixed 2.5→2.75)
-- #671 TrackerIntentExtractor misses 14% gas buildings (open — **next priority**)
-- #672 Gas walk arrival-threshold compensation (open — physics fidelity)
-- #673 Dual-run 6w gas surplus (open — two-geyser asymmetry)
+- #675 Gas rate MAPE at 5-min still above 25% target (open — per-worker gas cycle timing)
 
 ---
 
 ## Queue State
 
 **Epic:** #607 (Standalone economy accuracy)
-**Active:** #671 (TrackerIntentExtractor gas building coverage)
+**Completed this session:** #671
 
 Open queue items:
-1. **#671** — TrackerIntentExtractor misses 14% of gas buildings (M/Med) ← next
+1. **#675** — Gas rate MAPE above 25% target (S/Med) ← next
 2. **#672** — Gas walk arrival-threshold compensation (S/Med)
 3. **#673** — Dual-run 6w gas surplus (XS/Low)
 4. #656 — Mineral-line pathfinding (open)
@@ -76,8 +61,7 @@ Open queue items:
 
 ## Resumption Notes
 
-- Branch `issue-665-gas-rate-distance-dependent` has 7 commits ready for `work end`
-- All 209 calibration tests pass on the branch
-- The branch includes a diagnostic enhancement from a fork agent (`f7226e72`) — verify it compiles cleanly before merging
-- Start next session with `work end` to land #665, then `work next` to pick up #671
-- For #671: trace which `BuildingType`/`abilLink` events `TrackerIntentExtractor` uses for gas buildings, cross-reference with tracker events at the worst 5-min delta replays
+- Branch `issue-671-gas-building-extraction` ready for `work end`
+- CLAUDE.md updated with new diagnostic test listing
+- `docs/sc2-physics-constants.md` §4 updated with inter-geyser distance data
+- For #675: analyse per-worker gas income rates (GT vs EM rate per gas worker) to quantify per-cycle error, calibrate gas harvesting constants against dual-run baselines
