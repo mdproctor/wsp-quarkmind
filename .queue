@@ -119,3 +119,5 @@ branch:
 - [ ] casehubio/quarkmind#671 — TrackerIntentExtractor misses 14pct gas buildings
 - [ ] casehubio/quarkmind#672 — Gas walk arrival-threshold compensation
 - [ ] casehubio/quarkmind#673 — Dual-run 6w gas surplus two-geyser asymmetry
+- [ ] casehubio/quarkmind#675 — Gas rate MAPE above 25pct target
+- [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
