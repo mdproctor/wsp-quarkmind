@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 340" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#2d8a4e"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#cf222e"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="390" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#24292f">Gas Building Pipeline — Where 24 Buildings Disappeared</text>
+
+  <!-- Stage boxes -->
+  <!-- Stage 1: Tracker Events -->
+  <rect x="20" y="55" width="150" height="60" rx="6" fill="#ddf4ff" stroke="#54aeff" stroke-width="1.5"/>
+  <text x="95" y="78" text-anchor="middle" font-size="12" font-weight="600" fill="#0550ae">Tracker Events</text>
+  <text x="95" y="96" text-anchor="middle" font-size="11" fill="#0550ae">UnitInit / UnitBorn</text>
+
+  <!-- Stage 2: TrackerIntentExtractor -->
+  <rect x="210" y="55" width="150" height="60" rx="6" fill="#ddf4ff" stroke="#54aeff" stroke-width="1.5"/>
+  <text x="285" y="78" text-anchor="middle" font-size="12" font-weight="600" fill="#0550ae">Intent Extractor</text>
+  <text x="285" y="96" text-anchor="middle" font-size="11" fill="#0550ae">BuildIntent</text>
+
+  <!-- Stage 3: EmulatedGame -->
+  <rect x="400" y="55" width="150" height="60" rx="6" fill="#ddf4ff" stroke="#54aeff" stroke-width="1.5"/>
+  <text x="475" y="78" text-anchor="middle" font-size="12" font-weight="600" fill="#0550ae">EmulatedGame</text>
+  <text x="475" y="96" text-anchor="middle" font-size="11" fill="#0550ae">Building completes</text>
+
+  <!-- Stage 4: WorkerSimulation -->
+  <rect x="590" y="55" width="170" height="60" rx="6" fill="#ffebe9" stroke="#cf222e" stroke-width="2"/>
+  <text x="675" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#cf222e">WorkerSimulation</text>
+  <text x="675" y="96" text-anchor="middle" font-size="11" fill="#cf222e">onGasBuildingCompleted</text>
+
+  <!-- Arrows between stages -->
+  <line x1="170" y1="85" x2="208" y2="85" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="360" y1="85" x2="398" y2="85" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="85" x2="588" y2="85" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Count labels on arrows -->
+  <text x="189" y="77" text-anchor="middle" font-size="10" fill="#555">479</text>
+  <text x="379" y="77" text-anchor="middle" font-size="10" fill="#555">479</text>
+  <text x="569" y="77" text-anchor="middle" font-size="10" fill="#555">392</text>
+
+  <!-- Status badges -->
+  <rect x="60" y="120" width="50" height="20" rx="10" fill="#2d8a4e"/>
+  <text x="85" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="white">100%</text>
+
+  <rect x="250" y="120" width="50" height="20" rx="10" fill="#2d8a4e"/>
+  <text x="275" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="white">100%</text>
+
+  <rect x="440" y="120" width="50" height="20" rx="10" fill="#2d8a4e"/>
+  <text x="465" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="white">100%</text>
+
+  <rect x="640" y="120" width="70" height="20" rx="10" fill="#cf222e"/>
+  <text x="675" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="white">368 / 392</text>
+
+  <!-- Divider -->
+  <line x1="20" y1="160" x2="760" y2="160" stroke="#d0d7de" stroke-width="1" stroke-dasharray="4"/>
+
+  <!-- Root cause detail -->
+  <text x="390" y="185" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">The Duplicate Check</text>
+
+  <!-- Before box -->
+  <rect x="60" y="200" width="300" height="105" rx="6" fill="#ffebe9" stroke="#cf222e" stroke-width="1.5"/>
+  <text x="210" y="222" text-anchor="middle" font-size="12" font-weight="600" fill="#cf222e">Before: position distance &lt; 5.0</text>
+  <text x="210" y="245" text-anchor="middle" font-size="11" fill="#57606a">Two geysers at (145,46) and (149,46)</text>
+  <text x="210" y="263" text-anchor="middle" font-size="11" fill="#57606a">distance = 4.0 units → rejected as "duplicate"</text>
+  <text x="210" y="286" text-anchor="middle" font-size="11" font-weight="600" fill="#cf222e">8.9% of geyser pairs affected</text>
+
+  <!-- After box -->
+  <rect x="410" y="200" width="300" height="105" rx="6" fill="#dafbe1" stroke="#2d8a4e" stroke-width="1.5"/>
+  <text x="560" y="222" text-anchor="middle" font-size="12" font-weight="600" fill="#1a7f37">After: tag equality check</text>
+  <text x="560" y="245" text-anchor="middle" font-size="11" fill="#57606a">Each gas building has a unique tag</text>
+  <text x="560" y="263" text-anchor="middle" font-size="11" fill="#57606a">Same tag = same building → reject</text>
+  <text x="560" y="286" text-anchor="middle" font-size="11" font-weight="600" fill="#1a7f37">0% false rejections</text>
+
+  <!-- Arrow from before to after -->
+  <line x1="362" y1="252" x2="408" y2="252" stroke="#2d8a4e" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <!-- Bottom summary -->
+  <text x="390" y="330" text-anchor="middle" font-size="12" fill="#57606a">Gas building accuracy at 5-min: 86% → 100% across 236 oracle replay player runs</text>
+</svg>
