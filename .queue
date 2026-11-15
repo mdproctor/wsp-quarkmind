@@ -6,8 +6,8 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: 655
-branch: issue-655-16w-saturation-curve
+active_issue: 671
+branch: 
 
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
@@ -24,7 +24,7 @@ branch: issue-655-16w-saturation-curve
 - [x] casehubio/quarkmind#623 — Fix EM delivery timing to match SC2 per-tick cadence
 - [x] casehubio/quarkmind#633 — Per-race mineral income gap
 - [x] casehubio/quarkmind#634 — Worker cycle variance gap
-- [x] casehubio/quarkmind#620 — Mining cycle decomposition ← active
+- [x] casehubio/quarkmind#620 — Mining cycle decomposition
 - [x] casehubio/quarkmind#552 — Floor mineral balance at zero
 - [x] casehubio/quarkmind#553 — Per-replay economy divergence diagnostic
 - [x] casehubio/quarkmind#538 — Mineral balance map geometry variance
@@ -100,18 +100,22 @@ branch: issue-655-16w-saturation-curve
 - [x] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
 - [x] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
 - [x] casehubio/quarkmind#648 — Re-validate mining deposit docking parameters
-- [ ] casehubio/quarkmind#653 — Remove dead APPROACH_DISTANCE_SCALE
-- [ ] casehubio/quarkmind#654 — Reset waitingSinceLoop on transitions
-- [ ] casehubio/quarkmind#657 — Fix diagnostic test cycle measurement
-- [ ] casehubio/quarkmind#658 — Physics doc stale values audit
-- [ ] casehubio/quarkmind#660 — Clean up untracked spec files
-- [ ] casehubio/quarkmind#659 — 3w gas mineral deficit investigation
-- [ ] casehubio/quarkmind#652 — Gas entrance queuing model
-- [ ] casehubio/quarkmind#655 — 16w saturation curve
+- [x] casehubio/quarkmind#653 — Remove dead APPROACH_DISTANCE_SCALE
+- [x] casehubio/quarkmind#654 — Reset waitingSinceLoop on transitions
+- [x] casehubio/quarkmind#657 — Fix diagnostic test cycle measurement
+- [x] casehubio/quarkmind#658 — Physics doc stale values audit
+- [x] casehubio/quarkmind#660 — Clean up untracked spec files
+- [x] casehubio/quarkmind#659 — 3w gas mineral deficit investigation
+- [x] casehubio/quarkmind#652 — Gas entrance queuing model
+- [x] casehubio/quarkmind#655 — 16w saturation curve
 - [ ] casehubio/quarkmind#656 — Mineral-line pathfinding
-- [ ] casehubio/quarkmind#663 — 3w gas calibration table entry
-- [ ] casehubio/quarkmind#662 — Reroute threshold at 2 workers per patch
+- [x] casehubio/quarkmind#663 — 3w gas calibration table entry
+- [x] casehubio/quarkmind#662 — Reroute threshold at 2 workers per patch
 - [ ] casehubio/quarkmind#661 — EM base cycle speed edge-to-edge walks
-- [ ] casehubio/quarkmind#664 — Regenerate standalone baseline post-655
-- [ ] casehubio/quarkmind#665 — Gas rate structural floor 33pct MAPE
+- [x] casehubio/quarkmind#664 — Regenerate standalone baseline post-655
+- [x] casehubio/quarkmind#665 — Gas rate structural floor 33pct MAPE
 - [ ] casehubio/quarkmind#666 — Forward simulation economy mode
+- [x] casehubio/quarkmind#667 — Reset waitingSinceLoop on expansion transfer
+- [ ] casehubio/quarkmind#671 — TrackerIntentExtractor misses 14pct gas buildings
+- [ ] casehubio/quarkmind#672 — Gas walk arrival-threshold compensation
+- [ ] casehubio/quarkmind#673 — Dual-run 6w gas surplus two-geyser asymmetry
