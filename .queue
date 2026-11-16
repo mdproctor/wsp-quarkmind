@@ -6,8 +6,8 @@ status: active
 - issue-repo: casehubio/quarkmind
 - covers: 607
 - date: 2026-11-09
-active_issue: 671
-branch: 
+active_issue: 675
+branch: issue-675-gas-rate-mape
 
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
