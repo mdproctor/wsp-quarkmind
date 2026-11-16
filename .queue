@@ -121,3 +121,4 @@ branch:
 - [ ] casehubio/quarkmind#673 — Dual-run 6w gas surplus two-geyser asymmetry
 - [ ] casehubio/quarkmind#675 — Gas rate MAPE above 25pct target
 - [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
+- [ ] casehubio/quarkmind#677 — Gas approach docking calibration test
