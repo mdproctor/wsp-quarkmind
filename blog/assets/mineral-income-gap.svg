@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 300">
+  <defs>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 12px; }
+      .title { font-size: 14px; font-weight: bold; }
+      .label { font-size: 11px; }
+      .val { font-size: 11px; font-weight: bold; }
+      .axis { stroke: #666; stroke-width: 1; }
+      .grid { stroke: #e0e0e0; stroke-width: 0.5; }
+      .zero { stroke: #999; stroke-width: 1; stroke-dasharray: 4,3; }
+      .bar-before { fill: #d94a4a; }
+      .bar-after { fill: #4a90d9; }
+      .threshold { stroke: #c00; stroke-width: 1; stroke-dasharray: 6,3; }
+    </style>
+  </defs>
+  <text x="310" y="22" text-anchor="middle" class="title">EM vs SC2 Mineral Income Gap (%)</text>
+
+  <!-- Y axis -->
+  <line x1="80" y1="50" x2="80" y2="250" class="axis"/>
+  <!-- X axis at 0% -->
+  <line x1="80" y1="160" x2="570" y2="160" class="zero"/>
+
+  <!-- Grid lines -->
+  <line x1="80" y1="72" x2="570" y2="72" class="grid"/>
+  <text x="75" y="76" text-anchor="end" class="label">+20%</text>
+  <line x1="80" y1="94" x2="570" y2="94" class="grid"/>
+  <text x="75" y="98" text-anchor="end" class="label">+15%</text>
+  <line x1="80" y1="116" x2="570" y2="116" class="grid"/>
+  <text x="75" y="120" text-anchor="end" class="label">+10%</text>
+  <line x1="80" y1="138" x2="570" y2="138" class="grid"/>
+  <text x="75" y="142" text-anchor="end" class="label">+5%</text>
+  <text x="75" y="164" text-anchor="end" class="label">0%</text>
+  <line x1="80" y1="182" x2="570" y2="182" class="grid"/>
+  <text x="75" y="186" text-anchor="end" class="label">-5%</text>
+
+  <!-- +5% / -5% thresholds -->
+  <line x1="80" y1="138" x2="570" y2="138" class="threshold"/>
+  <line x1="80" y1="182" x2="570" y2="182" class="threshold"/>
+  <text x="575" y="142" class="label" fill="#c00">+5%</text>
+  <text x="575" y="186" class="label" fill="#c00">-5%</text>
+
+  <!-- 8w bars -->
+  <rect x="110" y="84.4" width="40" height="75.6" class="bar-before" rx="2"/>
+  <text x="130" y="80" text-anchor="middle" class="val" fill="#d94a4a">+17.2%</text>
+  <rect x="155" y="141" width="40" height="19" class="bar-after" rx="2"/>
+  <text x="175" y="137" text-anchor="middle" class="val" fill="#4a90d9">+4.3%</text>
+  <text x="152" y="268" text-anchor="middle" class="label">8w</text>
+
+  <!-- 12w bars -->
+  <rect x="240" y="148.2" width="40" height="11.8" class="bar-before" rx="2"/>
+  <text x="260" y="144" text-anchor="middle" class="val" fill="#d94a4a">+2.7%</text>
+  <rect x="285" y="160" width="40" height="11.9" class="bar-after" rx="2"/>
+  <text x="305" y="178" text-anchor="middle" class="val" fill="#4a90d9">-2.7%</text>
+  <text x="282" y="268" text-anchor="middle" class="label">12w</text>
+
+  <!-- 16w bars -->
+  <rect x="370" y="160" width="40" height="5.3" class="bar-before" rx="2"/>
+  <text x="390" y="178" text-anchor="middle" class="val" fill="#d94a4a">-1.2%</text>
+  <rect x="415" y="160" width="40" height="7.5" class="bar-after" rx="2"/>
+  <text x="435" y="178" text-anchor="middle" class="val" fill="#4a90d9">-1.7%</text>
+  <text x="412" y="268" text-anchor="middle" class="label">16w</text>
+
+  <!-- 24w bars -->
+  <rect x="500" y="152.1" width="40" height="7.9" class="bar-before" rx="2"/>
+  <text x="520" y="148" text-anchor="middle" class="val" fill="#d94a4a">+1.8%</text>
+  <rect x="545" y="160" width="40" height="11.9" class="bar-after" rx="2"/>
+  <text x="565" y="178" text-anchor="middle" class="val" fill="#4a90d9">-2.7%</text>
+  <text x="542" y="268" text-anchor="middle" class="label">24w</text>
+
+  <!-- Legend -->
+  <rect x="185" y="282" width="14" height="14" class="bar-before" rx="2"/>
+  <text x="204" y="294" class="label">Before</text>
+  <rect x="260" y="282" width="14" height="14" class="bar-after" rx="2"/>
+  <text x="279" y="294" class="label">After</text>
+</svg>

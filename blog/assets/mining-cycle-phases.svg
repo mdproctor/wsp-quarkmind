@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 280">
+  <defs>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 12px; }
+      .title { font-size: 14px; font-weight: bold; }
+      .label { font-size: 11px; fill: #555; }
+      .val { font-size: 11px; font-weight: bold; }
+    </style>
+  </defs>
+  <text x="350" y="20" text-anchor="middle" class="title">Mining Cycle Phases (loops per cycle)</text>
+
+  <!-- EM cycle -->
+  <text x="10" y="75" class="label">EM (before)</text>
+  <rect x="90" y="55" width="120" height="30" fill="#4a90d9" rx="3"/>
+  <text x="150" y="75" text-anchor="middle" fill="white" class="val">walk 60</text>
+  <rect x="210" y="55" width="46" height="30" fill="#e8913a" rx="3"/>
+  <text x="233" y="75" text-anchor="middle" fill="white" class="val">11.5</text>
+  <rect x="256" y="55" width="88" height="30" fill="#d94a4a" rx="3"/>
+  <text x="300" y="75" text-anchor="middle" fill="white" class="val">mine 22</text>
+  <rect x="344" y="55" width="28" height="30" fill="#6ab04c" rx="3"/>
+  <text x="358" y="75" text-anchor="middle" fill="white" class="val">7</text>
+  <text x="395" y="75" class="val" fill="#333">= 100.5 loops</text>
+
+  <!-- SC2 cycle -->
+  <text x="10" y="135" class="label">SC2 (measured)</text>
+  <rect x="90" y="115" width="120" height="30" fill="#4a90d9" rx="3"/>
+  <text x="150" y="135" text-anchor="middle" fill="white" class="val">walk 60</text>
+  <rect x="210" y="115" width="98" height="30" fill="#e8913a" rx="3"/>
+  <text x="259" y="135" text-anchor="middle" fill="white" class="val">approach 24.5</text>
+  <rect x="308" y="115" width="88" height="30" fill="#d94a4a" rx="3"/>
+  <text x="352" y="135" text-anchor="middle" fill="white" class="val">mine 22</text>
+  <rect x="396" y="115" width="48" height="30" fill="#6ab04c" rx="3"/>
+  <text x="420" y="135" text-anchor="middle" fill="white" class="val">dep 12</text>
+  <rect x="444" y="115" width="16" height="30" fill="#888" rx="3"/>
+  <text x="475" y="135" class="val" fill="#333">= 117 loops</text>
+  <text x="452" y="155" class="label">+2 transition</text>
+
+  <!-- Legend -->
+  <rect x="90" y="185" width="14" height="14" fill="#4a90d9" rx="2"/>
+  <text x="110" y="196" class="label">Walk (2 legs)</text>
+  <rect x="200" y="185" width="14" height="14" fill="#e8913a" rx="2"/>
+  <text x="220" y="196" class="label">Approach/dock</text>
+  <rect x="320" y="185" width="14" height="14" fill="#d94a4a" rx="2"/>
+  <text x="340" y="196" class="label">Mining animation</text>
+  <rect x="450" y="185" width="14" height="14" fill="#6ab04c" rx="2"/>
+  <text x="470" y="196" class="label">Deposit</text>
+  <rect x="540" y="185" width="14" height="14" fill="#888" rx="2"/>
+  <text x="560" y="196" class="label">Transition cost</text>
+
+  <!-- Gap annotation -->
+  <line x1="372" y1="55" x2="372" y2="47" stroke="#c00" stroke-width="1.5"/>
+  <line x1="460" y1="115" x2="460" y2="47" stroke="#c00" stroke-width="1.5"/>
+  <line x1="372" y1="47" x2="460" y2="47" stroke="#c00" stroke-width="1.5"/>
+  <text x="416" y="42" text-anchor="middle" fill="#c00" class="val">+17 loops</text>
+</svg>
