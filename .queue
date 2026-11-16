@@ -1,14 +1,11 @@
-# Work Plan — Epic #607: Standalone economy accuracy
 
 ## State
+branch: issue-661-em-base-cycle-speed
+issue-repo: 
 status: active
-- state: active
-- issue-repo: casehubio/quarkmind
-- covers: 607
-- date: 2026-11-09
 active_issue: 675
-branch: issue-675-gas-rate-mape
 
+## Deferred
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
 - [x] casehubio/quarkmind#646 — 6w gas baseline not verified
