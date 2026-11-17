@@ -122,5 +122,5 @@ active_issue:
 - [ ] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#680 — Eliminate residual 7+ tick outliers
 - [x] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
-- [ ] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
+- [x] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
 - [x] casehubio/quarkmind#684 — Gas worker cycle timing diagnostic test
