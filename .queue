@@ -1,7 +1,7 @@
 # Work Plan —
 
 ## State
-branch: main
+branch: 
 issue-repo: casehubio/quarkmind
 status: active
 active_issue: 
@@ -126,8 +126,8 @@ active_issue:
 - [x] casehubio/quarkmind#684 — Gas worker cycle timing diagnostic test
 - [x] casehubio/quarkmind#689 — 3w/6w gas asymmetry
 - [x] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method
-- [ ] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs ← active
-- [ ] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
+- [x] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs
+- [ ] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests ← active
 - [ ] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
 - [ ] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
 - [ ] casehubio/quarkmind#683 — Extract physics constants to config file
