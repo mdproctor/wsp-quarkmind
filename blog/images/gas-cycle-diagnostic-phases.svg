@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="720" height="320" fill="#fafaf9" rx="8"/>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-size="14" font-weight="600" fill="#1e293b">Gas Worker Cycle — 3 Workers, 1 Geyser (Measured)</text>
+
+  <!-- Phase boxes arranged in a cycle -->
+  <!-- Walk to Geyser -->
+  <rect x="40" y="60" width="120" height="56" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="100" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">Walk to Geyser</text>
+  <text x="100" y="100" text-anchor="middle" font-size="12" fill="#1e40af">34 loops</text>
+  <text x="100" y="112" text-anchor="middle" font-size="9" fill="#64748b">29%</text>
+
+  <!-- Wait at Entry -->
+  <rect x="200" y="60" width="100" height="56" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="250" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">Wait at Entry</text>
+  <text x="250" y="100" text-anchor="middle" font-size="12" fill="#92400e">2 loops</text>
+  <text x="250" y="112" text-anchor="middle" font-size="9" fill="#64748b">2%</text>
+
+  <!-- Inside Geyser -->
+  <rect x="340" y="60" width="120" height="56" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="400" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">Inside Geyser</text>
+  <text x="400" y="100" text-anchor="middle" font-size="12" fill="#166534">32 loops</text>
+  <text x="400" y="112" text-anchor="middle" font-size="9" fill="#64748b">28%</text>
+
+  <!-- Walk to TH -->
+  <rect x="500" y="60" width="120" height="56" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="560" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">Walk to TH</text>
+  <text x="560" y="100" text-anchor="middle" font-size="12" fill="#1e40af">36 loops</text>
+  <text x="560" y="112" text-anchor="middle" font-size="9" fill="#64748b">31%</text>
+
+  <!-- Deposit -->
+  <rect x="660" y="60" width="50" height="56" rx="6" fill="#f3e8ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="685" y="82" text-anchor="middle" font-size="10" font-weight="600" fill="#6b21a8">Dep.</text>
+  <text x="685" y="100" text-anchor="middle" font-size="11" fill="#6b21a8">12</text>
+  <text x="685" y="112" text-anchor="middle" font-size="9" fill="#64748b">10%</text>
+
+  <!-- Flow arrows -->
+  <line x1="160" y1="88" x2="198" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="300" y1="88" x2="338" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="460" y1="88" x2="498" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="620" y1="88" x2="658" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Return arrow (deposit back to walk) -->
+  <path d="M685,118 L685,145 Q685,155 675,155 L85,155 Q75,155 75,145 L75,118" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text x="380" y="150" text-anchor="middle" font-size="10" fill="#64748b">cycle repeats</text>
+
+  <!-- Total cycle bar -->
+  <rect x="40" y="180" width="670" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="375" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">Total cycle: 116 loops (5.3 ticks) — 4 vespene per trip</text>
+
+  <!-- Comparison section -->
+  <text x="40" y="240" font-size="11" font-weight="600" fill="#475569">Theoretical rotation limit (3 × inside):</text>
+  <rect x="320" y="226" width="166" height="20" rx="3" fill="#bbf7d0" stroke="#22c55e" stroke-width="1"/>
+  <text x="403" y="240" text-anchor="middle" font-size="11" fill="#166534">96 loops</text>
+
+  <text x="40" y="265" font-size="11" font-weight="600" fill="#475569">Actual measured cycle:</text>
+  <rect x="320" y="251" width="200" height="20" rx="3" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="420" y="265" text-anchor="middle" font-size="11" fill="#1e40af">116 loops (121% of theoretical)</text>
+
+  <text x="40" y="290" font-size="11" font-weight="600" fill="#475569">Measured rate:</text>
+  <text x="320" y="290" font-size="11" fill="#334155">45.6 gas/min/worker (SC2 target: 44.3 — 3% over)</text>
+
+  <text x="40" y="310" font-size="11" font-weight="600" fill="#475569">Walk overhead:</text>
+  <text x="320" y="310" font-size="11" fill="#334155">60% of cycle — walk-limited, not harvest-limited</text>
+</svg>
