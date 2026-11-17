@@ -105,20 +105,21 @@ active_issue:
 - [x] casehubio/quarkmind#659 — 3w gas mineral deficit investigation
 - [x] casehubio/quarkmind#652 — Gas entrance queuing model
 - [x] casehubio/quarkmind#655 — 16w saturation curve
-- [ ] casehubio/quarkmind#656 — Mineral-line pathfinding
+- [x] casehubio/quarkmind#656 — Mineral-line pathfinding
 - [x] casehubio/quarkmind#663 — 3w gas calibration table entry
 - [x] casehubio/quarkmind#662 — Reroute threshold at 2 workers per patch
-- [ ] casehubio/quarkmind#661 — EM base cycle speed edge-to-edge walks
+- [x] casehubio/quarkmind#661 — EM base cycle speed edge-to-edge walks
 - [x] casehubio/quarkmind#664 — Regenerate standalone baseline post-655
 - [x] casehubio/quarkmind#665 — Gas rate structural floor 33pct MAPE
 - [ ] casehubio/quarkmind#666 — Forward simulation economy mode
 - [x] casehubio/quarkmind#667 — Reset waitingSinceLoop on expansion transfer
-- [ ] casehubio/quarkmind#671 — TrackerIntentExtractor misses 14pct gas buildings
-- [ ] casehubio/quarkmind#672 — Gas walk arrival-threshold compensation
-- [ ] casehubio/quarkmind#673 — Dual-run 6w gas surplus two-geyser asymmetry
-- [ ] casehubio/quarkmind#675 — Gas rate MAPE above 25pct target
+- [x] casehubio/quarkmind#671 — TrackerIntentExtractor misses 14pct gas buildings
+- [x] casehubio/quarkmind#672 — Gas walk arrival-threshold compensation
+- [x] casehubio/quarkmind#673 — Dual-run 6w gas surplus two-geyser asymmetry
+- [x] casehubio/quarkmind#675 — Gas rate MAPE above 25pct target
 - [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
 - [ ] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [ ] casehubio/quarkmind#679 — Per-patch walk distance extension
-- [ ] casehubio/quarkmind#680 — Eliminate residual 7+ tick outliers
-- [ ] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
+- [x] casehubio/quarkmind#680 — Eliminate residual 7+ tick outliers
+- [x] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
+- [ ] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
