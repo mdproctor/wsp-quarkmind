@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <style>
+    text { font-size: 13px; fill: #1e293b; }
+    .label { font-size: 11px; fill: #64748b; }
+    .value { font-size: 12px; fill: #0f172a; font-weight: 600; }
+    .heading { font-size: 15px; fill: #0f172a; font-weight: 700; }
+  </style>
+
+  <!-- Before: single constant -->
+  <text x="30" y="30" class="heading">Before</text>
+  <rect x="30" y="45" width="300" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="180" y="65" text-anchor="middle" class="label">approachDockingLoops</text>
+  <text x="180" y="83" text-anchor="middle" class="value">24.5 loops (per-patch via equalization)</text>
+
+  <text x="30" y="125" class="label">Contains:</text>
+  <rect x="30" y="135" width="140" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="100" y="157" text-anchor="middle" font-size="11" fill="#4338ca">Docking animation</text>
+  <text x="175" y="157" fill="#94a3b8" font-size="16">+</text>
+  <rect x="190" y="135" width="140" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="260" y="157" text-anchor="middle" font-size="11" fill="#4338ca">Path deviation</text>
+  <text x="180" y="190" text-anchor="middle" class="label">⚠ inseparable — calibrated as one value</text>
+
+  <!-- Arrow -->
+  <line x1="360" y1="100" x2="390" y2="100" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- After: decomposed -->
+  <text x="410" y="30" class="heading">After</text>
+  <rect x="410" y="45" width="280" height="40" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="550" y="62" text-anchor="middle" class="label">approachAnimationLoops</text>
+  <text x="550" y="78" text-anchor="middle" class="value">20.0 loops (constant per base)</text>
+
+  <text x="555" y="100" text-anchor="middle" fill="#94a3b8" font-size="16">+</text>
+
+  <rect x="410" y="110" width="280" height="40" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="550" y="127" text-anchor="middle" class="label">outboundPathDelay</text>
+  <text x="550" y="143" text-anchor="middle" class="value">0–5 loops (per patch, from E2E)</text>
+
+  <text x="410" y="175" class="label">= approachDockingLoops (same total)</text>
+
+  <!-- Bottom: data evidence -->
+  <rect x="30" y="220" width="660" height="85" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="50" y="242" class="heading" font-size="13">SC2 cadence evidence (8 workers)</text>
+  <text x="50" y="264" class="label">Outbound walk:  2.69–4.29u  (1.4–1.9× return)</text>
+  <text x="50" y="282" class="label">Return walk:    1.47–2.54u  (direct path, shorter)</text>
+  <text x="400" y="264" class="label">Effective mining radius:  1.215u  (EM: 1.0)</text>
+  <text x="400" y="282" class="label">Effective deposit dist:   3.755u  (EM: 2.75)</text>
+</svg>
