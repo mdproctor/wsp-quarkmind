@@ -2,30 +2,41 @@
 
 ## Orientation for Next Session
 
-Base cycle speed fixed (#661). The EM's `stepOneMineralLoop` had zero-cost phase transitions — the `while(!loopConsumed)` loop chained mining→returning and depositing→mining within a single game loop. SC2 processes each transition at a game-loop boundary, consuming 1 loop. This made EM cycles ~10 loops faster at all saturation levels. At 12w/16w, the collision speed factor (0.96) accidentally compensated. At 8w with no collisions, the fast cycle was fully exposed (+17.2%).
+Cycle distribution fixed (#656). The EM's mineral cycle σ was 0.92 (SC2: 0.56) because a flat `approach_docking_loops=24.5` treated all patches identically. First-principles analysis revealed SC2's cycle variance is entirely structural — per-patch, deterministic, bounded — not stochastic (collision-induced random noise).
 
-Fix: transition loop cost + recalibrated constants (approach 11.5→24.5, deposit 7→12, collision 0.96→1.0). Applied to both mineral and gas workers.
+Fix: per-patch approach docking from E2E distance (40% equalization scale) + contention-aware collision scaling (25% dodge at ≤2 workers/patch). The distribution now matches SC2 within 1% at every tick bucket.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**Current state — post-#661:**
+**Current state — post-#656:**
 
-| Metric | Before #661 | After #661 |
-|--------|-------------|------------|
-| 8w minerals | +17.2% | **+4.3%** |
-| 12w minerals | +2.7% | **-2.7%** |
-| 16w minerals | -1.2% | **-1.7%** |
-| 3w gas vespene | +21.0% | **+13.0%** |
-| 6w gas vespene | +27.3% | **+20.9%** |
-| APPROACH_DOCKING_LOOPS | 11.5 | **24.5** |
-| DEPOSIT_DURATION_LOOPS | 7 | **12** |
-| COLLISION_SPEED_FACTOR | 0.96 | **1.0** |
-| Full test suite | 3365 pass | 3365+ pass |
+| Metric | SC2 | Before #656 | After #656 |
+|--------|-----|-------------|------------|
+| σ | 0.56 | 0.92 | **0.57** |
+| Mean cycle | 5.28 | 5.39 | **5.29** |
+| 7+ tick | 0% | 6.6% | **0.6%** |
+| 4-tick % | 5.7% | 8.9% | **5.3%** |
+| 5-tick % | 60.7% | 54.4% | **61.1%** |
+| 6-tick % | 33.6% | 30.1% | **33.1%** |
+| 12w income | 3460 | 3395 (−1.9%) | within ±3% |
+| Full test suite | — | 3365 pass | 3367 pass |
 
-**Design rules (from CLAUDE.md):**
-- Never use compensation constants. The transition loop cost models real SC2 per-loop transition processing.
-- Always use double arithmetic. No integer truncation in the income path.
-- Calibrate from controlled SC2 dual-run baselines, not oracle replays.
+**Key constants (new):**
+- `MineralPatch.APPROACH_EQUALIZATION_SCALE` = 0.4 — per-patch approach compensates 40% of walk distance differences
+- `WorkerSimulation.LOW_SATURATION_DODGE_SCALE` = 0.25 — collision dodge reduction at ≤2 workers/patch
+- Both in `SimulatedWorker.resetToDefaults()` but NOT yet in `WorkerPhysicsConfig` (#681)
+
+**Design insight:** SC2's cycle variance is a mixture of point masses at tick buckets 4, 5, 6 — each worker sits in one bucket consistently. No tuning of collision noise can produce this bounded variance. Collision adds unbounded random tails via contention cascade (3-loop displacement → 46-loop contention wait). The right variance source is per-patch approach equalization, not collision displacement.
+
+---
+
+## Filed Issues
+
+| Issue | Title | Scale | Notes |
+|-------|-------|-------|-------|
+| #679 | Per-patch walk distance extension | M/Med | Model SC2 path geometry directly — WalkTo/WalkBack asymmetry |
+| #680 | Eliminate residual 0.6% 7+ tick outliers | S/Med | Contention cascade from dodge=0.25 — 4 cycles per 665 |
+| #681 | Add equalization/dodge to WorkerPhysicsConfig | XS/Low | Config properties for Quarkus override |
 
 ---
 
@@ -33,49 +44,48 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #656 | Mineral-line pathfinding | M/Med | Tighter walk timing — per-patch path deviation |
 | #677 | Gas approach docking calibration test | XS/Low | GAS_APPROACH_DOCKING still at 11.5 — needs 8w-style cadence measurement |
 | #676 | Reverse-engineer SC2 rate computation | M/High | 240-loop sliding window; needs tighter physics first |
 | #672 | Gas walk arrival-threshold compensation | S/Med | Remaining walk shortening (~9 loops/leg vs SC2) |
 | #673 | Dual-run 6w gas surplus two-geyser asymmetry | S/Low | +6.7% surplus at 6w, two geysers |
 
-**Priority path:** #656 → #677 → #676 (rate window)
-
 ---
 
 ## Rate Algorithm Finding
 
-**Key discovery:** SC2 mineral rates quantise at 28 minerals/min. All reported `mineralsCollectionRate` values satisfy `rate ≡ 27 (mod 28)` after ramp-up. The window approach becomes viable only after tighter physics alignment — now closer after #661.
+**Key discovery:** SC2 mineral rates quantise at 28 minerals/min. All reported `mineralsCollectionRate` values satisfy `rate ≡ 27 (mod 28)` after ramp-up. The window approach becomes viable only after tighter physics alignment — now closer after #661/#656.
 
 ---
 
 ## Branch State
 
-Branch `issue-661-em-base-cycle-speed` — **ready for work-end**.
+Branch `issue-656-mineral-line-pathfinding` — **ready for work-end**.
 
 Key commits:
-1. `feat(#661): add 'kill' playbook action + 8w mineral baseline playbook`
-2. `feat(#661): record 8w SC2 baseline with worker cadence data`
-3. `feat(#661): add CycleDecompositionTest for 8w walk analysis`
-4. `wip(#661): diagnostic sweeps for approach/deposit/collision constants`
-5. `wip(#661): fix base cycle speed — transition loop cost + recalibrated constants`
-6. `fix(#661): add transition loop cost to gas worker phases`
-7. `fix(#661): code review fixes`
-8. `docs(#661): update physics constants with new calibration`
+1. `wip(#656): add CycleOutlierDiagnosticTest — traces 7+ tick cycle root causes`
+2. `wip(#656): add PatchCycleCorrelationTest — maps workers to patch positions`
+3. `wip(#656): verify patch assignment distribution is balanced`
+4. `feat(#656): per-patch approach docking from E2E distance`
+5. `feat(#656): scale collision dodge by patch contention`
+6. `feat(#656): calibrate approach equalization scale to 0.4`
+7. `feat(#656): extract LOW_SATURATION_DODGE_SCALE + sweep diagnostic`
+8. `fix(#656): code review fixes — reset chain + unmodifiable bases accessor`
+9. `docs(#656): update physics constants`
 
-Issues to close: **#661** (done).
+Issues to close: **#656** (done).
 
 ---
 
 ## Last Session
 
 **Work completed:**
-- #661: Base cycle speed — 8w gap reduced from +17.2% to +4.3%
-- Root cause: zero-cost phase transitions in stepOneMineralLoop
-- Recorded 8w SC2 baseline with per-tick worker cadence data
-- CycleDecompositionTest: measured mining position, deposit distance, walk phases
-- 3D parameter sweep to find optimal constants
-- Transition loop cost fix applied to mineral and gas workers
-- CDI defaults synced with constants (fixed pre-existing protocol violations)
-- Gas vespene improved from +21%/+27% to +13%/+21%
-- Physics doc updated with new measurements and constants
+- #656: Cycle distribution matching — σ reduced from 0.92 to 0.57 (SC2: 0.56)
+- Root cause investigation: 43 outlier cycles traced to contention cascade + flat approach
+- False lead eliminated: worker distribution verified balanced (position-matching artifact)
+- First-principles analysis: SC2 variance is structural (per-patch), not stochastic (collision)
+- Per-patch approach docking with 40% equalization scale
+- Contention-aware collision scaling (25% at ≤2 workers/patch)
+- Equalization sweep found 0.4 as SC2-matching value
+- Dodge sweep confirmed 0.25 is load-bearing for cycle time
+- Blog: "Right Total, Wrong Shape"
+- Filed #679, #680, #681 for follow-up work
