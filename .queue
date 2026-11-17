@@ -1,11 +1,11 @@
+# Work Plan —
 
 ## State
-branch: issue-661-em-base-cycle-speed
+branch: issue-656-mineral-line-pathfinding
 issue-repo: 
 status: active
 active_issue: 675
 
-## Deferred
 ## Queue
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
 - [x] casehubio/quarkmind#646 — 6w gas baseline not verified
@@ -119,3 +119,6 @@ active_issue: 675
 - [ ] casehubio/quarkmind#675 — Gas rate MAPE above 25pct target
 - [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
 - [ ] casehubio/quarkmind#677 — Gas approach docking calibration test
+- [ ] casehubio/quarkmind#679 — Per-patch walk distance extension
+- [ ] casehubio/quarkmind#680 — Eliminate residual 7+ tick outliers
+- [ ] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
