@@ -9,8 +9,8 @@ active_issue:
 ## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [ ] casehubio/quarkmind#679 — Per-patch walk distance extension ← active
-  - [ ] Batch 1: Decompose
-    - [ ] Task 1: Add outboundPathDelay and decompose computeApproachDocking
+  - [x] Batch 1: Decompose
+    - [x] Task 1: Add outboundPathDelay and decompose computeApproachDocking
   - [ ] Batch 2: Calibrate
     - [ ] Task 2: Sweep decomposed constants
     - [ ] Task 3: Update physics docs
