@@ -1,14 +1,5 @@
-# Work Plan —
-
-## State
-branch: issue-684-gas-worker-cycle-diagnostic
-issue-repo: casehubio/quarkmind
-status: active
-active_issue: 
-
-## Queue
-- [ ] casehubio/quarkmind#677 — Gas approach docking calibration test ← active
-- [ ] casehubio/quarkmind#679 — Per-patch walk distance extension
+- [x] casehubio/quarkmind#677 — Gas approach docking calibration test
+- [ ] casehubio/quarkmind#679 — Per-patch walk distance extension        ← active
 - [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
 - [ ] casehubio/quarkmind#666 — Forward simulation economy mode
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
@@ -124,3 +115,9 @@ active_issue:
 - [x] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
 - [x] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
 - [x] casehubio/quarkmind#684 — Gas worker cycle timing diagnostic test
+
+## State
+branch: issue-677-gas-approach-docking-recalibration
+issue-repo: casehubio/quarkmind
+status: active
+active_issue: 
