@@ -34,6 +34,13 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 - Geyser-limited regime: slack = 2×inside − non_inside = 6.4 loops absorbs all contention
 - Gas worker collision (walk-path model) doesn't work: cross-geyser paths are 1.78u apart (> 1.5u COLLISION_DIAMETER on this map geometry)
 
+**Filed this session:**
+
+| Issue | Title | Scale | Notes |
+|-------|-------|-------|-------|
+| #693 | Gas worker walk collision for close-angle geyser maps | S/Med | Cross-geyser walk paths don't overlap on test map (1.78u > 1.5u); may matter on closer-angle maps |
+| #694 | WorkerSimulation static fields lack resetToDefaults() | XS/Low | GAS_DEPOSIT_LOCK_LOOPS and GAS_DEPOSIT_CONGESTION_PER_WORKER restored manually in sweeps |
+
 ---
 
 ## Closed This Session
@@ -44,6 +51,14 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ---
 
+## Next Queue Item
+
+| Issue | Title | Scale | Priority |
+|-------|-------|-------|----------|
+| #686 | (next in queue) | — | — |
+
+---
+
 ## Branch State
 
-On branch `issue-689-gas-asymmetry-single-dual-geyser`. Ready for work-end.
+On main. #689 landed as 7db5b88d. 2 commits unpublished.
