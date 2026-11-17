@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 15px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 12px; fill: #333; }
+    .label-bold { font-size: 12px; font-weight: 600; fill: #1a1a2e; }
+    .small { font-size: 10px; fill: #666; }
+    .g1 { fill: #4a90d9; }
+    .g2 { fill: #e8a838; }
+    .block { fill: #ff6b6b; }
+    .arrow { stroke: #333; stroke-width: 1.2; fill: none; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="24" text-anchor="middle" class="title">Phase-Shift Stabilization: Why the Deposit Lock Doesn't Work</text>
+
+  <!-- Before: synchronized streams -->
+  <text x="20" y="55" class="label-bold">Before: Streams in Phase</text>
+  <text x="20" y="70" class="small">Both geysers at same distance → workers arrive simultaneously</text>
+
+  <!-- Timeline -->
+  <line x1="60" y1="90" x2="700" y2="90" stroke="#ccc" stroke-width="1"/>
+  <text x="40" y="94" class="small" text-anchor="end">t</text>
+
+  <!-- Geyser 1 deposits -->
+  <rect x="100" y="78" width="8" height="12" class="g1" rx="1"/>
+  <rect x="240" y="78" width="8" height="12" class="g1" rx="1"/>
+  <rect x="380" y="78" width="8" height="12" class="g1" rx="1"/>
+  <rect x="520" y="78" width="8" height="12" class="g1" rx="1"/>
+  <rect x="660" y="78" width="8" height="12" class="g1" rx="1"/>
+
+  <!-- Geyser 2 deposits — same time, one gets blocked -->
+  <rect x="100" y="92" width="8" height="12" class="g2" rx="1"/>
+  <rect x="109" y="92" width="12" height="12" class="block" rx="1" opacity="0.5"/>
+  <rect x="240" y="92" width="8" height="12" class="g2" rx="1"/>
+  <rect x="249" y="92" width="12" height="12" class="block" rx="1" opacity="0.5"/>
+  <rect x="380" y="92" width="8" height="12" class="g2" rx="1"/>
+  <rect x="520" y="92" width="8" height="12" class="g2" rx="1"/>
+  <rect x="660" y="92" width="8" height="12" class="g2" rx="1"/>
+
+  <text x="115" y="118" class="small" fill="#d44">blocked!</text>
+  <text x="255" y="118" class="small" fill="#d44">blocked!</text>
+
+  <!-- Arrow showing shift -->
+  <path d="M 265,122 C 280,140 310,140 340,130" class="arrow"/>
+  <text x="310" y="148" class="small">Delay shifts geyser-2 stream later</text>
+
+  <!-- After: interleaved streams -->
+  <text x="20" y="180" class="label-bold">After: Streams Interleaved (Stable)</text>
+  <text x="20" y="195" class="small">Phase shift separates arrivals → lock never triggers again</text>
+
+  <!-- Timeline -->
+  <line x1="60" y1="215" x2="700" y2="215" stroke="#ccc" stroke-width="1"/>
+  <text x="40" y="219" class="small" text-anchor="end">t</text>
+
+  <!-- Geyser 1 deposits -->
+  <rect x="100" y="203" width="8" height="12" class="g1" rx="1"/>
+  <rect x="240" y="203" width="8" height="12" class="g1" rx="1"/>
+  <rect x="380" y="203" width="8" height="12" class="g1" rx="1"/>
+  <rect x="520" y="203" width="8" height="12" class="g1" rx="1"/>
+  <rect x="660" y="203" width="8" height="12" class="g1" rx="1"/>
+
+  <!-- Geyser 2 deposits — now offset, no blocking -->
+  <rect x="170" y="217" width="8" height="12" class="g2" rx="1"/>
+  <rect x="310" y="217" width="8" height="12" class="g2" rx="1"/>
+  <rect x="450" y="217" width="8" height="12" class="g2" rx="1"/>
+  <rect x="590" y="217" width="8" height="12" class="g2" rx="1"/>
+
+  <text x="175" y="244" class="small" fill="#4a4">no conflict</text>
+
+  <!-- Conclusion -->
+  <rect x="20" y="260" width="680" height="45" fill="#f8f8f0" stroke="#ddd" rx="4"/>
+  <text x="360" y="278" text-anchor="middle" class="label-bold">Result: Deposit lock causes a one-time phase shift, not ongoing throughput reduction</text>
+  <text x="360" y="294" text-anchor="middle" class="small">Swept lock duration 0–16 loops: zero change in total gas production across all values</text>
+
+  <!-- Legend -->
+  <rect x="510" y="55" width="12" height="12" class="g1" rx="2"/>
+  <text x="528" y="65" class="small">Geyser 1</text>
+  <rect x="590" y="55" width="12" height="12" class="g2" rx="2"/>
+  <text x="608" y="65" class="small">Geyser 2</text>
+  <rect x="665" y="55" width="12" height="12" class="block" rx="2" opacity="0.5"/>
+  <text x="683" y="65" class="small">Block</text>
+</svg>
