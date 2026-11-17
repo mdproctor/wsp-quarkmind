@@ -2,90 +2,67 @@
 
 ## Orientation for Next Session
 
-Cycle distribution fixed (#656). The EM's mineral cycle σ was 0.92 (SC2: 0.56) because a flat `approach_docking_loops=24.5` treated all patches identically. First-principles analysis revealed SC2's cycle variance is entirely structural — per-patch, deterministic, bounded — not stochastic (collision-induced random noise).
-
-Fix: per-patch approach docking from E2E distance (40% equalization scale) + contention-aware collision scaling (25% dodge at ≤2 workers/patch). The distribution now matches SC2 within 1% at every tick bucket.
+Gas walk ARRIVAL_THRESHOLD compensation landed (#672). The EM's gas income was 13-21% too high because gas workers stopped 0.5u short of the actual building edge — the ARRIVAL_THRESHOLD designed for minerals silently shortened gas walks. Fix: offset gas walk targets inward by ARRIVAL_THRESHOLD so the stopping distance lands workers at the true building edge. Combined with approach docking recalibration (11.5 → 15.8 loops), 3w gas is now 0% error.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**Current state — post-#656:**
+**Current accuracy state:**
 
-| Metric | SC2 | Before #656 | After #656 |
-|--------|-----|-------------|------------|
-| σ | 0.56 | 0.92 | **0.57** |
-| Mean cycle | 5.28 | 5.39 | **5.29** |
-| 7+ tick | 0% | 6.6% | **0.6%** |
-| 4-tick % | 5.7% | 8.9% | **5.3%** |
-| 5-tick % | 60.7% | 54.4% | **61.1%** |
-| 6-tick % | 33.6% | 30.1% | **33.1%** |
-| 12w income | 3460 | 3395 (−1.9%) | within ±3% |
-| Full test suite | — | 3365 pass | 3367 pass |
+| Metric | SC2 | EM | Error |
+|--------|-----|-----|-------|
+| 8w minerals (304 ticks) | 3460 | 3430 | −0.9% |
+| 12w minerals | 3955 | 3850 | −2.7% |
+| 16w minerals | 4235 | 4090 | −3.4% |
+| 3w gas (1 geyser) | 552 | 552 | **0.0%** |
+| 6w gas (2 geysers) | 1012 | 1080 | +6.7% |
+| Zerg 12w minerals | 2330 | 2430 | +4.3% |
+| Full test suite | — | 3367 pass | — |
 
-**Key constants (new):**
-- `MineralPatch.APPROACH_EQUALIZATION_SCALE` = 0.4 — per-patch approach compensates 40% of walk distance differences
-- `WorkerSimulation.LOW_SATURATION_DODGE_SCALE` = 0.25 — collision dodge reduction at ≤2 workers/patch
-- Both in `SimulatedWorker.resetToDefaults()` but NOT yet in `WorkerPhysicsConfig` (#681)
+**Key changes this session:**
+- `WorkerPhysicsConfig` now includes `approachEqualizationScale` and `lowSaturationDodgeScale` (#681)
+- `gasTarget()`/`gasReturnTarget()` use `GAS_BUILDING_RADIUS - ARRIVAL_THRESHOLD` and `TOWN_HALL_RADIUS - ARRIVAL_THRESHOLD` (#672)
+- `GAS_APPROACH_DOCKING_LOOPS` = 15.8 (was 11.5) (#672)
+- Sweep tests use `resetToDefaults()` instead of hardcoded values
 
-**Design insight:** SC2's cycle variance is a mixture of point masses at tick buckets 4, 5, 6 — each worker sits in one bucket consistently. No tuning of collision noise can produce this bounded variance. Collision adds unbounded random tails via contention cascade (3-loop displacement → 46-loop contention wait). The right variance source is per-patch approach equalization, not collision displacement.
+**Design insight:** The ARRIVAL_THRESHOLD (0.5u) is a movement system constant that affects all workers equally — but its impact depends on walk distance. For minerals, the approach docking constant (24.5 loops) was calibrated from SC2 cadence data that already included the threshold effect. Gas approach docking was calibrated independently against oracle MAPE, where the walk shortening was masked by other errors. Fixing the walk geometry and recalibrating the docking constant separately resolved the gas income error.
 
 ---
 
-## Filed Issues
+## Closed This Session
+
+| Issue | Title | Result |
+|-------|-------|--------|
+| #681 | Add equalization/dodge to WorkerPhysicsConfig | Done — both constants wired through CDI |
+| #672 | Gas walk ARRIVAL_THRESHOLD compensation | Done — 3w gas 0% error |
+| #673 | Dual-run 6w gas surplus asymmetry | Closed — geysers symmetric, not the cause |
+| #680 | Eliminate 7+ tick outliers | Closed — deferred to #679, 0.14% negligible |
+
+## Filed This Session
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #679 | Per-patch walk distance extension | M/Med | Model SC2 path geometry directly — WalkTo/WalkBack asymmetry |
-| #680 | Eliminate residual 0.6% 7+ tick outliers | S/Med | Contention cascade from dodge=0.25 — 4 cycles per 665 |
-| #681 | Add equalization/dodge to WorkerPhysicsConfig | XS/Low | Config properties for Quarkus override |
+| #682 | 6w dual-geyser +6.7% gas surplus | S/Med | Multi-geyser surplus after walk fix — likely assignment timing |
 
 ---
 
 ## Next Queue Items
 
-| Issue | Title | Scale | Notes |
-|-------|-------|-------|-------|
-| #677 | Gas approach docking calibration test | XS/Low | GAS_APPROACH_DOCKING still at 11.5 — needs 8w-style cadence measurement |
-| #676 | Reverse-engineer SC2 rate computation | M/High | 240-loop sliding window; needs tighter physics first |
-| #672 | Gas walk arrival-threshold compensation | S/Med | Remaining walk shortening (~9 loops/leg vs SC2) |
-| #673 | Dual-run 6w gas surplus two-geyser asymmetry | S/Low | +6.7% surplus at 6w, two geysers |
+| Issue | Title | Scale | Priority |
+|-------|-------|-------|----------|
+| #682 | 6w dual-geyser gas surplus | S/Med | Builds on #672 gas walk work |
+| #677 | Gas approach docking calibration test | — | Validate 15.8 constant against dual-run |
+| #679 | Per-patch walk distance extension | M/Med | Root fix for #680 and cross-map accuracy |
+| #676 | Reverse-engineer SC2 rate computation | — | Break ~16% MAPE floor |
+| #666 | Forward simulation economy mode | L/High | EM-driven income without GT sync |
 
 ---
 
 ## Rate Algorithm Finding
 
-**Key discovery:** SC2 mineral rates quantise at 28 minerals/min. All reported `mineralsCollectionRate` values satisfy `rate ≡ 27 (mod 28)` after ramp-up. The window approach becomes viable only after tighter physics alignment — now closer after #661/#656.
+**Key discovery:** SC2 mineral rates quantise at 28 minerals/min. All reported `mineralsCollectionRate` values satisfy `rate ≡ 27 (mod 28)` after ramp-up. The window approach becomes viable only after tighter physics alignment.
 
 ---
 
 ## Branch State
 
-Branch `issue-656-mineral-line-pathfinding` — **ready for work-end**.
-
-Key commits:
-1. `wip(#656): add CycleOutlierDiagnosticTest — traces 7+ tick cycle root causes`
-2. `wip(#656): add PatchCycleCorrelationTest — maps workers to patch positions`
-3. `wip(#656): verify patch assignment distribution is balanced`
-4. `feat(#656): per-patch approach docking from E2E distance`
-5. `feat(#656): scale collision dodge by patch contention`
-6. `feat(#656): calibrate approach equalization scale to 0.4`
-7. `feat(#656): extract LOW_SATURATION_DODGE_SCALE + sweep diagnostic`
-8. `fix(#656): code review fixes — reset chain + unmodifiable bases accessor`
-9. `docs(#656): update physics constants`
-
-Issues to close: **#656** (done).
-
----
-
-## Last Session
-
-**Work completed:**
-- #656: Cycle distribution matching — σ reduced from 0.92 to 0.57 (SC2: 0.56)
-- Root cause investigation: 43 outlier cycles traced to contention cascade + flat approach
-- False lead eliminated: worker distribution verified balanced (position-matching artifact)
-- First-principles analysis: SC2 variance is structural (per-patch), not stochastic (collision)
-- Per-patch approach docking with 40% equalization scale
-- Contention-aware collision scaling (25% at ≤2 workers/patch)
-- Equalization sweep found 0.4 as SC2-matching value
-- Dodge sweep confirmed 0.25 is load-bearing for cycle time
-- Blog: "Right Total, Wrong Shape"
-- Filed #679, #680, #681 for follow-up work
+On main. All work landed and published.
