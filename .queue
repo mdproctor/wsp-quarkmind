@@ -1,21 +1,16 @@
 # Work Plan —
 
 ## State
-branch: issue-679-per-patch-walk-distance-extension
+branch: 
 issue-repo: casehubio/quarkmind
 status: active
 active_issue: 
 
 ## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
-- [ ] casehubio/quarkmind#679 — Per-patch walk distance extension ← active
-  - [x] Batch 1: Decompose
-    - [x] Task 1: Add outboundPathDelay and decompose computeApproachDocking
-  - [x] Batch 2: Calibrate
-    - [x] Task 2: Sweep decomposed constants
-    - [x] Task 3: Update physics docs
-- [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
-- [ ] casehubio/quarkmind#666 — Forward simulation economy mode
+- [x] casehubio/quarkmind#679 — Per-patch walk distance extension
+- [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
+- [ ] casehubio/quarkmind#666 — Forward simulation economy mode ← active
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
 - [x] casehubio/quarkmind#646 — 6w gas baseline not verified
 - [x] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
