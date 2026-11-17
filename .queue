@@ -129,6 +129,6 @@ active_issue:
 - [x] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs
 - [x] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
 - [x] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
-- [ ] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement ← active
-- [ ] casehubio/quarkmind#683 — Extract physics constants to config file
+- [x] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
+- [ ] casehubio/quarkmind#683 — Extract physics constants to config file ← active
 - [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
