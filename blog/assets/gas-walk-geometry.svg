@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrowR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#e74c3c"/>
+    </marker>
+    <marker id="arrowG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#27ae60"/>
+    </marker>
+    <marker id="arrowB" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#2980b9"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#2c3e50">Gas Walk Geometry — ARRIVAL_THRESHOLD Effect</text>
+
+  <!-- ===== BEFORE (top) ===== -->
+  <text x="20" y="66" font-size="12" font-weight="600" fill="#7f8c8d">BEFORE</text>
+  <text x="20" y="80" font-size="10" fill="#95a5a6">target = building edge</text>
+
+  <!-- Town Hall -->
+  <circle cx="140" cy="110" r="40" fill="none" stroke="#2980b9" stroke-width="2"/>
+  <text x="140" y="114" text-anchor="middle" font-size="11" fill="#2980b9">Town Hall</text>
+  <text x="140" y="127" text-anchor="middle" font-size="9" fill="#95a5a6">r = 2.75</text>
+
+  <!-- Gas Building -->
+  <circle cx="540" cy="110" r="26" fill="none" stroke="#e67e22" stroke-width="2"/>
+  <text x="540" y="114" text-anchor="middle" font-size="11" fill="#e67e22">Geyser</text>
+  <text x="540" y="127" text-anchor="middle" font-size="9" fill="#95a5a6">r = 1.75</text>
+
+  <!-- Edge points (targets) -->
+  <circle cx="180" cy="110" r="4" fill="#2980b9"/>
+  <text x="180" y="100" text-anchor="middle" font-size="9" fill="#2980b9">TH edge</text>
+  <circle cx="514" cy="110" r="4" fill="#e67e22"/>
+  <text x="514" y="100" text-anchor="middle" font-size="9" fill="#e67e22">gas edge</text>
+
+  <!-- Worker stops 0.5u short -->
+  <circle cx="488" cy="110" r="5" fill="#e74c3c"/>
+  <text x="488" y="100" text-anchor="middle" font-size="9" font-weight="600" fill="#e74c3c">STOP</text>
+
+  <!-- Walk arrow (shortened) -->
+  <line x1="195" y1="110" x2="478" y2="110" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrowR)"/>
+  <text x="337" y="104" text-anchor="middle" font-size="10" fill="#e74c3c">walk = 2.6u → ~39 loops</text>
+
+  <!-- 0.5u gap annotation -->
+  <line x1="488" y1="130" x2="514" y2="130" stroke="#e74c3c" stroke-width="1.5"/>
+  <line x1="488" y1="126" x2="488" y2="134" stroke="#e74c3c" stroke-width="1"/>
+  <line x1="514" y1="126" x2="514" y2="134" stroke="#e74c3c" stroke-width="1"/>
+  <text x="501" y="144" text-anchor="middle" font-size="9" fill="#e74c3c">0.5u gap</text>
+
+  <!-- ===== AFTER (bottom) ===== -->
+  <text x="20" y="196" font-size="12" font-weight="600" fill="#7f8c8d">AFTER</text>
+  <text x="20" y="210" font-size="10" fill="#95a5a6">target = edge − threshold</text>
+
+  <!-- Town Hall -->
+  <circle cx="140" cy="240" r="40" fill="none" stroke="#2980b9" stroke-width="2"/>
+  <text x="140" y="244" text-anchor="middle" font-size="11" fill="#2980b9">Town Hall</text>
+
+  <!-- Gas Building -->
+  <circle cx="540" cy="240" r="26" fill="none" stroke="#e67e22" stroke-width="2"/>
+  <text x="540" y="244" text-anchor="middle" font-size="11" fill="#e67e22">Geyser</text>
+
+  <!-- New target (inside building surface) -->
+  <circle cx="522" cy="240" r="3" fill="#27ae60" stroke="#27ae60"/>
+  <text x="522" y="260" text-anchor="middle" font-size="8" fill="#27ae60">target</text>
+  <text x="522" y="270" text-anchor="middle" font-size="8" fill="#95a5a6">(r−0.5)</text>
+
+  <!-- Edge points -->
+  <circle cx="180" cy="240" r="3" fill="#2980b9" stroke="#2980b9"/>
+  <circle cx="514" cy="240" r="4" fill="#27ae60"/>
+  <text x="514" y="230" text-anchor="middle" font-size="9" font-weight="600" fill="#27ae60">STOP</text>
+
+  <!-- Walk arrow (full edge-to-edge) -->
+  <line x1="195" y1="240" x2="504" y2="240" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowG)"/>
+  <text x="350" y="234" text-anchor="middle" font-size="10" fill="#27ae60">walk = 3.1u → ~42 loops</text>
+
+  <!-- Result annotation -->
+  <rect x="580" y="68" width="130" height="40" rx="4" fill="#fdf2f2" stroke="#e74c3c" stroke-width="1"/>
+  <text x="645" y="84" text-anchor="middle" font-size="10" font-weight="600" fill="#e74c3c">+13% gas surplus</text>
+  <text x="645" y="98" text-anchor="middle" font-size="9" fill="#c0392b">walks too short</text>
+
+  <rect x="580" y="228" width="130" height="40" rx="4" fill="#f0faf4" stroke="#27ae60" stroke-width="1"/>
+  <text x="645" y="244" text-anchor="middle" font-size="10" font-weight="600" fill="#27ae60">0% gas error</text>
+  <text x="645" y="258" text-anchor="middle" font-size="9" fill="#1e8449">exact match (3w)</text>
+
+  <!-- Center-to-center dimension -->
+  <line x1="140" y1="296" x2="540" y2="296" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="140" y1="290" x2="140" y2="302" stroke="#7f8c8d" stroke-width="1"/>
+  <line x1="540" y1="290" x2="540" y2="302" stroke="#7f8c8d" stroke-width="1"/>
+  <text x="340" y="312" text-anchor="middle" font-size="10" fill="#7f8c8d">7.6u center-to-center</text>
+</svg>
