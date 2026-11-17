@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 240" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    text { fill: #333; }
+    .title { font-size: 14px; font-weight: 600; fill: #222; }
+    .label { font-size: 11px; fill: #555; }
+    .phase-label { font-size: 10px; fill: white; font-weight: 500; }
+    .worker-label { font-size: 12px; font-weight: 600; fill: #333; }
+    .dim-label { font-size: 10px; fill: #888; }
+    .walk { fill: #7fb3d8; }
+    .inside { fill: #e07b5a; }
+    .deposit { fill: #8cc084; }
+    .wait { fill: #ddd; }
+    .bracket { stroke: #666; stroke-width: 1; fill: none; }
+    .bracket-label { font-size: 11px; fill: #666; font-weight: 500; }
+  </style>
+
+  <text x="325" y="22" text-anchor="middle" class="title">3-Worker Gas Cycle — Rotation Limited (129.6 loops)</text>
+
+  <!-- Scale: 1 loop = 4px, starting at x=60 -->
+  <!-- Worker 1: starts at loop 0 -->
+  <text x="10" y="62" class="worker-label">W1</text>
+  <!-- Walk to geyser: 34 loops = 136px -->
+  <rect x="60" y="46" width="136" height="24" class="walk" rx="3"/>
+  <text x="128" y="62" text-anchor="middle" class="phase-label">walk → geyser</text>
+  <!-- Inside: 43.2 loops = 173px -->
+  <rect x="196" y="46" width="173" height="24" class="inside" rx="3"/>
+  <text x="282" y="62" text-anchor="middle" class="phase-label">inside (43.2 loops)</text>
+  <!-- Walk back: 36 loops = 144px -->
+  <rect x="369" y="46" width="144" height="24" class="walk" rx="3"/>
+  <text x="441" y="62" text-anchor="middle" class="phase-label">walk → TH</text>
+  <!-- Deposit: 12 loops = 48px -->
+  <rect x="513" y="46" width="48" height="24" class="deposit" rx="3"/>
+  <text x="537" y="62" text-anchor="middle" class="phase-label">dep</text>
+
+  <!-- Worker 2: starts at loop 43.2 (after W1 exits geyser) -->
+  <text x="10" y="102" class="worker-label">W2</text>
+  <!-- Wait: 43.2 loops = 173px (stagger) -->
+  <rect x="60" y="86" width="136" height="24" class="wait" rx="3" opacity="0.5"/>
+  <!-- Inside: starts at 196 (same as W1's inside start + 43.2 offset) -->
+  <rect x="196" y="86" width="136" height="24" class="walk" rx="3"/>
+  <text x="264" y="102" text-anchor="middle" class="phase-label">walk → geyser</text>
+  <!-- Inside at 196 + 136 = 332 -->
+  <rect x="332" y="86" width="173" height="24" class="inside" rx="3"/>
+  <text x="418" y="102" text-anchor="middle" class="phase-label">inside (43.2)</text>
+
+  <!-- Worker 3: starts at loop 86.4 -->
+  <text x="10" y="142" class="worker-label">W3</text>
+  <rect x="60" y="126" width="272" height="24" class="wait" rx="3" opacity="0.5"/>
+  <rect x="332" y="126" width="136" height="24" class="walk" rx="3"/>
+  <text x="400" y="142" text-anchor="middle" class="phase-label">walk → geyser</text>
+  <rect x="468" y="126" width="93" height="24" class="inside" rx="3"/>
+  <text x="514" y="142" text-anchor="middle" class="phase-label">inside...</text>
+
+  <!-- Cycle bracket -->
+  <path d="M196,170 L196,180 L369,180 L369,170" class="bracket"/>
+  <text x="282" y="196" text-anchor="middle" class="bracket-label">W1 inside = 43.2 loops</text>
+
+  <!-- Legend -->
+  <rect x="100" y="212" width="14" height="14" class="walk" rx="2"/>
+  <text x="120" y="224" class="label">Walk</text>
+  <rect x="180" y="212" width="14" height="14" class="inside" rx="2"/>
+  <text x="200" y="224" class="label">Inside geyser (harvest + dock)</text>
+  <rect x="380" y="212" width="14" height="14" class="deposit" rx="2"/>
+  <text x="400" y="224" class="label">Deposit</text>
+  <rect x="470" y="212" width="14" height="14" class="wait" rx="2" opacity="0.5"/>
+  <text x="490" y="224" class="label">Waiting / stagger</text>
+</svg>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 320" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    text { fill: #333; }
+    .axis { stroke: #666; stroke-width: 1.5; }
+    .bar-low { fill: #e07b5a; }
+    .bar-high { fill: #5a9bd5; }
+    .label { font-size: 12px; fill: #555; }
+    .value { font-size: 14px; font-weight: 600; }
+    .title { font-size: 16px; font-weight: 600; fill: #222; }
+    .annotation { font-size: 11px; fill: #888; font-style: italic; }
+    .mean-line { stroke: #c44; stroke-width: 1.5; stroke-dasharray: 6,4; }
+    .original-line { stroke: #999; stroke-width: 1; stroke-dasharray: 3,3; }
+  </style>
+
+  <text x="300" y="28" text-anchor="middle" class="title">SC2 Vespene at Tick 304 — 5 Recordings</text>
+
+  <!-- Axes -->
+  <line x1="80" y1="250" x2="520" y2="250" class="axis"/>
+  <line x1="80" y1="250" x2="80" y2="50" class="axis"/>
+
+  <!-- Y-axis labels -->
+  <text x="72" y="254" text-anchor="end" class="label">0</text>
+  <text x="72" y="204" text-anchor="end" class="label">400</text>
+  <text x="72" y="154" text-anchor="end" class="label">800</text>
+  <text x="72" y="104" text-anchor="end" class="label">1200</text>
+
+  <!-- Y gridlines -->
+  <line x1="80" y1="200" x2="520" y2="200" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="150" x2="520" y2="150" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="100" x2="520" y2="100" stroke="#eee" stroke-width="1"/>
+
+  <!-- Bars: each 60px wide, spaced at 88px intervals -->
+  <!-- Run 1: 1044 -->
+  <rect x="100" y="119" width="60" height="131" class="bar-low" rx="3"/>
+  <text x="130" y="114" text-anchor="middle" class="value" fill="#e07b5a">1044</text>
+
+  <!-- Run 2: 1204 -->
+  <rect x="188" y="99" width="60" height="151" class="bar-high" rx="3"/>
+  <text x="218" y="94" text-anchor="middle" class="value" fill="#5a9bd5">1204</text>
+
+  <!-- Run 3: 1204 -->
+  <rect x="276" y="99" width="60" height="151" class="bar-high" rx="3"/>
+  <text x="306" y="94" text-anchor="middle" class="value" fill="#5a9bd5">1204</text>
+
+  <!-- Run 4: 1044 -->
+  <rect x="364" y="119" width="60" height="131" class="bar-low" rx="3"/>
+  <text x="394" y="114" text-anchor="middle" class="value" fill="#e07b5a">1044</text>
+
+  <!-- Run 5: 1204 -->
+  <rect x="452" y="99" width="60" height="151" class="bar-high" rx="3"/>
+  <text x="482" y="94" text-anchor="middle" class="value" fill="#5a9bd5">1204</text>
+
+  <!-- X-axis labels -->
+  <text x="130" y="270" text-anchor="middle" class="label">Run 1</text>
+  <text x="218" y="270" text-anchor="middle" class="label">Run 2</text>
+  <text x="306" y="270" text-anchor="middle" class="label">Run 3</text>
+  <text x="394" y="270" text-anchor="middle" class="label">Run 4</text>
+  <text x="482" y="270" text-anchor="middle" class="label">Run 5</text>
+
+  <!-- Mean line at 1140 -->
+  <line x1="90" y1="107" x2="520" y2="107" class="mean-line"/>
+  <text x="530" y="111" class="annotation" fill="#c44">mean = 1140</text>
+
+  <!-- Original baseline at 1012 -->
+  <line x1="90" y1="123" x2="520" y2="123" class="original-line"/>
+  <text x="530" y="127" class="annotation" fill="#999">original = 1012</text>
+
+  <!-- Legend -->
+  <rect x="160" y="288" width="12" height="12" class="bar-low" rx="2"/>
+  <text x="178" y="299" class="label">Low mode (1044)</text>
+  <rect x="310" y="288" width="12" height="12" class="bar-high" rx="2"/>
+  <text x="328" y="299" class="label">High mode (1204)</text>
+</svg>
