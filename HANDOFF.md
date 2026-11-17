@@ -2,7 +2,9 @@
 
 ## Orientation for Next Session
 
-Gas approach docking recalibrated (#677). After serial access (#682), the docking constant was zeroed — the assumption was that rotation wait would absorb approach overhead. It didn't: gas over-production spiked to +14% (3w) and +20% (6w). Sweep found 12.5 loops minimises combined error. The cycle is now rotation-limited (136 loops actual vs 135 theoretical 3×inside).
+Approach docking decomposed (#679). The 24.5-loop approach docking constant previously absorbed two distinct phenomena: approach animation (fixed docking overhead) and outbound path deviation (workers navigate around the mineral line). These are now separate constants: `APPROACH_ANIMATION_LOOPS` (20.0, constant per base) and per-patch `outboundPathDelay` (0–5 loops, from E2E distance). Total per-patch `approachDockingLoops` is preserved exactly — pure refactoring.
+
+Also fixed two CDI default drift violations (PP-20261116-5f16ed): gas-approach-docking CDI was 15.8 but constant was 12.5; gas-harvest-duration CDI was 32.0 but constant was 31.7.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
@@ -10,33 +12,34 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Metric | SC2 | EM | Error |
 |--------|-----|-----|-------|
-| 8w minerals | 3460 | 3430 | **-0.9%** |
-| 12w minerals | 3955 | 3850 | **-2.7%** |
-| 16w minerals | 4235 | 4090 | **-3.4%** |
+| 8w minerals | 2330 | 2445 | **+4.9%** |
+| 12w minerals | 3460 | 3395 | **-1.9%** |
+| 16w minerals | 4235 | 4165 | **-1.7%** |
 | 3w gas (1 geyser) | 552 | 536 | **-2.9%** |
 | 6w gas (2 geysers) | 1012 | 1032 | **+2.0%** |
-| Zerg 12w minerals | 2330 | 2430 | **+4.3%** |
-| Full test suite | — | 3367 pass | — |
+| Full test suite | — | 3368 pass | — |
 
 **Key changes this session:**
-- `GAS_APPROACH_DOCKING_LOOPS` = 12.5 (was 0 after #682, was 15.8 before #682)
-- Sweep test `sweepGasApproachDocking` added to `ApproachDockingSweepTest`
-- WorkerSimulationTest 3w/2w ratio assertion updated for serial access (1.02 not 1.5)
-- Gas cycle: 136 loops, rotation-limited (100.7% of theoretical 3×inside)
-- Physics doc fully synced with current constants and cycle table
-- Blog: "The Constant the Model Forgot" — why structural model changes invalidate calibrated constants
-- Filed #689: 3w/6w gas asymmetry (-2.9% vs +2.0%)
+- `APPROACH_ANIMATION_LOOPS` = 20.0 (new constant — animation-only)
+- `PATH_DEVIATION_BASE` = 4.5, `PATH_DEVIATION_SCALE` = 0.4 (new compile-time constants)
+- `outboundPathDelay` per-patch field on `MineralPatch`
+- Calibration sweep test `sweepDecomposedApproachConstants` in `ApproachDockingSweepTest`
+- Correctness fix: `max(0)` applied to total (animation + rawPathDelay) not to pathDelay alone
+- CDI defaults synced: gas-approach-docking 15.8→12.5, gas-harvest-duration 32.0→31.7
+- Physics doc drift fixed: §1b EM σ 0.90→0.57, §19 stale values removed
+- Blog: "Two Walks, One Constant" — walk asymmetry and approach docking decomposition
+- Filed #690 (effective radii), #691 (dead APPROACH_EQUALIZATION_SCALE cleanup), #692 (angular position predictor)
 
-**Gas cycle measured breakdown (3w, 1 geyser, docking=12.5):**
+**Walk asymmetry evidence (8w cadence, CycleDecompositionTest):**
 
-| Phase | Loops | % of cycle |
-|-------|-------|------------|
-| Walk to geyser | 34 | 25% |
-| Wait at entry | 8 | 6% |
-| Inside (harvest+dock) | 45 | 33% |
-| Walk to TH | 36 | 26% |
-| Deposit | 12 | 9% |
-| **Total** | **136** | **100%** |
+| Measure | Outbound | Return |
+|---------|----------|--------|
+| Walk distance range | 2.69–4.29u | 1.47–2.54u |
+| Walk/return ratio | 1.4–1.9x | — |
+| Effective radius (SC2) | 1.215u | 3.755u |
+| Effective radius (EM) | 1.0u | 2.75u |
+
+The return walk being shorter is primarily an effective radius effect (workers stop further from buildings), deferred to #690.
 
 ---
 
@@ -44,14 +47,15 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #684 | Gas worker cycle timing diagnostic test | Done — per-phase measurement, 3 test methods |
-| #677 | Gas approach docking recalibration | Done — 12.5 loops, 3w -2.9%, 6w +2.0% |
+| #679 | Per-patch walk distance extension | Done — decomposed approach docking into animation + path delay |
 
 ## Filed This Session
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #689 | 3w/6w gas asymmetry | S/Med | -2.9% vs +2.0% at same docking — assignment timing |
+| #690 | Effective mining/deposit radius correction | M/Med | Workers stop at 1.215u (not 1.0u) and 3.755u (not 2.75u) |
+| #691 | Clean up dead APPROACH_EQUALIZATION_SCALE | XS/Low | Superseded by PATH_DEVIATION_SCALE but still wired |
+| #692 | Improve outbound path delay predictor | M/Med | Add angular position to E2E distance model (R²=0.104 is weak) |
 
 ---
 
@@ -59,9 +63,8 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Scale | Priority |
 |-------|-------|-------|----------|
-| #679 | Per-patch walk distance extension | M/Med | Root fix for straight-line walk gap — affects minerals (-2.7% to -3.4%) and gas (-2.9%) |
-| #676 | Reverse-engineer SC2 rate computation | —/— | Break ~16% rate MAPE floor |
 | #666 | Forward simulation economy mode | L/High | EM-driven income without GT sync |
+| #676 | Reverse-engineer SC2 rate computation | —/— | Break ~16% rate MAPE floor |
 
 ---
 
