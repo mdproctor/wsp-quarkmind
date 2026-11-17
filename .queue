@@ -1,7 +1,7 @@
 # Work Plan —
 
 ## State
-branch: issue-695-3w-gas-rotation-limit
+branch: 
 issue-repo: casehubio/quarkmind
 status: active
 active_issue: 
@@ -132,6 +132,6 @@ active_issue:
 - [x] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
 - [x] casehubio/quarkmind#683 — Extract physics constants to config file
 - [x] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
-- [ ] casehubio/quarkmind#695 — 3w gas rotation-limited cycle vs Liquipedia ← active
-- [ ] casehubio/quarkmind#696 — Update 6w gas baseline to multi-run mean
+- [x] casehubio/quarkmind#695 — 3w gas rotation-limited cycle vs Liquipedia
+- [ ] casehubio/quarkmind#696 — Update 6w gas baseline to multi-run mean ← active
 - [ ] casehubio/quarkmind#697 — MULE yield and rate reconciliation vs Liquipedia
