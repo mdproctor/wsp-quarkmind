@@ -127,8 +127,8 @@ active_issue:
 - [x] casehubio/quarkmind#689 — 3w/6w gas asymmetry
 - [x] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method
 - [x] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs
-- [ ] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests ← active
-- [ ] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
+- [x] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
+- [ ] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference ← active
 - [ ] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
 - [ ] casehubio/quarkmind#683 — Extract physics constants to config file
 - [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
