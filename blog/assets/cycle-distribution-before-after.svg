@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 320">
+  <defs>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 14px; font-weight: bold; }
+      .axis-label { font-size: 10px; fill: #666; }
+      .pct { font-size: 9px; font-weight: bold; }
+      .legend-text { font-size: 11px; }
+      .grid { stroke: #e8e8e8; stroke-width: 0.5; }
+      .axis { stroke: #999; stroke-width: 1; }
+      .bar-sc2 { fill: #888; }
+      .bar-before { fill: #d94a4a; }
+      .bar-after { fill: #4a90d9; }
+    </style>
+  </defs>
+
+  <text x="350" y="22" text-anchor="middle" class="title">Cycle Length Distribution (12 workers, 304 ticks)</text>
+
+  <!-- Y axis -->
+  <line x1="70" y1="40" x2="70" y2="240" class="axis"/>
+  <!-- X axis -->
+  <line x1="70" y1="240" x2="650" y2="240" class="axis"/>
+
+  <!-- Y grid + labels (0% to 80%) -->
+  <line x1="70" y1="240" x2="650" y2="240" class="grid"/>
+  <text x="65" y="244" text-anchor="end" class="axis-label">0%</text>
+  <line x1="70" y1="190" x2="650" y2="190" class="grid"/>
+  <text x="65" y="194" text-anchor="end" class="axis-label">20%</text>
+  <line x1="70" y1="140" x2="650" y2="140" class="grid"/>
+  <text x="65" y="144" text-anchor="end" class="axis-label">40%</text>
+  <line x1="70" y1="90" x2="650" y2="90" class="grid"/>
+  <text x="65" y="94" text-anchor="end" class="axis-label">60%</text>
+  <line x1="70" y1="65" x2="650" y2="65" class="grid"/>
+  <text x="65" y="69" text-anchor="end" class="axis-label">80%</text>
+
+  <!-- Group: 4-tick (x=90) -->
+  <!-- SC2: 5.7% -->
+  <rect x="90" y="225.7" width="22" height="14.3" class="bar-sc2" rx="1"/>
+  <text x="101" y="223" text-anchor="middle" class="pct" fill="#888">5.7</text>
+  <!-- EM before: 8.9% -->
+  <rect x="114" y="217.8" width="22" height="22.2" class="bar-before" rx="1"/>
+  <text x="125" y="215" text-anchor="middle" class="pct" fill="#d94a4a">8.9</text>
+  <!-- EM after: 5.3% -->
+  <rect x="138" y="226.8" width="22" height="13.2" class="bar-after" rx="1"/>
+  <text x="149" y="224" text-anchor="middle" class="pct" fill="#4a90d9">5.3</text>
+  <text x="125" y="257" text-anchor="middle" class="axis-label">4 ticks</text>
+
+  <!-- Group: 5-tick (x=200) -->
+  <!-- SC2: 60.7% -->
+  <rect x="200" y="88.3" width="22" height="151.7" class="bar-sc2" rx="1"/>
+  <text x="211" y="84" text-anchor="middle" class="pct" fill="#888">60.7</text>
+  <!-- EM before: 54.4% -->
+  <rect x="224" y="104" width="22" height="136" class="bar-before" rx="1"/>
+  <text x="235" y="100" text-anchor="middle" class="pct" fill="#d94a4a">54.4</text>
+  <!-- EM after: 61.1% -->
+  <rect x="248" y="87.2" width="22" height="152.8" class="bar-after" rx="1"/>
+  <text x="259" y="83" text-anchor="middle" class="pct" fill="#4a90d9">61.1</text>
+  <text x="235" y="257" text-anchor="middle" class="axis-label">5 ticks</text>
+
+  <!-- Group: 6-tick (x=310) -->
+  <!-- SC2: 33.6% -->
+  <rect x="310" y="156" width="22" height="84" class="bar-sc2" rx="1"/>
+  <text x="321" y="152" text-anchor="middle" class="pct" fill="#888">33.6</text>
+  <!-- EM before: 30.1% -->
+  <rect x="334" y="164.8" width="22" height="75.2" class="bar-before" rx="1"/>
+  <text x="345" y="161" text-anchor="middle" class="pct" fill="#d94a4a">30.1</text>
+  <!-- EM after: 33.1% -->
+  <rect x="358" y="157.2" width="22" height="82.8" class="bar-after" rx="1"/>
+  <text x="369" y="153" text-anchor="middle" class="pct" fill="#4a90d9">33.1</text>
+  <text x="345" y="257" text-anchor="middle" class="axis-label">6 ticks</text>
+
+  <!-- Group: 7-tick (x=420) -->
+  <!-- SC2: 0% -->
+  <rect x="420" y="239" width="22" height="1" class="bar-sc2" rx="1"/>
+  <!-- EM before: 4.9% -->
+  <rect x="444" y="227.8" width="22" height="12.2" class="bar-before" rx="1"/>
+  <text x="455" y="225" text-anchor="middle" class="pct" fill="#d94a4a">4.9</text>
+  <!-- EM after: 0.4% -->
+  <rect x="468" y="239" width="22" height="1" class="bar-after" rx="1"/>
+  <text x="445" y="257" text-anchor="middle" class="axis-label">7 ticks</text>
+
+  <!-- Group: 8-10 tick (x=530) -->
+  <!-- SC2: 0% -->
+  <!-- EM before: 1.5% -->
+  <rect x="544" y="236.2" width="22" height="3.8" class="bar-before" rx="1"/>
+  <text x="555" y="233" text-anchor="middle" class="pct" fill="#d94a4a">1.5</text>
+  <!-- EM after: 0.2% -->
+  <rect x="568" y="239.5" width="22" height="0.5" class="bar-after" rx="1"/>
+  <text x="555" y="257" text-anchor="middle" class="axis-label">8+ ticks</text>
+
+  <!-- Legend -->
+  <rect x="120" y="278" width="12" height="12" class="bar-sc2" rx="2"/>
+  <text x="136" y="289" class="legend-text">SC2 (sigma=0.56)</text>
+  <rect x="270" y="278" width="12" height="12" class="bar-before" rx="2"/>
+  <text x="286" y="289" class="legend-text">EM before (sigma=0.92)</text>
+  <rect x="445" y="278" width="12" height="12" class="bar-after" rx="2"/>
+  <text x="461" y="289" class="legend-text">EM after (sigma=0.57)</text>
+</svg>

@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 280">
+  <defs>
+    <style>
+      text { font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 13px; font-weight: bold; }
+      .subtitle { font-size: 11px; fill: #666; }
+      .label { font-size: 10px; fill: #555; }
+      .heading { font-size: 12px; font-weight: bold; }
+      .outlier-zone { fill: #fee; stroke: #c00; stroke-width: 1; stroke-dasharray: 4,3; }
+      .safe-zone { fill: #f0f7f0; stroke: #4a4; stroke-width: 1; }
+      .cycle-bar { rx: 2; }
+      .divider { stroke: #ccc; stroke-width: 1; stroke-dasharray: 6,4; }
+    </style>
+  </defs>
+
+  <text x="350" y="20" text-anchor="middle" class="title">Two Variance Mechanisms</text>
+
+  <!-- Divider -->
+  <line x1="350" y1="35" x2="350" y2="260" class="divider"/>
+
+  <!-- LEFT: Stochastic -->
+  <text x="175" y="50" text-anchor="middle" class="heading">Stochastic (collision)</text>
+  <text x="175" y="65" text-anchor="middle" class="subtitle">Random per-cycle noise</text>
+
+  <!-- Outlier zone background -->
+  <rect x="265" y="80" width="70" height="140" class="outlier-zone" fill-opacity="0.3"/>
+  <text x="300" y="95" text-anchor="middle" class="label" fill="#c00">7+ tick</text>
+  <text x="300" y="107" text-anchor="middle" class="label" fill="#c00">outlier zone</text>
+
+  <!-- Safe zone -->
+  <rect x="30" y="80" width="235" height="140" fill="#f8f8f8" stroke="#ddd" stroke-width="0.5"/>
+
+  <!-- Tick labels -->
+  <text x="30" y="232" class="label">4</text>
+  <text x="89" y="232" class="label">5</text>
+  <text x="148" y="232" class="label">6</text>
+  <text x="207" y="232" class="label">7</text>
+  <text x="265" y="232" class="label">8</text>
+
+  <!-- Cycle bars with random extensions (some spill into outlier zone) -->
+  <rect x="30" y="90" width="130" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="102" width="118" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="114" width="145" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="126" width="125" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="138" width="210" height="8" fill="#c00" class="cycle-bar" opacity="0.8"/>
+  <rect x="30" y="150" width="135" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="162" width="115" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="174" width="260" height="8" fill="#c00" class="cycle-bar" opacity="0.8"/>
+  <rect x="30" y="186" width="140" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+  <rect x="30" y="198" width="128" height="8" fill="#d94a4a" class="cycle-bar" opacity="0.7"/>
+
+  <!-- Wavy noise annotations -->
+  <path d="M160,94 q5,-4 10,0 q5,4 10,0 q5,-4 10,0" stroke="#c00" stroke-width="1" fill="none"/>
+  <path d="M145,178 q5,-4 10,0 q5,4 10,0 q5,-4 10,0 q5,4 10,0 q5,-4 10,0 q5,4 10,0 q5,-4 10,0 q5,4 10,0" stroke="#c00" stroke-width="1.5" fill="none"/>
+
+  <text x="175" y="250" text-anchor="middle" class="label" fill="#c00">Unbounded tails from cascade</text>
+
+  <!-- RIGHT: Structural -->
+  <text x="525" y="50" text-anchor="middle" class="heading">Structural (per-patch)</text>
+  <text x="525" y="65" text-anchor="middle" class="subtitle">Fixed per-patch timing</text>
+
+  <!-- Safe zone background -->
+  <rect x="380" y="80" width="235" height="140" class="safe-zone" fill-opacity="0.15"/>
+
+  <!-- Tick labels -->
+  <text x="380" y="232" class="label">4</text>
+  <text x="439" y="232" class="label">5</text>
+  <text x="498" y="232" class="label">6</text>
+  <text x="557" y="232" class="label">7</text>
+
+  <!-- 8 patches with consistent per-patch cycle times, all within [4,6] -->
+  <!-- P1 close: 4.8 ticks -->
+  <rect x="380" y="90" width="109" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="495" y="97" class="label">P1 close</text>
+  <!-- P2 close: 5.0 -->
+  <rect x="380" y="104" width="118" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="504" y="111" class="label">P2 close</text>
+  <!-- P3 close: 5.1 -->
+  <rect x="380" y="118" width="124" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="510" y="125" class="label">P3 close</text>
+  <!-- P4 mid: 5.2 -->
+  <rect x="380" y="132" width="130" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="516" y="139" class="label">P4 mid</text>
+  <!-- P5 mid: 5.4 -->
+  <rect x="380" y="146" width="142" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="528" y="153" class="label">P5 mid</text>
+  <!-- P6 far: 5.7 -->
+  <rect x="380" y="160" width="160" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="546" y="167" class="label">P6 far</text>
+  <!-- P7 far: 5.9 -->
+  <rect x="380" y="174" width="172" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="558" y="181" class="label">P7 far</text>
+  <!-- P8 far: 6.0 -->
+  <rect x="380" y="188" width="177" height="8" fill="#4a90d9" class="cycle-bar" opacity="0.7"/>
+  <text x="563" y="195" class="label">P8 far</text>
+
+  <text x="525" y="250" text-anchor="middle" class="label" fill="#4a4">Bounded support — no outliers</text>
+</svg>
