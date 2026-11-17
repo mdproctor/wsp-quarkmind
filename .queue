@@ -134,4 +134,4 @@ active_issue:
 - [x] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
 - [x] casehubio/quarkmind#695 — 3w gas rotation-limited cycle vs Liquipedia
 - [x] casehubio/quarkmind#696 — Update 6w gas baseline to multi-run mean
-- [ ] casehubio/quarkmind#697 — MULE yield and rate reconciliation vs Liquipedia ← active
+- [x] casehubio/quarkmind#697 — MULE yield and rate reconciliation vs Liquipedia
