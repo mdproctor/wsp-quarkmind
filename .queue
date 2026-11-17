@@ -1,16 +1,7 @@
-# Work Plan —
-
-## State
-branch: issue-679-per-patch-walk-distance-extension
-issue-repo: casehubio/quarkmind
-status: active
-active_issue: 
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
-- [ ] casehubio/quarkmind#666 — Forward simulation economy mode ← active
+- [x] casehubio/quarkmind#666 — Forward simulation economy mode
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
 - [x] casehubio/quarkmind#646 — 6w gas baseline not verified
 - [x] casehubio/quarkmind#647 — SC2 RequestQuit process cleanup
@@ -124,7 +115,7 @@ active_issue:
 - [x] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
 - [x] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
 - [x] casehubio/quarkmind#684 — Gas worker cycle timing diagnostic test
-- [ ] casehubio/quarkmind#689 — 3w/6w gas asymmetry
+- [ ] casehubio/quarkmind#689 — 3w/6w gas asymmetry        ← active
 - [ ] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method
 - [ ] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs
 - [ ] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
@@ -132,3 +123,9 @@ active_issue:
 - [ ] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
 - [ ] casehubio/quarkmind#683 — Extract physics constants to config file
 - [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
+
+## State
+branch: issue-679-per-patch-walk-distance-extension
+issue-repo: casehubio/quarkmind
+status: active
+active_issue: 
