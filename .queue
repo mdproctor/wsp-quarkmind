@@ -115,8 +115,8 @@
 - [x] casehubio/quarkmind#681 — Add equalization/dodge to WorkerPhysicsConfig
 - [x] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
 - [x] casehubio/quarkmind#684 — Gas worker cycle timing diagnostic test
-- [ ] casehubio/quarkmind#689 — 3w/6w gas asymmetry        ← active
-- [ ] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method
+- [x] casehubio/quarkmind#689 — 3w/6w gas asymmetry
+- [ ] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method        ← active
 - [ ] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs
 - [ ] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
 - [ ] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
@@ -125,7 +125,7 @@
 - [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
 
 ## State
-branch: issue-679-per-patch-walk-distance-extension
+branch: issue-689-gas-asymmetry-single-dual-geyser
 issue-repo: casehubio/quarkmind
 status: active
 active_issue: 
