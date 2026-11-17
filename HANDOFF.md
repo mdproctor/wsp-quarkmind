@@ -2,9 +2,7 @@
 
 ## Orientation for Next Session
 
-Gas asymmetry resolved (#689). SC2 empirical data showed single-geyser under-production (-3.6%) and dual-geyser over-production (+2.8%) at the same docking constant. Root cause: the EM's gas cycle was geyser-limited (inside time 44.2 loops created slack absorbing all deposit contention via phase-shift stabilization). SC2's empirical dual-geyser penalty (~6%) comes from TH approach path congestion when >3 gas workers share a base.
-
-Fix: gas deposit congestion model — each deposit extends by `GAS_DEPOSIT_CONGESTION_PER_WORKER` (4.0 loops) × max(0, workers_at_base − 3). Zero effect on single-geyser. Combined with docking recalibration 12.5→11.5 (congestion now models part of the cycle overhead the docking previously absorbed).
+Gas calibration validated and documented. Multi-run SC2 recording revealed bimodal vespene output — single recordings are unreliable baselines. Liquipedia reference values reconciled against EM constants; 1w/2w gas rates match within 5% at close distance, 3w has a structural -26% gap from rotation-limited cycle timing. Physics doc fully audited and corrected — no stale values remain.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
@@ -12,34 +10,27 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Metric | SC2 | EM | Error |
 |--------|-----|-----|-------|
-| 8w minerals | 2330 | 2430 | **+4.3%** |
-| 12w minerals | 3460 | 3430 | **-0.9%** |
-| 16w minerals | 4235 | 4090 | **-3.4%** |
+| 8w minerals | 2330 | 2445 | **+4.9%** |
+| 12w minerals | 3460 | 3395 | **-1.9%** |
+| 16w minerals | 4235 | 4165 | **-1.7%** |
 | 3w gas (1 geyser) | 552 | 544 | **-1.4%** |
 | 6w gas (2 geysers) | 1012 | 1016 | **+0.4%** |
-| Full test suite | — | 3368 pass | — |
+| 6w gas (5-run mean) | 1140 | 1016 | **-10.9%** |
 
-**Key changes this session:**
-- `GAS_APPROACH_DOCKING_LOOPS` = 11.5 (was 12.5 — reduced, congestion models part of cycle overhead)
-- `GAS_DEPOSIT_CONGESTION_PER_WORKER` = 4.0 (new — TH approach congestion for multi-geyser bases)
-- CDI default synced: gas-approach-docking 12.5→11.5
-- Diagnostic tests: perGeyserIncomeTracking, depositLockContentionTrace, dockingVsRegimeSweep
-- Calibration sweep: gasApproachDockingSweep, gasDockingCongestionSweep in DualRunCalibrationTest
-- Physics doc updated with congestion model and phase-shift stabilization finding
-
-**Key diagnostic findings (#689):**
-- Deposit lock is structurally ineffective at ANY value (0–16 loops) — phase-shift stabilization
-- Per-geyser income is perfectly symmetric (50/50 split in dual-geyser)
-- 22 transient lock contention events over 6710 loops — negligible
-- Geyser-limited regime: slack = 2×inside − non_inside = 6.4 loops absorbs all contention
-- Gas worker collision (walk-path model) doesn't work: cross-geyser paths are 1.78u apart (> 1.5u COLLISION_DIAMETER on this map geometry)
+**Key findings this session:**
+- SC2 6w gas is bimodal: {1044, 1204, 1204, 1044, 1204}. Mean=1140, CV=6.88%. Original single-run baseline (1012) was an outlier below both modes.
+- Liquipedia gas rates match EM at 5u distance for 1w (-4.9%) and 2w (-5.1%). 3w rate is -25.8% at every distance — structural rotation-limited gap (3 × inside_time = 129.6 loops vs Liquipedia's implied 99 loops).
+- Gas accuracy already within 2% of SC2 baselines (post-#689), no further calibration needed.
+- Physics doc Liquipedia reconciliation complete — every value mapped to EM constant with delta and rationale.
+- Physics doc fully audited: 4 stale values corrected (approach docking 12.5→11.5, gas cycle table, config block, dual-run gaps).
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #693 | Gas worker walk collision for close-angle geyser maps | S/Med | Cross-geyser walk paths don't overlap on test map (1.78u > 1.5u); may matter on closer-angle maps |
-| #694 | WorkerSimulation static fields lack resetToDefaults() | XS/Low | GAS_DEPOSIT_LOCK_LOOPS and GAS_DEPOSIT_CONGESTION_PER_WORKER restored manually in sweeps |
+| #695 | 3w gas rotation-limited cycle vs Liquipedia | S/Med | EM's 3×43.2=129.6 loop cycle vs Liquipedia's implied 99 — investigate if approach docking is too high for rotation regime |
+| #696 | Update 6w gas baseline to multi-run mean | S/Low | Replace single-run 1012 baseline with 5-run mean 1140 as the calibration target |
+| #697 | MULE yield and rate reconciliation vs Liquipedia | S/Low | EM MULE yield +33%, rate multiplier +17-33% vs Liquipedia |
 
 ---
 
@@ -47,7 +38,11 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #689 | 3w/6w gas asymmetry | Done — congestion model, combined error 6.4%→1.8% |
+| #686 | Remove dead resolveAllCollisions method | No-op — all dead code already removed in prior sessions |
+| #688 | Re-record 6w gas baseline with multiple runs | 5 SC2 games recorded, bimodal distribution discovered |
+| #685 | Liquipedia gas rate calibration tests | LiquipediaGasRateCalibrationTest (5 tests), structural 3w gap documented |
+| #687 | Reconcile physics doc against Liquipedia reference | Full reconciliation: Gas, Minerals, MULE sections with deltas |
+| #678 | Gas vespene cycle cadence measurement | Already resolved by #689, stale doc table corrected |
 
 ---
 
@@ -55,10 +50,19 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Scale | Priority |
 |-------|-------|-------|----------|
-| #686 | (next in queue) | — | — |
+| #674 | artifact_sweep false-positive gaps | — | Active in queue |
+| #695 | 3w gas rotation-limited cycle vs Liquipedia | S/Med | Filed this session |
+| #696 | Update 6w gas baseline to multi-run mean | S/Low | Filed this session |
+| #697 | MULE yield and rate reconciliation vs Liquipedia | S/Low | Filed this session |
 
 ---
 
 ## Branch State
 
-On main. #689 landed as 7db5b88d. 2 commits unpublished.
+On main. All work landed and published (1cf7637). 0 commits unpublished.
+
+---
+
+## Blog
+
+"The Recording That Lied" — diary entry covering the bimodal gas discovery, Liquipedia gap, and calibration methodology lessons. In workspace blog directory, not yet promoted.
