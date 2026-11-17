@@ -1,3 +1,12 @@
+# Work Plan —
+
+## State
+branch: main
+issue-repo: casehubio/quarkmind
+status: active
+active_issue: 
+
+## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -116,16 +125,10 @@
 - [x] casehubio/quarkmind#682 — 6w dual-geyser gas surplus
 - [x] casehubio/quarkmind#684 — Gas worker cycle timing diagnostic test
 - [x] casehubio/quarkmind#689 — 3w/6w gas asymmetry
-- [ ] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method        ← active
-- [ ] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs
+- [x] casehubio/quarkmind#686 — Remove dead resolveAllCollisions method
+- [ ] casehubio/quarkmind#688 — Re-record 6w gas baseline with multiple runs ← active
 - [ ] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
 - [ ] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
 - [ ] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
 - [ ] casehubio/quarkmind#683 — Extract physics constants to config file
 - [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
-
-## State
-branch: issue-689-gas-asymmetry-single-dual-geyser
-issue-repo: casehubio/quarkmind
-status: active
-active_issue: 
