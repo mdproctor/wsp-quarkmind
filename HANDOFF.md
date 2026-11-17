@@ -2,7 +2,7 @@
 
 ## Orientation for Next Session
 
-Gas walk ARRIVAL_THRESHOLD compensation landed (#672). The EM's gas income was 13-21% too high because gas workers stopped 0.5u short of the actual building edge — the ARRIVAL_THRESHOLD designed for minerals silently shortened gas walks. Fix: offset gas walk targets inward by ARRIVAL_THRESHOLD so the stopping distance lands workers at the true building edge. Combined with approach docking recalibration (11.5 → 15.8 loops), 3w gas is now 0% error.
+Gas worker cycle diagnostic landed (#684). Analytical gas cycle formulas gave inconsistent results (17-46 loops depending on method). The diagnostic test instruments each gas worker through a full cycle at tick resolution, measuring walk-to-geyser, wait-at-entry, inside-geyser, walk-to-TH, and deposit phases separately. Key finding: the cycle is walk-limited (60% of time), not harvest-limited. Rate is 45.6 gas/min/worker vs SC2 target 44.3 — the 3% over-production traces to straight-line walks lacking SC2 path deviation.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
@@ -15,16 +15,25 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 | 16w minerals | 4235 | 4090 | −3.4% |
 | 3w gas (1 geyser) | 552 | 552 | **0.0%** |
 | 6w gas (2 geysers) | 1012 | 1080 | +6.7% |
-| Zerg 12w minerals | 2330 | 2430 | +4.3% |
+| Gas rate/worker | 44.3 | 45.6 | +3% |
 | Full test suite | — | 3367 pass | — |
 
 **Key changes this session:**
-- `WorkerPhysicsConfig` now includes `approachEqualizationScale` and `lowSaturationDodgeScale` (#681)
-- `gasTarget()`/`gasReturnTarget()` use `GAS_BUILDING_RADIUS - ARRIVAL_THRESHOLD` and `TOWN_HALL_RADIUS - ARRIVAL_THRESHOLD` (#672)
-- `GAS_APPROACH_DOCKING_LOOPS` = 15.8 (was 11.5) (#672)
-- Sweep tests use `resetToDefaults()` instead of hardcoded values
+- `GasWorkerCycleDiagnosticTest` — new diagnostic: per-phase gas cycle timing (3w and 6w configurations)
+- Physics doc Section 4: harvest 31.7, approach 0 (serial access absorbed docking)
+- Physics doc Section 14: gas cycle breakdown updated from measured values (116 loops/cycle)
+- Blog: "Stop Guessing, Start Counting" — measurement vs analytical formulas
 
-**Design insight:** The ARRIVAL_THRESHOLD (0.5u) is a movement system constant that affects all workers equally — but its impact depends on walk distance. For minerals, the approach docking constant (24.5 loops) was calibrated from SC2 cadence data that already included the threshold effect. Gas approach docking was calibrated independently against oracle MAPE, where the walk shortening was masked by other errors. Fixing the walk geometry and recalibrating the docking constant separately resolved the gas income error.
+**Gas cycle measured breakdown (3w, 1 geyser):**
+
+| Phase | Loops | % of cycle |
+|-------|-------|------------|
+| Walk to geyser | 34 | 29% |
+| Wait at entry | 2 | 2% |
+| Inside geyser | 32 | 28% |
+| Walk to TH | 36 | 31% |
+| Deposit | 12 | 10% |
+| **Total** | **116** | **100%** |
 
 ---
 
@@ -32,27 +41,18 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #681 | Add equalization/dodge to WorkerPhysicsConfig | Done — both constants wired through CDI |
-| #672 | Gas walk ARRIVAL_THRESHOLD compensation | Done — 3w gas 0% error |
-| #673 | Dual-run 6w gas surplus asymmetry | Closed — geysers symmetric, not the cause |
-| #680 | Eliminate 7+ tick outliers | Closed — deferred to #679, 0.14% negligible |
-
-## Filed This Session
-
-| Issue | Title | Scale | Notes |
-|-------|-------|-------|-------|
-| #682 | 6w dual-geyser +6.7% gas surplus | S/Med | Multi-geyser surplus after walk fix — likely assignment timing |
+| #684 | Gas worker cycle timing diagnostic test | Done — 3 test methods, physics doc synced |
 
 ---
 
 ## Next Queue Items
 
-| Issue | Title | Scale | Priority |
-|-------|-------|-------|----------|
-| #682 | 6w dual-geyser gas surplus | S/Med | Builds on #672 gas walk work |
-| #677 | Gas approach docking calibration test | — | Validate 15.8 constant against dual-run |
-| #679 | Per-patch walk distance extension | M/Med | Root fix for #680 and cross-map accuracy |
-| #676 | Reverse-engineer SC2 rate computation | — | Break ~16% MAPE floor |
+| Issue | Title | Scale | Notes |
+|-------|-------|-------|-------|
+| #682 | 6w dual-geyser gas surplus | S/Med | +6.7% error — serial access model (#682 commit on main) |
+| #677 | Gas approach docking calibration test | —/— | Post-#682 context: approach=0, 3% over from walk distance |
+| #679 | Per-patch walk distance extension | M/Med | Root fix for straight-line walk gap, covers gas 3% over |
+| #676 | Reverse-engineer SC2 rate computation | —/— | Break ~16% MAPE floor |
 | #666 | Forward simulation economy mode | L/High | EM-driven income without GT sync |
 
 ---
