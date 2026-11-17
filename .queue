@@ -1,12 +1,3 @@
-# Work Plan —
-
-## State
-branch: issue-678-gas-cadence-already-resolved
-issue-repo: casehubio/quarkmind
-status: active
-active_issue: 
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -130,8 +121,14 @@ active_issue:
 - [x] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
 - [x] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
 - [x] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
-- [ ] casehubio/quarkmind#683 — Extract physics constants to config file ← active
-- [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
+- [x] casehubio/quarkmind#683 — Extract physics constants to config file
+- [ ] casehubio/quarkmind#674 — artifact_sweep false-positive gaps        ← active
 - [ ] casehubio/quarkmind#695 — 3w gas rotation-limited cycle vs Liquipedia
 - [ ] casehubio/quarkmind#696 — Update 6w gas baseline to multi-run mean
 - [ ] casehubio/quarkmind#697 — MULE yield and rate reconciliation vs Liquipedia
+
+## State
+branch: issue-678-gas-cadence-already-resolved
+issue-repo: casehubio/quarkmind
+status: active
+active_issue: 
