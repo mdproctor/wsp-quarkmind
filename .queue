@@ -1,10 +1,10 @@
 # Work Plan —
 
 ## State
-branch: issue-695-3w-gas-rotation-limit
+branch: issue-702-regenerate-standalone-baseline
 issue-repo: casehubio/quarkmind
 status: active
-active_issue: 
+active_issue: casehubio/quarkmind#702
 
 ## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
@@ -135,3 +135,11 @@ active_issue:
 - [x] casehubio/quarkmind#695 — 3w gas rotation-limited cycle vs Liquipedia
 - [x] casehubio/quarkmind#696 — Update 6w gas baseline to multi-run mean
 - [x] casehubio/quarkmind#697 — MULE yield and rate reconciliation vs Liquipedia
+- [ ] casehubio/quarkmind#702 — Regenerate_standalone_economy_baseline
+- [ ] casehubio/quarkmind#701 — SVG_XML_validation
+- [ ] casehubio/quarkmind#691 — Clean_dead_APPROACH_EQUALIZATION_SCALE
+- [ ] casehubio/quarkmind#694 — WorkerSimulation_resetToDefaults
+- [ ] casehubio/quarkmind#700 — Calibration_recordings_catalogue
+- [ ] casehubio/quarkmind#698 — 6w_deposit_lock_investigation
+- [ ] casehubio/quarkmind#699 — 8w_mineral_over-production_gap
+- [ ] casehubio/quarkmind#690 — Mining_deposit_radius_correction
