@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340">
+  <defs>
+    <style>
+      text { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+      .title { font-size: 13px; fill: #1a1a2e; font-weight: 600; }
+      .code { font-size: 11px; fill: #2d3436; }
+      .label { font-size: 10px; fill: #636e72; }
+      .hit { fill: #00b894; }
+      .miss { fill: #d63031; }
+      .box { rx: 6; ry: 6; stroke-width: 1.5; }
+      .arrow { stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#636e72"/>
+    </marker>
+    <marker id="arrowred" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#d63031"/>
+    </marker>
+    <marker id="arrowgreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00b894"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" class="title" font-size="15">The naming mismatch that silenced MULEs</text>
+
+  <!-- Row 1: Playbook YAML -->
+  <rect x="40" y="50" width="200" height="45" class="box" fill="#dfe6e9" stroke="#b2bec3"/>
+  <text x="140" y="68" text-anchor="middle" class="label">Playbook YAML</text>
+  <text x="140" y="84" text-anchor="middle" class="code">morph: ORBITAL_COMMAND</text>
+
+  <path d="M 240 72 L 290 72" class="arrow" stroke="#636e72"/>
+
+  <!-- Row 1: SC2DeliveryHandler -->
+  <rect x="295" y="50" width="200" height="45" class="box" fill="#dfe6e9" stroke="#b2bec3"/>
+  <text x="395" y="68" text-anchor="middle" class="label">SC2DeliveryHandler</text>
+  <text x="395" y="84" text-anchor="middle" class="code">target = "ORBITAL_COMMAND"</text>
+
+  <path d="M 495 72 L 545 72" class="arrow" stroke="#636e72"/>
+
+  <!-- Row 1: MorphIntent -->
+  <rect x="550" y="50" width="140" height="45" class="box" fill="#dfe6e9" stroke="#b2bec3"/>
+  <text x="620" y="68" text-anchor="middle" class="label">MorphIntent</text>
+  <text x="620" y="84" text-anchor="middle" class="code">applyIntent()</text>
+
+  <!-- Arrow down -->
+  <path d="M 620 95 L 620 125" class="arrow" stroke="#636e72"/>
+
+  <!-- Row 2: EmulatedGame.handleMorph -->
+  <rect x="380" y="130" width="280" height="45" class="box" fill="#ffeaa7" stroke="#fdcb6e"/>
+  <text x="520" y="148" text-anchor="middle" class="label">EmulatedGame.handleMorph()</text>
+  <text x="520" y="164" text-anchor="middle" class="code">MORPH_BUILDING_TARGETS.get(target)</text>
+
+  <!-- The map lookup -->
+  <rect x="40" y="130" width="300" height="80" class="box" fill="#fff3e0" stroke="#fdcb6e"/>
+  <text x="190" y="148" text-anchor="middle" class="label">MORPH_BUILDING_TARGETS</text>
+  <text x="190" y="166" text-anchor="middle" class="code">"OrbitalCommand" -> OC</text>
+  <text x="190" y="182" text-anchor="middle" class="code">"Lair" -> LAIR</text>
+  <text x="190" y="198" text-anchor="middle" class="code">"PlanetaryFortress" -> PF</text>
+
+  <!-- Arrow from handleMorph to map -->
+  <path d="M 380 155 L 345 155" class="arrow" stroke="#d63031" marker-end="url(#arrowred)"/>
+
+  <!-- MISS label -->
+  <text x="362" y="150" text-anchor="middle" class="miss" font-size="11" font-weight="700">MISS</text>
+
+  <!-- Row 3: Before fix - silently dropped -->
+  <rect x="380" y="230" width="280" height="45" class="box" fill="#fab1a0" stroke="#d63031"/>
+  <text x="520" y="248" text-anchor="middle" class="miss" font-size="12" font-weight="600">targetBt = null</text>
+  <text x="520" y="264" text-anchor="middle" class="code">morph silently dropped</text>
+
+  <path d="M 520 175 L 520 225" class="arrow" stroke="#d63031" marker-end="url(#arrowred)"/>
+  <text x="535" y="205" class="miss" font-size="10">before fix</text>
+
+  <!-- Row 3: After fix - valueOf fallback -->
+  <rect x="40" y="230" width="300" height="45" class="box" fill="#55efc4" stroke="#00b894"/>
+  <text x="190" y="248" text-anchor="middle" class="hit" font-size="12" font-weight="600">BuildingType.valueOf("ORBITAL_COMMAND")</text>
+  <text x="190" y="264" text-anchor="middle" class="code">targetBt = ORBITAL_COMMAND</text>
+
+  <text x="190" y="220" class="hit" font-size="10" text-anchor="middle">after fix: valueOf() fallback</text>
+
+  <!-- Result labels -->
+  <text x="520" y="300" text-anchor="middle" class="miss" font-size="11">No OC created -> MULE calldown always fails</text>
+  <text x="190" y="300" text-anchor="middle" class="hit" font-size="11">OC created -> MULEs mine -> +3.4% income</text>
+
+  <!-- Delta box -->
+  <rect x="200" y="310" width="320" height="25" class="box" fill="#2d3436" stroke="#2d3436"/>
+  <text x="360" y="327" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">MULE delta: -7.4% (broken) -> +3.4% (fixed)</text>
+</svg>

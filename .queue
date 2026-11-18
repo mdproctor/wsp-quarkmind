@@ -1,10 +1,10 @@
 # Work Plan —
 
 ## State
-branch: issue-704-fill-missing-em-deltas
+branch: issue-714-8w-per-cycle-timing
 issue-repo: casehubio/quarkmind
 status: active
-active_issue: casehubio/quarkmind#705
+active_issue: casehubio/quarkmind#714
 
 ## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
@@ -142,13 +142,17 @@ active_issue: casehubio/quarkmind#705
 - [x] casehubio/quarkmind#700 — Calibration_recordings_catalogue
 - [x] casehubio/quarkmind#698 — 6w_deposit_lock_investigation
 - [x] casehubio/quarkmind#699 — 8w_mineral_over-production_gap
-- [ ] casehubio/quarkmind#690 — Mining_deposit_radius_correction
-- [ ] casehubio/quarkmind#704 — Fill_missing_EM_deltas_in_calibration_catalogue
-- [ ] casehubio/quarkmind#705 — 8w_worker_redistribution_after_kill
+- [x] casehubio/quarkmind#690 — Mining_deposit_radius_correction
+- [x] casehubio/quarkmind#704 — Fill_missing_EM_deltas_in_calibration_catalogue
+- [x] casehubio/quarkmind#705 — 8w_worker_redistribution_after_kill
 - [ ] casehubio/quarkmind#706 — SVG_validation_test_coverage
-- [ ] casehubio/quarkmind#710 — calibrate_skipBuildings_deduct_mineral_costs
-- [ ] casehubio/quarkmind#711 — EM_MULE_calldown_missing
-- [ ] casehubio/quarkmind#712 — EM_Zerg_initialization_missing_Larvae
+- [x] casehubio/quarkmind#710 — calibrate_skipBuildings_deduct_mineral_costs
+- [x] casehubio/quarkmind#711 — EM_MULE_calldown_missing
+- [x] casehubio/quarkmind#712 — EM_Zerg_initialization_missing_Larvae
 - [ ] casehubio/quarkmind#713 — skipBuildings_construction_time_delay
 - [ ] casehubio/quarkmind#714 — 8w_per_cycle_timing_gap
 - [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
+- [ ] casehubio/quarkmind#716 — EM_building_placement_eliminate_skipBuildings
+- [ ] casehubio/quarkmind#717 — MULE_trip_based_mining_model
+- [ ] casehubio/quarkmind#718 — Morph_name_valueOf_warning
+- [ ] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation
