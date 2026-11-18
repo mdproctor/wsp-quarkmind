@@ -2,7 +2,7 @@
 
 ## Orientation for Next Session
 
-MULE calldown fix landed (#711). The 8w per-cycle timing investigation (#714) is in progress on branch `issue-714-8w-per-cycle-timing` with diagnostic test and physics doc updates.
+#714 (8w per-cycle timing gap) is **closed**. The fix: `LOW_SATURATION_APPROACH_BONUS` (4.5 loops) added to approach docking when base saturation is ≤1 worker per non-depleted patch. The key discovery was that SC2 per-worker cycle time is constant (~116 loops) regardless of saturation.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
@@ -10,24 +10,17 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Metric | SC2 | EM | Error | Notes |
 |--------|-----|-----|-------|-------|
-| 8w minerals | 2330 | 2430 | **+4.3%** | Per-cycle timing gap, not redistribution (#714) |
+| 8w minerals | 2330 | 2340 | **+0.4%** | Fixed #714 — was +4.3% |
 | 12w minerals | 3460 | 3450 | **-0.3%** | |
 | 12w Zerg minerals | 3415 | 3425 | **+0.3%** | |
 | 12w Terran minerals | 3460 | 3450 | **-0.3%** | |
 | 16w minerals | 4270 | 4150 | **-2.8%** | |
 | 24w minerals | 3955 | 3985 | **+0.8%** | |
 | 1w speed (tick 121) | 1370 | 1355 | **-1.1%** | |
-| MULE isolation | 3565 | 3686 | **+3.4%** | Fixed #711 — was -7.4% (zero MULE income) |
+| MULE isolation | 3565 | 3686 | **+3.4%** | Fixed #711 — flat rate model |
 | Expansion transfer | 2625 | --- | --- | Invalid: instant construction (#713) |
 | 3w gas (1 geyser) | 552 | 568 | **+2.9%** | |
 | 6w gas (5-run mean) | 1140 | 1108 | **-2.8%** | |
-
-**Key findings this session:**
-- **MULE calldown root cause:** Naming convention mismatch — playbook YAML uses UPPER_SNAKE_CASE (`ORBITAL_COMMAND`) but `MORPH_BUILDING_TARGETS` maps CamelCase (`OrbitalCommand`). Morph silently dropped, no OC created, all calldowns failed. Fixed with `BuildingType.valueOf()` fallback in `EmulatedGame.handleMorph()` and `SC2DeliveryHandler.doMorph()`.
-- **MULE income model:** Flat rate (277.8 min/min) over-produces by 3.4% vs SC2's trip-based mining. Trip-based model filed as #717.
-- **8w timing investigation:** EM cycle = 5.12 ticks (112.6 loops) vs SC2 = 5.25 ticks (115.5 loops). Gap is 2.9 loops per cycle. SC2 cadence shows two clusters: close (~4.8t, 3 workers) and far (~5.6t, 5 workers). Analytical walk model doesn't match actual EM by ~10% — per-phase instrumentation needed (#719).
-- **skipBuildings is a workaround:** #713 proposes adding fake construction time. Real fix is #716 (EM building placement at valid positions, eliminate skipBuildings entirely).
-- **Physics doc drift:** 3 stale entries fixed — MULE calibration table, MULE footnote, §18 per-patch approach docking formula.
 
 **Pre-existing CDI issue:** `@QuarkusTest` tests fail on main due to neocortex `EffectiveCognitiveDefaults` missing bean annotation (#703). Plain JUnit tests unaffected.
 
@@ -37,45 +30,34 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #711 | EM MULE calldown missing | Fixed morph naming mismatch; MULE delta -7.4% -> +3.4% |
+| #714 | 8w per-cycle timing gap at zero contention | Fixed — LOW_SATURATION_APPROACH_BONUS (4.5 loops); 8w +4.3% -> +0.4%, 12w unchanged |
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #716 | EM building placement — eliminate skipBuildings | L/High | Real fix for #713's workaround |
-| #717 | MULE trip-based mining model | M/Med | Replace flat income rate with trip-based mining |
-| #718 | Morph name valueOf warning | XS/Low | Log warning on valueOf fallback |
-| #719 | WorkerSim phase instrumentation | S/Med | Per-worker phase timing for #714 investigation |
+| #720 | Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig | XS/Low | Config record integration |
+| #721 | Validate low-saturation approach bonus at boundary worker counts | S/Low | Test at 4w, 6w, 10w |
 
 ---
 
-## Active Work
-
-**Branch:** `issue-714-8w-per-cycle-timing` (2 commits)
-- `wip: add 8w cycle timing diagnostic test`
-- `docs(#711): fix stale MULE and approach docking entries in physics doc`
-
-The diagnostic test (`WorkerSimulationTest#measureCycleTimes8w`) runs the 8w calibration scenario and measures EM per-worker delivery cycles. Next step: add per-phase timing instrumentation (#719) to identify which phase is too short.
-
----
-
-## Queue (9 open items)
+## Queue (10 open items)
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | **#714** | M/Med | **ACTIVE** — 8w per-cycle timing gap at zero contention |
-| 2 | #706 | XS/Low | SVG validation test coverage (soredium cross-repo) |
-| 3 | #713 | M/Med | skipBuildings construction time delay (consider closing if #716 supersedes) |
-| 4 | #715 | S/Low | Zerg Larva unit lifecycle (training/regen) |
-| 5 | #716 | L/High | EM building placement — eliminate skipBuildings |
-| 6 | #717 | M/Med | MULE trip-based mining model |
-| 7 | #718 | XS/Low | Morph name valueOf warning |
-| 8 | #719 | S/Med | WorkerSim phase instrumentation (prerequisite for #714) |
+| 1 | **#706** | XS/Low | **NEXT** — SVG validation test coverage (soredium cross-repo) |
+| 2 | #713 | M/Med | skipBuildings construction time delay |
+| 3 | #715 | S/Low | Zerg Larva unit lifecycle (training/regen) |
+| 4 | #716 | L/High | EM building placement — eliminate skipBuildings |
+| 5 | #717 | M/Med | MULE trip-based mining model |
+| 6 | #718 | XS/Low | Morph name valueOf warning |
+| 7 | #719 | S/Med | WorkerSim phase instrumentation |
+| 8 | #720 | XS/Low | Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig |
+| 9 | #721 | S/Low | Validate low-saturation approach bonus at boundary worker counts |
 
-**On branch `issue-714-8w-per-cycle-timing`** — `work continue` to resume.
+**On main** — `work continue` to start #706.
 
-**Recommended next:** Continue #714 by first doing #719 (phase instrumentation) to identify the gap source. #715 or #718 for quick palette cleansers.
+**Recommended next:** #706 (XS/Low SVG validation) for a quick win, or #718 (XS/Low morph warning) for another small fix. #720 and #721 are fast follow-ups to the #714 work if staying in the mining domain.
 
 ---
 
@@ -85,6 +67,6 @@ None this session.
 
 ---
 
-## Unpublished
+## Published
 
-Project and workspace repos have unpublished commits. Publish with `canonical_sync.py publish` when ready.
+Both project and workspace repos are published and up to date with remote.
