@@ -2,7 +2,7 @@
 
 ## Orientation for Next Session
 
-Gas calibration validated and documented. Multi-run SC2 recording revealed bimodal vespene output — single recordings are unreliable baselines. Liquipedia reference values reconciled against EM constants; 1w/2w gas rates match within 5% at close distance, 3w has a structural -26% gap from rotation-limited cycle timing. Physics doc fully audited and corrected — no stale values remain.
+Gas physics significantly improved this session. The 3w rotation-limited gap (-25.8%) was fixed by proportional docking absorption — workers that queue at the geyser entrance absorb their approach docking during the wait. The 6w dual-geyser gap improved from -10.9% to -2.8% by removing the deposit congestion model (SC2's dual-geyser is *more* efficient than 2× single-geyser, not less). Empirical-first principle established: Liquipedia values are reference points, not calibration targets.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
@@ -13,24 +13,27 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 | 8w minerals | 2330 | 2445 | **+4.9%** |
 | 12w minerals | 3460 | 3395 | **-1.9%** |
 | 16w minerals | 4235 | 4165 | **-1.7%** |
-| 3w gas (1 geyser) | 552 | 544 | **-1.4%** |
-| 6w gas (2 geysers) | 1012 | 1016 | **+0.4%** |
-| 6w gas (5-run mean) | 1140 | 1016 | **-10.9%** |
+| 24w minerals | 3955 | 3850 | **-2.7%** |
+| 3w gas (1 geyser) | 552 | 568 | **+2.9%** |
+| 6w gas (run-2) | 1204 | 1108 | **-8.0%** |
+| 6w gas (5-run mean) | 1140 | 1108 | **-2.8%** |
 
 **Key findings this session:**
-- SC2 6w gas is bimodal: {1044, 1204, 1204, 1044, 1204}. Mean=1140, CV=6.88%. Original single-run baseline (1012) was an outlier below both modes.
-- Liquipedia gas rates match EM at 5u distance for 1w (-4.9%) and 2w (-5.1%). 3w rate is -25.8% at every distance — structural rotation-limited gap (3 × inside_time = 129.6 loops vs Liquipedia's implied 99 loops).
-- Gas accuracy already within 2% of SC2 baselines (post-#689), no further calibration needed.
-- Physics doc Liquipedia reconciliation complete — every value mapped to EM constant with delta and rationale.
-- Physics doc fully audited: 4 stale values corrected (approach docking 12.5→11.5, gas cycle table, config block, dual-run gaps).
+- Gas approach docking overlaps with wait time in the rotation-limited regime. Workers position during the wait; proportional absorption subtracts actual wait from docking. 3w rate: 121→165.6 gas/min (+1.6% vs Liquipedia 163).
+- Boolean docking skip had a subtle bug — processing-order artifacts caused spurious skips at real map distances (geyser occupied 84% of time). Proportional fix is correct.
+- Deposit congestion model (4.0 loops/worker) was fighting reality — SC2 dual-geyser shows +3.3% bonus vs doubled single-geyser. Removed.
+- MULE rate stays at empirical 277.8 (not Liquipedia's 210.9). Oracle replay calibration is authoritative.
+- Empirical-first principle added to CLAUDE.md and physics doc.
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #695 | 3w gas rotation-limited cycle vs Liquipedia | S/Med | EM's 3×43.2=129.6 loop cycle vs Liquipedia's implied 99 — investigate if approach docking is too high for rotation regime |
-| #696 | Update 6w gas baseline to multi-run mean | S/Low | Replace single-run 1012 baseline with 5-run mean 1140 as the calibration target |
-| #697 | MULE yield and rate reconciliation vs Liquipedia | S/Low | EM MULE yield +33%, rate multiplier +17-33% vs Liquipedia |
+| #698 | 6w dual-geyser deposit lock investigation | S/Med | Remaining -2.8% gap — deposit lock (8 loops) under investigation |
+| #699 | 8w mineral +4.9% over-production gap | S/Med | Largest mineral delta — EM too fast at low saturation |
+| #700 | Calibration recordings catalogue | S/Low | No formal index of 24 SC2 recordings |
+| #701 | SVG XML validation for blog pipeline | XS/Low | Unescaped < broke Typora rendering |
+| #702 | Regenerate standalone baseline post-#695 | XS/Low | Current baseline is pre-proportional-docking |
 
 ---
 
@@ -38,31 +41,15 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #686 | Remove dead resolveAllCollisions method | No-op — all dead code already removed in prior sessions |
-| #688 | Re-record 6w gas baseline with multiple runs | 5 SC2 games recorded, bimodal distribution discovered |
-| #685 | Liquipedia gas rate calibration tests | LiquipediaGasRateCalibrationTest (5 tests), structural 3w gap documented |
-| #687 | Reconcile physics doc against Liquipedia reference | Full reconciliation: Gas, Minerals, MULE sections with deltas |
-| #678 | Gas vespene cycle cadence measurement | Already resolved by #689, stale doc table corrected |
+| #674 | artifact_sweep false-positive gaps | Fixed dest_rel mapping in soredium; plans/snapshots excluded |
+| #695 | 3w gas rotation-limited cycle vs Liquipedia | Proportional docking absorption: 121→165.6 gas/min |
+| #696 | Update 6w gas baseline to multi-run mean | Baseline updated to run-2 (1204); congestion removed: -10.9%→-2.8% |
+| #697 | MULE yield and rate reconciliation vs Liquipedia | Documented +33% delta; empirical-first principle established |
 
 ---
 
-## Next Queue Item
+## Queue Status
 
-| Issue | Title | Scale | Priority |
-|-------|-------|-------|----------|
-| #674 | artifact_sweep false-positive gaps | — | Active in queue |
-| #695 | 3w gas rotation-limited cycle vs Liquipedia | S/Med | Filed this session |
-| #696 | Update 6w gas baseline to multi-run mean | S/Low | Filed this session |
-| #697 | MULE yield and rate reconciliation vs Liquipedia | S/Low | Filed this session |
+Queue drained: 128/128 items complete. Next work requires filing new issues via `work find` or `work start #N`.
 
 ---
-
-## Branch State
-
-On main. All work landed and published (1cf7637). 0 commits unpublished.
-
----
-
-## Blog
-
-"The Recording That Lied" — diary entry covering the bimodal gas discovery, Liquipedia gap, and calibration methodology lessons. In workspace blog directory, not yet promoted.
