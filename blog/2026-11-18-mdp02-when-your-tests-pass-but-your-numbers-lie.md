@@ -55,16 +55,32 @@ Each test passed. The structural checks (unit counts, building counts, upgrades)
 
 The pattern only becomes visible in aggregate: every recording that builds structures shows a better delta than every recording that doesn't. That's not noise — it's a systematic bias. But you can't see a systematic bias by looking at one test at a time.
 
-## The fix and what it opened up
+## The interim fix
 
-We made cost deduction opt-in (`deductBuildingCosts` parameter) rather than changing the default, because the existing calibration was done against the free-building baseline. Rewriting that calibration history is a separate effort. The parameter exists for new recordings and for anyone who wants to see the honest numbers.
+The first response was cautious: make cost deduction opt-in (`deductBuildingCosts` parameter) rather than changing the default, because the existing calibration was done against the free-building baseline. That parameter let us see the honest numbers without breaking existing test assertions.
 
-We also filled the four remaining gaps in the catalogue this session: Zerg mineral baseline (+0.3%), MULE isolation (-7.4% with the original free-building numbers), worker speed (-1.1%), and expansion transfer — which turned out to be structurally incomparable because instant construction gives supply too early, snowballing 30+ extra workers by tick 304.
+We also filled the four remaining gaps in the catalogue: Zerg mineral baseline (+0.3%), MULE isolation (-7.4% with the original free-building numbers), worker speed (-1.1%), and expansion transfer — which turned out to be structurally incomparable because instant construction gives supply too early, snowballing 30+ extra workers by tick 304.
 
-The expansion transfer gap led to a separate finding: the EM doesn't just skip building costs, it skips construction time. Supply from a Nexus arrives immediately instead of 71 seconds later. For economy-only comparisons, that doesn't matter. For multi-base economy with continuous training, it distorts everything.
+The expansion transfer gap led to the deeper finding: `skipBuildings` doesn't just skip costs, it skips construction time. Supply from a Nexus arrives immediately instead of 71 seconds later. For economy-only comparisons, that doesn't matter. For multi-base economy with continuous training, it distorts everything.
+
+## Eliminating the bypass
+
+The temptation was to layer another parameter — `delayConstruction` — on top of the existing `skipBuildings` flag. That would have been a fake delay bolted onto a fake building, pretending to model physics without actually modelling it.
+
+The EM already has real building physics. `EmulatedGame.handleBuild()` deducts resources, creates the building as incomplete, schedules a `PendingCompletion` with `SC2Data.buildTimeInLoops()`, and only grants supply when the building actually finishes. This is the same path that replay-driven games, live SC2 games, and the standard playbook runner all use.
+
+The calibration test framework was the only code path bypassing it. The fix was to stop bypassing it.
+
+The `skipBuildings` branch — which called `debugCreateBuilding()` for instant creation — was replaced with `game.applyIntent(BuildIntent.of(...))`, routing through the same `handleBuild` pipeline everything else uses. The `deductBuildingCosts` parameter became unnecessary because `handleBuild` deducts costs as part of its normal operation. The `skipBuildings` guard on building comparison in the `compare()` method was removed — buildings are always compared now, with tolerance for construction timing differences.
+
+Three details mattered in the transition. First, the calibrate loop needs to check mineral availability before applying the intent, because `handleBuild` silently returns on insufficient resources — if the step gets marked as fired without the building being placed, it never retries. Second, gas buildings need geyser positions from the baseline for correct worker assignment, while other buildings can go at a fixed offset. Third, the fixed offset must match what the standard playbook handler uses (30, 30) — a different position changes the worker-pause calculation, which shifts mining income, which causes self-baseline tests to diverge against themselves.
+
+The result is a net reduction of 19 lines. The 5-overload `calibrate()` chain collapsed to 2 overloads. The expansion-transfer tolerance dropped from 50 to 5. All 3,375 tests pass.
 
 ## What infrastructure catches that tests don't
 
 A passing test tells you the code does what the test expects. A calibration catalogue tells you whether your expectations are consistent with each other. The free-buildings bug wasn't in the simulation physics — the physics runs fine. It was in the test harness, inflating results for a subset of recordings. No single test could detect it because no single test was wrong. The pattern across recordings was wrong.
 
-The catalogue is a table in a markdown file. The recordings are JSON snapshots. The dual-run framework is a 200-line test method. None of this is sophisticated. But the combination — a systematic, browsable comparison of every calibration point — made a bias visible that had been hiding in plain sight across months of work. The good numbers weren't wrong. They just weren't what they claimed to be.
+The catalogue is a table in a markdown file. The recordings are JSON snapshots. The dual-run framework is a 200-line test method. None of this is sophisticated. But the combination — a systematic, browsable comparison of every calibration point — made a bias visible that had been hiding in plain sight across months of work.
+
+The deeper lesson is about workaround gravity. `skipBuildings` started as a reasonable shortcut: "the EM can't do map-aware placement, so skip it." Then it needed `deductBuildingCosts` to handle the mineral gap it created. Then it needed construction-time delay to handle the supply gap. Each patch made the bypass more complex, more fragile, and harder to remove — while the real physics pipeline sat unused, already doing everything correctly. The right fix was always the simplest one: stop bypassing the system that already worked.
