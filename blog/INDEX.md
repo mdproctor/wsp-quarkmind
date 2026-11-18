@@ -68,3 +68,4 @@
 | [2026-11-17-mdp07-the-recording-that-lied.md](2026-11-17-mdp07-the-recording-that-lied.md) | 2026-11-17 | SC2 gas variance is bimodal — single recordings lie, Liquipedia measures something different than what your map produces |
 | [2026-11-18-mdp02-when-your-tests-pass-but-your-numbers-lie.md](2026-11-18-mdp02-when-your-tests-pass-but-your-numbers-lie.md) | 2026-11-18 | How a calibration catalogue exposed systematic inflation from free buildings in the dual-run test framework |
 | [2026-11-18-mdp04-every-worker-gets-the-same-clock.md](2026-11-18-mdp04-every-worker-gets-the-same-clock.md) | 2026-11-18 | SC2 per-worker mining cycle is constant regardless of saturation — the discovery that fixed the 8w economy gap |
+| [2026-11-18-mdp05-mules-dont-get-a-flat-rate.md](2026-11-18-mdp05-mules-dont-get-a-flat-rate.md) | 2026-11-18 | Replaced flat MULE income rate with trip-based mining — same WorkerSimulation physics, separate rules, +1.4% accuracy |
