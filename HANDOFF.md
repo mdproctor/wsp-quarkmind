@@ -48,8 +48,21 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ---
 
-## Queue Status
+## Queue (8 items, #702 active)
 
-Queue drained: 128/128 items complete. Next work requires filing new issues via `work find` or `work start #N`.
+| # | Issue | Scale | What |
+|---|-------|-------|------|
+| 1 | **#702** | XS/Low | **Regenerate standalone baseline** — re-run StandaloneEmulatedGameBaselineTest with current physics |
+| 2 | #701 | XS/Low | SVG XML validation — add parse check to blog pipeline |
+| 3 | #691 | XS/Low | Clean dead APPROACH_EQUALIZATION_SCALE constant |
+| 4 | #694 | XS/Low | WorkerSimulation static fields lack resetToDefaults |
+| 5 | #700 | S/Low | Calibration recordings catalogue |
+| 6 | #698 | S/Med | 6w deposit lock investigation — remaining -2.8% gap |
+| 7 | #699 | S/Med | 8w mineral +4.9% over-production gap |
+| 8 | #690 | M/Med | Effective mining/deposit radius correction |
+
+**Branch:** `issue-702-regenerate-standalone-baseline` — `work continue` to resume.
+
+**Also open but not queued:** #644 (Zerg baseline), #683 (physics config extraction) — both marked done in previous queue pass but still open on GitHub. Needs triage.
 
 ---
