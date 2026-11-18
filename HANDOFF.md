@@ -41,6 +41,8 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
+| #702 | Regenerate standalone baseline post-#695 | vespeneCollectionRate MAPE: 29.7→24.9% (7min), 30.1→25.7% (5min) |
+| #701 | SVG XML validation for blog pipeline | Added to soredium artifact_sweep.py + artifact_promote.py (672c5fa) |
 | #674 | artifact_sweep false-positive gaps | Fixed dest_rel mapping in soredium; plans/snapshots excluded |
 | #695 | 3w gas rotation-limited cycle vs Liquipedia | Proportional docking absorption: 121→165.6 gas/min |
 | #696 | Update 6w gas baseline to multi-run mean | Baseline updated to run-2 (1204); congestion removed: -10.9%→-2.8% |
@@ -48,18 +50,16 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 ---
 
-## Queue (8 items, #702 active)
+## Queue (6 items, #691 active)
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | **#702** | XS/Low | **Regenerate standalone baseline** — re-run StandaloneEmulatedGameBaselineTest with current physics |
-| 2 | #701 | XS/Low | SVG XML validation — add parse check to blog pipeline |
-| 3 | #691 | XS/Low | Clean dead APPROACH_EQUALIZATION_SCALE constant |
-| 4 | #694 | XS/Low | WorkerSimulation static fields lack resetToDefaults |
-| 5 | #700 | S/Low | Calibration recordings catalogue |
-| 6 | #698 | S/Med | 6w deposit lock investigation — remaining -2.8% gap |
-| 7 | #699 | S/Med | 8w mineral +4.9% over-production gap |
-| 8 | #690 | M/Med | Effective mining/deposit radius correction |
+| 1 | **#691** | XS/Low | **Clean dead APPROACH_EQUALIZATION_SCALE constant** |
+| 2 | #694 | XS/Low | WorkerSimulation static fields lack resetToDefaults |
+| 3 | #700 | S/Low | Calibration recordings catalogue |
+| 4 | #698 | S/Med | 6w deposit lock investigation — remaining -2.8% gap |
+| 5 | #699 | S/Med | 8w mineral +4.9% over-production gap |
+| 6 | #690 | M/Med | Effective mining/deposit radius correction |
 
 **Branch:** `issue-702-regenerate-standalone-baseline` — `work continue` to resume.
 
