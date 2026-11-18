@@ -58,4 +58,4 @@ Separating the animation from the path deviation means each can now be calibrate
 
 More immediately, the return walk is the other half of the asymmetry. The cadence data shows workers stopping at 3.755 units from the town hall, not the 2.75 edge-to-edge target the emulator uses. That's a 1-unit discrepancy in the effective radius — which explains nearly all the return walk "shortening." Fixing those radii is a separate change, but the decomposition makes it safe to pursue. The path delay absorbs outbound variance; the radii fix can shorten the return walk without destabilising the cycle time.
 
-The approach constant has been carrying two loads. Now each load has its own shoulder.
+The approach constant has been carrying two loads. Now each load has its own shoulder.e 

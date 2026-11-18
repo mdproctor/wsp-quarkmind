@@ -68,4 +68,4 @@ The two-parameter sweep (docking × congestion) found several combinations meeti
 
 The investigation took longer than the fix. The fix is two lines of production code and a constant change. But those two lines only make sense once you understand why the deposit lock — the obvious mechanism, the one that should work, the one that every queueing theory textbook would recommend — can't work here. The geyser-limited regime absorbs contention. Phase-shift stabilization prevents recurring contention. Both effects must be absent for a lock-based mechanism to produce sustained throughput reduction. In the EM's gas cycle, both are present.
 
-Sometimes the right fix isn't making the obvious mechanism stronger. It's recognising that the obvious mechanism operates in a regime where it has no power, and finding a different lever entirely.
+Sometimes the right fix isn't making the obvious mechanism stronger. It's recognising that the obvious mechanism operates in a regime where it has no power, and finding a different lever entirely

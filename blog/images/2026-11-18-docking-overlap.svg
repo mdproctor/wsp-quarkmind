@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="380" viewBox="0 0 680 380">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 11px; fill: #333; }
+    .label-bold { font-size: 11px; font-weight: 600; fill: #1a1a2e; }
+    .small { font-size: 10px; fill: #666; }
+    .harvest { fill: #4a90d9; }
+    .docking { fill: #e06060; }
+    .walk { fill: #e8a838; }
+    .deposit { fill: #6bc26b; }
+    .wait { fill: #d4d4d4; }
+    .absorbed { fill: #4a90d9; opacity: 0.3; stroke: #4a90d9; stroke-width: 1; stroke-dasharray: 3; }
+  </style>
+
+  <text x="340" y="22" text-anchor="middle" class="title">Gas Approach Docking: Before and After</text>
+
+  <!-- BEFORE -->
+  <text x="20" y="55" class="label-bold">Before — docking always applied (121 gas/min)</text>
+  <text x="20" y="70" class="small">Geyser occupation = harvest (31.7) + docking (11.5) = 43.2 loops per worker</text>
+
+  <!-- Worker A timeline -->
+  <text x="20" y="95" class="small">Worker A</text>
+  <rect x="80" y="82" width="127" height="22" class="harvest" rx="2"/>
+  <text x="143" y="97" text-anchor="middle" class="small" fill="white">harvest 31.7</text>
+  <rect x="207" y="82" width="46" height="22" class="docking" rx="2"/>
+  <text x="230" y="97" text-anchor="middle" class="small" fill="white">dock</text>
+
+  <!-- Worker B timeline -->
+  <text x="20" y="120" class="small">Worker B</text>
+  <rect x="80" y="107" width="173" height="22" class="wait" rx="2"/>
+  <text x="166" y="122" text-anchor="middle" class="small">waiting at entrance</text>
+  <rect x="253" y="107" width="127" height="22" class="harvest" rx="2"/>
+  <text x="316" y="122" text-anchor="middle" class="small" fill="white">harvest 31.7</text>
+  <rect x="380" y="107" width="46" height="22" class="docking" rx="2"/>
+  <text x="403" y="122" text-anchor="middle" class="small" fill="white">dock</text>
+
+  <!-- Worker C -->
+  <text x="20" y="145" class="small">Worker C</text>
+  <rect x="80" y="132" width="346" height="22" class="wait" rx="2"/>
+  <text x="253" y="147" text-anchor="middle" class="small">waiting at entrance</text>
+  <rect x="426" y="132" width="127" height="22" class="harvest" rx="2"/>
+  <text x="489" y="147" text-anchor="middle" class="small" fill="white">harvest 31.7</text>
+  <rect x="553" y="132" width="46" height="22" class="docking" rx="2"/>
+  <text x="576" y="147" text-anchor="middle" class="small" fill="white">dock</text>
+
+  <text x="20" y="175" class="small" fill="#e06060">Delivery every 43.2 loops — docking adds 11.5 loops even after waiting</text>
+
+  <!-- Divider -->
+  <line x1="20" y1="190" x2="660" y2="190" stroke="#ccc" stroke-width="1"/>
+
+  <!-- AFTER -->
+  <text x="20" y="215" class="label-bold">After — docking absorbed by wait time (165.6 gas/min)</text>
+  <text x="20" y="230" class="small">Geyser occupation = harvest only (31.7 loops) when worker was already positioned</text>
+
+  <!-- Worker A timeline -->
+  <text x="20" y="255" class="small">Worker A</text>
+  <rect x="80" y="242" width="127" height="22" class="harvest" rx="2"/>
+  <text x="143" y="257" text-anchor="middle" class="small" fill="white">harvest 31.7</text>
+  <rect x="207" y="242" width="46" height="22" class="docking" rx="2"/>
+  <text x="230" y="257" text-anchor="middle" class="small" fill="white">dock</text>
+
+  <!-- Worker B with absorbed docking -->
+  <text x="20" y="280" class="small">Worker B</text>
+  <rect x="80" y="267" width="127" height="22" class="wait" rx="2"/>
+  <rect x="161" y="267" width="46" height="22" class="absorbed" rx="2"/>
+  <text x="143" y="282" text-anchor="middle" class="small">wait (dock absorbed)</text>
+  <rect x="253" y="267" width="127" height="22" class="harvest" rx="2"/>
+  <text x="316" y="282" text-anchor="middle" class="small" fill="white">harvest 31.7</text>
+
+  <!-- Worker C with absorbed docking -->
+  <text x="20" y="305" class="small">Worker C</text>
+  <rect x="80" y="292" width="254" height="22" class="wait" rx="2"/>
+  <rect x="288" y="292" width="46" height="22" class="absorbed" rx="2"/>
+  <text x="207" y="307" text-anchor="middle" class="small">wait (dock absorbed)</text>
+  <rect x="380" y="292" width="127" height="22" class="harvest" rx="2"/>
+  <text x="443" y="307" text-anchor="middle" class="small" fill="white">harvest 31.7</text>
+
+  <text x="20" y="335" class="small" fill="#4a90d9">Delivery every 31.7 loops — workers position during wait, enter immediately</text>
+
+  <!-- Legend -->
+  <rect x="20" y="350" width="12" height="12" class="harvest" rx="2"/>
+  <text x="38" y="361" class="small">Harvest</text>
+  <rect x="100" y="350" width="12" height="12" class="docking" rx="2"/>
+  <text x="118" y="361" class="small">Docking (paid)</text>
+  <rect x="210" y="350" width="12" height="12" class="absorbed" rx="2"/>
+  <text x="228" y="361" class="small">Docking (absorbed)</text>
+  <rect x="350" y="350" width="12" height="12" class="wait" rx="2"/>
+  <text x="368" y="361" class="small">Waiting</text>
+</svg>
