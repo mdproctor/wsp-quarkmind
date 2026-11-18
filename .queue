@@ -5,6 +5,7 @@ branch: issue-714-8w-per-cycle-timing
 issue-repo: casehubio/quarkmind
 status: active
 active_issue: casehubio/quarkmind#714
+covers: casehubio/quarkmind#714
 
 ## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
@@ -150,9 +151,11 @@ active_issue: casehubio/quarkmind#714
 - [x] casehubio/quarkmind#711 — EM_MULE_calldown_missing
 - [x] casehubio/quarkmind#712 — EM_Zerg_initialization_missing_Larvae
 - [ ] casehubio/quarkmind#713 — skipBuildings_construction_time_delay
-- [ ] casehubio/quarkmind#714 — 8w_per_cycle_timing_gap
+- [ ] casehubio/quarkmind#714 — 8w_per_cycle_timing_gap ← active
 - [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
 - [ ] casehubio/quarkmind#716 — EM_building_placement_eliminate_skipBuildings
 - [ ] casehubio/quarkmind#717 — MULE_trip_based_mining_model
 - [ ] casehubio/quarkmind#718 — Morph_name_valueOf_warning
 - [ ] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation
+- [ ] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig
+- [ ] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
