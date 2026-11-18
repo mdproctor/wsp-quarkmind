@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" font-family="'Segoe UI',system-ui,sans-serif" font-size="13">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#666"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="24" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">skipBuildings: Where the Inflation Hides</text>
+
+  <!-- Left: Free Buildings (old) -->
+  <rect x="20" y="44" width="320" height="280" rx="8" fill="#fff3f3" stroke="#e88"/>
+  <text x="180" y="66" text-anchor="middle" font-weight="bold" fill="#c44" font-size="14">Free Buildings (old)</text>
+
+  <!-- SC2 box -->
+  <rect x="40" y="82" width="120" height="40" rx="4" fill="#fff" stroke="#999"/>
+  <text x="100" y="106" text-anchor="middle" font-size="12">SC2 Recording</text>
+
+  <!-- arrow -->
+  <line x1="160" y1="102" x2="195" y2="102" stroke="#666" marker-end="url(#arr)"/>
+
+  <!-- EM box -->
+  <rect x="200" y="82" width="120" height="40" rx="4" fill="#fff" stroke="#999"/>
+  <text x="260" y="100" text-anchor="middle" font-size="12">EmulatedGame</text>
+  <text x="260" y="114" text-anchor="middle" font-size="10" fill="#c44">buildings = free</text>
+
+  <!-- Results -->
+  <text x="40" y="148" font-size="12" font-weight="bold" fill="#555">Recording</text>
+  <text x="210" y="148" font-size="12" font-weight="bold" fill="#555">SC2</text>
+  <text x="265" y="148" font-size="12" font-weight="bold" fill="#555">EM</text>
+  <text x="310" y="148" font-size="12" font-weight="bold" fill="#555">Delta</text>
+
+  <line x1="35" y1="154" x2="330" y2="154" stroke="#ddd"/>
+
+  <text x="40" y="172" font-size="11" fill="#333">16w saturation</text>
+  <text x="210" y="172" font-size="11" fill="#333">4270</text>
+  <text x="265" y="172" font-size="11" fill="#333">4150</text>
+  <text x="310" y="172" font-size="11" fill="#c44" font-weight="bold">-2.8%</text>
+
+  <text x="40" y="194" font-size="11" fill="#333">24w saturation</text>
+  <text x="210" y="194" font-size="11" fill="#333">3955</text>
+  <text x="265" y="194" font-size="11" fill="#333">3985</text>
+  <text x="310" y="194" font-size="11" fill="#c44" font-weight="bold">+0.8%</text>
+
+  <text x="40" y="216" font-size="11" fill="#333">3w gas</text>
+  <text x="210" y="216" font-size="11" fill="#333">552</text>
+  <text x="265" y="216" font-size="11" fill="#333">568</text>
+  <text x="310" y="216" font-size="11" fill="#c44" font-weight="bold">+2.9%</text>
+
+  <text x="40" y="238" font-size="11" fill="#333">MULE isolation</text>
+  <text x="210" y="238" font-size="11" fill="#333">3565</text>
+  <text x="265" y="238" font-size="11" fill="#333">3300</text>
+  <text x="310" y="238" font-size="11" fill="#c44" font-weight="bold">-7.4%</text>
+
+  <text x="180" y="272" text-anchor="middle" font-size="11" fill="#c44" font-style="italic">Looks reasonable — but EM gets</text>
+  <text x="180" y="288" text-anchor="middle" font-size="11" fill="#c44" font-style="italic">buildings without spending minerals</text>
+
+  <!-- Right: Costed Buildings (new) -->
+  <rect x="380" y="44" width="320" height="280" rx="8" fill="#f3fff3" stroke="#8c8"/>
+  <text x="540" y="66" text-anchor="middle" font-weight="bold" fill="#484" font-size="14">Costed Buildings (actual)</text>
+
+  <!-- SC2 box -->
+  <rect x="400" y="82" width="120" height="40" rx="4" fill="#fff" stroke="#999"/>
+  <text x="460" y="106" text-anchor="middle" font-size="12">SC2 Recording</text>
+
+  <!-- arrow -->
+  <line x1="520" y1="102" x2="555" y2="102" stroke="#666" marker-end="url(#arr)"/>
+
+  <!-- EM box -->
+  <rect x="560" y="82" width="120" height="40" rx="4" fill="#fff" stroke="#999"/>
+  <text x="620" y="100" text-anchor="middle" font-size="12">EmulatedGame</text>
+  <text x="620" y="114" text-anchor="middle" font-size="10" fill="#484">minerals deducted</text>
+
+  <!-- Results -->
+  <text x="400" y="148" font-size="12" font-weight="bold" fill="#555">Recording</text>
+  <text x="570" y="148" font-size="12" font-weight="bold" fill="#555">SC2</text>
+  <text x="625" y="148" font-size="12" font-weight="bold" fill="#555">EM</text>
+  <text x="670" y="148" font-size="12" font-weight="bold" fill="#555">Delta</text>
+
+  <line x1="395" y1="154" x2="690" y2="154" stroke="#ddd"/>
+
+  <text x="400" y="172" font-size="11" fill="#333">16w saturation</text>
+  <text x="570" y="172" font-size="11" fill="#333">4270</text>
+  <text x="625" y="172" font-size="11" fill="#333">4050</text>
+  <text x="670" y="172" font-size="11" fill="#484" font-weight="bold">-5.2%</text>
+
+  <text x="400" y="194" font-size="11" fill="#333">24w saturation</text>
+  <text x="570" y="194" font-size="11" fill="#333">3955</text>
+  <text x="625" y="194" font-size="11" fill="#333">3785</text>
+  <text x="670" y="194" font-size="11" fill="#484" font-weight="bold">-4.3%</text>
+
+  <text x="400" y="216" font-size="11" fill="#333">3w gas</text>
+  <text x="570" y="216" font-size="11" fill="#333">552</text>
+  <text x="625" y="216" font-size="11" fill="#333">496</text>
+  <text x="670" y="216" font-size="11" fill="#484" font-weight="bold">-10.1%</text>
+
+  <text x="400" y="238" font-size="11" fill="#333">MULE isolation</text>
+  <text x="570" y="238" font-size="11" fill="#333">3565</text>
+  <text x="625" y="238" font-size="11" fill="#333">2750</text>
+  <text x="670" y="238" font-size="11" fill="#484" font-weight="bold">-22.9%</text>
+
+  <text x="540" y="272" text-anchor="middle" font-size="11" fill="#484" font-style="italic">Worse — but honest. The EM's</text>
+  <text x="540" y="288" text-anchor="middle" font-size="11" fill="#484" font-style="italic">real accuracy, not the flattered version</text>
+
+  <!-- Bottom note -->
+  <text x="360" y="334" text-anchor="middle" font-size="11" fill="#888">Economy-only recordings (12w, 8w, Terran, Zerg) are unaffected — no buildings built</text>
+</svg>
