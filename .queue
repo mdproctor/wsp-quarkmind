@@ -1,13 +1,3 @@
-# Work Plan —
-
-## State
-branch: issue-716-eliminate-skipBuildings
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#716
-active_issue: casehubio/quarkmind#716
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -152,11 +142,11 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#712 — EM_Zerg_initialization_missing_Larvae
 - [x] casehubio/quarkmind#713 — skipBuildings_construction_time_delay
 - [x] casehubio/quarkmind#714 — 8w_per_cycle_timing_gap
-- [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle ← active
+- [x] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
   - [ ] Batch 1: Eliminate skipBuildings
     - [ ] Task 1: Refactor calibrate and compare
     - [ ] Task 2: Update ExpansionTransferDiagnosticTest
-- [ ] casehubio/quarkmind#716 — EM_building_placement_eliminate_skipBuildings
+- [ ] casehubio/quarkmind#716 — EM_building_placement_eliminate_skipBuildings        ← active
 - [ ] casehubio/quarkmind#717 — MULE_trip_based_mining_model
 - [ ] casehubio/quarkmind#718 — Morph_name_valueOf_warning
 - [ ] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation
@@ -164,3 +154,10 @@ active_issue: casehubio/quarkmind#716
 - [ ] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
 - [ ] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
 - [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
+
+## State
+branch: issue-716-eliminate-skipBuildings
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#716
+active_issue: casehubio/quarkmind#716
