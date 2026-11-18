@@ -2,11 +2,11 @@
 
 ## Orientation for Next Session
 
-#716 (eliminate skipBuildings) is **closed**. The fix: replaced the `debugCreateBuilding()` bypass in `DualRunCalibrationTest.calibrate()` with `game.applyIntent(BuildIntent.of(...))`, routing all calibration builds through the existing `EmulatedGame.handleBuild()` physics pipeline. Buildings now get real construction time via `PendingCompletion`, resource deduction, and supply granted only on completion. The `skipBuildings` and `deductBuildingCosts` parameters were removed entirely.
+#717 (MULE trip-based mining) is **closed**. The fix: replaced the flat-rate MULE income model (277.8 min/min spread uniformly per tick) with trip-based mining through WorkerSimulation — MULEs walk to patches, mine 25 minerals, walk back, deposit, repeat until expiry. MULE isolation delta improved from +3.4% to +1.4%.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**Current accuracy state (dual-run, tick 304):**
+**Current accuracy state (dual-run, tick 304–305):**
 
 | Metric | SC2 | EM | Error | Notes |
 |--------|-----|-----|-------|-------|
@@ -17,12 +17,10 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 | 16w minerals | — | — | diverges tick 62 | PROBE 17 vs 15 (#723) |
 | 24w minerals | — | — | diverges tick 62 | PROBE 17 vs 15 (#723) |
 | 1w speed (tick 121) | 1370 | 1355 | **-1.1%** | |
-| MULE isolation | — | — | diverges tick 62 | SCV 17 vs 15 (#723) |
+| MULE isolation (tick 305) | 3565 | 3615 | **+1.4%** | trip-based, asserted ≤2% |
 | Expansion transfer | — | — | diverges tick 101 | tolerance 5 passes |
 | 3w gas (1 geyser) | — | — | diverges tick 63 | PROBE 17 vs 15 (#723) |
 | 6w gas (5-run mean) | 1140 | 1108 | **-2.8%** | passes |
-
-**Post-#716 divergence pattern:** Tests that build structures now diverge at tick 62-63: the EM produces 15 probes/SCVs while SC2 has 17. The delta of 2 is within tolerance for most tests. The root cause is construction time delay — the first Pylon/Depot takes ~18 ticks to build, capping supply at 15 until completion. See #723 for investigation.
 
 **Pre-existing CDI issue:** `@QuarkusTest` tests fail on main due to neocortex `EffectiveCognitiveDefaults` missing bean annotation (#703). Plain JUnit tests unaffected.
 
@@ -32,50 +30,40 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #706 | SVG validation test coverage (soredium cross-repo) | Tests added in soredium — 8 tests covering validate_svg(), promote_gaps, copromote SVG paths |
-| #713 | skipBuildings construction time delay | Closed as superseded by #716 — fake delay is a compensation hack |
-| #716 | EM building placement — eliminate skipBuildings | Fixed — applyIntent replaces debugCreateBuilding; net -19 lines |
+| #717 | MULE trip-based mining model | Fixed — MULEs in separate `mules` map in WorkerSimulation; cargo=25, mining overhead=20 loops; delta +1.4% |
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #722 | Diagnostic tests still use debugCreateBuilding bypass | XS/Low | ExpansionTransferDiagnosticTest playbook loop |
-| #723 | Expansion-transfer SC2 divergence at tick 62 | S/Med | 2-probe gap from construction time; affects 16w, 24w, gas, MULE |
+| #724 | MULE worker snapshots not visible | XS/Low | workerSnapshots() doesn't include MULEs |
+| #725 | Remove dead muleIncomePerTick | XS/Low | Flat rate method no longer used in production |
+| #726 | MULE cargo calibration — verify 25 vs 30 | S/Low | Empirical verification needed |
 
-**Blog revised:** `2026-11-18-mdp02-when-your-tests-pass-but-your-numbers-lie.md` — added "Eliminating the bypass" section covering the #716 resolution and the workaround gravity lesson.
+**Blog written:** `2026-11-18-mdp05-mules-dont-get-a-flat-rate.md` — trip-based MULE mining replacing flat rate, connects to "Simulate the Mechanism" philosophy.
 
 ---
 
-## Queue (8 open items)
+## Queue (9 open items)
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | **#715** | S/Low | **NEXT** — Zerg Larva unit lifecycle (training/regen) |
-| 2 | #717 | M/Med | MULE trip-based mining model |
-| 3 | #718 | XS/Low | Morph name valueOf warning |
-| 4 | #719 | S/Med | WorkerSim phase instrumentation |
-| 5 | #720 | XS/Low | Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig |
-| 6 | #721 | S/Low | Validate low-saturation approach bonus at boundary worker counts |
-| 7 | #722 | XS/Low | Diagnostic tests debugCreateBuilding bypass |
-| 8 | #723 | S/Med | Expansion-transfer SC2 divergence tick 62 |
+| 1 | **#718** | XS/Low | **NEXT** — Morph name valueOf warning |
+| 2 | #719 | S/Med | WorkerSim phase instrumentation |
+| 3 | #720 | XS/Low | Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig |
+| 4 | #721 | S/Low | Validate low-saturation approach bonus at boundary worker counts |
+| 5 | #722 | XS/Low | Diagnostic tests debugCreateBuilding bypass |
+| 6 | #723 | S/Med | Expansion-transfer SC2 divergence tick 62 |
+| 7 | #724 | XS/Low | MULE worker snapshots not visible |
+| 8 | #725 | XS/Low | Remove dead muleIncomePerTick |
+| 9 | #726 | S/Low | MULE cargo calibration verify 25 vs 30 |
 
-**On main** — `work continue` to start #715.
+**On main** — `work continue` to start #718.
 
-**Queue note:** The queue's active marker was misaligned this session (#715 marked active but #716 was worked). The ceremony closed #715's queue slot but #715 (Zerg Larva) was NOT worked — it remains open on GitHub. Next session should verify queue state before starting.
-
-**Recommended next:** #718 (XS/Low morph warning) for a quick fix, or #715 (S/Low Zerg Larva) to continue the physics calibration sequence. #723 (S/Med tick-62 divergence) is a follow-up to #716 if staying in the building calibration domain.
-
----
-
-## Cross-Repo Changes
-
-| Repo | Change | Commit |
-|------|--------|--------|
-| soredium | Added `tests/test_svg_validation.py` — 8 SVG validation tests | bcf95c4 |
+**Recommended next:** #718 (XS/Low morph warning) for a quick fix, or #725 (XS/Low dead code cleanup) since it's directly related to the MULE work just landed. #723 (S/Med tick-62 divergence) is the next calibration-domain item if staying in physics work.
 
 ---
 
 ## Unpublished
 
-Both project (1 commit) and workspace (4 commits) repos have unpublished commits on main. Run `canonical_sync.py publish` to push.
+Both project (1 commit) and workspace (5 commits) repos have unpublished commits on main. Run `canonical_sync.py publish` to push.
