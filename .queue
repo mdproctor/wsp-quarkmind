@@ -1,10 +1,10 @@
 # Work Plan —
 
 ## State
-branch: issue-727-density-dependent-path-deviation
+branch: 
 issue-repo: casehubio/quarkmind
 status: active
-covers: casehubio/quarkmind#716
+covers: casehubio/quarkmind#728
 active_issue: casehubio/quarkmind#716
 
 ## Queue
@@ -164,6 +164,7 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
 - [x] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
 - [x] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
-- [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling ← active
-- [ ] casehubio/quarkmind#728 — MuleCargoVerificationTest_lifetimeTicks_misleads
+- [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling ← done on issue-727-density-dependent-path-deviation
+- [ ] casehubio/quarkmind#728 — MuleCargoVerificationTest_lifetimeTicks_misleads ← active
 - [ ] casehubio/quarkmind#729 — SC2_build_version_not_captured
+- [ ] casehubio/quarkmind#707 — EM_obstacle_aware_pathfinding
