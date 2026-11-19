@@ -152,12 +152,12 @@
 - [x] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
 - [x] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
 - [x] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
-- [ ] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick        ← active
-- [ ] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
-- [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling
+- [x] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
+- [x] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
+- [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling        ← active
 
 ## State
-branch: issue-724-mule-worker-snapshots
+branch: issue-726-mule-cargo-calibration
 issue-repo: casehubio/quarkmind
 status: active
 covers: casehubio/quarkmind#716
