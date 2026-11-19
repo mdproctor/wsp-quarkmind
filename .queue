@@ -157,8 +157,8 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#717 — MULE_trip_based_mining_model
 - [x] casehubio/quarkmind#718 — Morph_name_valueOf_warning
 - [x] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation
-- [ ] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig ← active
-- [ ] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
+- [x] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig
+- [ ] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts ← active
 - [ ] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
 - [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
 - [ ] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
