@@ -1,7 +1,7 @@
 # Work Plan —
 
 ## State
-branch: issue-718-morph-name-valueof-warning
+branch: 
 issue-repo: casehubio/quarkmind
 status: active
 covers: casehubio/quarkmind#716
@@ -155,8 +155,8 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
 - [x] casehubio/quarkmind#716 — EM_building_placement_eliminate_skipBuildings
 - [x] casehubio/quarkmind#717 — MULE_trip_based_mining_model
-- [ ] casehubio/quarkmind#718 — Morph_name_valueOf_warning ← active
-- [ ] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation
+- [x] casehubio/quarkmind#718 — Morph_name_valueOf_warning
+- [ ] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation ← active
 - [ ] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig
 - [ ] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
 - [ ] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
