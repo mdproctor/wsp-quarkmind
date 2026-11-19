@@ -1,13 +1,3 @@
-# Work Plan —
-
-## State
-branch: issue-718-morph-name-valueof-warning
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#716
-active_issue: casehubio/quarkmind#716
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -160,8 +150,15 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig
 - [x] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
 - [x] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
-- [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62 ← active
-- [ ] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
+- [x] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
+- [ ] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible        ← active
 - [ ] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
 - [ ] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
 - [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling
+
+## State
+branch: issue-718-morph-name-valueof-warning
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#716
+active_issue: casehubio/quarkmind#716
