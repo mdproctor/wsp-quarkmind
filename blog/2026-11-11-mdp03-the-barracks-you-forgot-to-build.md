@@ -3,6 +3,8 @@ title: The Barracks You Forgot to Build
 date: 2026-11-11
 author: Mark Proctor
 tags: [sc2, simulation, api, testing, emulation]
+entry_type: article
+projects: [casehubio/quarkmind]
 ---
 
 SC2's morph API had been silently rejecting our Command Center → Orbital Command morph for weeks. The command fired, SC2 responded, and nothing happened. No error in the logs. No exception thrown. The CC sat there, unchanged, while the emulated game happily morphed the same building every time.

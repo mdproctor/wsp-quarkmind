@@ -2,6 +2,8 @@
 title: How Wrong Is Your Simulation?
 date: 2026-11-12
 tags: [quarkmind, emulation, calibration, validation, starcraft]
+entry_type: article
+projects: [casehubio/quarkmind]
 ---
 
 # How Wrong Is Your Simulation?

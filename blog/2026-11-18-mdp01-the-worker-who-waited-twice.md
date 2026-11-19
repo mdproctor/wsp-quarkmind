@@ -4,6 +4,9 @@ title: "The Worker Who Waited Twice"
 date: 2026-11-18
 author: Mark Proctor
 tags: [quarkmind, sc2, emulated-game, gas-harvesting, physics]
+entry_type: note
+subtype: diary
+projects: [casehubio/quarkmind]
 ---
 
 The emulated game's 3-worker gas rate was 121 gas/min. Liquipedia says 163. That's a 25.8% deficit — the kind of gap that makes you question whether the whole gas model is fundamentally wrong.

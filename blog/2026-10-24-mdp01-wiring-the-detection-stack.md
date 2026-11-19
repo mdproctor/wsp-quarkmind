@@ -5,6 +5,9 @@ author: mdp
 tags: [bjt, detection, onnx, neocortex, workbench]
 refs: ["#449", "#445", "#446", "#443", "#448"]
 epic: "#453"
+entry_type: note
+subtype: diary
+projects: [casehubio/quarkmind]
 ---
 
 # Wiring the detection stack

@@ -2,6 +2,8 @@
 title: The Wrapper That Stopped Wrapping
 date: 2026-11-11
 tags: [quarkmind, protobuf, ocraft, dependency-management, java]
+entry_type: article
+projects: [casehubio/quarkmind]
 ---
 
 # The Wrapper That Stopped Wrapping
