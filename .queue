@@ -1,7 +1,7 @@
 # Work Plan —
 
 ## State
-branch: 
+branch: issue-718-morph-name-valueof-warning
 issue-repo: casehubio/quarkmind
 status: active
 covers: casehubio/quarkmind#716
@@ -159,8 +159,8 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#719 — WorkerSim_phase_instrumentation
 - [x] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig
 - [x] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
-- [ ] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass ← active
-- [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
+- [x] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
+- [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62 ← active
 - [ ] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
 - [ ] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
 - [ ] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
