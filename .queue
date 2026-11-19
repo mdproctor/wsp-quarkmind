@@ -1,13 +1,3 @@
-# Work Plan —
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#728
-active_issue: casehubio/quarkmind#716
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -164,7 +154,14 @@ active_issue: casehubio/quarkmind#716
 - [x] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
 - [x] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
 - [x] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
-- [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling ← done on issue-727-density-dependent-path-deviation
-- [ ] casehubio/quarkmind#728 — MuleCargoVerificationTest_lifetimeTicks_misleads ← active
+- [x] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling
+- [ ] casehubio/quarkmind#728 — MuleCargoVerificationTest_lifetimeTicks_misleads        ← active
 - [ ] casehubio/quarkmind#729 — SC2_build_version_not_captured
 - [ ] casehubio/quarkmind#707 — EM_obstacle_aware_pathfinding
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#728
+active_issue: casehubio/quarkmind#716
