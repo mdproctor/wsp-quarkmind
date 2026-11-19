@@ -164,3 +164,4 @@ active_issue: casehubio/quarkmind#716
 - [ ] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
 - [ ] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
 - [ ] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
+- [ ] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling
