@@ -2,22 +2,35 @@
 
 ## Orientation for Next Session
 
-**#724–#726 closed** in one session. MULE cleanup sweep after the trip-based model change (#717).
+**#727, #728, #729 closed** this session. Density-dependent path deviation, MULE test rename, SC2 build version capture.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**#727 is next** — replace `LOW_SATURATION_APPROACH_BONUS` with density-dependent path deviation. This is an M/Med task. The bonus is a compensation constant that adds overhead at low saturation — the **opposite** of SC2's behaviour. At low saturation, workers mine at peak efficiency (no contention). The EM's straight-line walks are shorter than SC2's curved paths. The approach docking compensates for this, but a flat bonus doesn't scale with worker density. The proper fix: make `PATH_DEVIATION_SCALE` density-dependent in `MineralPatch.computeApproachDocking()`. At low density, minimal path deviation (straighter paths). At high density, full path deviation.
+**#707 is next** — EM obstacle-aware pathfinding. This is Scale L / Complexity High. The EM's `WorkerSimulation.moveOneLoop()` moves workers in straight lines. SC2 workers navigate around buildings, mineral patches, and other units. Every approach docking constant, path deviation formula, and density scaling is compensating for this missing physics.
 
-**Current accuracy state:**
+**What #707 replaces:** The entire approach docking compensation stack:
+- `computeApproachDocking()` — per-patch static path delay
+- `PATH_DEVIATION_SCALE` / `PATH_DEVIATION_BASE` — geometry-based deviation
+- `effectiveApproachDocking()` — density-dependent scaling (from #727)
+- The wait-time absorption mechanism
+- The outbound/return walk asymmetry compensation
+
+The approach animation (20 loops) stays — it models deceleration at the patch, which is real SC2 behaviour.
+
+**Cascading recalibration warning:** Fixing pathfinding will shift OTHER timings. Constants calibrated on top of straight-line walks will overcompensate. Plan for a full recalibration pass: mineral docking, gas docking, deposit, collision model.
+
+**Data correction applied this session:** The #721 finding had SC2/EM columns swapped. DualRunCalibrationTest `[econ]` output format is `SC2_expected vs EM_actual`. Previous handoff table was read as `EM vs SC2`, causing the wrong fix direction. Corrected in physics doc, blog, and forage memory. Issue #730 filed to audit remaining blog entries.
+
+**Current accuracy state (corrected — SC2 first, EM second):**
 
 | Metric | SC2 | EM | Error | Notes |
 |--------|-----|-----|-------|-------|
-| 4w minerals (tick 304) | 1245 | 1125 | **-9.6%** | bonus over-corrects (#727) |
-| 6w minerals (tick 304) | 1785 | 1695 | **-5.0%** | bonus over-corrects (#727) |
-| 8w minerals | 2330 | 2340 | **+0.4%** | |
-| 10w minerals (tick 304) | 2890 | 2840 | **-1.7%** | bonus inactive, correct |
-| 12w minerals | 3460 | 3450 | **-0.3%** | |
-| MULE isolation (tick 305) | 3565 | 3615 | **+1.4%** | trip-based, cargo=25 verified (#726) |
+| 4w minerals (tick 304) | 1125 | 1165 | **+3.6%** | density scaling (#727) |
+| 6w minerals (tick 304) | 1695 | 1740 | **+2.7%** | density scaling (#727) |
+| 8w minerals (tick 304) | 2330 | 2325 | **-0.2%** | anchor point |
+| 10w minerals (tick 304) | 2840 | 2890 | **+1.8%** | density > 1.0, unchanged |
+| 12w minerals (tick 304) | 3460 | 3450 | **-0.3%** | unchanged |
+| MULE isolation (tick 305) | 3565 | 3615 | **+1.4%** | trip-based, cargo=25 (#726) |
 
 ---
 
@@ -25,30 +38,27 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #724 | MULE worker snapshots not visible | Fixed — `boolean mule` field in WorkerSnapshot, merged workers+mules in workerSnapshots() |
-| #725 | Remove dead muleIncomePerTick | Fixed — method removed, test removed, diagnostic inlined constant |
-| #726 | MULE cargo calibration verify 25 vs 30 | Verified — MuleCargoVerificationTest: 13 trips × 25 = 325 min/lifetime, +1.4% vs SC2; cargo=30 rejected at +12.3% |
+| #727 | LOW_SATURATION_APPROACH_BONUS → density scaling | Fixed — inverse-density formula: `outboundPathDelay / max(density, 0.5)`. 4w +3.6% (was +10.7%), no regression at 8w/12w |
+| #728 | MuleCargoVerificationTest lifetimeTicks misleads | Fixed — renamed to `ticksToRun` with clarifying comment |
+| #729 | SC2 build version not captured in baselines | Fixed — `QuarkusSC2Transport.baseBuild()` captures from executable path, all 10 recorder call sites updated |
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #728 | MuleCargoVerificationTest lifetimeTicks misleads | XS/Low | WorkerSimulation doesn't handle MULE expiry |
-| #729 | SC2 build version not captured in calibration baselines | S/Low | All baselines have sc2Build=unknown |
+| #730 | Blog SC2/EM column swap audit | S/Low | Audit blog entries for propagated column-swap error |
 
-**Blog entries:** `2026-11-19-mdp02-the-other-half-of-a-model-change.md` — propagating a model change through API surfaces
+**Blog entries:** `2026-11-19-mdp01-the-bonus-that-worked-at-eight.md` revised — corrected SC2/EM data, documented inverse-density fix, acknowledged it's still compensation
 
-**Published:** project (2 commits), workspace (3 commits), casehub blog (4 entries), personal blog (4 entries)
+**Published:** project (4 commits), workspace (7 commits)
 
 ---
 
-## Queue (6 open items)
+## Queue (2 open items)
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | **#727** | M/Med | **NEXT** — Replace approach bonus with density-dependent path deviation |
-| 2 | #723 | S/Med | Expansion-transfer SC2 divergence tick 62 |
-| 3 | #728 | XS/Low | MuleCargoVerificationTest lifetimeTicks misleads |
-| 4 | #729 | S/Low | SC2 build version not captured in calibration baselines |
+| 1 | **#707** | L/High | **NEXT** — EM obstacle-aware pathfinding (root cause of all approach docking compensation) |
+| 2 | #730 | S/Low | Audit blog entries for SC2/EM column swap propagation |
 
-**On main** — `work continue` to start #727. Branch needs creation.
+**On main** — `work start #707` to begin. Fresh session recommended — L/High task in a different domain (pathfinding vs calibration).
