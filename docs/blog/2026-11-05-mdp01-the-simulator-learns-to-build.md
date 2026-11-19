@@ -4,7 +4,7 @@ title: "The Simulator Learns to Build"
 date: 2026-11-05
 type: technical
 entry_type: note
-subtype: deep-dive
+subtype: diary
 projects: [QuarkMind]
 ---
 
