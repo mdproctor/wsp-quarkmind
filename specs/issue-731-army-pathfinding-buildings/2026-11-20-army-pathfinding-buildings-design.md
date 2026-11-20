@@ -53,8 +53,8 @@ Call `registerBuildingObstacle` at every point a building enters the game state,
 | `injectReplayBuilding()` | `registerBuildingObstacle` | After adding building |
 | `injectReplayBuildingWithCost()` | `registerBuildingObstacle` | After adding building |
 | `debugCreateBuilding()` | `registerBuildingObstacle` | After adding building |
-| `handleBuildingDied()` | `clearBuildingObstacle` | Before removing building from PlayerState |
-| `removeDestroyedBuilding()` | `clearBuildingObstacle` | Before removing building from PlayerState |
+| `handleBuildingDied()` | `clearBuildingObstacle` | Look up building by tag from PlayerState before `removeBuilding()` — `BuildingDiedIntent` has type but no position |
+| `removeDestroyedBuilding()` | `clearBuildingObstacle` | Look up building by tag from PlayerState before `removeBuilding()` |
 
 Buildings register on placement start (incomplete), not on completion. SC2 blocks pathing from the moment construction begins.
 
@@ -101,9 +101,9 @@ This aligns `enforceWall` with the obstacle layer — both block from placement 
 
 ### 5. Handle reset/clear lifecycle
 
-`EmulatedGame.reset()` calls `terrainGrid.clearAllObstacles()` (if it doesn't already, it should). After reset, the building lists are empty and no obstacle state needs clearing.
+`EmulatedGame.reset()` (line 166) does NOT currently call `clearAllObstacles()`. Add `terrainGrid.clearAllObstacles()` to `resetInternal()` (before building lists are cleared). After reset, the building lists are empty and no obstacle state needs clearing.
 
-If `reset()` does not currently call `clearAllObstacles()`, add it. If it does, verify that re-registered obstacles from scenario setup (e.g., `ScenarioLibrary`) correctly rebuild after reset.
+Workers re-register mineral patch obstacles via `WorkerSimulation.onTownHallCompleted()` during scenario setup after reset — this happens naturally when the scenario creates town halls. Building obstacles will also be re-registered naturally as the scenario's `handleBuild()` / `debugCreateBuilding()` calls fire.
 
 ### 6. Enemy buildings
 
