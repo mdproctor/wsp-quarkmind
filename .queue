@@ -1,13 +1,3 @@
-# Work Plan —
-
-## State
-branch: issue-707-obstacle-aware-pathfinding
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#707
-active_issue: casehubio/quarkmind#707
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -167,8 +157,8 @@ active_issue: casehubio/quarkmind#707
 - [x] casehubio/quarkmind#727 — LOW_SATURATION_APPROACH_BONUS_proportional_scaling
 - [x] casehubio/quarkmind#728 — MuleCargoVerificationTest_lifetimeTicks_misleads
 - [x] casehubio/quarkmind#729 — SC2_build_version_not_captured
-- [ ] casehubio/quarkmind#707 — EM_obstacle_aware_pathfinding ← active
-- [ ] casehubio/quarkmind#734 — Wire_TerrainGrid_into_all_economy_tests
+- [x] casehubio/quarkmind#707 — EM_obstacle_aware_pathfinding
+- [ ] casehubio/quarkmind#734 — Wire_TerrainGrid_into_all_economy_tests        ← active
 - [ ] casehubio/quarkmind#736 — SC2Data_buildingFootprint_tile_dimensions
 - [ ] casehubio/quarkmind#733 — Replace_circular_approximations_with_rectangular_footprints
 - [ ] casehubio/quarkmind#735 — Mineral_patch_orientation_for_rectangular_footprints
@@ -176,3 +166,10 @@ active_issue: casehubio/quarkmind#707
 - [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings
 - [ ] casehubio/quarkmind#732 — Army_pathfinding_around_resources
 - [ ] casehubio/quarkmind#730 — blog_sc2_em_column_swap_audit
+
+## State
+branch: issue-707-obstacle-aware-pathfinding
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#707
+active_issue: casehubio/quarkmind#707
