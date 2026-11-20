@@ -53,6 +53,7 @@ Call `registerBuildingObstacle` at every point a building enters the game state,
 | `injectReplayBuilding()` | `registerBuildingObstacle` | After adding building |
 | `injectReplayBuildingWithCost()` | `registerBuildingObstacle` | After adding building |
 | `debugCreateBuilding()` | `registerBuildingObstacle` | After adding building |
+| `spawnEnemyBuildingForTesting()` | `registerBuildingObstacle` | After adding enemy building (bypasses handleBuildingBorn) |
 | `handleBuildingDied()` | `clearBuildingObstacle` | Look up building by tag from PlayerState before `removeBuilding()` — `BuildingDiedIntent` has type but no position |
 | `removeDestroyedBuilding()` | `clearBuildingObstacle` | Look up building by tag from PlayerState before `removeBuilding()` |
 
@@ -107,9 +108,9 @@ Workers re-register mineral patch obstacles via `WorkerSimulation.onTownHallComp
 
 ### 6. Enemy buildings
 
-Both friendly and enemy buildings register obstacles. `enforceWall` already iterates both — the obstacle layer should match. The lifecycle methods for enemy buildings follow the same patterns (`handleBuildingBorn` with `isEnemy=true`, or `enemy.addBuilding()`).
+`handleBuildingBorn` and `handleBuildingDied` are parameterised by `PlayerState` — they handle both friendly and enemy buildings. Wiring `registerBuildingObstacle`/`clearBuildingObstacle` inside these methods automatically covers enemy buildings.
 
-Check all enemy building creation paths and wire `registerBuildingObstacle` there too.
+The only gap is `spawnEnemyBuildingForTesting()` (line 1704) which calls `enemy.addBuilding()` directly — this needs a `registerBuildingObstacle` call too (see table above).
 
 ## Interaction with existing systems
 
