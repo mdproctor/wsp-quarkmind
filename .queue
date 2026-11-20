@@ -1,13 +1,3 @@
-# Work Plan —
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#731
-active_issue: casehubio/quarkmind#734
-
-## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -168,13 +158,20 @@ active_issue: casehubio/quarkmind#734
 - [x] casehubio/quarkmind#728 — MuleCargoVerificationTest_lifetimeTicks_misleads
 - [x] casehubio/quarkmind#729 — SC2_build_version_not_captured
 - [x] casehubio/quarkmind#707 — EM_obstacle_aware_pathfinding
-- [ ] casehubio/quarkmind#734 — Wire_TerrainGrid_into_all_economy_tests ← done on issue-734-terrain-grid-economy-tests
-- [ ] casehubio/quarkmind#736 — SC2Data_buildingFootprint_tile_dimensions ← done on issue-736-building-footprint-tile-dimensions
-- [ ] casehubio/quarkmind#733 — Replace_circular_approximations_with_rectangular_footprints ← done on issue-733-rectangular-footprints
-- [ ] casehubio/quarkmind#735 — Mineral_patch_orientation_for_rectangular_footprints ← done on issue-735-mineral-patch-orientation
-- [ ] casehubio/quarkmind#737 — Replace_edgePoint_circle_with_rectangle_nearest_point ← done on issue-735-mineral-patch-orientation
-- [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings ← active
+- [x] casehubio/quarkmind#734 — Wire_TerrainGrid_into_all_economy_tests
+- [x] casehubio/quarkmind#736 — SC2Data_buildingFootprint_tile_dimensions
+- [x] casehubio/quarkmind#733 — Replace_circular_approximations_with_rectangular_footprints
+- [x] casehubio/quarkmind#735 — Mineral_patch_orientation_for_rectangular_footprints
+- [x] casehubio/quarkmind#737 — Replace_edgePoint_circle_with_rectangle_nearest_point
+- [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings        ← active
 - [ ] casehubio/quarkmind#732 — Army_pathfinding_around_resources
 - [ ] casehubio/quarkmind#730 — blog_sc2_em_column_swap_audit
 - [ ] casehubio/quarkmind#739 — Remove_dead_APPROACH_DOCKING_LOOPS_config
 - [ ] casehubio/quarkmind#740 — buildingFootprint_shared_mutable_array
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#731
+active_issue: casehubio/quarkmind#734
