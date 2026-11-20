@@ -2,63 +2,55 @@
 
 ## Orientation for Next Session
 
-**#727, #728, #729 closed** this session. Density-dependent path deviation, MULE test rename, SC2 build version capture.
+**#734, #736, #733 completed** this session. Terrain defaults, rectangular building footprints, enforceWall conversion. #735 (mineral patch orientation) deferred — obstacle size needs empirical calibration before converting shape.
 
 The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**.
 
-**#707 is next** — EM obstacle-aware pathfinding. This is Scale L / Complexity High. The EM's `WorkerSimulation.moveOneLoop()` moves workers in straight lines. SC2 workers navigate around buildings, mineral patches, and other units. Every approach docking constant, path deviation formula, and density scaling is compensating for this missing physics.
+**Key changes this session:**
 
-**What #707 replaces:** The entire approach docking compensation stack:
-- `computeApproachDocking()` — per-patch static path delay
-- `PATH_DEVIATION_SCALE` / `PATH_DEVIATION_BASE` — geometry-based deviation
-- `effectiveApproachDocking()` — density-dependent scaling (from #727)
-- The wait-time absorption mechanism
-- The outbound/return walk asymmetry compensation
+1. **EmulatedGame default terrain (#734):** Constructor now calls `setTerrainGrid(TerrainGrid.emulatedMap())`. All tests get obstacle-aware worker pathfinding without per-site wiring. Fog of war decoupled into separate `fogEnabled` flag (default false). Production code (`EmulatedEngine`, `EmulatedSC2Server`) sets `fogEnabled(true)` explicitly.
 
-The approach animation (20 loops) stays — it models deceleration at the patch, which is real SC2 behaviour.
+2. **Rectangular building footprints (#736):** `SC2Data.buildingFootprint(BuildingType)` returns `int[2]` tile dimensions from SC2 data editor. `enforceWall()` uses `insideFootprint()` rectangular check instead of circular `buildingRadius()`. Static shared arrays for zero hot-path allocation. `buildingRadius()` deprecated.
 
-**Cascading recalibration warning:** Fixing pathfinding will shift OTHER timings. Constants calibrated on top of straight-line walks will overcompensate. Plan for a full recalibration pass: mineral docking, gas docking, deposit, collision model.
+3. **Mineral patch obstacle calibration finding:** Converting mineral patch obstacles from circular (0.3 radius, ~1 tile) to rectangular (2×1 tiles) caused +4.1% MULE regression. The 0.3-radius value was empirically calibrated for the pathfinder. Converting to rectangular needs its own calibration pass, not a mechanical swap. Reverted mineral patches to circular.
 
-**Data correction applied this session:** The #721 finding had SC2/EM columns swapped. DualRunCalibrationTest `[econ]` output format is `SC2_expected vs EM_actual`. Previous handoff table was read as `EM vs SC2`, causing the wrong fix direction. Corrected in physics doc, blog, and forage memory. Issue #730 filed to audit remaining blog entries.
-
-**Current accuracy state (corrected — SC2 first, EM second):**
-
-| Metric | SC2 | EM | Error | Notes |
-|--------|-----|-----|-------|-------|
-| 4w minerals (tick 304) | 1125 | 1165 | **+3.6%** | density scaling (#727) |
-| 6w minerals (tick 304) | 1695 | 1740 | **+2.7%** | density scaling (#727) |
-| 8w minerals (tick 304) | 2330 | 2325 | **-0.2%** | anchor point |
-| 10w minerals (tick 304) | 2840 | 2890 | **+1.8%** | density > 1.0, unchanged |
-| 12w minerals (tick 304) | 3460 | 3450 | **-0.3%** | unchanged |
-| MULE isolation (tick 305) | 3565 | 3615 | **+1.4%** | trip-based, cargo=25 (#726) |
+**Accuracy state unchanged** — building footprint change doesn't affect economy (enforceWall affects army, not workers). Mineral patches reverted, so calibration numbers are the same as the previous session.
 
 ---
 
-## Closed This Session
+## Completed This Session
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #727 | LOW_SATURATION_APPROACH_BONUS → density scaling | Fixed — inverse-density formula: `outboundPathDelay / max(density, 0.5)`. 4w +3.6% (was +10.7%), no regression at 8w/12w |
-| #728 | MuleCargoVerificationTest lifetimeTicks misleads | Fixed — renamed to `ticksToRun` with clarifying comment |
-| #729 | SC2 build version not captured in baselines | Fixed — `QuarkusSC2Transport.baseBuild()` captures from executable path, all 10 recorder call sites updated |
+| #734 | Wire TerrainGrid into all economy tests | Done — constructor default, fog decoupled |
+| #736 | SC2Data.buildingFootprint() tile dimensions | Done — static lookup, enforceWall wired, buildingRadius deprecated |
+| #733 | Replace circular approximations with rectangular footprints | Done — building collision converted; mineral patches deferred to #735 |
+
+**Deferred:**
+
+| Issue | Title | Why |
+|-------|-------|-----|
+| #735 | Mineral patch orientation for rectangular footprints | Obstacle SIZE must be calibrated before shape conversion; 2×1 footprint blocks too many tiles |
+| #737 | Replace edgePoint circle with rectangle nearest-point | Blocked by #735 (needs orientation) |
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #730 | Blog SC2/EM column swap audit | S/Low | Audit blog entries for propagated column-swap error |
+| #738 | EVOLUTION_CHAMBER footprint verification | XS/Low | May be 3×3 not 2×2 per SC2 data editor |
 
-**Blog entries:** `2026-11-19-mdp01-the-bonus-that-worked-at-eight.md` revised — corrected SC2/EM data, documented inverse-density fix, acknowledged it's still compensation
-
-**Published:** project (4 commits), workspace (7 commits)
+**Blog entries:** `2026-11-20-mdp01-rectangles-not-radii.md` — building collision switches from circular to rectangular; fog decoupling; mineral patch calibration finding
 
 ---
 
-## Queue (2 open items)
+## Queue (open items)
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | **#707** | L/High | **NEXT** — EM obstacle-aware pathfinding (root cause of all approach docking compensation) |
-| 2 | #730 | S/Low | Audit blog entries for SC2/EM column swap propagation |
+| 1 | **#735** | S/Med | **ACTIVE** — mineral patch orientation (deferred — needs calibration pass) |
+| 2 | #737 | S/Med | edgePoint rectangle (blocked by #735) |
+| 3 | #731 | M/Med | Army pathfinding around buildings |
+| 4 | #732 | M/Med | Army pathfinding around resources |
+| 5 | #730 | S/Low | Blog SC2/EM column swap audit |
 
-**On main** — `work start #707` to begin. Fresh session recommended — L/High task in a different domain (pathfinding vs calibration).
+**Recommendation:** Skip #735/#737 for now and start #731 (army pathfinding) — different subsystem, independent of mineral patch calibration. Or tackle #738 (XS/Low verification) first as a warm-up.

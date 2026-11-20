@@ -4,7 +4,7 @@
 branch: 
 issue-repo: casehubio/quarkmind
 status: active
-covers: casehubio/quarkmind#737
+covers: casehubio/quarkmind#731
 active_issue: casehubio/quarkmind#734
 
 ## Queue
@@ -172,7 +172,9 @@ active_issue: casehubio/quarkmind#734
 - [ ] casehubio/quarkmind#736 — SC2Data_buildingFootprint_tile_dimensions ← done on issue-736-building-footprint-tile-dimensions
 - [ ] casehubio/quarkmind#733 — Replace_circular_approximations_with_rectangular_footprints ← done on issue-733-rectangular-footprints
 - [ ] casehubio/quarkmind#735 — Mineral_patch_orientation_for_rectangular_footprints ← done on issue-735-mineral-patch-orientation
-- [ ] casehubio/quarkmind#737 — Replace_edgePoint_circle_with_rectangle_nearest_point ← active
-- [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings
+- [ ] casehubio/quarkmind#737 — Replace_edgePoint_circle_with_rectangle_nearest_point ← done on issue-735-mineral-patch-orientation
+- [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings ← active
 - [ ] casehubio/quarkmind#732 — Army_pathfinding_around_resources
 - [ ] casehubio/quarkmind#730 — blog_sc2_em_column_swap_audit
+- [ ] casehubio/quarkmind#739 — Remove_dead_APPROACH_DOCKING_LOOPS_config
+- [ ] casehubio/quarkmind#740 — buildingFootprint_shared_mutable_array
