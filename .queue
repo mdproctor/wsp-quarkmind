@@ -1,3 +1,13 @@
+# Work Plan —
+
+## State
+branch: issue-732-army-pathfinding-resources
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#732
+active_issue: casehubio/quarkmind#734
+
+## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
@@ -163,15 +173,19 @@
 - [x] casehubio/quarkmind#733 — Replace_circular_approximations_with_rectangular_footprints
 - [x] casehubio/quarkmind#735 — Mineral_patch_orientation_for_rectangular_footprints
 - [x] casehubio/quarkmind#737 — Replace_edgePoint_circle_with_rectangle_nearest_point
-- [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings        ← active
-- [ ] casehubio/quarkmind#732 — Army_pathfinding_around_resources
+- [ ] casehubio/quarkmind#731 — Army_pathfinding_around_buildings ← done on issue-731-army-pathfinding-buildings
+  - [x] Batch 1: MovementStrategy
+    - [x] Task 1: Add invalidateAllPaths
+  - [x] Batch 2: Building obstacles
+    - [x] Task 2: Wire lifecycle hooks
+  - [x] Batch 3: A* verification
+    - [x] Task 3: Route around buildings + enforceWall
+  - [x] Batch 4: Docs
+    - [x] Task 4: Update physics constants + regression
+- [ ] casehubio/quarkmind#732 — Army_pathfinding_around_resources ← active
 - [ ] casehubio/quarkmind#730 — blog_sc2_em_column_swap_audit
 - [ ] casehubio/quarkmind#739 — Remove_dead_APPROACH_DOCKING_LOOPS_config
 - [ ] casehubio/quarkmind#740 — buildingFootprint_shared_mutable_array
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#731
-active_issue: casehubio/quarkmind#734
+- [ ] casehubio/quarkmind#738 — EVOLUTION_CHAMBER_footprint_verification
+- [ ] casehubio/quarkmind#742 — Verify_geyser_obstacle_footprint
+- [ ] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration
