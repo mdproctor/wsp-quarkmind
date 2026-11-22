@@ -2,25 +2,30 @@
 
 ## Orientation for Next Session
 
-**#731 and #732 landed** this session. Army pathfinding now routes around buildings and vespene geysers via the obstacle layer on `TerrainGrid`. The architectural shift: from reactive `enforceWall` rejection loops to proactive A* routing around obstacles.
+**Five cleanup issues landed** this session (#739, #740, #738, #742, #743), plus a comprehensive physics doc revision, economy accuracy gap analysis, and six new economy issues filed and scheduled.
 
-The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**. §15 has the army building/resource obstacle entries.
+The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**. Major revision this session: §3 (approach values), §13 (Footprint record, gas/EvoChamber corrections), §14 (cycle breakdown, drift numbers), §15 (enforceWall optimization), §16 (all economy baseline numbers refreshed, accuracy plan added).
 
 **Key changes landed this session:**
 
-1. **Army building obstacles (#731):** `registerBuildingObstacle()`/`clearBuildingObstacle()` wired into all 8 building lifecycle methods. Buildings register from placement start (incomplete buildings block pathing, matching SC2). `invalidateAllPaths()` added to `MovementStrategy`. `enforceWall()` `isComplete()` guard dropped — both complete and incomplete buildings block entry. `clearAllObstacles()` added to `resetInternal()`.
+1. **Dead config removal (#739):** `APPROACH_DOCKING_LOOPS` (24.5) removed from `SimulatedWorker`, `WorkerPhysicsConfig`, and `WorkerPhysicsConfigProducer`. Was immediately overwritten by `computeApproachDocking()` — dead since #707.
 
-2. **Resource obstacles (#732):** Vespene geysers registered as 3×3 rectangular obstacles (`GEYSER_OBSTACLE_HALF_EXTENT = 1.5f`) in `setGeyserResources()`. Mineral patches already registered (radius 0.3) by `WorkerSimulation` on the shared grid.
+2. **Immutable Footprint record (#740):** `SC2Data.buildingFootprint()` now returns `Footprint(width, height)` with `halfWidth()`/`halfHeight()` helpers instead of shared mutable `int[]`. All 9 callers updated.
 
-3. **Physics doc revised:** §15 updated with army building obstacles (#731) and resource obstacles (#732).
+3. **Building footprint corrections (#738):** EVOLUTION_CHAMBER 2×2→3×3 (matches SC2 data editor and all Zerg tech buildings). Gas buildings (Assimilator/Refinery/Extractor/Assimilator_Rich) 2×2→3×3 (matches 3×3 geysers). NYDUS_CANAL left at 2×2 pending verification (#750).
 
-**Key design decisions:**
-- Register on placement start, not completion — matches SC2 behavior
-- Invalidate all army paths on building change — simple, correct at current unit counts
-- `enforceWall` stays as safety net — almost never triggers now
-- Geyser footprint assumed 3×3 — not empirically verified (#742)
+4. **Geyser footprint verified (#742):** `GEYSER_OBSTACLE_HALF_EXTENT = 1.5` (3×3) confirmed correct — matches gas building footprint from #738.
 
-**Accuracy state unchanged** — building/resource obstacles affect army pathfinding only. Worker economy paths use the same shared `TerrainGrid` but mineral patch obstacles (radius 0.3) are unchanged.
+5. **enforceWall optimization (#743):** Building iteration now skips buildings registered as terrain obstacles (covered by `isWalkable` check). Reduces from O(units × all_buildings) to O(units × initial_buildings). Key finding: initial town hall CANNOT be registered as an obstacle — worker A* paths route through the base area, and registering it causes 4.6% MULE economy regression.
+
+**Economy accuracy state (standalone baseline, 2026-11-22):**
+
+| Field | MAPE | Floor | Status |
+|-------|------|-------|--------|
+| mineralsCollectionRate | 38.6% | ~10-12% | Gap: rate algorithm, map geometry, worker timing |
+| vespeneCollectionRate | 20.5% | ~12-15% | Approaching floor |
+| mineralsCurrent | 84.9% | ~40-50% | Cumulative drift from rate error |
+| vespeneCurrent | 61.1% | ~35-45% | Cumulative drift |
 
 ---
 
@@ -28,31 +33,40 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #731 | Army pathfinding: register buildings as obstacles | Done — 2 commits after squash (invalidateAllPaths + obstacle wiring) |
-| #732 | Army pathfinding: mineral patches and geysers as obstacles | Done — 1 commit (geyser registration) |
+| #739 | Remove dead APPROACH_DOCKING_LOOPS config | Done — constant, field, config property removed |
+| #740 | buildingFootprint() shared mutable int[] | Done — replaced with immutable Footprint record |
+| #738 | EVOLUTION_CHAMBER footprint verification | Done — corrected to 3×3, gas buildings to 3×3 |
+| #742 | Verify geyser obstacle footprint | Done — confirmed 3×3 correct |
+| #743 | Optimise enforceWall building iteration | Done — skip registered buildings |
 
 **Filed this session:**
 
 | Issue | Title | Scale | Notes |
 |-------|-------|-------|-------|
-| #742 | Verify geyser obstacle footprint against SC2 data editor | XS/Low | 3×3 assumed, not verified |
-| #743 | Optimise enforceWall: skip building iteration when obstacle layer active | S/Low | O(units × buildings) per tick, almost never triggers |
+| #744 | Standalone mineral rate MAPE gap decomposition | M/Med | Identify what drives 38.6% mineral rate MAPE |
+| #745 | Per-replay mineral patch geometry vs EM distances | S/Med | Map distance contribution to rate gap |
+| #746 | Worker startup/transfer timing in standalone | S/Med | Allocation delay contribution |
+| #747 | Balance drift MAPE validation after rate fixes | S/Low | Verify balance drops proportionally |
+| #748 | Remove deprecated buildingRadius() | XS/Low | Zero callers remain |
+| #749 | ApproachDockingSweepTest stale sweep ranges | XS/Low | Ranges calibrated for removed constant |
+| #750 | Verify NYDUS_CANAL footprint empirically | XS/Low | Left at 2×2, may be 3×3 |
 
-**Blog entries:** `2026-11-22-mdp01-pathfinder-that-couldnt-see-buildings.md` — reactive vs proactive pathfinding, the obstacle layer architecture, with SVG diagram
-
-**Published:** project + workspace pushed to origin
+**Blog entries:** `2026-11-22-mdp02-the-obstacle-with-two-faces.md` — shared terrain grid has two consumers (army, workers) with different obstruction rules
 
 ---
 
-## Queue (open items)
+## Queue (next items)
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | #730 | S/Low | Blog SC2/EM column swap audit |
-| 2 | #738 | XS/Low | EVOLUTION_CHAMBER footprint verification |
-| 3 | #739 | XS/Low | Remove dead APPROACH_DOCKING_LOOPS config |
-| 4 | #740 | XS/Low | buildingFootprint() shared mutable int[] |
-| 5 | #742 | XS/Low | Verify geyser obstacle footprint |
-| 6 | #743 | S/Low | Optimise enforceWall building iteration |
+| 1 | **#744** | M/Med | Gap decomposition — where does the 38.6% mineral rate MAPE come from? |
+| 2 | #745 | S/Med | Per-replay mineral patch geometry vs EM distances |
+| 3 | #746 | S/Med | Worker startup/transfer timing |
+| 4 | #676 | M/High | Reverse-engineer SC2 rate computation algorithm |
+| 5 | #747 | S/Low | Balance validation after rate fixes |
+| 6 | #666 | L/High | Forward simulation economy mode |
+| 7 | #748 | XS/Low | Remove deprecated buildingRadius() |
+| 8 | #749 | XS/Low | Sweep test stale ranges |
+| 9 | #750 | XS/Low | Verify Nydus Canal footprint |
 
-`work continue` to pick up the next item. All remaining items are XS-S/Low — a session of cleanup work.
+`work continue` picks up #744 — the economy gap decomposition investigation.
