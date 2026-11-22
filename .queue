@@ -1,9 +1,20 @@
+# Work Plan —
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#748
+active_issue: casehubio/quarkmind#734
+cut_from: 
+
+## Queue
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
-- [ ] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances        ← active
-- [ ] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
-- [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
-- [ ] casehubio/quarkmind#747 — Balance_drift_MAPE_validation_after_rate_fixes
-- [ ] casehubio/quarkmind#666 — Forward simulation economy mode
+- [ ] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances ← done on issue-745-replay-mineral-patch-geometry
+- [ ] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone ← done on issue-746-worker-startup-transfer-timing
+- [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm ← done on issue-676-sc2-rate-algorithm
+- [ ] casehubio/quarkmind#747 — Balance_drift_MAPE_validation_after_rate_fixes ← done on issue-747-balance-drift-mape-validation
+- [ ] casehubio/quarkmind#666 — Forward simulation economy mode ← done on issue-747-balance-drift-mape-validation
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
@@ -175,14 +186,6 @@
 - [x] casehubio/quarkmind#738 — EVOLUTION_CHAMBER_footprint_verification
 - [x] casehubio/quarkmind#742 — Verify_geyser_obstacle_footprint
 - [x] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration
-- [ ] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
+- [ ] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius ← active
 - [ ] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
 - [ ] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#745
-active_issue: casehubio/quarkmind#734
-cut_from: 
