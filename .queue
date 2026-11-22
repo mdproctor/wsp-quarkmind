@@ -6,7 +6,7 @@ issue-repo: casehubio/quarkmind
 status: active
 covers: casehubio/quarkmind#739
 active_issue: casehubio/quarkmind#734
-cut_from: 636cf65457f5987083c220a0dc8d3c6320202266
+cut_from: 
 
 ## Queue
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
