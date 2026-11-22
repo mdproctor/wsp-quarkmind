@@ -1,4 +1,4 @@
-- [ ] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition ← done on issue-743-skip-enforcewall-with-obstacles
+- [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
 - [ ] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances        ← active
 - [ ] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
 - [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
