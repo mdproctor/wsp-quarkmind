@@ -174,7 +174,7 @@
 - [x] casehubio/quarkmind#740 — buildingFootprint_shared_mutable_array
 - [x] casehubio/quarkmind#738 — EVOLUTION_CHAMBER_footprint_verification
 - [x] casehubio/quarkmind#742 — Verify_geyser_obstacle_footprint
-- [ ] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration ← done on issue-743-skip-enforcewall-with-obstacles
+- [x] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration
 - [ ] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
 - [ ] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
 - [ ] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
