@@ -72,3 +72,4 @@
 | [2026-11-19-mdp01-the-bonus-that-worked-at-eight.md](2026-11-19-mdp01-the-bonus-that-worked-at-eight.md) | 2026-11-19 | LOW_SATURATION_APPROACH_BONUS calibrated at 8w over-corrects at 4w (-9.6%) — flat threshold needs proportional scaling |
 | [2026-11-19-mdp02-the-other-half-of-a-model-change.md](2026-11-19-mdp02-the-other-half-of-a-model-change.md) | 2026-11-19 | Propagating a model change — MULE snapshots, dead code removal, cargo verification |
 | [2026-11-20-mdp01-rectangles-not-radii.md](2026-11-20-mdp01-rectangles-not-radii.md) | 2026-11-20 | Building collision switches from circular radii to rectangular tile footprints; fog decoupled from terrain; mineral patch conversion deferred pending calibration |
+| [2026-11-22-mdp01-pathfinder-that-couldnt-see-buildings.md](2026-11-22-mdp01-pathfinder-that-couldnt-see-buildings.md) | 2026-11-22 | Army pathfinding: from reactive enforceWall rejection to proactive A* routing around buildings and geysers |

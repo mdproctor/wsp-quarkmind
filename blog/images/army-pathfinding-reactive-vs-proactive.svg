@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <!-- Background -->
+  <rect width="720" height="320" fill="#f8f9fa" rx="8"/>
+
+  <!-- Left panel: Reactive -->
+  <rect x="20" y="20" width="330" height="280" fill="white" stroke="#dee2e6" rx="6"/>
+  <text x="185" y="48" text-anchor="middle" font-size="15" font-weight="bold" fill="#dc3545">Before: Reactive (enforceWall)</text>
+
+  <!-- Grid left -->
+  <g transform="translate(40, 70)">
+    <!-- Grid cells -->
+    <rect x="0" y="0" width="120" height="120" fill="#e9ecef" stroke="#adb5bd" rx="2"/>
+    <!-- Building (3x3 Nexus) -->
+    <rect x="40" y="30" width="40" height="40" fill="#6c757d" stroke="#495057" rx="2"/>
+    <text x="60" y="55" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Nexus</text>
+    <!-- A* path (straight through) -->
+    <line x1="10" y1="50" x2="110" y2="50" stroke="#dc3545" stroke-width="2.5" stroke-dasharray="6,3"/>
+    <!-- Unit stuck -->
+    <circle cx="38" cy="50" r="6" fill="#dc3545" stroke="#a71d2a" stroke-width="1.5"/>
+    <text x="38" y="53" text-anchor="middle" fill="white" font-size="8" font-weight="bold">!</text>
+  </g>
+
+  <!-- Flow left -->
+  <g transform="translate(180, 80)">
+    <rect x="0" y="0" width="150" height="28" fill="#fff3cd" stroke="#ffc107" rx="4"/>
+    <text x="75" y="18" text-anchor="middle" fill="#856404" font-size="11">A* plans through building</text>
+
+    <line x1="75" y1="28" x2="75" y2="40" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="0" y="40" width="150" height="28" fill="#f8d7da" stroke="#dc3545" rx="4"/>
+    <text x="75" y="58" text-anchor="middle" fill="#721c24" font-size="11">enforceWall rejects move</text>
+
+    <line x1="75" y1="68" x2="75" y2="80" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="0" y="80" width="150" height="28" fill="#fff3cd" stroke="#ffc107" rx="4"/>
+    <text x="75" y="98" text-anchor="middle" fill="#856404" font-size="11">invalidatePath → recompute</text>
+
+    <line x1="75" y1="108" x2="75" y2="120" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="0" y="120" width="150" height="28" fill="#f8d7da" stroke="#dc3545" rx="4"/>
+    <text x="75" y="138" text-anchor="middle" fill="#721c24" font-size="11">Same path → stuck forever</text>
+  </g>
+
+  <!-- Right panel: Proactive -->
+  <rect x="370" y="20" width="330" height="280" fill="white" stroke="#dee2e6" rx="6"/>
+  <text x="535" y="48" text-anchor="middle" font-size="15" font-weight="bold" fill="#198754">After: Proactive (obstacle layer)</text>
+
+  <!-- Grid right -->
+  <g transform="translate(390, 70)">
+    <rect x="0" y="0" width="120" height="120" fill="#e9ecef" stroke="#adb5bd" rx="2"/>
+    <!-- Building with obstacle shading -->
+    <rect x="40" y="30" width="40" height="40" fill="#6c757d" stroke="#495057" rx="2"/>
+    <text x="60" y="55" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Nexus</text>
+    <!-- Obstacle cells (lighter shade around building) -->
+    <rect x="35" y="25" width="50" height="50" fill="none" stroke="#dc3545" stroke-width="1" stroke-dasharray="3,2" rx="1"/>
+    <!-- A* path (routes around) -->
+    <polyline points="10,50 35,50 35,22 85,22 85,50 110,50" fill="none" stroke="#198754" stroke-width="2.5"/>
+    <!-- Unit moving -->
+    <circle cx="85" cy="22" r="6" fill="#198754" stroke="#146c43" stroke-width="1.5"/>
+    <text x="85" y="25" text-anchor="middle" fill="white" font-size="8" font-weight="bold">→</text>
+  </g>
+
+  <!-- Flow right -->
+  <g transform="translate(530, 80)">
+    <rect x="0" y="0" width="150" height="28" fill="#d1e7dd" stroke="#198754" rx="4"/>
+    <text x="75" y="18" text-anchor="middle" fill="#0f5132" font-size="11">Building → markObstacle</text>
+
+    <line x1="75" y1="28" x2="75" y2="40" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="0" y="40" width="150" height="28" fill="#d1e7dd" stroke="#198754" rx="4"/>
+    <text x="75" y="58" text-anchor="middle" fill="#0f5132" font-size="11">isWalkable = false</text>
+
+    <line x1="75" y1="68" x2="75" y2="80" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="0" y="80" width="150" height="28" fill="#d1e7dd" stroke="#198754" rx="4"/>
+    <text x="75" y="98" text-anchor="middle" fill="#0f5132" font-size="11">A* routes around building</text>
+
+    <line x1="75" y1="108" x2="75" y2="120" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="0" y="120" width="150" height="28" fill="#cfe2ff" stroke="#0d6efd" rx="4"/>
+    <text x="75" y="138" text-anchor="middle" fill="#084298" font-size="11">enforceWall = safety net only</text>
+  </g>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#adb5bd"/>
+    </marker>
+  </defs>
+</svg>
