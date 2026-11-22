@@ -2,30 +2,26 @@
 
 ## Orientation for Next Session
 
-**Five cleanup issues landed** this session (#739, #740, #738, #742, #743), plus a comprehensive physics doc revision, economy accuracy gap analysis, and six new economy issues filed and scheduled.
-
-The reference document is `docs/sc2-physics-constants.md` — **read it first**, use it throughout, and **revise it as you go**. Major revision this session: §3 (approach values), §13 (Footprint record, gas/EvoChamber corrections), §14 (cycle breakdown, drift numbers), §15 (enforceWall optimization), §16 (all economy baseline numbers refreshed, accuracy plan added).
+**Four economy investigation issues completed** this session (#745, #746, #676, #747), including a significant rate algorithm improvement. The reference document is `docs/sc2-physics-constants.md` — read it first, use it throughout, and revise it as you go.
 
 **Key changes landed this session:**
 
-1. **Dead config removal (#739):** `APPROACH_DOCKING_LOOPS` (24.5) removed from `SimulatedWorker`, `WorkerPhysicsConfig`, and `WorkerPhysicsConfigProducer`. Was immediately overwritten by `computeApproachDocking()` — dead since #707.
+1. **Mineral patch geometry analysis (#745):** `MineralPatchGeometryDiagnosticTest` runs all 118 oracle replays twice (replay vs seeded positions). Surprising result: **seeded positions produce 5-12pp BETTER mineral rate MAPE** because the EM's mining physics were calibrated against uniform distances and don't generalise to distance variance (σ=0.53 close, σ=0.45 far). Benchmark written to `docs/benchmarks/mineral-patch-geometry.md`.
 
-2. **Immutable Footprint record (#740):** `SC2Data.buildingFootprint()` now returns `Footprint(width, height)` with `halfWidth()`/`halfHeight()` helpers instead of shared mutable `int[]`. All 9 callers updated.
+2. **Worker startup timing (#746):** `WorkerStartupTimingDiagnosticTest` measures per-worker first delivery timing. Controlled scenario: EM stagger path delivers 1 tick early vs SC2 (loop 117 vs ~132). Standalone oracle: first delivery at loop 134-205 (avg 167). Key finding: EM mineral balance is significantly lower than GT from tick 0 onwards due to cost deduction for tracker-driven initial workers (TrackerIntentExtractor converts UnitBorn→TrainIntent, which deducts minerals for free starting workers).
 
-3. **Building footprint corrections (#738):** EVOLUTION_CHAMBER 2×2→3×3 (matches SC2 data editor and all Zerg tech buildings). Gas buildings (Assimilator/Refinery/Extractor/Assimilator_Rich) 2×2→3×3 (matches 3×3 geysers). NYDUS_CANAL left at 2×2 pending verification (#750).
+3. **240-loop sliding window rate algorithm (#676):** Replaced EMA (α=0.25/0.35) with 240-loop sliding window in EconomyTracker, matching SC2's discovered rate quantisation (28 minerals/min per delivery). MAPE improvements: mineralsCollectionRate 1-min 35.6%→21.6% (-14pp), vespeneCollectionRate 3-min 29.5%→23.1% (-6.4pp). The physics improvements since the previous failed attempt (#656, #661, #707, #733) tightened delivery timing enough that the window now outperforms EMA.
 
-4. **Geyser footprint verified (#742):** `GEYSER_OBSTACLE_HALF_EXTENT = 1.5` (3×3) confirmed correct — matches gas building footprint from #738.
+4. **Balance drift validation (#747):** Rate algorithm change has zero effect on balance MAPE (mineralsCurrent/vespeneCurrent unchanged). Rate and balance are independent metrics — rate is a reporting metric computed from income history, balance is actual state from income minus spending. The 84.9% mineralsCurrent MAPE is driven by income accuracy and spending accuracy, not rate reporting.
 
-5. **enforceWall optimization (#743):** Building iteration now skips buildings registered as terrain obstacles (covered by `isWalkable` check). Reduces from O(units × all_buildings) to O(units × initial_buildings). Key finding: initial town hall CANNOT be registered as an obstacle — worker A* paths route through the base area, and registering it causes 4.6% MULE economy regression.
-
-**Economy accuracy state (standalone baseline, 2026-11-22):**
+**Economy accuracy state (standalone baseline, 2026-11-22, post-sliding-window):**
 
 | Field | MAPE | Floor | Status |
 |-------|------|-------|--------|
-| mineralsCollectionRate | 38.6% | ~10-12% | Gap: rate algorithm, map geometry, worker timing |
-| vespeneCollectionRate | 20.5% | ~12-15% | Approaching floor |
-| mineralsCurrent | 84.9% | ~40-50% | Cumulative drift from rate error |
-| vespeneCurrent | 61.1% | ~35-45% | Cumulative drift |
+| mineralsCollectionRate | 38.2% (7-min) | ~10-12% | Improved from 38.6% |
+| vespeneCollectionRate | 18.7% (7-min) | ~12-15% | Improved from 20.5% |
+| mineralsCurrent | 84.9% (7-min) | ~40-50% | Unchanged |
+| vespeneCurrent | 61.1% (7-min) | ~35-45% | Unchanged |
 
 ---
 
@@ -33,25 +29,10 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | Issue | Title | Result |
 |-------|-------|--------|
-| #739 | Remove dead APPROACH_DOCKING_LOOPS config | Done — constant, field, config property removed |
-| #740 | buildingFootprint() shared mutable int[] | Done — replaced with immutable Footprint record |
-| #738 | EVOLUTION_CHAMBER footprint verification | Done — corrected to 3×3, gas buildings to 3×3 |
-| #742 | Verify geyser obstacle footprint | Done — confirmed 3×3 correct |
-| #743 | Optimise enforceWall building iteration | Done — skip registered buildings |
-
-**Filed this session:**
-
-| Issue | Title | Scale | Notes |
-|-------|-------|-------|-------|
-| #744 | Standalone mineral rate MAPE gap decomposition | M/Med | Identify what drives 38.6% mineral rate MAPE |
-| #745 | Per-replay mineral patch geometry vs EM distances | S/Med | Map distance contribution to rate gap |
-| #746 | Worker startup/transfer timing in standalone | S/Med | Allocation delay contribution |
-| #747 | Balance drift MAPE validation after rate fixes | S/Low | Verify balance drops proportionally |
-| #748 | Remove deprecated buildingRadius() | XS/Low | Zero callers remain |
-| #749 | ApproachDockingSweepTest stale sweep ranges | XS/Low | Ranges calibrated for removed constant |
-| #750 | Verify NYDUS_CANAL footprint empirically | XS/Low | Left at 2×2, may be 3×3 |
-
-**Blog entries:** `2026-11-22-mdp02-the-obstacle-with-two-faces.md` — shared terrain grid has two consumers (army, workers) with different obstruction rules
+| #745 | Per-replay mineral patch geometry vs EM distances | Done — replay positions already wired; seeded positions are BETTER (5-12pp) |
+| #746 | Worker startup/transfer timing standalone | Done — startup timing is minor; initial worker cost deduction is the early-tick issue |
+| #676 | Reverse-engineer SC2 rate computation algorithm | Done — 240-loop sliding window replaces EMA; MAPE improved 1-14pp |
+| #747 | Balance drift MAPE validation after rate fixes | Done — balance unchanged (rate and balance are independent metrics) |
 
 ---
 
@@ -59,14 +40,9 @@ The reference document is `docs/sc2-physics-constants.md` — **read it first**,
 
 | # | Issue | Scale | What |
 |---|-------|-------|------|
-| 1 | **#744** | M/Med | Gap decomposition — where does the 38.6% mineral rate MAPE come from? |
-| 2 | #745 | S/Med | Per-replay mineral patch geometry vs EM distances |
-| 3 | #746 | S/Med | Worker startup/transfer timing |
-| 4 | #676 | M/High | Reverse-engineer SC2 rate computation algorithm |
-| 5 | #747 | S/Low | Balance validation after rate fixes |
-| 6 | #666 | L/High | Forward simulation economy mode |
-| 7 | #748 | XS/Low | Remove deprecated buildingRadius() |
-| 8 | #749 | XS/Low | Sweep test stale ranges |
-| 9 | #750 | XS/Low | Verify Nydus Canal footprint |
+| 1 | **#666** | L/High | Forward simulation economy mode |
+| 2 | #748 | XS/Low | Remove deprecated buildingRadius() |
+| 3 | #749 | XS/Low | ApproachDockingSweepTest stale ranges |
+| 4 | #750 | XS/Low | Verify NYDUS_CANAL footprint |
 
-`work continue` picks up #744 — the economy gap decomposition investigation.
+`work continue` picks up #666 — a large feature for running the EM without replay inputs.
