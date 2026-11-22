@@ -173,7 +173,7 @@
   - [x] Batch 4: Docs
     - [x] Task 4: Update physics constants + regression
 - [x] casehubio/quarkmind#732 — Army_pathfinding_around_resources
-- [ ] casehubio/quarkmind#730 — blog_sc2_em_column_swap_audit ← done on issue-732-army-pathfinding-resources
+- [x] casehubio/quarkmind#730 — blog_sc2_em_column_swap_audit
 - [ ] casehubio/quarkmind#739 — Remove_dead_APPROACH_DOCKING_LOOPS_config        ← active
 - [ ] casehubio/quarkmind#740 — buildingFootprint_shared_mutable_array
 - [ ] casehubio/quarkmind#738 — EVOLUTION_CHAMBER_footprint_verification
