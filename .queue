@@ -4,13 +4,13 @@
 branch: 
 issue-repo: casehubio/quarkmind
 status: active
-covers: 
+covers: casehubio/quarkmind#745
 active_issue: casehubio/quarkmind#734
 cut_from: 
 
 ## Queue
-- [ ] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition ← active
-- [ ] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances
+- [ ] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition ← done on issue-743-skip-enforcewall-with-obstacles
+- [ ] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances ← active
 - [ ] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
 - [ ] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
 - [ ] casehubio/quarkmind#747 — Balance_drift_MAPE_validation_after_rate_fixes
@@ -186,3 +186,6 @@ cut_from:
 - [ ] casehubio/quarkmind#738 — EVOLUTION_CHAMBER_footprint_verification ← done on issue-738-evolution-chamber-footprint
 - [ ] casehubio/quarkmind#742 — Verify_geyser_obstacle_footprint ← done on issue-742-geyser-obstacle-footprint
 - [ ] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration ← done on issue-743-skip-enforcewall-with-obstacles
+- [ ] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
+- [ ] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
+- [ ] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
