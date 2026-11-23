@@ -3,7 +3,7 @@
 - [x] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
 - [x] casehubio/quarkmind#676 — Reverse-engineer SC2 rate computation algorithm
 - [x] casehubio/quarkmind#747 — Balance_drift_MAPE_validation_after_rate_fixes
-- [ ] casehubio/quarkmind#666 — Forward simulation economy mode ← done on issue-747-balance-drift-mape-validation
+- [x] casehubio/quarkmind#666 — Forward simulation economy mode
 - [x] casehubio/quarkmind#677 — Gas approach docking calibration test
 - [x] casehubio/quarkmind#679 — Per-patch walk distance extension
 - [x] casehubio/quarkmind#649 — Remove dead direction-dependent collision code
