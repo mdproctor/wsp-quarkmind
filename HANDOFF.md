@@ -2,39 +2,65 @@
 
 ## Orientation for Next Session
 
-**Economy accuracy improvement phase complete.** The five queued issues (#751-#755) are all resolved. Key finding: the cadence variance assumption was inverted — EM is MORE variable than SC2 in controlled scenarios.
+**Expansion income deficit phase complete.** Issues #756-#761 resolved. mineralsCollectionRate improved from 38.2% to 13.7% (-24.5pp). Two real bugs found: terrain grid too small for replay coordinates, and spending leaks in BuildingBornIntent/tracker morphs.
 
-**Start with:** `work end` or `work` — the queue is empty. File new issues for the next improvement cycle based on the diagnostic findings.
+**Start with:** `work end` to land the stacked branches (#756→#757→#758→#761), or pivot to other work.
 
-**Key reference:** `docs/benchmarks/cycle-variance-diagnostic.md` — definitive variance data invalidating the prior hypothesis.
+**Key open issue:** #760 — MapTerrainCache infrastructure is built but needs SC2 running to record real map pathing grids. Until recorded, the EM runs on flat terrain — the rate comparison is not apples-to-apples with real SC2 maps.
+
+**Key reference:** `docs/sc2-physics-constants.md` §16 — economy baseline with methodology caveat.
 
 ---
 
 ## This Session (2026-11-23)
 
-**Completed 5 issues:**
-- #751 (S/Low) — Fixed: skip spending for starting entities at game loop 0. Both workers and buildings at loop 0 no longer record false economy spending.
-- #752 (M/Med) — Diagnostic: per-worker cycle variance EM σ=0.85 vs SC2 σ=0.56 (controlled). Walk distance (σ=4-6) is the dominant variance source in real games.
-- #753 (M/High) — Closed not-planned: premise invalidated by #752 findings.
-- #754 (M/High) — Closed not-planned: premise invalidated by #752 findings.
-- #755 (XS/Low) — Regenerated standalone baseline, no regressions.
+**Completed 6 issues:**
+- #756 (M/Med) — Fixed: 64×64 emulated map too small for replay coordinates (patches to 162×150). A* pathfinding clamped expansion positions to grid edge. `setMineralPatchResources()` auto-sizes terrain grid.
+- #757 (S/Med) — Fixed: `onWorkerProduced` assigned to nearest base → expansion over-staffing (+103%). Now assigns to least-saturated base. **This was the big win: mineral rate 36.6%→13.7%.**
+- #758 (S/Low) — Closed not-planned: GT proximity-based gas worker counting is unreliable. Rate-based estimation works correctly.
+- #759 (XS/Low) — Closed: already done as part of #756/#757 work.
+- #760 (M/Med) — Infrastructure complete: MapTerrainCache for recording/loading real SC2 map pathing grids. `PlaybookSC2Adapter` captures terrain on game start. Needs SC2 to record TorchesAIE_v4 grid.
+- #761 (M/Med) — Fixed: `handleBuildingBorn` and tracker-driven `handleMorph` never deducted mineral/gas costs from balance. mineralsCurrent 132.4%→123.0%.
 
-**Key finding:** The cadence variance assumption (#618→#632) was inverted. Controlled EM σ=0.85 > SC2 σ=0.56. The σ≈3+ figure came from comparing controlled EM against wild SC2 data. CLAUDE.md diagnostic findings updated.
+**Rate improvement:**
 
-**Blog:** "The Assumption That Wasn't" — diary entry about the inverted variance discovery.
+| Field | Start | End | Delta |
+|-------|-------|-----|-------|
+| mineralsCollectionRate (7-min) | 38.2% | 13.7% | **-24.5pp** |
+| vespeneCollectionRate (7-min) | 18.7% | 12.3% | **-6.4pp** |
+| mineralsCurrent (7-min) | 84.9% | 123.0% | +38.1pp (rate fixed → more income, then spending leaks partially fixed) |
+| vespeneCurrent (7-min) | 61.1% | 67.2% | +6.1pp |
 
-**Updated:** CLAUDE.md diagnostic findings paragraph, `docs/benchmarks/cycle-variance-diagnostic.md`, `docs/benchmarks/standalone-emulated-game-baseline.md`
+**Key findings:**
+1. The 64×64 emulated map was a fundamental flaw — replay coordinates range to (162, 150). Every expansion base had garbage A* paths.
+2. Worker distribution was inverted: EM over-staffed expansions by 103% at 7-min while under-staffing main by 38%. Root cause: `onWorkerProduced` assigned to nearest base, not least-saturated.
+3. Spending leaks: `BuildingBornIntent` and tracker-driven building morphs (CC→OC, Hatch→Lair) never deducted costs. Buildings were free in standalone mode.
+4. The rate comparison is NOT apples-to-apples: EM runs on flat terrain, SC2 uses real maps. Recording real map pathing grids (#760) is the prerequisite to validating whether the rate is truly at the floor.
+
+**Updated:** `docs/sc2-physics-constants.md` (§14 cumulative drift, §15 terrain auto-sizing, §16 full economy baseline revision), `docs/benchmarks/standalone-emulated-game-baseline.md`
 
 ---
 
 ## Queue
 
-Empty — all items complete.
+#761 is the active item (closed on GitHub). Queue is drained.
+
+---
+
+## Stacked Branches
+
+Branches are stacked (pipeline bug soredium#617 — branches created manually):
+- `issue-756-seed-expansion-mineral-patches` (from main)
+- `issue-757-worker-transfer-count-varies` (stacked on #756)
+- `issue-758-gas-worker-over-assignment` (stacked on #757)
+- `issue-761-intent-rejection-diagnostic` (stacked on #758)
+
+`work end` will need to handle the stack — may need manual rebasing or sequential landing.
 
 ---
 
 ## Notes
 
-- **Pipeline bug (soredium#617):** Still present. Workaround: create branches manually, set queue state via plan_manager.
-- **Accuracy state:** minerals 84.9% balance / 38.2% rate, gas 61.1% balance / 18.7% rate. Rate MAPE root cause is NOT cycle cadence (ruled out by #752). Next investigation direction: unknown — needs fresh analysis.
-- **DroolsScoutingRulesTest:** Pre-existing classpath issue in full test suite — unrelated to this session's changes.
+- **Pipeline bug (soredium#617):** Still present. Workaround: create branches manually, set queue state via plan_manager. Alignment detection also fails for stacked branches.
+- **DroolsScoutingRulesTest/DroolsStrategyL2L3Test:** Pre-existing classpath issues in full test suite — unrelated to this session's changes.
+- **DivergenceRegressionTest:** Passes with all changes.
