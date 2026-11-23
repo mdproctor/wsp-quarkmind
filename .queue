@@ -1,3 +1,13 @@
+# Work Plan —
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: drained
+active_issue: casehubio/quarkmind#734
+cut_from: 
+
+## Queue
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
 - [x] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances
 - [x] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
@@ -178,10 +188,8 @@
 - [x] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
 - [x] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
 - [x] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: drained
-active_issue: casehubio/quarkmind#734
-cut_from: 
+- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
+- [ ] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic
+- [ ] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
+- [ ] casehubio/quarkmind#754 — Walk-path_collision_between_workers
+- [ ] casehubio/quarkmind#755 — Regenerate_standalone_baseline
