@@ -1,11 +1,12 @@
 # Work Plan —
 
 ## State
-branch: 
+branch: issue-751-skip-initial-worker-mineral-deduction
 issue-repo: casehubio/quarkmind
-status: drained
+status: active
 active_issue: casehubio/quarkmind#734
 cut_from: 
+covers: casehubio/quarkmind#751
 
 ## Queue
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
@@ -188,7 +189,7 @@ cut_from:
 - [x] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
 - [x] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
 - [x] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
-- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
+- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction ← active
 - [ ] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic
 - [ ] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
 - [ ] casehubio/quarkmind#754 — Walk-path_collision_between_workers
