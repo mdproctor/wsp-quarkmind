@@ -1,12 +1,12 @@
 # Work Plan —
 
 ## State
-branch: issue-751-skip-initial-worker-mineral-deduction
+branch: issue-755-regenerate-standalone-baseline
 issue-repo: casehubio/quarkmind
 status: active
 active_issue: casehubio/quarkmind#734
-cut_from: 
-covers: casehubio/quarkmind#751
+cut_from: issue-751-skip-initial-worker-mineral-deduction
+covers: casehubio/quarkmind#753
 
 ## Queue
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
@@ -189,8 +189,8 @@ covers: casehubio/quarkmind#751
 - [x] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
 - [x] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
 - [x] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
-- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction ← active
-- [ ] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic
-- [ ] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
-- [ ] casehubio/quarkmind#754 — Walk-path_collision_between_workers
-- [ ] casehubio/quarkmind#755 — Regenerate_standalone_baseline
+- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction ← done on issue-751-skip-initial-worker-mineral-deduction
+- [ ] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic ← done on issue-752-per-worker-cycle-variance-diagnostic
+- [x] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
+- [x] casehubio/quarkmind#754 — Walk-path_collision_between_workers
+- [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
