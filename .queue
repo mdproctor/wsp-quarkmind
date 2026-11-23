@@ -1,3 +1,14 @@
+# Work Plan —
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: 
+active_issue: casehubio/quarkmind#734
+cut_from: 
+
+## Queue
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
 - [x] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances
 - [x] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
@@ -175,14 +186,6 @@
 - [x] casehubio/quarkmind#738 — EVOLUTION_CHAMBER_footprint_verification
 - [x] casehubio/quarkmind#742 — Verify_geyser_obstacle_footprint
 - [x] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration
-- [ ] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius        ← active
-- [ ] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
-- [ ] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#748
-active_issue: casehubio/quarkmind#734
-cut_from: 
+- [ ] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius ← done on issue-748-remove-deprecated-buildingradius
+- [ ] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges ← done on issue-749-approach-docking-sweep-stale-ranges
+- [ ] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint ← done on issue-750-verify-nydus-canal-footprint
