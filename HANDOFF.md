@@ -2,28 +2,16 @@
 
 ## Orientation for Next Session
 
-**Five economy issues landed** (#745, #746, #676, #747, #666) after code review and squash. The reference document is `docs/sc2-physics-constants.md`.
+**Queue exhausted.** All items through #750 are done. The next session should populate the queue with new work via `work find` or manual issue creation.
 
-**This session (2026-11-22/23):**
-- Code review: dispatched fresh subagent reviewer. Two important findings fixed: dead `grossMinerals`/`grossVespene` fields removed from EconomyTracker, circular buffer wrapping test added.
-- Squash: 9 commits across 4 stacked branches compacted to 4 (one per branch).
-- Work end: landing all 5 done items.
-
-**Active item: #748 — Remove deprecated buildingRadius** (not started).
-
----
-
-## Queue (next items)
-
-| # | Issue | Scale | What |
-|---|-------|-------|------|
-| 1 | **#748** | XS/Low | Remove deprecated buildingRadius() |
-| 2 | #749 | XS/Low | ApproachDockingSweepTest stale ranges |
-| 3 | #750 | XS/Low | Verify NYDUS_CANAL footprint |
+**This session (2026-11-23):**
+- Landed 5 economy issues (#745, #746, #676, #747, #666) after code review and squash
+- Completed 3 XS cleanup tasks: #748 (removed deprecated buildingRadius), #749 (updated ApproachDockingSweepTest sweep ranges), #750 (corrected NYDUS_CANAL footprint 2x2 -> 3x3)
+- Filed Hortora/soredium#617 for `work.py start` pipeline bug (create_branches uses stale ctx.branch)
 
 ---
 
 ## Notes for next session
 
-- Branch metadata (`refs/soredium/base/`) was updated after squash — the rebase rewrote SHAs. If stacking issues recur, verify `refs/soredium/base/<branch>` points to the correct parent tip.
-- EconomyTracker sliding window (240-loop, WINDOW_TICKS=11) is fully tested including circular buffer eviction. The dead EMA fields are gone.
+- **Pipeline bug (soredium#617):** `work.py start` create_branches step uses the queue branch field instead of the branch_name step evidence. Workaround: call `branch_create.py create-branches` directly, then set queue branch via plan_manager.
+- **Branch metadata:** `refs/soredium/base/` was updated after squash in this session. If stacking issues recur, verify base refs point to correct parent tips.
