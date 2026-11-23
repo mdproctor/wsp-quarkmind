@@ -177,11 +177,11 @@
 - [x] casehubio/quarkmind#743 — Optimise_enforceWall_skip_building_iteration
 - [x] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
 - [x] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
-- [ ] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint ← done on issue-750-verify-nydus-canal-footprint
+- [x] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
 
 ## State
 branch: 
 issue-repo: casehubio/quarkmind
-status: active
+status: drained
 active_issue: casehubio/quarkmind#734
 cut_from: 
