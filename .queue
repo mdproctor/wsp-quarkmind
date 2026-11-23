@@ -1,10 +1,10 @@
 # Work Plan —
 
 ## State
-branch: issue-755-regenerate-standalone-baseline
+branch: 
 issue-repo: casehubio/quarkmind
-status: drained
-covers: casehubio/quarkmind#753
+status: active
+covers: casehubio/quarkmind#757
 active_issue: casehubio/quarkmind#734
 cut_from: issue-751-skip-initial-worker-mineral-deduction
 
@@ -194,7 +194,7 @@ cut_from: issue-751-skip-initial-worker-mineral-deduction
 - [x] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
 - [x] casehubio/quarkmind#754 — Walk-path_collision_between_workers
 - [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
-- [ ] casehubio/quarkmind#756 — Seed_expansion_mineral_patch_positions
-- [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies
+- [ ] casehubio/quarkmind#756 — Seed_expansion_mineral_patch_positions ← done on issue-755-regenerate-standalone-baseline
+- [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies ← active
 - [ ] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
 - [ ] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
