@@ -2,66 +2,68 @@
 
 ## Orientation
 
-**Two-base distribution fixed (#762). Real-terrain baselines recorded (#764). A* pathfinding discrepancy discovered (#763).**
+**A* tile-center snap diagnosed and fixed (#766). Obstacle marking gap discovered.**
 
-The EM over-produces minerals by +6-19% on real TorchesAIE terrain vs ±3% on the old 64×64 flat grid. Same mineral distances (7.08u avg), same walkability (all mineral-line tiles walkable on both grids), same obstacle registration (radius 0.3 circles). The A* pathfinder produces shorter worker paths on the 160×208 grid. This is the blocking issue.
+The +6-19% over-production on real TorchesAIE terrain was caused by A* `findPath()` snapping target positions to tile centers via integer truncation. The half-integer coordinate offset (-116.5, -151.5) between the 64×64 flat grid and 160×208 real grid shifted edge-point targets across tile boundaries, producing different walk distances. Fix: replace the final A* waypoint with the actual target position. MULE improved from +1.4% to -0.1%.
 
-**Start with:** Instrument A* path lengths for a few workers on both grid sizes (64×64 flat vs 160×208 real) with identical relative mineral positions. Compare waypoint count and total path distance. The difference will reveal whether the pathfinder, the obstacle model, or `nearestWalkable()` snapping is causing shorter routes on the real grid.
+**Secondary finding:** `markCircularObstacle()` with radius 0.3 produces zero marked tiles on TorchesAIE because all mineral patch x-coordinates are integers (0.5 from any tile center in x, exceeding the 0.3 radius). The obstacle-aware A* from #707 is effectively a no-op for real SC2 maps.
+
+**Start with:** Fix the obstacle radius so that actual path deviation emerges from the simulation instead of relying on approach animation as a flat overhead. This would also resolve the high-saturation pinned test gap.
 
 ---
 
-## Key data
+## Key data (post-#766)
 
-| Test | Flat grid | Real terrain | Note |
-|------|----------|-------------|------|
-| 8w dual-run | +0.4% | **+14.1%** | Largest gap — few workers, short paths |
-| 12w dual-run | -0.3% | **+4.8%** | Physics constants calibrated here |
-| Pinned single-base 36w | — | **-5.0%** | Contention overtakes path advantage at high saturation |
-| Pinned two-base | +80% (old) | **-5.2%** | #762 fixed distribution; per-base SC2 data validates |
+| Scenario | Before #766 | After #766 | Note |
+|----------|------------|------------|------|
+| MULE isolation | +1.4% | **-0.1%** | Improved — walks to actual edge points |
+| Pinned single-base 36w | -5.0% | **-6.4%** | Slightly worse — intermediate waypoint detour at high saturation |
+| Pinned two-base | -5.2% | **-8.3%** | Same mechanism as single-base |
+| All tests (273) | Pass | Pass | No regressions |
 
-**SC2 per-base data confirmed:** SC2 w/base=[24, 0], EM w/base=[30, 0]. All workers at main Nexus. 6 SC2 workers unassigned/in-transit at any moment.
+**Obstacle tile diagnostic:** `AStarPathSnapDiagnosticTest` confirmed zero tiles marked for all 8 nearby patches at radius 0.3 on both grid sizes. The obstacle-aware A* is routing straight lines.
 
 ---
 
 ## What's ready
 
-- **Worker distribution fix (#762):** `onWorkerProducedAtBase()`, `injectWorkerAtBase()`, `autoTransferEnabled` flag
-- **Per-base tracking:** `CalibrationSnapshot.workersPerBase`, `PlaybookSC2Adapter.extractWorkersPerBase()`, per-base columns in `pinnedCalibrate()`
-- **13 re-recorded SC2 baselines (#764):** All include per-base `workersPerBase` from SC2 `assignedHarvesters`
-- **32w and 40w playbooks (#763):** Both supply-blocked at 36 probes (need longer duration or more pylons)
+- **Tile-center snap fix (#766):** `setTargetWithPath()` replaces final smoothed waypoint with actual target
+- **Diagnostic test:** `AStarPathSnapDiagnosticTest` — proves zero obstacle tiles and 4% walk distance discrepancy between grids
+- **Worker distribution fix (#762):** `onWorkerProducedAtBase()`, `autoTransferEnabled` flag
+- **Per-base tracking:** `CalibrationSnapshot.workersPerBase`, per-base columns in `pinnedCalibrate()`
+- **13 re-recorded SC2 baselines (#764):** All include per-base `workersPerBase`
 - **TorchesAIE pathing grid:** 160×208, all mineral-line tiles verified walkable
-- **Wait-time absorption finding:** `tryStartMining()` floor of `APPROACH_ANIMATION_LOOPS` makes absorption a no-op. Fixing to `max(0,...)` overshoots by +7-18% at all saturation levels (brief shuffle-order waits trigger reduced approach on every cycle)
+- **Wait-time absorption finding:** `tryStartMining()` floor makes absorption a no-op
 
 ---
 
 ## Investigation findings (this session)
 
-1. **Two-base +80% root cause:** `onWorkerProduced()` routed to `leastSaturatedBaseIndex()` → [32,32] distribution. SC2 playbook trains all probes at first Nexus → all at main. Fix: `onWorkerProducedAtBase()` + `autoTransferEnabled=false`.
+1. **Root cause identified:** A* `findPath()` truncates `(int) to.x(), (int) to.y()` and returns tile-center waypoints `(x+0.5, y+0.5)`. Workers walk to tile centers instead of actual edge-point targets. The half-integer offset (base at 124.5, 159.5 → offset -116.5, -151.5) flips fractional tile positions, changing which tiles edge points fall in. Example: patch (125,166) has 2-tile gap on real terrain vs 3-tile gap on flat → 33% shorter walk on real terrain.
 
-2. **Real terrain reveals A* bias:** Re-recording all 13 baselines from SC2 and running with real TorchesAIE terrain shows +6-19% over-production. The physics constants (approach=20, deposit=12) were effectively calibrated for the flat grid's A* paths.
+2. **Zero obstacle tiles:** All TorchesAIE mineral patches have integer x, .5 y coordinates. For `markCircularObstacle(125.0, 165.5, 0.3)`: tile (124,165) center is (124.5,165.5), distance = 0.5 > radius 0.3. No tile center is close enough to any patch center. The radius would need to be ≥ 0.5 for any tile to be marked.
 
-3. **Wait-time absorption is dead code:** `max(APPROACH_ANIMATION_LOOPS, APPROACH_ANIMATION_LOOPS - waited)` = 20 always. Fixing to `max(0, ...)` overshoots because brief shuffle-order waits (1-2 loops) are common at ALL saturation levels, not just high.
+3. **Fix v1 (shipped):** Replace final waypoint with actual target. Works well for most scenarios (MULE improved). Creates a small detour for diagonal walks because the FIRST waypoint in a 2+ element path is still a tile center. At high saturation (pinned 36w), this detour compounds.
 
-4. **Pinned vs dual-run paradox:** Pinned test shows -5% (under-production at 36w high saturation). Dual-run shows +6-19% (over-production at 8-12w). Both on real terrain. The physics constants are caught between two effects: shorter A* paths (boost income) and high-saturation contention (reduce income). The A* discrepancy must be resolved before the contention model can be evaluated.
+4. **Fix v2 (rejected):** Skip all waypoints and walk directly to target when path ≤ 2 elements. Too aggressive — removes ALL path overhead, causing +3.6% MULE over-production.
 
 ---
 
 ## Next steps (priority order)
 
-1. **Diagnose A* path length discrepancy** — add logging or a diagnostic test that computes A* paths from base to each mineral patch on BOTH grid sizes (64×64 flat, 160×208 real) with the same relative positions. Report waypoint count and total path distance. This tells us exactly where the paths diverge.
+1. **Fix obstacle radius** — increase from 0.3 to ≥0.5 so tiles get marked for integer-x positions. With marked tiles, A* provides real path deviation (workers route around mineral patches). This would naturally resolve both the intermediate-waypoint detour issue AND the approach animation dependency. Needs careful calibration — #733 showed 2×1 rectangular footprint caused +4.1% MULE regression.
 
-2. **Fix the pathfinder or obstacle model** — once the path length difference is understood, fix it so both grids produce consistent paths. Then re-run the saturation curve.
+2. **Re-evaluate approach animation** — with actual obstacle tiles marked, the approach animation (20 loops) may need adjustment. Currently it absorbs ALL path deviation compensation because no tiles are marked.
 
-3. **Re-evaluate saturation curve** — with consistent A* paths, the dual-run results should return to ±3%. Then the pinned test's -5% at 36w isolates the genuine contention model gap.
+3. **Re-evaluate pinned saturation curve** — with real path deviation from obstacles, the high-saturation gap (-6.4%) may improve as workers take physically correct paths around the mineral line.
 
-4. **Wait-time absorption** — needs a different approach than `max(0, ...)`. Either: (a) threshold the "genuine wait" at >5 loops (not brief shuffle-order waits), or (b) accept approach animation as fixed physics.
+4. **Wait-time absorption** — needs a different approach than `max(0, ...)`. Either threshold genuine waits or accept approach animation as fixed physics.
 
 ---
 
 ## Notes
 
-- **Branch:** `issue-761-intent-rejection-diagnostic` (stacked: 756→757→758→761→762→763→764)
-- **All 50 DualRunCalibrationTest pass** — divergence tests are structural (probe count), not mineral accuracy assertions
-- **7/7 CalibrationBaselineTest pass** — including workersPerBase round-trip
+- **Branch:** `issue-761-intent-rejection-diagnostic` (stacked: 756→757→758→761→762→763→764→766)
+- **All 273 tests pass** — including DualRunCalibrationTest (46), SC2PlaybookCalibrationTest (17), WorkerSimulationTest (47)
 - **SC2 is NOT running** — killed after recordings
-- **Worktree cleanup:** `/Users/mdproctor/claude/casehub/quarkmind/.claude/worktrees/agent-ace0ecd96715c77a7` can be removed — its baseline commit was cherry-picked into the main branch
+- **Issue #766 open** — tracks the tile-center snap fix and obstacle radius follow-up
