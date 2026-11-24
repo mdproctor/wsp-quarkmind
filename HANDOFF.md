@@ -2,24 +2,25 @@
 
 ## Orientation
 
-**Pinned calibration on real TorchesAIE terrain reveals concrete gap.** The EM mines faster than SC2 — especially after expansion. Single-base: -2.3% (EM under-produces slightly). Two-base: +20% (EM over-produces significantly). The methodology is now apples-to-apples: same build order pinned from SC2 baseline at exact ticks, same map, same terrain.
+**Apples-to-apples calibration methodology established.** Pinned build order from SC2, real TorchesAIE terrain, recorded building positions. Single-base: -2.3%. Two-base: +80% — EM over-produces minerals at expansion.
 
-**Start with:** Investigate why the EM over-produces on two bases. The per-tick data shows EM earning 37% more cumulative income by tick 50 (675 vs 925) with the same probe count. After expansion at tick 88, the gap compounds. 2 of the 62 EM probes are from a remaining high-water-mark edge case — fix that, then focus on the per-cycle rate.
+**Start with:** Investigate why the EM over-produces at the expansion. The pinned two-base test has 70/70 probes (same build order) but EM accumulates +80% more minerals. The gap is in worker distribution between bases — the EM's `rebalanceMineralWorkersAcrossBases` and least-saturated `onWorkerProduced` behave differently from SC2.
 
-**Key data points:**
-- Single-base pinned: SC2=3695, EM=3610, **Δ=-2.3%** (36 probes both sides)
-- Two-base pinned: SC2=4350, EM=5220, **Δ=+20%** (SC2=60, EM=62 probes)
-- Max overshoot: +345 minerals at tick 93 (single-base), +870 at tick 449 (two-base)
-- Expansion completes at tick 88 in SC2
+**Key data:**
+- Single-base pinned: SC2=3695, EM=3610, **Δ=-2.3%** (physics correct on single base)
+- Two-base pinned: SC2=3805, EM=6850, **Δ=+80%** (expansion mining broken)
+- Expansion Nexus at (114.5, 53.5) — 11.2u from main at (124.5, 48.5)
+- Building positions recorded from SC2 in `*-buildings.json`
 
 ---
 
 ## What's ready
 
-- **TorchesAIE pathing grid:** 160×208, cached at `terrain/Torches AIE.pathgrid`
-- **Pinned calibration method:** `pinnedCalibrate()` replays SC2 build order at exact ticks, compares mineral/vespene only
-- **Two baselines recorded:** `cal-single-base-probes.json` (305 ticks) and `cal-two-base-economy.json` (450 ticks)
-- **High water mark fix:** Probe oscillation during Protoss building warps no longer causes phantom injections
+- **TorchesAIE pathing grid:** 160×208 cached
+- **Building position recording:** `PlaybookSC2Adapter` captures every building's position + tick
+- **Pinned calibration:** replays SC2 build at exact ticks, same probes, compares mineral balance
+- **Snapshot fix:** building workers excluded from unit count (matches SC2 reporting)
+- **Baselines:** `cal-single-base-probes.json`, `cal-two-base-economy.json` + `-buildings.json`
 
 ---
 
@@ -28,27 +29,16 @@
 | Fix/Feature | Impact |
 |---|---|
 | #756 — Terrain grid auto-sizing | Flat grid auto-sized from patch positions |
-| #757 — Saturation-aware worker assignment | mineral rate 38.2%→13.7% (oracle) |
-| #760 — MapTerrainCache + real terrain | TorchesAIE 160×208 recorded, `calibrate()` uses real coords |
-| #760 — Pinned calibration | Replays SC2 build at exact ticks — single-base -2.3%, two-base +20% |
+| #757 — Saturation-aware worker assignment | mineral rate 38.2%→13.7% (oracle — not primary) |
+| #760 — Real terrain calibration | TorchesAIE recorded; pinned calibration; building positions; snapshot fix |
 | #761 — Spending leaks | BuildingBornIntent and tracker morphs now deduct costs |
 | Standing rules | CLAUDE.md + physics doc: real SC2, controlled replays, real maps |
 
 ---
 
-## Branches
-
-Stacked (pipeline bug soredium#617):
-- `issue-756-seed-expansion-mineral-patches` (from main)
-- `issue-757-worker-transfer-count-varies` (on #756)
-- `issue-758-gas-worker-over-assignment` (on #757)
-- `issue-761-intent-rejection-diagnostic` (on #758)
-
----
-
 ## Notes
 
-- **Pipeline bug (soredium#617):** Workaround: create branches manually.
-- **DroolsScoutingRulesTest/DroolsStrategyL2L3Test:** Pre-existing classpath issues.
-- **DivergenceRegressionTest:** Passes.
-- **Pinned two-base still has 2 extra probes** (62 vs 60) — high water mark edge case with Protoss building warp oscillation.
+- **Branches stacked** (soredium#617): 756→757→758→761
+- **DivergenceRegressionTest passes** with all changes
+- **Single-base economy is accurate (-2.3%)** — the physics are correct for 1 base
+- **Two-base economy gap (+80%)** — the expansion worker distribution is the problem, not mining physics
