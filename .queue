@@ -1,3 +1,18 @@
+# Work Plan —
+
+## State
+branch: issue-761-intent-rejection-diagnostic
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#757
+active_issue: casehubio/quarkmind#734
+cut_from: issue-756-seed-expansion-mineral-patches
+
+## Queue
+- [ ] casehubio/quarkmind#756 — Seed expansion mineral patch positions ← done on issue-756-seed-expansion-mineral-patches
+- [x] casehubio/quarkmind#757 — Worker_transfer_count_varies
+- [x] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
+- [x] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
 - [x] casehubio/quarkmind#745 — Per-replay_mineral_patch_geometry_vs_EM_distances
 - [x] casehubio/quarkmind#746 — Worker_startup_transfer_timing_standalone
@@ -183,15 +198,8 @@
 - [x] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
 - [x] casehubio/quarkmind#754 — Walk-path_collision_between_workers
 - [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
-- [x] casehubio/quarkmind#756 — Seed_expansion_mineral_patch_positions
-- [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies        ← active
-- [ ] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
-- [ ] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#757
-active_issue: casehubio/quarkmind#734
-cut_from: issue-751-skip-initial-worker-mineral-deduction
+- [ ] casehubio/quarkmind#761 — Investigate standalone intent rejection rate
+- [ ] casehubio/quarkmind#762 — Two-base worker distribution +80%
+- [ ] casehubio/quarkmind#763 — Single-base saturation crossover -2.3%
+- [ ] casehubio/quarkmind#764 — Migrate fixed-worker tests to real coords
+- [ ] casehubio/quarkmind#765 — Terran Zerg two-base playbooks
