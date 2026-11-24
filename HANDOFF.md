@@ -2,43 +2,44 @@
 
 ## Orientation
 
-**Apples-to-apples calibration methodology established.** Pinned build order from SC2, real TorchesAIE terrain, recorded building positions. Single-base: -2.3%. Two-base: +80% — EM over-produces minerals at expansion.
+**Two-base worker distribution fixed.** Root cause was `onWorkerProduced()` routing all workers to `leastSaturatedBaseIndex()`, producing [32,32] distribution vs SC2's all-at-main pattern. Fix: workers mine at training Nexus, auto-transfer disabled in pinned calibration. Two-base: +80% → -21.3%. Remaining gap is high-saturation contention model.
 
-**Start with:** Investigate why the EM over-produces at the expansion. The pinned two-base test has 70/70 probes (same build order) but EM accumulates +80% more minerals. The gap is in worker distribution between bases — the EM's `rebalanceMineralWorkersAcrossBases` and least-saturated `onWorkerProduced` behave differently from SC2.
+**Start with:** The -21.3% gap at 64 workers on 8 patches (8 workers/patch). The EM's contention model underestimates income at high saturation. Need SC2 per-base data to verify the actual distribution (recording in progress), then investigate the contention model.
 
 **Key data:**
-- Single-base pinned: SC2=3695, EM=3610, **Δ=-2.3%** (physics correct on single base)
-- Two-base pinned: SC2=3805, EM=6850, **Δ=+80%** (expansion mining broken)
-- Expansion Nexus at (114.5, 53.5) — 11.2u from main at (124.5, 48.5)
-- Building positions recorded from SC2 in `*-buildings.json`
+- Single-base pinned: SC2=3695, EM=3510, **Δ=-5.0%** at 36w
+- Two-base pinned: SC2=3805, EM=2995, **Δ=-21.3%** at [64, 0]
+- Previous two-base: +80% with [32, 32] — fixed by routing workers to training Nexus
+- 8w: +0.4%, 12w: -0.3%, 16w: -2.8% — contention model accuracy degrades above 2 workers/patch
 
 ---
 
 ## What's ready
 
+- **Worker distribution fix:** `injectWorkerForPinnedCalibration()` uses `onWorkerProducedAtBase()`, `autoTransferEnabled` flag on WorkerSimulation
+- **Per-base tracking:** `CalibrationSnapshot.workersPerBase` field, `PlaybookSC2Adapter.extractWorkersPerBase()` captures SC2 `assignedHarvesters`
+- **Per-base injection:** `injectWorkerAtBase(Point2d)` spawns at specific Nexus, `pinnedCalibrate()` uses per-base data when available
+- **Per-base output:** pinned calibration prints `SC2 w/base` and `EM w/base` columns
+- **SC2 baseline recording:** in progress — re-recording two-base economy with per-base worker data
 - **TorchesAIE pathing grid:** 160×208 cached
-- **Building position recording:** `PlaybookSC2Adapter` captures every building's position + tick
-- **Pinned calibration:** replays SC2 build at exact ticks, same probes, compares mineral balance
-- **Snapshot fix:** building workers excluded from unit count (matches SC2 reporting)
 - **Baselines:** `cal-single-base-probes.json`, `cal-two-base-economy.json` + `-buildings.json`
 
 ---
 
-## This Session (2026-11-23/24)
+## This Session (2026-11-24)
 
 | Fix/Feature | Impact |
 |---|---|
-| #756 — Terrain grid auto-sizing | Flat grid auto-sized from patch positions |
-| #757 — Saturation-aware worker assignment | mineral rate 38.2%→13.7% (oracle — not primary) |
-| #760 — Real terrain calibration | TorchesAIE recorded; pinned calibration; building positions; snapshot fix |
-| #761 — Spending leaks | BuildingBornIntent and tracker morphs now deduct costs |
-| Standing rules | CLAUDE.md + physics doc: real SC2, controlled replays, real maps |
+| #762 — Worker distribution fix | Two-base +80% → -21.3%; workers mine at training Nexus |
+| Per-base tracking | CalibrationSnapshot.workersPerBase, SC2 assignedHarvesters capture |
+| Auto-transfer control | `setAutoTransferEnabled(false)` for pinned calibration |
+| SC2 baseline re-recording | In progress — will include per-base worker counts |
 
 ---
 
 ## Notes
 
-- **Branches stacked** (soredium#617): 756→757→758→761
-- **DivergenceRegressionTest passes** with all changes
-- **Single-base economy is accurate (-2.3%)** — the physics are correct for 1 base
-- **Two-base economy gap (+80%)** — the expansion worker distribution is the problem, not mining physics
+- **50/50 DualRunCalibrationTest passes** — no regressions
+- **CalibrationBaselineTest passes** — 7/7 including new workersPerBase round-trip tests
+- **SC2 playbook trains all probes at first Nexus** (`translateTrain` uses `findFirst()`) — no auto-transfer to expansion in debug API
+- **High-saturation contention** is the remaining bottleneck — 8w/patch produces -21% less income in EM vs SC2
