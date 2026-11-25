@@ -127,7 +127,9 @@ Secondary signals (from position — requires tolerance for high-saturation jitt
 **Phase dependency chain:** Each phase builds on the previous phase's measured values, not the existing constants from `WorkerPhysicsConfig`. Specifically:
 - Phase 2 uses Phase 1's measured `approachAndMine_8w` as the zero-contention baseline to infer wait times. If Phase 1 measures approach animation at 18 loops (not 20), Phase 2's wait calculations shift accordingly.
 - Phase 4 uses ALL measured values from Phases 1-3 to test emergent constants.
-- Before a phase's results serve as the next phase's baseline, they must be validated: run the EM with the new measured value(s) against the existing calibration checkpoints (§16). If accuracy at any checkpoint worsens by more than 1.0%, apply the Validation Rule escape clauses before proceeding.
+- Before a phase's results serve as the next phase's baseline, they must be validated: run the EM with the new measured value(s) against the existing calibration checkpoints (§16). If accuracy at any checkpoint worsens by more than 1.0%, apply the Validation Rule escape clauses.
+
+**Pipeline progression rule:** The 1.0% threshold triggers investigation, not blocking. After escape clauses fire, the next phase proceeds with the measured value — the validation rule says "never revert," so the measured value stands. Investigation (methodology revision, mechanism discovery, coupled constant identification) runs in parallel with the next phase. If investigation reveals a new mechanism, that mechanism becomes additional work in the originating phase (e.g., Phase 1b) whose results feed forward to subsequent phases when complete — it does not retroactively block work already underway. Without this rule, an implementor might treat the 1.0% threshold as a gate, stalling the entire methodology on a minor accuracy regression that the validation rule explicitly says should not cause a revert.
 
 **Phase 1 — Zero contention (8w), foundation constants:**
 - Mining duration (direct measurement, validates existing 22-loop value)
@@ -148,9 +150,26 @@ Secondary signals (from position — requires tolerance for high-saturation jitt
 
 **Phase 3 — Startup and gas:**
 - Initial worker stagger from first-10-tick observation
-- Gas cycle decomposition at per-loop resolution (extend existing `GasCycleProfilerTest` data)
+- Gas approach docking measurement (analysis protocol below)
 - Gas deposit lock investigation (protocol below)
 - Wait absorption threshold investigation (protocol below)
+
+**Gas approach docking measurement (`GAS_APPROACH_DOCKING_LOOPS` = 11.5):**
+
+Gas approach docking models the entry animation when a worker enters the geyser. The EM applies wait-time absorption (`WorkerSimulation.java:745`: `docking = Math.max(0, GAS_APPROACH_DOCKING_LOOPS - waitedLoops)`) — the same pattern as mineral approach absorption.
+
+*Data source:* The existing `GasCycleProfilerTest.profileGasCycleDecomposition()` already captures per-loop position, cargo, and `INSIDE_BUILDING` transitions for gas workers. No new profiler infrastructure needed — the gap is in the analysis, not the data.
+
+*State inference:* The profiler's `classifyAction()` returns `GATHERING_GAS` for all workers with `HARVEST_GATHER` orders, which lumps walking, waiting at entrance, and approach docking into one phase. The analyser decomposes `GATHERING_GAS` using position relative to the geyser:
+- Position outside gas building radius (1.75u from geyser center, §4) → walking to geyser
+- Position within gas building radius AND worker still visible → at geyser (waiting or in approach docking)
+- Worker transitions to `INSIDE_BUILDING` (disappears from observation) → entered geyser
+
+*Measurement:* Gas approach docking = loops from "position within gas building radius" to "INSIDE_BUILDING transition." For the first worker to enter an empty geyser (zero contention entry), this directly measures the full docking constant. For subsequent workers that waited, the interval contains absorbed docking: `max(0, docking - waited)`.
+
+*Decomposition:* Use the 3w single-geyser scenario. With 3 workers on 1 geyser, workers cycle through walk → wait → enter → harvest → exit → walk → deposit. Identify non-waited entries (first entry after a full cycle with no queue) to measure the base docking constant. Compare waited entries to validate the absorption formula: plot measured docking vs wait time — the slope should match the linear absorption model.
+
+*Success criteria:* Variable timing tier (§Success Criteria): σ < 2.0 loops, N ≥ 30 non-waited entries across 3+ runs.
 
 **Investigation protocol for Unknown-category constants:**
 
