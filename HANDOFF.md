@@ -2,100 +2,70 @@
 
 ## Orientation
 
-**High-saturation contention investigation (#763) — comprehensive sweep complete, root cause identified, partial fix found.**
+**Physics-first calibration methodology (#763) — Phase 1-2 complete. Three SC2-measured constants replace one swept constant. Collision model exposed as the real gap.**
 
-The pinned single-base test on TorchesAIE shows -6.2% at tick 304 (36w, 4.5 w/p) and +6.5% at tick 150 (24w, 3 w/p). The EM's saturation curve has the wrong shape: per-worker income is too high at moderate saturation and falls off too steeply at high saturation.
+Per-loop SC2 profiler (8w: 77 cycles, 16w: 183 cycles, 36w: 37 cycles) on TorchesAIE measured the actual mineral mining physics at game-loop resolution. Three findings replaced `DEPOSIT_DURATION_LOOPS=12` (swept) with two measured constants and confirmed a third:
 
----
+| Constant | Old (swept) | New (measured) | SC2 σ | Source |
+|----------|------------|---------------|-------|--------|
+| Deposit dwell at TH | 12 loops | **0 loops** | 0.0 | Per-loop profiler: instantaneous deposit |
+| Post-pickup departure | not modeled | **7 loops** | 0.0 | Per-loop profiler: departure animation at patch |
+| Approach + mining | 20+22=42 | **42.1 loops** | 11.1 | Per-loop profiler: validates existing constants |
 
-## Key findings (this session, 2026-11-25)
+The 12-loop deposit was compensating for the missing 7-loop post-pickup animation. Both σ=0 — deterministic SC2 behavior.
 
-### 1. Wait-time absorption was a no-op — now fixed (dormant)
+**Wait-time absorption is wrong physics.** SC2 16w profiler data (183 cycles) shows waited workers get the full 20-loop approach animation on top of their wait. No absorption occurs — approach=20 always.
 
-`tryStartMining()` line 686: `max(APPROACH_ANIMATION_LOOPS, approachDocking - waited)` where both variables are 20 — always returns 20. Workers that waited 100+ loops still paid full 20-loop approach animation.
-
-**Fix implemented:** Step-function absorption with base-level saturation guard. Workers that waited > threshold AND base saturation > 4.0 get `MIN_APPROACH_AFTER_WAIT` instead of full approach. Defaults disabled (`WAIT_ABSORPTION_THRESHOLD = Double.MAX_VALUE`).
-
-**Best result:** threshold=22, minApproach=5 on TorchesAIE: tick 304 at **-0.3%** (was -6.2%). Tick 150 at +7.6% (similar to current +6.5%).
-
-### 2. No single parameter fixes both low-sat and high-sat
-
-Three diagnostic sweeps explored 70+ parameter combinations:
-- **Wait absorption threshold** (11 values): increases income uniformly
-- **High-saturation dodge scale** (9 values): increases income uniformly
-- **Approach animation × threshold** (15 combinations): shifts crossover point but can't fix shape
-- **Step absorption threshold × minApproach** (20 combinations): step function + saturation guard works on real terrain
-
-All mechanisms increase income at ALL saturation levels. None selectively helps high-sat without also worsening moderate-sat.
-
-### 3. The fix is terrain-dependent
-
-The step absorption works on real TorchesAIE terrain (pinned test: -0.3%) but causes +16-23% over-production on the flat grid (MULE test, SC2PlaybookCalibrationTest). The flat grid has uniform 7.0u patches with different A* paths — different contention patterns than real terrain with 3-6u variable-distance patches.
-
-The dual-run baselines use the `calibrate()` method which DOES load real terrain when baselines have `basePosition`. But `SC2PlaybookCalibrationTest.muleIsolation()` creates a plain `EmulatedGame()` — no terrain, no mineral patches. This runs on the default flat grid.
-
-### 4. Root cause: saturation curve shape problem
-
-| Tick | Probes | SC2 cum inc | EM cum inc | Δ cum inc |
-|------|--------|------------|-----------|-----------|
-| 100 | 20 | 1160 | 1395 | +20% |
-| 150 | 24 | 2125 | 2215 | +4.2% |
-| 200 | 28 | 3060 | 3070 | +0.3% |
-| 250 | 32 | 4115 | 3930 | -4.5% |
-| 304 | 36 | 5145 | 4890 | -5.0% |
-
-Crossover at tick 200 (28w, 3.5 w/p). Before: EM over-produces (straight-line walks shorter than SC2 curves). After: EM under-produces (collision dodge over-penalizes).
+**Remaining gap: -16.4% at 36w with measured physics.** This is the collision/dodge model — perpendicular displacement extends walks at high saturation. The absorption formula was compensating for this, not modeling real SC2 behavior.
 
 ---
 
-## Changes made (this session)
+## Changes made (this session, 2026-11-25)
 
-1. **WAIT_ABSORPTION_THRESHOLD** (`WorkerSimulation.java:20`): Configurable threshold for step-function absorption. Default `Double.MAX_VALUE` (disabled).
+1. **WorkerPhysicsProfilerTest** (`quarkmind-sc2/src/test/java/io/quarkmind/sc2/real/`): Per-loop SC2 mineral worker profiler. Records position + cargo at every game loop. Three scenarios: 8w, 16w, 36w.
 
-2. **MIN_APPROACH_AFTER_WAIT** (`WorkerSimulation.java:22`): Minimum approach loops for workers that passed the absorption threshold. Default 0.
+2. **DEPOSIT_DURATION_LOOPS = 0** (`WorkerPhysicsConfig.java`): SC2 deposits cargo in the same loop the worker arrives at TH. Zero dwell time. Deceleration is in movement physics.
 
-3. **HIGH_SATURATION_DODGE_SCALE** (`WorkerSimulation.java:21`): Configurable dodge scale for >2 w/p. Default 1.0 (no change). Guard: `HIGH_SATURATION_DODGE_SCALE < 1.0f`.
+3. **POST_PICKUP_LOOPS = 7** (`SimulatedWorker.java`): After cargo flip, worker stays at patch 7 loops before departing. Deterministic (σ=0). Added two-stage check in `stepOneMineralLoop`: cargo flips first, then departure after POST_PICKUP_LOOPS.
 
-4. **Step-function tryStartMining** (`WorkerSimulation.java:686-695`): Replaced linear absorption with step function. Guard: `waited > threshold AND baseWorkers/basePatches > 4.0`.
+4. **Approach absorption removed** (`WorkerSimulation.tryStartMining`): Approach is now fixed at 20 loops regardless of wait state. Matches SC2 16w measurement showing no absorption.
 
-5. **workerStateCounts()** (`WorkerSimulation.java:877-901`): Diagnostic method counting workers in each state (mining/walking/waiting/returning/depositing/idle).
+5. **Physics doc updated** (`docs/sc2-physics-constants.md`): §3 constants updated with Measured confidence level. §16 pinned results updated.
 
-6. **Diagnostic sweeps** (`ContentionCalibrationDiagnosticTest.java`): Four sweep tests:
-   - `sweepWaitAbsorptionThreshold` — threshold sweep (pinned test)
-   - `sweepDodgeScaleAtHighSaturation` — dodge scale sweep
-   - `sweepApproachAnimationWithAbsorption` — approach × threshold
-   - `sweepStepAbsorptionThresholdAndMinApproach` — threshold × minApproach (step function)
-   - `sweepCombinedAbsorptionAndDodge` — threshold × dodge 2D sweep
+6. **Design spec** (`specs/issue-761-intent-rejection-diagnostic/2026-11-25-physics-first-calibration-design.md`): Reusable physics-first calibration methodology with four-category classification framework.
+
+7. **Diagnostic sweeps** (`ContentionCalibrationDiagnosticTest.java`): Five sweep tests (absorption threshold, dodge scale, approach animation, combined, min-approach). These explored the parameter space before the per-loop profiler provided direct measurements.
 
 ---
 
-## Approaches tried and rejected
+## Current calibration state
 
-1. **Linear wait-time absorption** (threshold-based): `max(0, approach - (waited - threshold))`. Same terrain dependency as step function. Non-monotonic results suggest cycle alignment effects.
-
-2. **Uniform dodge scale reduction** (0.10-1.0): Reduces income uniformly across all saturation levels. Can't differentially fix high-sat.
-
-3. **Approach animation increase** (20→28): Reduces income uniformly. approach=22 + threshold=10 gives tick 304 at +1.2% but tick 150 at +7.6%.
-
-4. **Contention guard on patch level** (`contention > 2`, `>3`, `>4`): Patch-level contention varies with rerouting. Even at 3 avg w/p, some patches have 5+ assigned workers, bypassing any per-patch guard.
+| Scenario | Pre-session | Post-measured-physics | Note |
+|----------|------------|----------------------|------|
+| Pinned single-base 36w | -6.2% | **-16.4%** | Collision model gap exposed |
+| Pinned two-base | -8.5% | **-14.2%** | Same root cause |
+| 8w dual-run | +0.4% | PASS (structural) | Foundation constants validated |
+| 12w dual-run | -0.3% | PASS (structural) | Foundation constants validated |
+| All 238 tests | PASS | PASS | No regressions |
 
 ---
 
-## Next steps (priority order)
+## Next steps
 
-1. **Migrate MULE playbook test to real terrain** — `SC2PlaybookCalibrationTest.muleIsolation()` uses a plain `EmulatedGame()` without terrain. Loading the TorchesAIE pathing grid and mineral positions would make it consistent with the dual-run baselines and enable the absorption fix. This is the blocking issue for enabling absorption.
+1. **Collision/dodge model investigation** — the -16.4% gap at 36w is from the perpendicular dodge model. At 4.5 w/p, workers get displaced sideways on every collision, extending walks. SC2's flow-field pathfinder handles this more efficiently. Record SC2 worker walk distances at different saturation levels and compare to EM walks. The profiler data already has position data for this analysis.
 
-2. **Record SC2 per-worker cadence at 36w** — the absorption fix gets pinned to -0.3% but doesn't fix the shape problem. SC2 per-worker instrumentation at 24w and 36w would reveal the actual mechanism that makes high-sat workers more efficient than the EM models.
+2. **LOW_SATURATION_DODGE_SCALE validation** — with measured foundation constants, re-evaluate whether the 0.25 dodge scale at ≤2 w/p is still needed. Phase 4 of the methodology.
 
-3. **Investigate the unexplained MULE regression** — setting `WAIT_ABSORPTION_THRESHOLD = 22.0` alone (guard blocks, minApproach=0) causes 23.6% over-production in the MULE test. The step function code path itself changes timing even when the guard should block. This may be a compiler optimization artifact or a subtle interaction.
+3. **INITIAL_WORKER_STAGGER validation** — record SC2 first-10-tick per-worker data. Phase 3 of the methodology.
+
+4. **Gas approach docking measurement** — the 11.5-loop value is swept. `GasCycleProfilerTest` data already exists for this analysis.
 
 ---
 
 ## Notes
 
-- **Branch:** `issue-761-intent-rejection-diagnostic` (stacked: 756→757→758→761→762→763→764→766)
-- **All 222 tests pass** (with defaults disabled) — DualRunCalibrationTest (46), SC2PlaybookCalibrationTest (17), WorkerSimulationTest (47), EmulatedGameTest (128)
-- **SC2 is NOT running** — killed after recordings in previous session
-- **Issue #766 open** — tracks the A* tile-center snap fix and obstacle radius changes
-- **Issue #763 open** — tracks this high-saturation contention investigation
-- **IntelliJ MCP:** Crashed mid-session. Restarted but quarkmind project may need re-opening (`ide_open_project`).
+- **Branch:** `issue-761-intent-rejection-diagnostic`
+- **All 238 tests pass**
+- **SC2 is running** on port 8168
+- **Profiler data recorded** in `quarkmind-sc2/src/test/resources/profiler/`: mineral-8w-run1.json, mineral-16w-run1.json, mineral-36w-run1.json
+- **IntelliJ MCP connected** at `/Users/mdproctor/claude/casehub/quarkmind`
