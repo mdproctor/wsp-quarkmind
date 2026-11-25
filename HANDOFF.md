@@ -2,94 +2,100 @@
 
 ## Orientation
 
-**A* grid discrepancy fully diagnosed and fixed (#766). Three changes landed, all tests green.**
+**High-saturation contention investigation (#763) — comprehensive sweep complete, root cause identified, partial fix found.**
 
-The +6-19% over-production on real TorchesAIE terrain had two root causes, both fixed:
-1. **Tile-center waypoint snapping:** `setTargetWithPath()` replaced final A* waypoint with actual target position
-2. **Zero obstacle tiles:** Obstacle radius increased from 0.3 to 0.5 (integer-x patch positions need ≥0.5 to mark tiles). Required decoupling `enforceWall()` from the obstacle layer so mineral obstacles don't block army movement.
-
-12w dual-run improved from +4.8% (pre-fix, real terrain) to **+1.0%**. MULE from +1.4% to **-0.7%**. All 287 tests pass.
+The pinned single-base test on TorchesAIE shows -6.2% at tick 304 (36w, 4.5 w/p) and +6.5% at tick 150 (24w, 3 w/p). The EM's saturation curve has the wrong shape: per-worker income is too high at moderate saturation and falls off too steeply at high saturation.
 
 ---
 
-## Key data (post-#766, all three fixes)
+## Key findings (this session, 2026-11-25)
 
-| Scenario | Original | After fix | Note |
-|----------|---------|-----------|------|
-| 12w dual-run (real terrain) | +4.8% | **+1.0%** | Primary calibration target |
-| MULE isolation | +1.4% | **-0.7%** | Improved |
-| Pinned single-base 36w | -5.0% | **-9.3%** | Worse at high saturation — contention model gap |
-| Pinned two-base | -5.2% | **-8.2%** | Similar |
-| All tests | 273 pass | 287 pass | No regressions |
+### 1. Wait-time absorption was a no-op — now fixed (dormant)
+
+`tryStartMining()` line 686: `max(APPROACH_ANIMATION_LOOPS, approachDocking - waited)` where both variables are 20 — always returns 20. Workers that waited 100+ loops still paid full 20-loop approach animation.
+
+**Fix implemented:** Step-function absorption with base-level saturation guard. Workers that waited > threshold AND base saturation > 4.0 get `MIN_APPROACH_AFTER_WAIT` instead of full approach. Defaults disabled (`WAIT_ABSORPTION_THRESHOLD = Double.MAX_VALUE`).
+
+**Best result:** threshold=22, minApproach=5 on TorchesAIE: tick 304 at **-0.3%** (was -6.2%). Tick 150 at +7.6% (similar to current +6.5%).
+
+### 2. No single parameter fixes both low-sat and high-sat
+
+Three diagnostic sweeps explored 70+ parameter combinations:
+- **Wait absorption threshold** (11 values): increases income uniformly
+- **High-saturation dodge scale** (9 values): increases income uniformly
+- **Approach animation × threshold** (15 combinations): shifts crossover point but can't fix shape
+- **Step absorption threshold × minApproach** (20 combinations): step function + saturation guard works on real terrain
+
+All mechanisms increase income at ALL saturation levels. None selectively helps high-sat without also worsening moderate-sat.
+
+### 3. The fix is terrain-dependent
+
+The step absorption works on real TorchesAIE terrain (pinned test: -0.3%) but causes +16-23% over-production on the flat grid (MULE test, SC2PlaybookCalibrationTest). The flat grid has uniform 7.0u patches with different A* paths — different contention patterns than real terrain with 3-6u variable-distance patches.
+
+The dual-run baselines use the `calibrate()` method which DOES load real terrain when baselines have `basePosition`. But `SC2PlaybookCalibrationTest.muleIsolation()` creates a plain `EmulatedGame()` — no terrain, no mineral patches. This runs on the default flat grid.
+
+### 4. Root cause: saturation curve shape problem
+
+| Tick | Probes | SC2 cum inc | EM cum inc | Δ cum inc |
+|------|--------|------------|-----------|-----------|
+| 100 | 20 | 1160 | 1395 | +20% |
+| 150 | 24 | 2125 | 2215 | +4.2% |
+| 200 | 28 | 3060 | 3070 | +0.3% |
+| 250 | 32 | 4115 | 3930 | -4.5% |
+| 304 | 36 | 5145 | 4890 | -5.0% |
+
+Crossover at tick 200 (28w, 3.5 w/p). Before: EM over-produces (straight-line walks shorter than SC2 curves). After: EM under-produces (collision dodge over-penalizes).
 
 ---
 
-## Changes made (this session, 2026-11-24)
+## Changes made (this session)
 
-1. **Tile-center waypoint snap fix** (`WorkerSimulation.setTargetWithPath`, line 128): Replace final smoothed A* waypoint with actual target position. Workers walk to intended edge-point destinations instead of nearest tile center. Single-line change: `smoothed.set(smoothed.size() - 1, target)`.
+1. **WAIT_ABSORPTION_THRESHOLD** (`WorkerSimulation.java:20`): Configurable threshold for step-function absorption. Default `Double.MAX_VALUE` (disabled).
 
-2. **Obstacle radius 0.3→0.5** (`WorkerPhysicsConfig.DEFAULT_MINERAL_PATCH_OBSTACLE_RADIUS`): TorchesAIE patches have integer x-coordinates (0.5 from tile centers). At 0.3, zero tiles marked → obstacle-aware A* was a no-op. At 0.5, each patch marks 2 tiles.
+2. **MIN_APPROACH_AFTER_WAIT** (`WorkerSimulation.java:22`): Minimum approach loops for workers that passed the absorption threshold. Default 0.
 
-3. **enforceWall decoupling** (`EmulatedGame.enforceWall`, line 331): Changed from `!isWalkable()` (terrain+obstacles) to `heightAt()==WALL` (terrain only). Removed the `isWalkable` skip for building footprint checks (lines 342-343, 351-352 deleted). Mineral patch obstacle tiles now only affect worker A* routing, not army combat movement. Building collision still enforced via `insideFootprint()` for all buildings.
+3. **HIGH_SATURATION_DODGE_SCALE** (`WorkerSimulation.java:21`): Configurable dodge scale for >2 w/p. Default 1.0 (no change). Guard: `HIGH_SATURATION_DODGE_SCALE < 1.0f`.
 
-4. **Diagnostic test** (`AStarPathSnapDiagnosticTest`): `@Tag("diagnostic")`, run with `-Pdiagnostic`. Proves zero obstacle tiles at radius 0.3 and 4% walk distance discrepancy between grids from tile-center snapping.
+4. **Step-function tryStartMining** (`WorkerSimulation.java:686-695`): Replaced linear absorption with step function. Guard: `waited > threshold AND baseWorkers/basePatches > 4.0`.
+
+5. **workerStateCounts()** (`WorkerSimulation.java:877-901`): Diagnostic method counting workers in each state (mining/walking/waiting/returning/depositing/idle).
+
+6. **Diagnostic sweeps** (`ContentionCalibrationDiagnosticTest.java`): Four sweep tests:
+   - `sweepWaitAbsorptionThreshold` — threshold sweep (pinned test)
+   - `sweepDodgeScaleAtHighSaturation` — dodge scale sweep
+   - `sweepApproachAnimationWithAbsorption` — approach × threshold
+   - `sweepStepAbsorptionThresholdAndMinApproach` — threshold × minApproach (step function)
+   - `sweepCombinedAbsorptionAndDodge` — threshold × dodge 2D sweep
 
 ---
 
 ## Approaches tried and rejected
 
-These are dead ends — don't re-explore:
+1. **Linear wait-time absorption** (threshold-based): `max(0, approach - (waited - threshold))`. Same terrain dependency as step function. Non-monotonic results suggest cycle alignment effects.
 
-1. **Fix v2 (direct walk for short paths):** Skipped all A* waypoints when smoothed path ≤ 2 elements, walking directly from edge point to edge point. Too aggressive — removed ALL walk overhead. MULE jumped to +3.6% (over-production). The intermediate tile-center waypoint in multi-tile A* paths provides a small beneficial path deviation that approximates SC2's curved worker paths.
+2. **Uniform dodge scale reduction** (0.10-1.0): Reduces income uniformly across all saturation levels. Can't differentially fix high-sat.
 
-2. **Approach animation = 23:** Tried increasing approach from 20 to 23 to compensate for shorter walks after the waypoint fix. Caused MULE isolation to crash to -10.9% because the increased approach only affects regular workers, not MULEs (MULEs use `MULE_MINING_OVERHEAD_LOOPS`). Regular worker mining and MULE mining constants must stay independently calibrated.
+3. **Approach animation increase** (20→28): Reduces income uniformly. approach=22 + threshold=10 gives tick 304 at +1.2% but tick 150 at +7.6%.
 
-3. **Approach animation = 22:** Only shifted dual-run divergence by 2 ticks — not enough. The approach animation is a physical constant (measured at 20 loops from SC2 observation data, #679), not a compensation lever.
-
----
-
-## Architectural understanding (key for next session)
-
-### How the obstacle layer interacts with the two movement systems
-
-- **Worker pathfinding:** Uses `AStarPathfinder.findPath()` which calls `terrainGrid.isWalkable()` — checks BOTH terrain height AND obstacle layer. Workers route around mineral patch obstacles. The final waypoint is replaced with the actual target so workers stop at edge points, not tile centers.
-
-- **Army movement enforcement:** Uses `enforceWall()` which now checks `terrainGrid.heightAt() == WALL` — checks ONLY terrain height, NOT obstacle layer. Army units pass through mineral patch obstacle tiles freely. Buildings are caught by `insideFootprint()` checks for all buildings (no skip).
-
-- **Why this matters:** If you change `enforceWall()` back to use `isWalkable()`, the kiting test will fail (Zealot blocked by mineral patch obstacle tile at (8,14) from default patch at (8.90,14.64)).
-
-### Why zero obstacle tiles at radius 0.3
-
-All TorchesAIE mineral patches have integer x-coordinates (25.0, 53.0, 125.0, etc.) and .5 y-coordinates (165.5, 159.5, etc.). For `markCircularObstacle(125.0, 165.5, 0.3)`:
-- Nearest tile center in x: 124.5 or 125.5 — both 0.5 away, exceeding radius 0.3
-- `dx² + dy² = 0.25 + 0.0 = 0.25 > 0.09 (0.3²)` → no tile marked
-
-At radius 0.5: `dx² + dy² = 0.25 ≤ 0.25 (0.5²)` → boundary case, included by `<=`.
-
-### Why the offset creates different walk distances (the root cause)
-
-DualRunCalibrationTest offsets coordinates by `(8f - basePosition[0], 8f - basePosition[1])` = `(-116.5, -151.5)`. This is a HALF-INTEGER offset. It flips x coordinates from integer (tile boundary) to .5 (tile center) and y from .5 to .0 (tile boundary). When A* truncates `(int) target.x()`, the same edge-point target lands in different tiles on the two grids, producing different tile-center destinations and therefore different walk distances.
-
-### The intermediate waypoint effect
-
-After the waypoint fix, the smoothed A* path is typically `[intermediate_tile_center, actual_target]`. The worker walks: position → intermediate tile center → actual target. For horizontal walks this adds zero detour. For diagonal walks it adds ~4% detour. This small detour provides beneficial walk overhead that partially compensates for the EM's straight-line movement (SC2 workers curve). At high saturation (36w pinned test), this detour compounds, contributing to the -9.3% gap.
+4. **Contention guard on patch level** (`contention > 2`, `>3`, `>4`): Patch-level contention varies with rerouting. Even at 3 avg w/p, some patches have 5+ assigned workers, bypassing any per-patch guard.
 
 ---
 
 ## Next steps (priority order)
 
-1. **High-saturation contention model** — pinned single-base at -9.3% (36w on 8 patches). The EM's collision/contention model at 4.5 workers/patch produces less income than SC2. This gap predates #766 but widened. Needs investigation of SC2 high-saturation worker behavior — record a 36w SC2 baseline with per-worker cadence instrumentation.
+1. **Migrate MULE playbook test to real terrain** — `SC2PlaybookCalibrationTest.muleIsolation()` uses a plain `EmulatedGame()` without terrain. Loading the TorchesAIE pathing grid and mineral positions would make it consistent with the dual-run baselines and enable the absorption fix. This is the blocking issue for enabling absorption.
 
-2. **Approach animation re-evaluation** — the 12w is at +1.0% (slight over-production). The approach animation (20 loops) may need adjustment now that obstacle tiles are marked and providing real path deviation. But this should be calibrated from SC2 observation, not adjusted as compensation.
+2. **Record SC2 per-worker cadence at 36w** — the absorption fix gets pinned to -0.3% but doesn't fix the shape problem. SC2 per-worker instrumentation at 24w and 36w would reveal the actual mechanism that makes high-sat workers more efficient than the EM models.
 
-3. **Wait-time absorption** — `tryStartMining()` floor of `APPROACH_ANIMATION_LOOPS` makes absorption a no-op. Needs threshold-based approach (distinguish brief shuffle-order waits from genuine contention waits).
+3. **Investigate the unexplained MULE regression** — setting `WAIT_ABSORPTION_THRESHOLD = 22.0` alone (guard blocks, minApproach=0) causes 23.6% over-production in the MULE test. The step function code path itself changes timing even when the guard should block. This may be a compiler optimization artifact or a subtle interaction.
 
 ---
 
 ## Notes
 
 - **Branch:** `issue-761-intent-rejection-diagnostic` (stacked: 756→757→758→761→762→763→764→766)
-- **All 287 tests pass** — DualRunCalibrationTest (46), SC2PlaybookCalibrationTest (17), WorkerSimulationTest (47), EmulatedGameTest (128)
+- **All 222 tests pass** (with defaults disabled) — DualRunCalibrationTest (46), SC2PlaybookCalibrationTest (17), WorkerSimulationTest (47), EmulatedGameTest (128)
 - **SC2 is NOT running** — killed after recordings in previous session
-- **Issue #766 open** — tracks all three changes
-- **Worktree cleanup:** `/Users/mdproctor/claude/casehub/quarkmind/.claude/worktrees/agent-ace0ecd96715c77a7` can be removed — its baseline commit was cherry-picked into the main branch
+- **Issue #766 open** — tracks the A* tile-center snap fix and obstacle radius changes
+- **Issue #763 open** — tracks this high-saturation contention investigation
+- **IntelliJ MCP:** Crashed mid-session. Restarted but quarkmind project may need re-opening (`ide_open_project`).
