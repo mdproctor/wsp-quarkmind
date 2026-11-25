@@ -2,63 +2,69 @@
 
 ## Orientation
 
-**Physics-first calibration methodology (#763) — Phase 1-2 complete. Three SC2-measured constants replace one swept constant. Collision model exposed as the real gap.**
+**Physics-first calibration (#763) — per-loop SC2 profiler built, foundation constants measured, aggregate-fit coupling exposed and broken.**
 
-Per-loop SC2 profiler (8w: 77 cycles, 16w: 183 cycles, 36w: 37 cycles) on TorchesAIE measured the actual mineral mining physics at game-loop resolution. Three findings replaced `DEPOSIT_DURATION_LOOPS=12` (swept) with two measured constants and confirmed a third:
-
-| Constant | Old (swept) | New (measured) | SC2 σ | Source |
-|----------|------------|---------------|-------|--------|
-| Deposit dwell at TH | 12 loops | **0 loops** | 0.0 | Per-loop profiler: instantaneous deposit |
-| Post-pickup departure | not modeled | **7 loops** | 0.0 | Per-loop profiler: departure animation at patch |
-| Approach + mining | 20+22=42 | **42.1 loops** | 11.1 | Per-loop profiler: validates existing constants |
-
-The 12-loop deposit was compensating for the missing 7-loop post-pickup animation. Both σ=0 — deterministic SC2 behavior.
-
-**Wait-time absorption is wrong physics.** SC2 16w profiler data (183 cycles) shows waited workers get the full 20-loop approach animation on top of their wait. No absorption occurs — approach=20 always.
-
-**Remaining gap: -16.4% at 36w with measured physics.** This is the collision/dodge model — perpendicular displacement extends walks at high saturation. The absorption formula was compensating for this, not modeling real SC2 behavior.
+Built a reusable per-loop SC2 worker profiler (`WorkerPhysicsProfilerTest`) and used it to directly measure mineral mining physics at game-loop resolution. The profiler revealed that two constants were compensating for each other — a treadmill that parameter sweeping could never fix.
 
 ---
 
-## Changes made (this session, 2026-11-25)
+## Key findings
 
-1. **WorkerPhysicsProfilerTest** (`quarkmind-sc2/src/test/java/io/quarkmind/sc2/real/`): Per-loop SC2 mineral worker profiler. Records position + cargo at every game loop. Three scenarios: 8w, 16w, 36w.
+### 1. Deposit is instantaneous — not 12 loops
 
-2. **DEPOSIT_DURATION_LOOPS = 0** (`WorkerPhysicsConfig.java`): SC2 deposits cargo in the same loop the worker arrives at TH. Zero dwell time. Deceleration is in movement physics.
+`DEPOSIT_DURATION_LOOPS` was 12 (swept from 8w cadence fitting #661). SC2 per-loop profiler: deposit dwell at TH = **0 loops (σ=0)**. The worker drops cargo in the same loop it arrives. Deceleration is in movement physics, not a separate deposit phase.
 
-3. **POST_PICKUP_LOOPS = 7** (`SimulatedWorker.java`): After cargo flip, worker stays at patch 7 loops before departing. Deterministic (σ=0). Added two-stage check in `stepOneMineralLoop`: cargo flips first, then departure after POST_PICKUP_LOOPS.
+### 2. Post-pickup departure = 7 loops (new)
 
-4. **Approach absorption removed** (`WorkerSimulation.tryStartMining`): Approach is now fixed at 20 loops regardless of wait state. Matches SC2 16w measurement showing no absorption.
+After cargo flip, the worker stays at the patch exactly **7 loops (σ=0)** before departing. Deterministic — zero variance across 76 observations. Previously not modeled. The old `DEPOSIT_DURATION_LOOPS=12` was compensating for this missing 7-loop animation.
 
-5. **Physics doc updated** (`docs/sc2-physics-constants.md`): §3 constants updated with Measured confidence level. §16 pinned results updated.
+### 3. Approach = 20 loops always — no absorption
 
-6. **Design spec** (`specs/issue-761-intent-rejection-diagnostic/2026-11-25-physics-first-calibration-design.md`): Reusable physics-first calibration methodology with four-category classification framework.
+SC2 16w profiler (183 cycles): waited workers get the **full 20-loop approach** on top of their wait time. `pre_pickup = wait + approach(20) + mine(22)`. SC2 does not absorb approach during waiting. The approach animation is a fixed physical constant.
 
-7. **Diagnostic sweeps** (`ContentionCalibrationDiagnosticTest.java`): Five sweep tests (absorption threshold, dodge scale, approach animation, combined, min-approach). These explored the parameter space before the per-loop profiler provided direct measurements.
+### 4. Steady-state rates are correct
+
+| Workers | EM rate | SC2 reference | EM vs SC2 |
+|---------|---------|--------------|-----------|
+| 12w | 0.925/w/tick | 0.95/w/tick | -3% |
+| 16w | 0.872/w/tick | 0.88/w/tick | -1% |
+| 36w | 0.458/w/tick | ~0.37/w/tick | +24% |
+
+EM matches or exceeds SC2 at all saturation levels at steady state.
+
+### 5. Pinned test gap (-16.4%) is transient
+
+The pinned test adds workers one-by-one over 304 ticks. The gap accumulates during the 24w→36w transition — each newly-born worker walks from Nexus to its patch, delaying first delivery. The EM tracks SC2 through tick 150 (24w, Δ=+10). The gap opens from tick 150-304 as probes are added. This is a worker injection/assignment path issue, not steady-state physics.
 
 ---
 
-## Current calibration state
+## Changes made (this session)
 
-| Scenario | Pre-session | Post-measured-physics | Note |
-|----------|------------|----------------------|------|
-| Pinned single-base 36w | -6.2% | **-16.4%** | Collision model gap exposed |
-| Pinned two-base | -8.5% | **-14.2%** | Same root cause |
-| 8w dual-run | +0.4% | PASS (structural) | Foundation constants validated |
-| 12w dual-run | -0.3% | PASS (structural) | Foundation constants validated |
-| All 238 tests | PASS | PASS | No regressions |
+1. **WorkerPhysicsProfilerTest** — per-loop SC2 mineral worker profiler. Records position + cargo at every game loop. Three recordings: 8w (8800 obs), 16w (25300 obs), 36w (7416 obs).
+
+2. **DEPOSIT_DURATION_LOOPS = 0** — measured: instantaneous deposit.
+
+3. **POST_PICKUP_LOOPS = 7** — measured: departure animation at patch. Two-stage check in `stepOneMineralLoop`: cargo flips first, then departure after POST_PICKUP_LOOPS.
+
+4. **Approach absorption removed** — SC2 measurement disproved it. Approach is fixed 20 loops regardless of wait state.
+
+5. **Physics doc comprehensively revised** — §3 cycle decomposition rewritten with per-loop profiler data. §14 cycle breakdown updated. §16 pinned results updated with transient gap analysis. Walk distance by saturation table added.
+
+6. **Design spec** — reusable physics-first calibration methodology with four-category classification framework.
+
+7. **COLLISION_ENABLED flag** — diagnostic toggle for collision model analysis. Default true.
 
 ---
 
 ## Next steps
 
-1. **Collision/dodge model investigation** — the -16.4% gap at 36w is from the perpendicular dodge model. At 4.5 w/p, workers get displaced sideways on every collision, extending walks. SC2's flow-field pathfinder handles this more efficiently. Record SC2 worker walk distances at different saturation levels and compare to EM walks. The profiler data already has position data for this analysis.
+1. **Worker injection path investigation** — why does the EM's new-worker-to-first-delivery time create a -16.4% gap in the pinned test when steady-state rates are correct? Compare the EM's `onWorkerProducedAtBase → assignToNearestPatch → walk to patch` path against SC2's rally point behavior. The profiler data has per-worker position traces during the ramp-up period for this analysis.
 
-2. **LOW_SATURATION_DODGE_SCALE validation** — with measured foundation constants, re-evaluate whether the 0.25 dodge scale at ≤2 w/p is still needed. Phase 4 of the methodology.
+2. **Gas approach docking measurement** — `GAS_APPROACH_DOCKING_LOOPS=11.5` is swept. `GasCycleProfilerTest` data already exists for per-loop analysis.
 
-3. **INITIAL_WORKER_STAGGER validation** — record SC2 first-10-tick per-worker data. Phase 3 of the methodology.
+3. **Initial worker stagger measurement** — record SC2 first-10-tick per-worker data via the profiler.
 
-4. **Gas approach docking measurement** — the 11.5-loop value is swept. `GasCycleProfilerTest` data already exists for this analysis.
+4. **Phase 4: validate emergent constants** — with measured foundation constants, re-evaluate `LOW_SATURATION_DODGE_SCALE=0.25` and `INITIAL_WORKER_STAGGER=6.1`.
 
 ---
 
@@ -67,5 +73,5 @@ The 12-loop deposit was compensating for the missing 7-loop post-pickup animatio
 - **Branch:** `issue-761-intent-rejection-diagnostic`
 - **All 238 tests pass**
 - **SC2 is running** on port 8168
-- **Profiler data recorded** in `quarkmind-sc2/src/test/resources/profiler/`: mineral-8w-run1.json, mineral-16w-run1.json, mineral-36w-run1.json
-- **IntelliJ MCP connected** at `/Users/mdproctor/claude/casehub/quarkmind`
+- **Profiler data** in `quarkmind-sc2/src/test/resources/profiler/`: mineral-8w-run1.json, mineral-16w-run1.json, mineral-36w-run1.json
+- **Known code/doc mismatch:** `MINERAL_PATCH_OBSTACLE_RADIUS` — `WorkerPhysicsConfig` defaults to 0.5, `WorkerPhysicsConfigProducer` defaults to 0.3. Needs independent fix.
