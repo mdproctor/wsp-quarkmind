@@ -111,21 +111,34 @@ Secondary signals (from position — requires tolerance for high-saturation jitt
 - `walkToBase` — loops from patch departure (position starts moving from patch) to position within tolerance of TH
 - `deposit` — loops from TH arrival to cargo flip (5→0)
 - `waitAtPatch` — at contention tiers: loops from arrival at patch to start of mining (inferred as `approachAndMine - approachAndMine_8w`, since 8w has zero waits)
-- `totalCycle` — sum, must equal measured cycle length
+
+**Aggregate income validation (replaces tautological totalCycle sum check):** Under cargo-primary inference, the phase measurements partition the interval between consecutive cargo flips — their sum equals the total cycle by construction and only catches arithmetic bugs. Instead, validate the measurement's physical accuracy by computing aggregate income from the measured cycles: total minerals = (complete cycles across all workers) × 5. Compare against the SC2 baseline for the same scenario and tick count. Agreement within 1-2% confirms the cycle decomposition captures real mining behavior; a larger gap indicates missed partial cycles or misclassified phase boundaries.
 
 **Key comparison — 16w primary, 36w supplementary:** At 8w, `approachAndMine` = approach + mining (no waits) — directly decomposable. At **16w** (2 w/p, moderate contention), compare waiting vs non-waiting workers' `approachAndMine`. The delta measures approach absorption with modest confounding. At 36w, collision effects (lateral displacement extending approach paths), queue depth, variable approach angles, and SC2's random update ordering all degrade signal-to-noise. 36w data provides supplementary validation for extreme contention behavior but is not the primary measurement source.
 
-**Same-worker cross-cycle analysis (supplementary):** Where the same worker has both waited and non-waited cycles, compare its own `approachAndMine` across those cycles. This controls for worker-specific confounders (approach angle, assigned patch distance) that cross-worker comparison cannot. Requires sufficient per-worker cycle count — achievable at 50 ticks for workers with mixed wait/non-wait cycles.
+**Same-worker cross-cycle analysis (confirmatory, not primary):** Where the same worker has both waited and non-waited cycles, compare its own `approachAndMine` across those cycles. This controls for worker-specific confounders (approach angle, assigned patch distance) that cross-worker comparison cannot.
+
+*Statistical limitation:* At 16w with 50 ticks, each contested worker completes ~9 cycles with ~4-5 waited and ~4-5 non-waited — too few for per-worker significance. Across 8 contested workers, N≈32 same-worker comparisons barely meets the N≥30 threshold from a single run. To compensate: combine same-worker observations across the 3-5 multi-run protocol runs, bringing N to ~100-160. The cross-worker analysis at 16w provides the primary measurement; same-worker analysis confirms that the cross-worker result is not an artifact of worker-specific confounders.
 
 **Output:** Report with measured constants, mean ± σ, sample size per constant. Minimum N ≥ 30 cycles per constant for statistical significance.
 
 ### Phased Execution
 
+**Phase dependency chain:** Each phase builds on the previous phase's measured values, not the existing constants from `WorkerPhysicsConfig`. Specifically:
+- Phase 2 uses Phase 1's measured `approachAndMine_8w` as the zero-contention baseline to infer wait times. If Phase 1 measures approach animation at 18 loops (not 20), Phase 2's wait calculations shift accordingly.
+- Phase 4 uses ALL measured values from Phases 1-3 to test emergent constants.
+- Before a phase's results serve as the next phase's baseline, they must be validated: run the EM with the new measured value(s) against the existing calibration checkpoints (§16). If accuracy at any checkpoint worsens by more than 1.0%, apply the Validation Rule escape clauses before proceeding.
+
 **Phase 1 — Zero contention (8w), foundation constants:**
-- Approach animation (from `approachAndMine` - known mining duration of 22 loops)
 - Mining duration (direct measurement, validates existing 22-loop value)
 - Deposit duration (direct measurement, validates existing 12-loop value)
+- Approach animation (from `approachAndMine` - mining duration, reported per-patch-group: close patches vs far patches)
 - Full cycle decomposition (every loop accounted for)
+
+**Per-patch approach reporting:** Phase 1 must report `approachAndMine` separately for close patches (~4-5u from TH) and far patches (~6-8u from TH). SC2's deceleration is distance-dependent — a worker on a close patch uses a triangular velocity profile (never reaches max speed) and may have a shorter deceleration/positioning phase than a worker on a far patch. If `approachAndMine` varies by more than 2 loops between close and far patch groups at 8w (zero contention), this indicates SC2's approach mechanism has a distance-dependent component. In that case:
+- Report both per-patch-group and aggregate values
+- Note that #707 deliberately replaced per-patch approach docking with uniform `APPROACH_ANIMATION_LOOPS` + A*-based path deviation. If SC2's approach IS distance-dependent, this design decision should be revisited — but as a separate follow-up issue, not within this spec's scope.
+- For Phase 2 baseline purposes, use the per-patch-group approach values when inferring wait times per-worker (each worker's assigned patch distance is known from the profiler data)
 
 **Phase 2 — Contention tiers (16w, 24w, 36w):**
 - Wait-to-mine transition time for waiting workers
@@ -136,7 +149,33 @@ Secondary signals (from position — requires tolerance for high-saturation jitt
 **Phase 3 — Startup and gas:**
 - Initial worker stagger from first-10-tick observation
 - Gas cycle decomposition at per-loop resolution (extend existing `GasCycleProfilerTest` data)
-- Gas deposit lock investigation (does SC2 have this mechanism?)
+- Gas deposit lock investigation (protocol below)
+- Wait absorption threshold investigation (protocol below)
+
+**Investigation protocol for Unknown-category constants:**
+
+Unknown constants require an explicit investigation with defined exit criteria, not an open-ended "investigate."
+
+**Gas deposit lock (`GAS_DEPOSIT_LOCK_LOOPS` = 8.0):** The EM's gas deposit lock (`WorkerSimulation.java:764-770`) prevents gas workers at the same base from depositing simultaneously — if a gas worker arrives at the town hall within `GAS_DEPOSIT_LOCK_LOOPS` of the previous deposit, it waits.
+
+*Investigation scenario:* 6w dual-geyser (which the existing `GasCycleProfilerTest` already runs). With 6 gas workers on 2 geysers at the same base, deposit collisions are common.
+
+*Observable evidence:*
+1. From the existing per-loop gas profiler data, identify instances where two gas workers arrive at the TH within ~10 loops of each other (cargo > 0, position within TH tolerance)
+2. Measure each worker's deposit duration: loops from TH arrival to cargo flip (4→0)
+3. **SC2 HAS deposit lock:** The second worker's deposit duration is consistently longer than the first's (by approximately the lock period). Plot deposit duration vs time-since-previous-deposit — a step function at ~8 loops confirms the lock.
+4. **SC2 does NOT have deposit lock:** Both workers deposit in the same number of loops regardless of proximity. Set `GAS_DEPOSIT_LOCK_LOOPS = 0` and validate against 6w baselines.
+
+*Exit criterion:* Classify as "SC2 has deposit lock with period P" (measured P replaces 8.0) or "SC2 does not have deposit lock" (set to 0). No intermediate state.
+
+**Wait absorption threshold (`WAIT_ABSORPTION_THRESHOLD` = ∞, disabled):** The EM currently applies approach absorption for ANY wait duration. The threshold would limit absorption to waits exceeding a minimum period.
+
+*Observable evidence from Phase 2 data:*
+1. From the 16w/24w/36w profiler data, plot `approachAndMine` vs `waitAtPatch` for each cycle
+2. **SC2 HAS a threshold:** Below a certain wait duration, `approachAndMine` does not decrease (remains at the full approach value). Above the threshold, `approachAndMine` decreases linearly with wait time. The threshold is the x-intercept of the decreasing segment.
+3. **SC2 does NOT have a threshold:** `approachAndMine` decreases linearly with wait time starting from the first loop of waiting. Keep the constant disabled (∞).
+
+*Exit criterion:* Classify as "threshold at T loops" (measured T replaces ∞) or "no threshold" (confirm disabled). No intermediate state.
 
 **Phase 4 — Emergent constant validation:**
 
@@ -154,8 +193,16 @@ For `HIGH_SATURATION_DODGE_SCALE` (currently disabled at 1.0) and `WAIT_ABSORPTI
 
 **Measurement precision:** A measured value replaces an aggregate-fit value when:
 1. Per-mechanism measurement has N ≥ 30 independent observations
-2. Standard deviation σ < 2.0 loops (consistent with SC2 cycle σ=0.58, §1b)
+2. Standard deviation meets the threshold for the constant's type (see table below)
 3. The measured value agrees with the aggregate-fit value to within ±2 loops, OR if it disagrees, the EM accuracy improves or holds when the measured value replaces the aggregate-fit value
+
+**Tiered σ thresholds by constant type:**
+
+| Constant type | Expected σ | Action if exceeded |
+|---|---|---|
+| Fixed animation (mining duration, deposit duration) | < 0.5 loops | Review measurement methodology — phase boundary classification likely wrong. SC2 gas profiler showed range=32-32 (σ=0) for the equivalent inside-geyser measurement (§4). Fixed animations should be near-deterministic. |
+| Variable timing (approach, walk, wait) | < 2.0 loops | Acceptable — collision timing, position variance, and update ordering produce genuine per-cycle noise |
+| Per-game variable (initial worker stagger) | Report inter-run σ separately | High inter-run σ → more runs needed, not a looser acceptance threshold. Per-run σ reflects SC2's internal consistency; inter-run σ reflects the random seed effect (§1b) |
 
 **Multi-run requirement:** Each scenario must be run at minimum 3 times. Report 3-run mean and σ. For constants with high per-game variance, run 5 times (matching the existing gas protocol, §4/§6).
 
@@ -197,7 +244,7 @@ The following will be filed as GitHub issues before implementation begins:
 1. **Fix `MINERAL_PATCH_OBSTACLE_RADIUS` config default mismatch** — `WorkerPhysicsConfig` defaults to 0.5, `WorkerPhysicsConfigProducer` defaults to 0.3. File independently of calibration work.
 2. **Broader constant audit** — Apply the nature/derivation classification to all EM constants (§17 of sc2-physics-constants.md lists 527 total: 176 calibrated, 182 published, 25 estimated, 144 placeholder). Out of scope for this spec but tracked for future work.
 3. **Phase deliverables** — One issue per phase (Phases 1-4) for tracking measurement progress and results.
-4. **Resolve `MIN_APPROACH_AFTER_WAIT` code/doc inconsistency** — Either update `WorkerSimulation.java:22` from 0 to 12 (matching the doc), or update the doc to reflect the actual code state. This spec's Phase 2 measurement supersedes both values with a directly measured one.
+4. **`MIN_APPROACH_AFTER_WAIT` code/doc inconsistency — deferred to Phase 2** — Phase 2 will produce a directly measured value that supersedes both the code value (0) and the doc value (12). Do not separately fix the code/doc inconsistency until Phase 2 completes. If Phase 2 is delayed beyond the next calibration cycle, the interim fix is to update the code to 12 (matching the sweep result from `ContentionCalibrationDiagnosticTest.sweepMinApproachAfterWait()`) with a comment noting it awaits direct measurement.
 
 ## References
 
