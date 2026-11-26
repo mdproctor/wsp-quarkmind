@@ -211,5 +211,4 @@ cut_from: issue-756-seed-expansion-mineral-patches
 - [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
 - [ ] casehubio/quarkmind#770 — Recalibrate initial stagger
 - [ ] casehubio/quarkmind#771 — Re-sweep gas approach docking
-- [ ] casehubio/quarkmind#772 — SC2 velocity profiler 12w 24w
 - [ ] casehubio/quarkmind#773 — Position-dependent accuracy variance
