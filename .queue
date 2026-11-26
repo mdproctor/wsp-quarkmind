@@ -1,3 +1,14 @@
+# Work Plan —
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#771
+active_issue: casehubio/quarkmind#734
+cut_from: issue-756-seed-expansion-mineral-patches
+
+## Queue
 - [x] casehubio/quarkmind#757 — Worker_transfer_count_varies
 - [x] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
 - [x] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
@@ -186,25 +197,10 @@
 - [x] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
 - [x] casehubio/quarkmind#754 — Walk-path_collision_between_workers
 - [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
-- [ ] casehubio/quarkmind#761 — Investigate standalone intent rejection rate        ← active
+- [ ] casehubio/quarkmind#761 — Investigate standalone intent rejection rate ← done on main
 - [x] casehubio/quarkmind#763 — Single-base saturation crossover -2.3%
-  - [x] Batch 1: Profiler Infrastructure
-    - [x] Task 1: WorkerPhysicsProfilerTest 8w recording
-    - [x] Task 2: WorkerPhysicsAnalyser phase decomposition
-  - [x] Batch 2: Phase 1 Constants
-    - [x] Task 3: Validate foundation constants and update physics doc
-  - [x] Batch 3: Phase 2 Contention
-    - [x] Task 4: Record 16w and 36w profiler data
-    - [x] Task 5: Measure approach absorption from contention data
-- [ ] casehubio/quarkmind#765 — Terran Zerg two-base playbooks
-- [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
-- [ ] casehubio/quarkmind#771 — Re-sweep gas approach docking
+- [ ] casehubio/quarkmind#765 — Terran Zerg two-base playbooks ← done on issue-765-terran-zerg-two-base-playbooks
+- [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding ← done on issue-765-terran-zerg-two-base-playbooks
+- [ ] casehubio/quarkmind#771 — Re-sweep gas approach docking ← active
 - [ ] casehubio/quarkmind#773 — Position-dependent accuracy variance
-
-## State
-branch: issue-761-intent-rejection-diagnostic
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#763
-active_issue: casehubio/quarkmind#734
-cut_from: issue-756-seed-expansion-mineral-patches
+- [ ] casehubio/quarkmind#774 — SC2 recorder Queen training and SPAWNING_POOL

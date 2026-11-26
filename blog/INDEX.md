@@ -76,3 +76,4 @@
 | [2026-11-22-mdp02-the-obstacle-with-two-faces.md](2026-11-22-mdp02-the-obstacle-with-two-faces.md) | 2026-11-22 | Shared terrain grid has two consumers (army, workers) with different obstruction rules — registering the town hall as an obstacle breaks worker economy |
 | [2026-11-23-mdp01-halving-the-distance.md](2026-11-23-mdp01-halving-the-distance.md) | 2026-11-23 | Economy accuracy journey — 178% to 85% mineral balance MAPE, sliding window rate discovery, variance wall ahead |
 | [2026-11-23-mdp02-the-assumption-that-wasnt.md](2026-11-23-mdp02-the-assumption-that-wasnt.md) | 2026-11-23 | Cycle variance assumption inverted — EM is more variable than SC2, not less. Three issues closed by one diagnostic. |
+| [2026-11-26-MP01-three-races-three-bugs.md](2026-11-26-MP01-three-races-three-bugs.md) | 2026-11-26 | Three recorder bugs found while extending SC2 calibration to Terran and Zerg — morph naming, Larva targeting, mineral pre-checks |

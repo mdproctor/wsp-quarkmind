@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" font-family="system-ui, sans-serif">
+  <style>
+    .header { font-size: 14px; font-weight: 600; fill: #1a1a2e; }
+    .label { font-size: 11px; fill: #333; }
+    .detail { font-size: 10px; fill: #666; }
+    .box { rx: 6; ry: 6; stroke-width: 1.5; }
+    .arrow { stroke: #666; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+    .fix { stroke: #22863a; fill: #f0fff4; }
+    .bug { stroke: #cb2431; fill: #ffeef0; }
+    .result { stroke: #0366d6; fill: #f1f8ff; }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#666"/>
+    </marker>
+  </defs>
+
+  <text x="360" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a2e">Three Races, Three Bugs — SC2 Recorder Fix Cascade</text>
+
+  <!-- Terran column -->
+  <text x="130" y="65" text-anchor="middle" class="header">Terran</text>
+  <rect x="30" y="80" width="200" height="50" class="box bug"/>
+  <text x="130" y="100" text-anchor="middle" class="label">OrbitalCommand → crash</text>
+  <text x="130" y="115" text-anchor="middle" class="detail">BuildingType.valueOf() fails</text>
+
+  <line x1="130" y1="130" x2="130" y2="150" class="arrow"/>
+
+  <rect x="30" y="150" width="200" height="50" class="box fix"/>
+  <text x="130" y="170" text-anchor="middle" class="label">MORPH_BUILDING_NAMES map</text>
+  <text x="130" y="185" text-anchor="middle" class="detail">camelCase → ENUM_CONSTANT</text>
+
+  <!-- Zerg column -->
+  <text x="370" y="65" text-anchor="middle" class="header">Zerg</text>
+  <rect x="270" y="80" width="200" height="50" class="box bug"/>
+  <text x="370" y="100" text-anchor="middle" class="label">Train sent to Hatchery</text>
+  <text x="370" y="115" text-anchor="middle" class="detail">SC2 requires Larva target</text>
+
+  <line x1="370" y1="130" x2="370" y2="150" class="arrow"/>
+
+  <rect x="270" y="150" width="200" height="50" class="box fix"/>
+  <text x="370" y="170" text-anchor="middle" class="label">findAvailableLarva()</text>
+  <text x="370" y="185" text-anchor="middle" class="detail">per-tick Larva deduplication</text>
+
+  <line x1="370" y1="200" x2="370" y2="220" class="arrow"/>
+
+  <rect x="270" y="220" width="200" height="50" class="box bug"/>
+  <text x="370" y="240" text-anchor="middle" class="label">Overlord step marked fired</text>
+  <text x="370" y="255" text-anchor="middle" class="detail">SC2 rejected (no minerals)</text>
+
+  <line x1="370" y1="270" x2="370" y2="290" class="arrow"/>
+
+  <rect x="270" y="290" width="200" height="50" class="box fix"/>
+  <text x="370" y="310" text-anchor="middle" class="label">Mineral + supply pre-check</text>
+  <text x="370" y="325" text-anchor="middle" class="detail">return null if unaffordable</text>
+
+  <!-- Both column -->
+  <text x="610" y="65" text-anchor="middle" class="header">Both</text>
+  <rect x="510" y="80" width="200" height="50" class="box bug"/>
+  <text x="610" y="100" text-anchor="middle" class="label">AI opponent attacks</text>
+  <text x="610" y="115" text-anchor="middle" class="detail">Zerg lost at tick 440</text>
+
+  <line x1="610" y1="130" x2="610" y2="150" class="arrow"/>
+
+  <rect x="510" y="150" width="200" height="50" class="box fix"/>
+  <text x="610" y="170" text-anchor="middle" class="label">killEnemyUnits() per tick</text>
+  <text x="610" y="185" text-anchor="middle" class="detail">debug API sweep</text>
+
+  <!-- Result -->
+  <line x1="130" y1="200" x2="130" y2="365" class="arrow" stroke-dasharray="4"/>
+  <line x1="370" y1="340" x2="370" y2="365" class="arrow" stroke-dasharray="4"/>
+  <line x1="610" y1="200" x2="610" y2="365" class="arrow" stroke-dasharray="4"/>
+
+  <rect x="60" y="365" width="600" height="30" class="box result"/>
+  <text x="360" y="385" text-anchor="middle" class="label">450-tick baselines recorded — Terran: 76 SCVs, supply 79/102 | Zerg: 76 Drones, supply 80/92</text>
+</svg>
