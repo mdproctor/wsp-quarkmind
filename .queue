@@ -188,7 +188,7 @@
 - [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
 - [x] casehubio/quarkmind#761 — Investigate standalone intent rejection rate
 - [x] casehubio/quarkmind#763 — Single-base saturation crossover -2.3%
-- [ ] casehubio/quarkmind#765 — Terran Zerg two-base playbooks ← done on issue-765-terran-zerg-two-base-playbooks
+- [x] casehubio/quarkmind#765 — Terran Zerg two-base playbooks
 - [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding ← done on issue-765-terran-zerg-two-base-playbooks
 - [ ] casehubio/quarkmind#771 — Re-sweep gas approach docking        ← active
 - [ ] casehubio/quarkmind#773 — Position-dependent accuracy variance
