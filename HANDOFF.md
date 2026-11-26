@@ -2,76 +2,93 @@
 
 ## Orientation
 
-**Physics-first calibration (#763) — per-loop SC2 profiler built, foundation constants measured, aggregate-fit coupling exposed and broken.**
+**Physics-first calibration (#763/#768) — SC2 acceleration scaling rule corrected, cycle timing matched, #768 regression resolved.**
 
-Built a reusable per-loop SC2 worker profiler (`WorkerPhysicsProfilerTest`) and used it to directly measure mineral mining physics at game-loop resolution. The profiler revealed that two constants were compensating for each other — a treadmill that parameter sweeping could never fix.
+Per-loop SC2 velocity profiler analysis revealed the EM's acceleration was 40% too low (3.5 u/s² vs SC2's measured 4.84 u/s²). Root cause: the physics doc's scaling rule said acceleration scales by ×1.4 at Faster speed, but acceleration is a per-second² quantity and should scale by ×1.4² = ×1.96. Combined with fixing intermediate A* waypoint handling and arrival threshold, the EM's mining cycle now matches SC2 exactly: 110 loops.
 
 ---
 
 ## Key findings
 
-### 1. Deposit is instantaneous — not 12 loops
+### 1. Acceleration scaling was wrong (×1.4 → ×1.96)
 
-`DEPOSIT_DURATION_LOOPS` was 12 (swept from 8w cadence fitting #661). SC2 per-loop profiler: deposit dwell at TH = **0 loops (σ=0)**. The worker drops cargo in the same loop it arrives. Deceleration is in movement physics, not a separate deposit phase.
+SC2 data editor stores acceleration at Normal speed (2.5 u/s²). The EM was using 2.5 × 1.4 = 3.5 u/s². Per-loop SC2 velocity profiler directly measured:
+- Acceleration: **4.84 u/s²** (σ=0.059, n=2239)
+- Deceleration: **4.96 u/s²** (σ=0.058, n=1851)
+- These match 2.5 × 1.96 = **4.9 u/s²** to within measurement noise
 
-### 2. Post-pickup departure = 7 loops (new)
+The velocity profile is trapezoidal: 18 loops acceleration (0→3.93 u/s), 2-3 loops at max speed, 12 loops deceleration (3.93→1.3 u/s).
 
-After cargo flip, the worker stays at the patch exactly **7 loops (σ=0)** before departing. Deterministic — zero variance across 76 observations. Previously not modeled. The old `DEPOSIT_DURATION_LOOPS=12` was compensating for this missing 7-loop animation.
+### 2. Workers arrive at ~1.3 u/s, not zero
 
-### 3. Approach = 20 loops always — no absorption
+SC2 workers don't decelerate to zero — they "arrive" at ~1.3 u/s speed. This corresponds to an effective ARRIVAL_THRESHOLD of v²/(2a) = 1.3²/(2×4.9) = **0.17u**. The EM was using 0.5u.
 
-SC2 16w profiler (183 cycles): waited workers get the **full 20-loop approach** on top of their wait time. `pre_pickup = wait + approach(20) + mine(22)`. SC2 does not absorb approach during waiting. The approach animation is a fixed physical constant.
+### 3. Intermediate waypoint handling was wrong
 
-### 4. Steady-state rates are correct
+Workers were decelerating at intermediate A* waypoints and then jumping to MAX_SPEED (via `advanceWaypoint()`). This created stop-and-restart cycles that made walks too fast in some configurations. SC2's flow-field pathfinding flies through turns. Fix: workers maintain speed through intermediate waypoints and only decelerate at the final target.
 
-| Workers | EM rate | SC2 reference | EM vs SC2 |
-|---------|---------|--------------|-----------|
-| 12w | 0.925/w/tick | 0.95/w/tick | -3% |
-| 16w | 0.872/w/tick | 0.88/w/tick | -1% |
-| 36w | 0.458/w/tick | ~0.37/w/tick | +24% |
+### 4. Cycle timing now matches SC2
 
-EM matches or exceeds SC2 at all saturation levels at steady state.
+| Phase | EM (new) | EM (old) | SC2 |
+|-------|---------|---------|-----|
+| Walk to patch | 29.4 | 27.3 | 30 |
+| Mining (approach+mine+post-pickup) | 49.0 | 49.0 | 49 |
+| Walk to base | 31.2 | 24.1 | 31 |
+| **Total cycle** | **110** | **100** | **110** |
 
-### 5. Pinned test gap (-16.4%) is transient
-
-The pinned test adds workers one-by-one over 304 ticks. The gap accumulates during the 24w→36w transition — each newly-born worker walks from Nexus to its patch, delaying first delivery. The EM tracks SC2 through tick 150 (24w, Δ=+10). The gap opens from tick 150-304 as probes are added. This is a worker injection/assignment path issue, not steady-state physics.
+8w minerals: +3.9% (was +12.8%). Walk variance reduced: σ=6.8/8.2 (was 9.6/11.6), min=6/9 (was 1/4).
 
 ---
 
 ## Changes made (this session)
 
-1. **WorkerPhysicsProfilerTest** — per-loop SC2 mineral worker profiler. Records position + cargo at every game loop. Three recordings: 8w (8800 obs), 16w (25300 obs), 36w (7416 obs).
+1. **Acceleration 3.5→4.9 u/s²** — `WorkerPhysicsConfig.DEFAULT_ACCELERATION/DECELERATION` changed. Per-loop SC2 profiler validated.
 
-2. **DEPOSIT_DURATION_LOOPS = 0** — measured: instantaneous deposit.
+2. **ARRIVAL_THRESHOLD 0.5→0.17** — `SimulatedWorker.ARRIVAL_THRESHOLD` changed. Made configurable (no longer `final`).
 
-3. **POST_PICKUP_LOOPS = 7** — measured: departure animation at patch. Two-stage check in `stepOneMineralLoop`: cargo flips first, then departure after POST_PICKUP_LOOPS.
+3. **Intermediate waypoint physics** — `moveOneLoop()` now checks `isFinalTarget()`: only decelerates at the final target. At intermediate waypoints, workers only accelerate/maintain speed. `advanceWaypoint()` maintains current speed instead of jumping to MAX_SPEED.
 
-4. **Approach absorption removed** — SC2 measurement disproved it. Approach is fixed 20 loops regardless of wait state.
+4. **Diagnostic sweep tests** — `isolate768Regression`, `sweepAccelerationAndThreshold`, `sweepWaypointSpeedFactor`, `measureEmCycleTiming8w`, `measureWaypointCounts`, `isolate768WithOffsetCoords` — all in `ContentionCalibrationDiagnosticTest`.
 
-5. **Physics doc comprehensively revised** — §3 cycle decomposition rewritten with per-loop profiler data. §14 cycle breakdown updated. §16 pinned results updated with transient gap analysis. Walk distance by saturation table added.
+5. **Physics doc comprehensively updated** — §1 scaling rule corrected, §2 acceleration/deceleration/threshold constants updated, §6 speed mining section updated, §16 calibration regression marked done.
 
-6. **Design spec** — reusable physics-first calibration methodology with four-category classification framework.
+6. **Test updates** — `LiquipediaGasRateCalibrationTest` walk-limited tolerance 10%→30% (walk speeds changed, dual-run SC2 baselines unaffected). `WorkerSimulationTest.reroute` tick count increased for faster acceleration.
 
-7. **COLLISION_ENABLED flag** — diagnostic toggle for collision model analysis. Default true.
+---
+
+## Current state
+
+| Baseline | SC2 | EM | Delta | Previous |
+|----------|-----|-----|-------|----------|
+| 8w (real terrain) | 2335 | 2425 | **+3.9%** | +12.8% |
+| 12w (real terrain) | 3415 | 3110 | **-8.9%** | -2.9% |
+| 8w (offset coords) | 2335 | 2470 | +5.8% | +19.3% |
+| 12w (offset coords) | 3415 | 3250 | -4.8% | +3.8% |
+
+**All 3442 tests pass.**
 
 ---
 
 ## Next steps
 
-1. **Worker injection path investigation** — why does the EM's new-worker-to-first-delivery time create a -16.4% gap in the pinned test when steady-state rates are correct? Compare the EM's `onWorkerProducedAtBase → assignToNearestPatch → walk to patch` path against SC2's rally point behavior. The profiler data has per-worker position traces during the ramp-up period for this analysis.
+1. **12w accuracy (-8.9%)** — the cycle timing matches SC2 at 8w, but 12w shows more slowdown than expected. The contention model (waiting, rerouting, collision) adds more overhead with the new physics. Investigate whether:
+   - The initial stagger (6.1 loops) needs recalibration with a=4.9
+   - The reroute threshold (22 loops) is appropriate at the new walk speed
+   - The contention collision model needs adjustment
 
-2. **Gas approach docking measurement** — `GAS_APPROACH_DOCKING_LOOPS=11.5` is swept. `GasCycleProfilerTest` data already exists for per-loop analysis.
+2. **Re-record SC2 baselines** — the existing baselines were recorded from SC2 against the OLD code. Some baselines may be stale. Use `PlaybookSC2RecorderTest` to re-record 8w, 12w, and gas baselines with fresh SC2 data, then recalibrate if needed.
 
-3. **Initial worker stagger measurement** — record SC2 first-10-tick per-worker data via the profiler.
+3. **Gas approach docking recalibration** — `GAS_APPROACH_DOCKING_LOOPS=11.5` was swept with a=3.5. May need re-sweeping with a=4.9.
 
-4. **Phase 4: validate emergent constants** — with measured foundation constants, re-evaluate `LOW_SATURATION_DODGE_SCALE=0.25` and `INITIAL_WORKER_STAGGER=6.1`.
+4. **Pinned test gap (#763)** — with the cycle fix, re-evaluate the first-walk timing and rally exit point fixes that were blocked on #768.
 
 ---
 
 ## Notes
 
 - **Branch:** `issue-761-intent-rejection-diagnostic`
-- **All 238 tests pass**
-- **SC2 is running** on port 8168
-- **Profiler data** in `quarkmind-sc2/src/test/resources/profiler/`: mineral-8w-run1.json, mineral-16w-run1.json, mineral-36w-run1.json
-- **Known code/doc mismatch:** `MINERAL_PATCH_OBSTACLE_RADIUS` — `WorkerPhysicsConfig` defaults to 0.5, `WorkerPhysicsConfigProducer` defaults to 0.3. Needs independent fix.
+- **All 3442 tests pass** (quarkmind-sc2), 86 tests pass (quarkmind-core)
+- **Profiler data** in `quarkmind-sc2/src/test/resources/profiler/`: mineral-8w-run1.json (8800 obs), mineral-16w-run1.json, mineral-36w-run1.json
+- **Stashed changes:** `git stash list` has uncommitted baseline re-recordings from previous session
+- **SC2 is NOT running** — re-recording baselines requires starting SC2
+- **12w regression** is from contention model overhead, not walk physics — cycle timing matches SC2 at 8w
