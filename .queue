@@ -209,6 +209,5 @@ cut_from: issue-756-seed-expansion-mineral-patches
     - [x] Task 5: Measure approach absorption from contention data
 - [ ] casehubio/quarkmind#765 — Terran Zerg two-base playbooks
 - [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
-- [ ] casehubio/quarkmind#770 — Recalibrate initial stagger
 - [ ] casehubio/quarkmind#771 — Re-sweep gas approach docking
 - [ ] casehubio/quarkmind#773 — Position-dependent accuracy variance
