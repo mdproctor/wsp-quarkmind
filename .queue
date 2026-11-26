@@ -1,14 +1,3 @@
-# Work Plan —
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#763
-active_issue: casehubio/quarkmind#734
-cut_from: issue-756-seed-expansion-mineral-patches
-
-## Queue
 - [ ] casehubio/quarkmind#756 — Seed expansion mineral patch positions ← done on issue-756-seed-expansion-mineral-patches
 - [x] casehubio/quarkmind#757 — Worker_transfer_count_varies
 - [x] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
@@ -200,6 +189,22 @@ cut_from: issue-756-seed-expansion-mineral-patches
 - [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
 - [ ] casehubio/quarkmind#761 — Investigate standalone intent rejection rate
 - [ ] casehubio/quarkmind#762 — Two-base worker distribution +80% ← done on issue-761-intent-rejection-diagnostic
-- [ ] casehubio/quarkmind#763 — Single-base saturation crossover -2.3% ← active
+- [ ] casehubio/quarkmind#763 — Single-base saturation crossover -2.3%        ← active
+  - [x] Batch 1: Profiler Infrastructure
+    - [x] Task 1: WorkerPhysicsProfilerTest 8w recording
+    - [x] Task 2: WorkerPhysicsAnalyser phase decomposition
+  - [x] Batch 2: Phase 1 Constants
+    - [x] Task 3: Validate foundation constants and update physics doc
+  - [x] Batch 3: Phase 2 Contention
+    - [x] Task 4: Record 16w and 36w profiler data
+    - [x] Task 5: Measure approach absorption from contention data
 - [ ] casehubio/quarkmind#764 — Migrate fixed-worker tests to real coords
 - [ ] casehubio/quarkmind#765 — Terran Zerg two-base playbooks
+
+## State
+branch: issue-761-intent-rejection-diagnostic
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#763
+active_issue: casehubio/quarkmind#734
+cut_from: issue-756-seed-expansion-mineral-patches
