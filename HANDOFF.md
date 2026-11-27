@@ -2,18 +2,16 @@
 
 ## Orientation
 
-**Worker physics cleanup: CDI defaults, timing precision, gas walk model (#776, #708, #775).**
+**TrackerIntentExtractor loop-0 fix (#751) + stale queue cleanup (#752-#755).**
 
-Three issues completed on EmulatedGame worker simulation. CDI defaults synced, sub-tick timing bug fixed, gas walk model restructured with rectangular footprint and outside-approach architecture. Follow-up #777 filed for remaining gas 1w shape mismatch requiring SC2 recording.
+One real fix applied, four already-completed items cleared from the queue. The queue now has #644 as the next open item after #751.
 
 ---
 
 ## Changes made (this session)
 
-1. **#776 (XS)** — Synced 6 CDI @ConfigProperty defaults in WorkerPhysicsConfigProducer to match WorkerPhysicsConfig DEFAULT_ constants: acceleration 3.5→4.9, deceleration 3.5→4.9, deposit-duration 12→0, reroute-threshold 22→30, dodge-scale 0.25→0.10, obstacle-radius 0.3→0.5. Added debug-kill enemies documentation rule.
-2. **#708 (S)** — `assignToNearestPatch` and `returnToPatchOrReassign` now take explicit `double currentLoop` parameter instead of reading the `currentTickStartLoop` field. Inner-loop callers pass actual sub-tick loop; external callers pass field value.
-3. **#775 (M)** — Gas walk model: GAS_BUILDING_RADIUS 1.75→1.5 (rectangular 3×3 footprint). Gas approach animation moved from inside-geyser to outside — geyser occupied only during harvest (31.7L), not harvest+docking (43.2L). phaseEndLoop reset added at 4 gas entry points (code review finding). Physics docs updated.
-4. **#777 filed** — Gas walk remaining shape mismatch: 1w +16% at 5u, -21% at 7.6u. Needs SC2 per-tick position recording.
+1. **#751 (S)** — TrackerIntentExtractor: added `if (ue.getLoop() == 0) {continue;}` to skip creating TrainIntents for game-setup spawns (workers/overlords born at loop 0). Previously, these loop-0 UnitBorn events created TrainIntents that flowed through to EmulatedGame, causing duplicate unit creation via `startTraining` (the existing `completionLoop > 0` guard only prevented mineral deduction, not the `startTraining` call guarded by `completionLoop >= 0`). The `unitTagToType` tracking is preserved above the guard so UnitDied events for game-setup units still resolve correctly. Two oracle-guarded tests added.
+2. **#752, #753, #754, #755** — Already completed and landed on main from previous sessions. Marked done in the queue to clear stale entries. GitHub issues were already closed.
 
 ---
 
@@ -21,22 +19,29 @@ Three issues completed on EmulatedGame worker simulation. CDI defaults synced, s
 
 | Branch | Status | Commits |
 |--------|--------|---------|
-| `issue-776-cdi-defaults-sync` | Done, squash-reviewed | 2 |
-| `issue-708-patch-assign-loop-var` | Done | 1 |
-| `issue-775-gas-walk-distance-error` | Done, squash-reviewed | 2 (squashed from 4) |
+| `issue-751-skip-initial-worker-mineral-deduction` | Fix landed on main (91a5dd95), branch stamped closed | 1 real + 1 close stamp |
+| `issue-752-per-worker-cycle-variance` | Scaffold only — work already on main | 0 real |
+| `issue-753-dynamic-worker-patch-select` | Scaffold only — work already on main | 0 real |
+| `issue-754-walk-path-collision` | Scaffold only — work already on main | 0 real |
+| `issue-755-regen-standalone-baseline` | Scaffold only — work already on main | 0 real |
 
-All 3450 tests pass on the stacked branch.
+All 3450+ tests pass.
+
+---
+
+## Queue state
+
+The workspace `.queue` on main is out of sync — it still shows #751 as active and #752-#755 as open items further down the queue. The project-side queue was updated by `work.py done` but the workspace main wasn't rebased. The landing step failed due to `.queue` conflicts between the stale scaffold branches and main. Next session should reconcile the workspace `.queue` to reflect the done state.
 
 ---
 
 ## Next in queue
 
-**#462 — Package as AI Arena jar+zip** (scale/complexity unknown). Complete topic change from worker physics.
+**#644 — Zerg dual-run baseline diverges** (after queue reconciliation).
 
 ---
 
 ## Notes
 
-- **Branches are stacked:** main → 776 → 708 → 775. Work-end should land all three.
-- **Gas rate accuracy at 5u after #775:** 1w +16.2% (was +25.2%), 3w +1.6% (was -3.7%). DualRun 3w at 7.62u: -17.5% (was -12.5%).
-- **#777 investigation notes:** docking=20 gives perfect 1w at 5u but kills DualRun accuracy. The shape mismatch is fundamental — constant overhead can't fix a slope. SC2 per-tick gas worker recording is the next step.
+- **Landing conflict:** `work end` landing step failed on `.queue` rebase conflict for `issue-755-regen-standalone-baseline`. All actual code changes from #751 are already on main (commit 91a5dd95). The scaffold branches for #752-#755 have no code changes — they exist only because the pipeline required branches to mark items done.
+- The stale branches can be deleted safely — they contain no unreplicated work.
