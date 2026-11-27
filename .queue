@@ -192,11 +192,11 @@
 - [x] casehubio/quarkmind#769 — Flow-field worker pathfinding
 - [x] casehubio/quarkmind#771 — Re-sweep gas approach docking
 - [x] casehubio/quarkmind#773 — Position-dependent accuracy variance
-- [ ] casehubio/quarkmind#774 — SC2 recorder Queen training and SPAWNING_POOL ← done on issue-774-zerg-queen-spawning-pool
+- [x] casehubio/quarkmind#774 — SC2 recorder Queen training and SPAWNING_POOL
 
 ## State
 branch: 
 issue-repo: casehubio/quarkmind
-status: active
+status: drained
 active_issue: casehubio/quarkmind#734
 cut_from: issue-756-seed-expansion-mineral-patches
