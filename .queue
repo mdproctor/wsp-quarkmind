@@ -1,14 +1,3 @@
-# Work Plan —
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#777
-active_issue: casehubio/quarkmind#644
-cut_from: issue-756-seed-expansion-mineral-patches
-
-## Queue
 - [x] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
 - [x] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
@@ -200,11 +189,11 @@ cut_from: issue-756-seed-expansion-mineral-patches
 - [x] casehubio/quarkmind#708 — assignToNearestPatch_wrong_loop_variable
 - [x] casehubio/quarkmind#775 — Gas_walk_model_distance-dependent_error
 - [x] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
-- [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges ← done on issue-644-zerg-dual-run-baseline
+- [x] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
 - [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle ← done on issue-644-zerg-dual-run-baseline
 - [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62 ← done on issue-644-zerg-dual-run-baseline
 - [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies ← done on issue-644-zerg-dual-run-baseline
-- [ ] casehubio/quarkmind#777 — Gas_walk_per-tick_SC2_positions ← active
+- [ ] casehubio/quarkmind#777 — Gas_walk_per-tick_SC2_positions        ← active
 - [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
 - [ ] casehubio/quarkmind#693 — Gas_worker_walk_collision_close-angle (S/Med)
 - [ ] casehubio/quarkmind#683 — Extract physics constants to config file
@@ -218,3 +207,11 @@ cut_from: issue-756-seed-expansion-mineral-patches
 - [ ] casehubio/quarkmind#462 — Package_as_AI_Arena_jar+zip
 - [ ] casehubio/quarkmind#359 — EmulatedGame_autonomous_full-game_play (L/High)
 - [ ] casehubio/quarkmind#362 — Domain_gap_validation_emulated_vs_real (M/Med)
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#777
+active_issue: casehubio/quarkmind#644
+cut_from: issue-756-seed-expansion-mineral-patches
