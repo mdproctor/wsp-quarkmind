@@ -4,8 +4,8 @@
 branch: main
 issue-repo: casehubio/quarkmind
 status: active
-covers: casehubio/quarkmind#751
-active_issue: casehubio/quarkmind#734
+covers: casehubio/quarkmind#644
+active_issue: casehubio/quarkmind#644
 cut_from: issue-756-seed-expansion-mineral-patches
 
 ## Queue
@@ -199,14 +199,13 @@ cut_from: issue-756-seed-expansion-mineral-patches
 - [x] casehubio/quarkmind#776 — CDI_defaults_out_of_sync
 - [x] casehubio/quarkmind#708 — assignToNearestPatch_wrong_loop_variable
 - [x] casehubio/quarkmind#775 — Gas_walk_model_distance-dependent_error
-- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction ← active
-- [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
+- [x] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
+- [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges ← active
 - [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
 - [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
 - [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies
 - [ ] casehubio/quarkmind#777 — Gas_walk_per-tick_SC2_positions
 - [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
-- [ ] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic
 - [ ] casehubio/quarkmind#693 — Gas_worker_walk_collision_close-angle (S/Med)
 - [ ] casehubio/quarkmind#683 — Extract physics constants to config file
 - [ ] casehubio/quarkmind#402 — Extend_BalanceData_behavioral_params (L/Med)
