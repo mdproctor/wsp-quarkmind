@@ -1,4 +1,14 @@
-- [x] casehubio/quarkmind#757 — Worker_transfer_count_varies
+# Work Plan —
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: active
+covers: casehubio/quarkmind#751
+active_issue: casehubio/quarkmind#734
+cut_from: issue-756-seed-expansion-mineral-patches
+
+## Queue
 - [x] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
 - [x] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
 - [x] casehubio/quarkmind#744 — Standalone_mineral_rate_MAPE_gap_decomposition
@@ -97,7 +107,6 @@
 - [x] casehubio/quarkmind#641 — SC2 process not terminated on LOSS exit path
 - [x] casehubio/quarkmind#642 — ocraft ResponseObservation deserialization crash
 - [x] casehubio/quarkmind#643 — Implement remaining ActionTranslator intent translations
-- [x] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
 - [x] casehubio/quarkmind#648 — Re-validate mining deposit docking parameters
 - [x] casehubio/quarkmind#653 — Remove dead APPROACH_DISTANCE_SCALE
 - [x] casehubio/quarkmind#654 — Reset waitingSinceLoop on transitions
@@ -128,7 +137,6 @@
 - [x] casehubio/quarkmind#685 — Liquipedia gas rate calibration tests
 - [x] casehubio/quarkmind#687 — Reconcile physics doc against Liquipedia reference
 - [x] casehubio/quarkmind#678 — Gas vespene cycle cadence measurement
-- [x] casehubio/quarkmind#683 — Extract physics constants to config file
 - [x] casehubio/quarkmind#674 — artifact_sweep false-positive gaps
 - [x] casehubio/quarkmind#695 — 3w gas rotation-limited cycle vs Liquipedia
 - [x] casehubio/quarkmind#696 — Update 6w gas baseline to multi-run mean
@@ -149,7 +157,6 @@
 - [x] casehubio/quarkmind#712 — EM_Zerg_initialization_missing_Larvae
 - [x] casehubio/quarkmind#713 — skipBuildings_construction_time_delay
 - [x] casehubio/quarkmind#714 — 8w_per_cycle_timing_gap
-- [x] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
 - [x] casehubio/quarkmind#716 — EM_building_placement_eliminate_skipBuildings
 - [x] casehubio/quarkmind#717 — MULE_trip_based_mining_model
 - [x] casehubio/quarkmind#718 — Morph_name_valueOf_warning
@@ -157,7 +164,6 @@
 - [x] casehubio/quarkmind#720 — Wire LOW_SATURATION_APPROACH_BONUS through WorkerPhysicsConfig
 - [x] casehubio/quarkmind#721 — Validate low-saturation approach bonus at boundary worker counts
 - [x] casehubio/quarkmind#722 — Diagnostic_tests_debugCreateBuilding_bypass
-- [x] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
 - [x] casehubio/quarkmind#724 — MULE_worker_snapshots_not_visible
 - [x] casehubio/quarkmind#725 — Remove_dead_muleIncomePerTick
 - [x] casehubio/quarkmind#726 — MULE_cargo_calibration_verify_25_vs_30
@@ -181,27 +187,35 @@
 - [x] casehubio/quarkmind#748 — Remove_deprecated_buildingRadius
 - [x] casehubio/quarkmind#749 — ApproachDockingSweepTest_stale_ranges
 - [x] casehubio/quarkmind#750 — Verify_NYDUS_CANAL_footprint
-- [x] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
-- [x] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic
 - [x] casehubio/quarkmind#753 — Dynamic_worker_patch_selection
 - [x] casehubio/quarkmind#754 — Walk-path_collision_between_workers
 - [x] casehubio/quarkmind#755 — Regenerate_standalone_baseline
 - [x] casehubio/quarkmind#761 — Investigate standalone intent rejection rate
 - [x] casehubio/quarkmind#763 — Single-base saturation crossover -2.3%
 - [x] casehubio/quarkmind#765 — Terran Zerg two-base playbooks
-- [x] casehubio/quarkmind#769 — Flow-field worker pathfinding
 - [x] casehubio/quarkmind#771 — Re-sweep gas approach docking
 - [x] casehubio/quarkmind#773 — Position-dependent accuracy variance
 - [x] casehubio/quarkmind#774 — SC2 recorder Queen training and SPAWNING_POOL
 - [x] casehubio/quarkmind#776 — CDI_defaults_out_of_sync
 - [x] casehubio/quarkmind#708 — assignToNearestPatch_wrong_loop_variable
 - [x] casehubio/quarkmind#775 — Gas_walk_model_distance-dependent_error
-- [ ] casehubio/quarkmind#462 — Package_as_AI_Arena_jar+zip        ← active
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: active
-covers: casehubio/quarkmind#462
-active_issue: casehubio/quarkmind#734
-cut_from: issue-756-seed-expansion-mineral-patches
+- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
+- [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
+- [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
+- [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
+- [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies
+- [ ] casehubio/quarkmind#777 — Gas_walk_per-tick_SC2_positions
+- [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
+- [ ] casehubio/quarkmind#752 — Per-worker_cycle_variance_diagnostic
+- [ ] casehubio/quarkmind#693 — Gas_worker_walk_collision_close-angle (S/Med)
+- [ ] casehubio/quarkmind#683 — Extract physics constants to config file
+- [ ] casehubio/quarkmind#402 — Extend_BalanceData_behavioral_params (L/Med)
+- [ ] casehubio/quarkmind#709 — CycleDecompositionTest_refactor (S/Low)
+- [ ] casehubio/quarkmind#385 — Run_accuracy_baseline_2025-2026_tournaments (M/Med)
+- [ ] casehubio/quarkmind#387 — Reconstitute_151K_ladder_replays (M/Med)
+- [ ] casehubio/quarkmind#629 — Full_unit_physics_simulation (L/High)
+- [ ] casehubio/quarkmind#474 — Kiting_micro_tick-level_controller (M/Med)
+- [ ] casehubio/quarkmind#444 — CascadingPatternClassifier_temporal_BJT (L/High)
+- [ ] casehubio/quarkmind#462 — Package_as_AI_Arena_jar+zip
+- [ ] casehubio/quarkmind#359 — EmulatedGame_autonomous_full-game_play (L/High)
+- [ ] casehubio/quarkmind#362 — Domain_gap_validation_emulated_vs_real (M/Med)
