@@ -1,3 +1,13 @@
+# Work Plan —
+
+## State
+branch: 
+issue-repo: casehubio/quarkmind
+status: drained
+active_issue: casehubio/quarkmind#734
+cut_from: issue-756-seed-expansion-mineral-patches
+
+## Queue
 - [x] casehubio/quarkmind#757 — Worker_transfer_count_varies
 - [x] casehubio/quarkmind#758 — Gas_worker_estimation_over_assigns
 - [x] casehubio/quarkmind#759 — Regenerate_standalone_baseline_post_expansion_fix
@@ -193,10 +203,7 @@
 - [x] casehubio/quarkmind#771 — Re-sweep gas approach docking
 - [x] casehubio/quarkmind#773 — Position-dependent accuracy variance
 - [x] casehubio/quarkmind#774 — SC2 recorder Queen training and SPAWNING_POOL
-
-## State
-branch: 
-issue-repo: casehubio/quarkmind
-status: drained
-active_issue: casehubio/quarkmind#734
-cut_from: issue-756-seed-expansion-mineral-patches
+- [ ] casehubio/quarkmind#776 — CDI_defaults_out_of_sync
+- [ ] casehubio/quarkmind#708 — assignToNearestPatch_wrong_loop_variable
+- [ ] casehubio/quarkmind#775 — Gas_walk_model_distance-dependent_error
+- [ ] casehubio/quarkmind#462 — Package_as_AI_Arena_jar+zip
