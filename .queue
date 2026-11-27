@@ -1,7 +1,7 @@
 # Work Plan —
 
 ## State
-branch: 
+branch: main
 issue-repo: casehubio/quarkmind
 status: active
 covers: casehubio/quarkmind#751
@@ -199,7 +199,7 @@ cut_from: issue-756-seed-expansion-mineral-patches
 - [x] casehubio/quarkmind#776 — CDI_defaults_out_of_sync
 - [x] casehubio/quarkmind#708 — assignToNearestPatch_wrong_loop_variable
 - [x] casehubio/quarkmind#775 — Gas_walk_model_distance-dependent_error
-- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
+- [ ] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction ← active
 - [ ] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
 - [ ] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
 - [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
