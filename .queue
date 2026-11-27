@@ -191,7 +191,7 @@
 - [x] casehubio/quarkmind#751 — Skip_initial_worker_mineral_deduction
 - [x] casehubio/quarkmind#644 — Zerg dual-run baseline diverges
 - [x] casehubio/quarkmind#715 — Zerg_Larva_unit_lifecycle
-- [ ] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62 ← done on issue-644-zerg-dual-run-baseline
+- [x] casehubio/quarkmind#723 — Expansion_transfer_SC2_divergence_tick_62
 - [ ] casehubio/quarkmind#757 — Worker_transfer_count_varies ← done on issue-644-zerg-dual-run-baseline
 - [ ] casehubio/quarkmind#777 — Gas_walk_per-tick_SC2_positions        ← active
 - [ ] casehubio/quarkmind#769 — Flow-field worker pathfinding
